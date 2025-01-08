@@ -1,9 +1,9 @@
 !>
-!> @file grib2_section4_cloudbase_mod.F90
+!> @file grib2_section4_heightabovesea_mod.F90
 !>
 !> @brief Module for managing GRIB2 Section 4 level configuration operations.
 !>
-!> The `G2S4_CLOUDBASE_MOD` module contains procedures to initialize, allocate,
+!> The `G2S4_HEIGHTABOVESEA_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 4 level configuration objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see G2S4_CLOUDBASE_INIT
-!>   - @see G2S4_CLOUDBASE_ALLOC
-!>   - @see G2S4_CLOUDBASE_PRESET
-!>   - @see G2S4_CLOUDBASE_RT
-!>   - @see G2S4_CLOUDBASE_TBE
-!>   - @see G2S4_CLOUDBASE_FREE
+!>   - @see G2S4_HEIGHTABOVESEA_INIT
+!>   - @see G2S4_HEIGHTABOVESEA_ALLOC
+!>   - @see G2S4_HEIGHTABOVESEA_PRESET
+!>   - @see G2S4_HEIGHTABOVESEA_RT
+!>   - @see G2S4_HEIGHTABOVESEA_TBE
+!>   - @see G2S4_HEIGHTABOVESEA_FREE
 !>
 !> @section dependencies
 !>
@@ -52,10 +52,10 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_section4_cloudbase_mod.F90'
+#define PP_FILE_NAME 'grib2_section4_heightabovesea_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION4_CLOUDBASE_MOD'
-MODULE GRIB2_SECTION4_CLOUDBASE_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION4_HEIGHTABOVESEA_MOD'
+MODULE GRIB2_SECTION4_HEIGHTABOVESEA_MOD
 
   !> Symbols imported from other modules within the project.
   USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
@@ -69,7 +69,7 @@ PRIVATE
 !>
 !> @brief Type definition for GRIB2 Section 4 level configuration handler.
 !>
-!> The `GRIB2_SECTION4_CLOUDBASE_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `GRIB2_SECTION4_HEIGHTABOVESEA_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runlevel,
 !> encoding checks, and cleanup operations for GRIB2 Section 4 level configuration objects.
 !>
@@ -77,7 +77,7 @@ PRIVATE
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_CLOUDBASE_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_HEIGHTABOVESEA_T
 
   !> Default symbols visibility
   PRIVATE
@@ -92,7 +92,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_CLOUDBASE_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_HEIGHTABOVESEA_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 4 level configuration object.
@@ -102,7 +102,7 @@ CONTAINS
   !> The preocedure starts from a message and from the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_CLOUDBASE_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_HEIGHTABOVESEA_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 4 level configuration object.
@@ -110,7 +110,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_CLOUDBASE_ALLOC
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_HEIGHTABOVESEA_ALLOC
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 4 level configuration object.
@@ -118,7 +118,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runlevel execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_CLOUDBASE_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_HEIGHTABOVESEA_PRESET
 
   !>
   !> @brief Manages the runlevel execution of GRIB2 Section 4 level configuration operations.
@@ -126,7 +126,7 @@ CONTAINS
   !> This procedure handles operations and computations during runlevel,
   !> making use of level and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_CLOUDBASE_RT
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_HEIGHTABOVESEA_RT
 
   !>
   !> @brief Determines if the GRIB2 Section 4 level configuration object needs to be encoded.
@@ -134,7 +134,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_CLOUDBASE_TBE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_HEIGHTABOVESEA_TBE
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 4 level configuration object.
@@ -142,7 +142,7 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_CLOUDBASE_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_HEIGHTABOVESEA_FREE
 
 
 
@@ -151,14 +151,14 @@ CONTAINS
   !>
   !> This procedure set in the grib header all the variables needed to configure a specific level
   !>
-  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_CLOUDBASE_SET_LEVELS
+  ! PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_HEIGHTABOVESEA_SET_LEVELS
 
 END TYPE
 
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: GRIB2_SECTION4_CLOUDBASE_T
+PUBLIC :: GRIB2_SECTION4_HEIGHTABOVESEA_T
 
 CONTAINS
 
@@ -170,7 +170,7 @@ CONTAINS
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -192,16 +192,16 @@ CONTAINS
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_INIT_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -222,7 +222,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -248,7 +248,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'CONFIGURATOR'
   THIS%SUBTYPE_ = 'LEVEL'
-  THIS%KIND_   = 'CLOUDBASE'
+  THIS%KIND_   = 'HEIGHTABOVESEA'
 
   ! Time, level and paramId subcomponents of the section
 
@@ -292,7 +292,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_INIT_CFG
+END FUNCTION G2S4_HEIGHTABOVESEA_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -304,7 +304,7 @@ END FUNCTION G2S4_CLOUDBASE_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -327,16 +327,16 @@ END FUNCTION G2S4_CLOUDBASE_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -358,7 +358,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -385,7 +385,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'CONFIGURATOR'
   THIS%SUBTYPE_ = 'LEVEL'
-  THIS%KIND_   = 'CLOUDBASE'
+  THIS%KIND_   = 'HEIGHTABOVESEA'
 
 
   ! Trace end of procedure (on success)
@@ -428,7 +428,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_INIT_LAZY
+END FUNCTION G2S4_HEIGHTABOVESEA_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -442,7 +442,7 @@ END FUNCTION G2S4_CLOUDBASE_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -467,16 +467,16 @@ END FUNCTION G2S4_CLOUDBASE_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_ALLOC'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_ALLOC( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_ALLOC'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_ALLOC( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -500,7 +500,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_ALLOC( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -585,7 +585,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_ALLOC
+END FUNCTION G2S4_HEIGHTABOVESEA_ALLOC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -598,7 +598,7 @@ END FUNCTION G2S4_CLOUDBASE_ALLOC
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -623,16 +623,16 @@ END FUNCTION G2S4_CLOUDBASE_ALLOC
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_PRESET'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -656,7 +656,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -688,9 +688,12 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .EQ. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
-  ENDIF
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 102_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 255_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', MSG%LEVELIST )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface', MSG%LEVELIST)
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -737,7 +740,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_PRESET
+END FUNCTION G2S4_HEIGHTABOVESEA_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -751,7 +754,7 @@ END FUNCTION G2S4_CLOUDBASE_PRESET
 !> the success or failure of the runlevel operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section for runlevel execution.
+!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section for runlevel execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -780,16 +783,16 @@ END FUNCTION G2S4_CLOUDBASE_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_RT'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_RT( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_RT'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_RT( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -815,7 +818,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_RT( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -848,9 +851,12 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .NE. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
-  ENDIF
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 102_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 255_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', MSG%LEVELIST )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface', MSG%LEVELIST)
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -897,7 +903,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_RT
+END FUNCTION G2S4_HEIGHTABOVESEA_RT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -911,7 +917,7 @@ END FUNCTION G2S4_CLOUDBASE_RT
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -939,16 +945,16 @@ END FUNCTION G2S4_CLOUDBASE_RT
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_TBE'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_TBE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_TBE'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_TBE( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -972,7 +978,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_TBE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1042,7 +1048,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_TBE
+END FUNCTION G2S4_HEIGHTABOVESEA_TBE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1055,7 +1061,7 @@ END FUNCTION G2S4_CLOUDBASE_TBE
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1071,15 +1077,15 @@ END FUNCTION G2S4_CLOUDBASE_TBE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_FREE'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1098,7 +1104,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1160,12 +1166,12 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_FREE
+END FUNCTION G2S4_HEIGHTABOVESEA_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
-
+#if 0
 !>
 !> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
 !>
@@ -1173,7 +1179,7 @@ END FUNCTION G2S4_CLOUDBASE_FREE
 !> message structure (`MSG`), to set the metadata (`METADATA`).
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_CLOUDBASE_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVESEA_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -1198,16 +1204,16 @@ END FUNCTION G2S4_CLOUDBASE_FREE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_CLOUDBASE_PRESET
-!> @see G2S4_CLOUDBASE_ALLOC
-!> @see G2S4_CLOUDBASE_INIT
-!> @see G2S4_CLOUDBASE_RT
-!> @see G2S4_CLOUDBASE_TBE
-!> @see G2S4_CLOUDBASE_FREE
+!> @see G2S4_HEIGHTABOVESEA_PRESET
+!> @see G2S4_HEIGHTABOVESEA_ALLOC
+!> @see G2S4_HEIGHTABOVESEA_INIT
+!> @see G2S4_HEIGHTABOVESEA_RT
+!> @see G2S4_HEIGHTABOVESEA_TBE
+!> @see G2S4_HEIGHTABOVESEA_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_CLOUDBASE_SET_LEVELS'
-PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_SET_LEVELS( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVESEA_SET_LEVELS'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVESEA_SET_LEVELS( THIS, &
 &  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1230,7 +1236,7 @@ PP_THREAD_SAFE FUNCTION G2S4_CLOUDBASE_SET_LEVELS( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_CLOUDBASE_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVESEA_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -1262,16 +1268,16 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! According to the options decide where to set the levels (preset or runlevel)
-  PP_LOG_INFO( 'TypeOfLevel: cloudBase' )
+  PP_LOG_INFO( 'TypeOfLevel: heightAboveSea' )
   IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'cloudBase' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'heightAboveSea' )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
   ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 2_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 102_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface' )
+    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', height in metres)
     PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', height in metres)
     PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
   ENDIF
 
@@ -1322,12 +1328,12 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_CLOUDBASE_SET_LEVELS
+END FUNCTION G2S4_HEIGHTABOVESEA_SET_LEVELS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+#endif
 
-
-END MODULE GRIB2_SECTION4_CLOUDBASE_MOD
+END MODULE GRIB2_SECTION4_HEIGHTABOVESEA_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

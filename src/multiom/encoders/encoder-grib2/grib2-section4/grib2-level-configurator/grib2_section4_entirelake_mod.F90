@@ -1,29 +1,29 @@
 !>
-!> @file grib2_section1_tables_default_mod.F90
+!> @file grib2_section4_entirelake_mod.F90
 !>
-!> @brief Module for managing GRIB2 Section 4 time configuration operations.
+!> @brief Module for managing GRIB2 Section 4 level configuration operations.
 !>
-!> The `GRIB2_SECTION1_TABLES_DEFAULT_MOD` module contains procedures to initialize, allocate,
-!> preset, run, and clean up the resources associated with GRIB2 Section 4 time configuration objects.
+!> The `G2S4_ENTIRELAKE_MOD` module contains procedures to initialize, allocate,
+!> preset, run, and clean up the resources associated with GRIB2 Section 4 level configuration objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
 !>
 !> The key operations covered by this module include:
-!>   - Initialization of GRIB2 Section 4 time configuration objects.
+!>   - Initialization of GRIB2 Section 4 level configuration objects.
 !>   - Allocation of resources.
 !>   - Presetting internal parameters.
-!>   - Managing runtime operations based on input parameters.
+!>   - Managing runlevel operations based on input parameters.
 !>   - Cleaning up and deallocating resources after use.
 !>
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!>   - @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!>   - @see G2S4_ENTIRELAKE_INIT
+!>   - @see G2S4_ENTIRELAKE_ALLOC
+!>   - @see G2S4_ENTIRELAKE_PRESET
+!>   - @see G2S4_ENTIRELAKE_RT
+!>   - @see G2S4_ENTIRELAKE_TBE
+!>   - @see G2S4_ENTIRELAKE_FREE
 !>
 !> @section dependencies
 !>
@@ -52,13 +52,12 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_section1_tables_default_mod.F90'
+#define PP_FILE_NAME 'grib2_section4_entirelake_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_MOD'
-MODULE GRIB2_SECTION1_TABLES_DEFAULT_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION4_ENTIRELAKE_MOD'
+MODULE GRIB2_SECTION4_ENTIRELAKE_MOD
 
   !> Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
   USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
 
 IMPLICIT NONE
@@ -68,104 +67,110 @@ IMPLICIT NONE
 PRIVATE
 
 !>
-!> @brief Type definition for GRIB2 Section 4 time configuration handler.
+!> @brief Type definition for GRIB2 Section 4 level configuration handler.
 !>
-!> The `GRIB2_SECTION1_TABLES_DEFAULT_T` type extends the base class `GRIB_SECTION_BASE_A` and
-!> provides concrete implementations of initialization, allocation, preset, runtime,
-!> encoding checks, and cleanup operations for GRIB2 Section 4 time configuration objects.
+!> The `GRIB2_SECTION4_ENTIRELAKE_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> provides concrete implementations of initialization, allocation, preset, runlevel,
+!> encoding checks, and cleanup operations for GRIB2 Section 4 level configuration objects.
 !>
 !> This type ensures that the required resources are properly managed through thread-safe,
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION1_TABLES_DEFAULT_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_ENTIRELAKE_T
 
   !> Default symbols visibility
   PRIVATE
 
-  INTEGER(KIND=JPIB_K) :: TABLES_VERSION_ = 33_JPIB_K
-  INTEGER(KIND=JPIB_K) :: LOCAL_TABLES_VERSION_ = 0_JPIB_K
-
 CONTAINS
 
   !>
-  !> @brief Initializes the GRIB2 Section 4 time configuration object.
+  !> @brief Initializes the GRIB2 Section 4 level configuration object.
   !>
   !> This procedure sets up the necessary parameters and prepares the
   !> object for use.
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_ENTIRELAKE_INIT_CFG
 
   !>
-  !> @brief Initializes the GRIB2 Section 4 time configuration object.
+  !> @brief Initializes the GRIB2 Section 4 level configuration object.
   !>
   !> This procedure sets up the necessary parameters and prepares the
   !> object for use.
-  !> The preocedure starts from a message and fro the parameters to construct
+  !> The preocedure starts from a message and from the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_ENTIRELAKE_INIT_LAZY
 
   !>
-  !> @brief Allocates resources for the GRIB2 Section 4 time configuration object.
+  !> @brief Allocates resources for the GRIB2 Section 4 level configuration object.
   !>
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_ENTIRELAKE_ALLOC
 
   !>
-  !> @brief Presets the parameters of the GRIB2 Section 4 time configuration object.
+  !> @brief Presets the parameters of the GRIB2 Section 4 level configuration object.
   !>
   !> This procedure configures the internal parameters of the object
-  !> before runtime execution.
+  !> before runlevel execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => GRIB2_SECTION1_TABLES_DEFAULT_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_ENTIRELAKE_PRESET
 
   !>
-  !> @brief Manages the runtime execution of GRIB2 Section 4 time configuration operations.
+  !> @brief Manages the runlevel execution of GRIB2 Section 4 level configuration operations.
   !>
-  !> This procedure handles operations and computations during runtime,
-  !> making use of time and metadata information.
+  !> This procedure handles operations and computations during runlevel,
+  !> making use of level and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_ENTIRELAKE_RT
 
   !>
-  !> @brief Determines if the GRIB2 Section 4 time configuration object needs to be encoded.
+  !> @brief Determines if the GRIB2 Section 4 level configuration object needs to be encoded.
   !>
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_ENTIRELAKE_TBE
 
   !>
-  !> @brief Frees resources allocated for the GRIB2 Section 4 time configuration object.
+  !> @brief Frees resources allocated for the GRIB2 Section 4 level configuration object.
   !>
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => GRIB2_SECTION1_TABLES_DEFAULT_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_ENTIRELAKE_FREE
+
+
+
+  !>
+  !> @brief Set Levels for this object
+  !>
+  !> This procedure set in the grib header all the variables needed to configure a specific level
+  !>
+  ! PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_ENTIRELAKE_SET_LEVELS
 
 END TYPE
 
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: GRIB2_SECTION1_TABLES_DEFAULT_T
+PUBLIC :: GRIB2_SECTION4_ENTIRELAKE_T
 
 CONTAINS
 
 !>
-!> @brief Initializes GRIB2 Section 4 time configuration for a given object using the provided parameters.
+!> @brief Initializes GRIB2 Section 4 level configuration for a given object using the provided parameters.
 !>
-!> This function initializes a GRIB2 Section 4 time configuration object (`THIS`) using the provided model parameters (`PARAMS`)
+!> This function initializes a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`)
 !> and configuration data (`CFG`). The process can be run in verbose mode if specified. The function
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -187,16 +192,16 @@ CONTAINS
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -204,9 +209,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG( THIS, &
   USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
   USE :: YAML_CORE_UTILS_MOD,      ONLY: YAML_CONFIGURATION_T
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: YAML_CORE_UTILS_MOD,      ONLY: YAML_CONFIGURATION_T
-  USE :: YAML_CORE_UTILS_MOD,      ONLY: YAML_CONFIGURATION_HAS_KEY
-  USE :: YAML_CORE_UTILS_MOD,      ONLY: YAML_READ_INTEGER
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -220,20 +222,13 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
-
-  !> Local variables
-  LOGICAL :: HAS_LOCAL_TABLES_VERSION
-  LOGICAL :: HAS_TABLES_VERSION
-
-  !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -251,31 +246,11 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Initialise the section
-  THIS%TYPE_    = 'CONFIGURATOR'
-  THIS%SUBTYPE_ = 'TABLES'
-  THIS%KIND_    = 'DEFAULT'
+  THIS%TYPE_ = 'CONFIGURATOR'
+  THIS%SUBTYPE_ = 'LEVEL'
+  THIS%KIND_   = 'ENTIRELAKE'
 
-  ! Read the optional configuration
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'local-tables-version', HAS_LOCAL_TABLES_VERSION, HOOKS )
-
-  ! Read the subCentre
-  IF (HAS_LOCAL_TABLES_VERSION) THEN
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_INTEGER( CFG, 'local-tables-version',  THIS%LOCAL_TABLES_VERSION_, HOOKS )
-  ELSE
-    THIS%LOCAL_TABLES_VERSION_ = 0_JPIB_K
-  END IF
-
-  ! Read the optional configuration
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'tables-version', HAS_TABLES_VERSION, HOOKS )
-
-  ! Read the subCentre
-  IF (HAS_TABLES_VERSION) THEN
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_INTEGER( CFG, 'tables-version',  THIS%TABLES_VERSION_, HOOKS )
-  ELSE
-    ! Default value of tables version is 33 (almost chosen randomly)
-    ! MIVAL: 33 is the default value for the tables version
-    THIS%TABLES_VERSION_ = 33_JPIB_K
-  END IF
+  ! Time, level and paramId subcomponents of the section
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -299,8 +274,6 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE ( ERRFLAG_UNABLE_TO_READ_CFG )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read from configuration' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -319,19 +292,19 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG
+END FUNCTION G2S4_ENTIRELAKE_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 !>
-!> @brief Initializes GRIB2 Section 4 time configuration for a given object using the provided parameters.
+!> @brief Initializes GRIB2 Section 4 level configuration for a given object using the provided parameters.
 !>
-!> This function initializes a GRIB2 Section 4 time configuration object (`THIS`) using the provided model parameters (`PARAMS`)
+!> This function initializes a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`)
 !> and configuration data (`CFG`). The process can be run in verbose mode if specified. The function
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -354,16 +327,16 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -372,11 +345,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY( THIS, &
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-
-#if defined( PP_HAS_GET_GRIB2_TABLES_CONFIGURATOR_OPTIONS )
-  !> Symbols imported from the mapping module
-  USE :: MARS2GRIB_MAPPING_MOD, ONLY: GET_GRIB2_TABLES_CONFIGURATOR_OPTIONS
-#endif
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -390,7 +358,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -398,9 +366,6 @@ IMPLICIT NONE
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
-
-  !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GET_OPTION=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -419,16 +384,9 @@ IMPLICIT NONE
 
   ! Initialise the section
   THIS%TYPE_ = 'CONFIGURATOR'
-  THIS%SUBTYPE_ = 'TABLES'
-  THIS%KIND_   = 'DEFAULT'
+  THIS%SUBTYPE_ = 'LEVEL'
+  THIS%KIND_   = 'ENTIRELAKE'
 
-  ! Get the optional value from the default configuration
-#if defined( PP_HAS_GET_GRIB2_TABLES_CONFIGURATOR_OPTIONS )
-  !> Symbols imported from the mapping module
-  PP_TRYCALL(ERRFLAG_GET_OPTION) GET_GRIB2_TABLES_CONFIGURATOR_OPTIONS( THIS%SUB_CENTRE_, HOOKS )
-#else
-  PP_DEBUG_CRITICAL_THROW( ERRFLAG_GET_OPTION )
-#endif
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -452,8 +410,6 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE ( ERRFLAG_GET_OPTION )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read from message' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -472,21 +428,21 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY
+END FUNCTION G2S4_ENTIRELAKE_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
 !>
-!> @brief Allocates resources for GRIB2 Section 4 time configuration using the provided parameters.
+!> @brief Allocates resources for GRIB2 Section 4 level configuration using the provided parameters.
 !>
-!> This function allocates resources for a GRIB2 Section 4 time configuration object (`THIS`) using the provided model parameters (`PARAMS`),
+!> This function allocates resources for a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`),
 !> message structure (`MSG`), and metadata (`METADATA`). The process can be run in verbose mode if specified.
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -511,28 +467,26 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_ALLOC'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_ALLOC( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
-  USE :: DATAKINDS_DEF_MOD,        ONLY: JPRD_K
   USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: CONSTANTS_MOD,            ONLY: RAD2DEG
-  USE :: ENUMERATORS_MOD,          ONLY: OPT_CACHE_FULL_E
+  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_ML_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -546,7 +500,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -556,8 +510,12 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: IDX
+
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PV_NOT_ASSOCIATED=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -575,8 +533,12 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
+  ! Allocate the section
+  IF ( MSG%LEVTYPE .EQ. LEVTYPE_ML_E )   THEN
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(PAR%LEVELS%PV), ERRFLAG_PV_NOT_ASSOCIATED )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'PVPresent', .TRUE. )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pv', PAR%LEVELS%PV )
+  END IF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -602,7 +564,9 @@ PP_ERROR_HANDLER
     ! Handle different errors
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
+    CASE (ERRFLAG_PV_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'pv array not associated in the parametrization' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -621,20 +585,20 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
+END FUNCTION G2S4_ENTIRELAKE_ALLOC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Presets GRIB2 Section 4 time configuration using the provided parameters and message data.
+!> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
 !>
-!> This function presets a GRIB2 Section 4 time configuration object (`THIS`) using the provided model parameters (`PARAMS`),
+!> This function presets a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`),
 !> message structure (`MSG`), and metadata (`METADATA`). The process can be run in verbose mode if specified.
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -659,16 +623,16 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_PRESET'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -679,7 +643,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_PRESET( THIS, &
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: ENUMERATORS_MOD,          ONLY: OPT_CACHE_FULL_E
-  USE :: ENUMERATORS_MOD,          ONLY: UNDEF_PARAM_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -693,7 +656,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -705,6 +668,7 @@ IMPLICIT NONE
 
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -723,15 +687,13 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
-
-  IF ( PAR%TABLES_VERSION .NE. UNDEF_PARAM_E ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'tablesVersion', PAR%TABLES_VERSION )
-  ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'tablesVersion', THIS%TABLES_VERSION_ )
-  END IF
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'localTablesVersion', THIS%LOCAL_TABLES_VERSION_ )
+  ! According to the options decide where to set the levels (preset or runlevel)
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 1_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 162_JPIB_K )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -757,7 +719,9 @@ PP_ERROR_HANDLER
     ! Handle different errors
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
+    CASE ( ERRFLAG_SETLEVELS )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -776,28 +740,28 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_PRESET
+END FUNCTION G2S4_ENTIRELAKE_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Executes runtime processing for GRIB2 Section 4 time configuration using provided parameters, message data, and time history.
+!> @brief Executes runlevel processing for GRIB2 Section 4 level configuration using provided parameters, message data, and time history.
 !>
-!> This function performs runtime operations for a GRIB2 Section 4 time configuration object (`THIS`) using the provided model parameters (`PARAMS`),
-!> message structure (`MSG`), current time (`CURR_TIME`), time history (`TIME_HISTORY`), and metadata (`METADATA`).
+!> This function performs runlevel operations for a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`),
+!> message structure (`MSG`), current level (`CURR_TIME`), time history (`TIME_HISTORY`), and metadata (`METADATA`).
 !> The process can be run in verbose mode if specified. The function is thread-safe and returns an error code indicating
-!> the success or failure of the runtime operation.
+!> the success or failure of the runlevel operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section for runtime execution.
+!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section for runlevel execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
-!>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical time data.
-!>   @param [in]    CURR_TIME The current time object of type `CURR_TIME_T` for the runtime phase.
+!>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical level data.
+!>   @param [in]    CURR_TIME The current level object of type `CURR_TIME_T` for the runlevel phase.
 !>   @param [in]    OPT       The encoder options structure of type `ENCODER_OPTIONS_T`.
-!>   @param [inout] METADATA  A pointer to the metadata object of type `METADATA_BASE_A` used during runtime.
-!>   @param [inout] HOOKS     A structure of type `HOOKS_T` that contains hooks for runtime operations.
+!>   @param [inout] METADATA  A pointer to the metadata object of type `METADATA_BASE_A` used during runlevel.
+!>   @param [inout] HOOKS     A structure of type `HOOKS_T` that contains hooks for runlevel operations.
 !>
 !> @return Integer error code (`RET`) indicating success or failure:
 !>         - `0`: Success
@@ -819,16 +783,16 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_RT'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_RT( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -840,6 +804,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME( THIS, &
   USE :: TIME_UTILS_MOD,           ONLY: CURR_TIME_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,          ONLY: OPT_CACHE_FULL_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -853,7 +818,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -867,6 +832,7 @@ IMPLICIT NONE
 
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -884,8 +850,13 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
+  ! According to the options decide where to set the levels (preset or runlevel)
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 1_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 162_JPIB_K )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -910,8 +881,10 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_SETLEVELS )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
     CASE ( ERRFLAG_METADATA )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -930,27 +903,27 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
+END FUNCTION G2S4_ENTIRELAKE_RT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Prepares GRIB2 Section 4 time configuration for encoding based on provided parameters, message data, and time history.
+!> @brief Prepares GRIB2 Section 4 level configuration for encoding based on provided parameters, message data, and time history.
 !>
-!> This function determines whether GRIB2 Section 4 time configuration (`THIS`) is ready to be encoded. It processes the provided model parameters
-!> (`PARAMS`), message structure (`MSG`), current time (`CURR_TIME`), time history (`TIME_HISTORY`), and updates the
-!> `TO_BE_ENCODED` flag accordingly. The function is thread-safe and returns an error code indicating the success or failure
+!> This function determines whether GRIB2 Section 4 level configuration (`THIS`) is ready to be encoded. It processes the provided model parameters
+!> (`PARAMS`), message structure (`MSG`), current level (`CURR_TIME`), time history (`TIME_HISTORY`), and updates the
+!> `TBE` flag accordingly. The function is thread-safe and returns an error code indicating the success or failure
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
-!>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical time data.
-!>   @param [in]    CURR_TIME     The current time object of type `CURR_TIME_T` for time-based encoding decisions.
+!>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical level data.
+!>   @param [in]    CURR_TIME     The current level object of type `CURR_TIME_T` for level-based encoding decisions.
 !>   @param [in]    OPT           The encoder options structure of type `ENCODER_OPTIONS_T`.
-!>   @param [out]   TO_BE_ENCODED Logical flag indicating if the GRIB section should be encoded.
+!>   @param [out]   TBE Logical flag indicating if the GRIB section should be encoded.
 !>   @param [inout] HOOKS         A structure of type `HOOKS_T` that contains hooks for managing encoding-related operations.
 !>
 !> @return Integer error code (`RET`) indicating success or failure:
@@ -972,16 +945,16 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_FREE
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_TBE'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_TBE( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1005,7 +978,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1032,7 +1005,7 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Not condition applicable for section 4 time configuration to avoid encoding the field
+  ! Not condition applicable for section 4 level configuration to avoid encoding the field
   TO_BE_ENCODED = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -1075,20 +1048,20 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
+END FUNCTION G2S4_ENTIRELAKE_TBE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Frees resources associated with GRIB2 Section 4 time configuration object.
+!> @brief Frees resources associated with GRIB2 Section 4 level configuration object.
 !>
-!> This function deallocates and cleans up resources associated with the GRIB2 Section 4 time configuration object (`THIS`).
+!> This function deallocates and cleans up resources associated with the GRIB2 Section 4 level configuration object (`THIS`).
 !> The process can be run in verbose mode for additional output. The function is thread-safe and returns an
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION1_TABLES_DEFAULT_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1104,15 +1077,15 @@ END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_INIT
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_ALLOCATE
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_PRESET
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_RUNTIME
-!> @see GRIB2_SECTION1_TABLES_DEFAULT_TO_BE_ENCODED
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION1_TABLES_DEFAULT_FREE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1131,7 +1104,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_FREE( THIS, OPT, HOOKS ) R
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION1_TABLES_DEFAULT_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1193,11 +1166,174 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION1_TABLES_DEFAULT_FREE
+END FUNCTION G2S4_ENTIRELAKE_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-END MODULE GRIB2_SECTION1_TABLES_DEFAULT_MOD
+
+#if 0
+!>
+!> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
+!>
+!> This function presets a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`),
+!> message structure (`MSG`), to set the metadata (`METADATA`).
+!>
+!> @section interface
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_ENTIRELAKE_T` representing the GRIB section to be preset.
+!>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
+!>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
+!>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
+!>   @param [inout] METADATA A pointer to the metadata object of type `METADATA_BASE_A` used for presetting the section.
+!>   @param [inout] HOOKS    A structure of type `HOOKS_T` that contains hooks for the preset operation.
+!>
+!> @return Integer error code (`RET`) indicating success or failure:
+!>         - `0`: Success
+!>         - `1`: Failure
+!>
+!> @section dependencies
+!>
+!> @subsection local dependencies
+!>
+!>   - @dependency [TYPE] OM_DATA_TYPES_MOD::MODEL_PAR_T
+!>   - @dependency [TYPE] OM_DATA_TYPES_MOD::MESSAGE_T
+!>   - @dependency [TYPE] METADATA_BASE_MOD::METADATA_BASE_A
+!>
+!> @subsection special dependencies
+!>
+!>   - @dependency [*] PP_DEBUG_USE_VARS::*
+!>   - @dependency [*] PP_LOG_USE_VARS::*
+!>   - @dependency [*] PP_TRACE_USE_VARS::*
+!>
+!> @see G2S4_ENTIRELAKE_PRESET
+!> @see G2S4_ENTIRELAKE_ALLOC
+!> @see G2S4_ENTIRELAKE_INIT
+!> @see G2S4_ENTIRELAKE_RT
+!> @see G2S4_ENTIRELAKE_TBE
+!> @see G2S4_ENTIRELAKE_FREE
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_ENTIRELAKE_SET_LEVELS'
+PP_THREAD_SAFE FUNCTION G2S4_ENTIRELAKE_SET_LEVELS( THIS, &
+&  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
+  USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(GRIB2_SECTION4_ENTIRELAKE_T),     INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA, ERRFLAG_METADATA )
+
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! According to the options decide where to set the levels (preset or runlevel)
+  PP_LOG_INFO( 'TypeOfLevel: entireLake' )
+  IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'entireLake' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+  ELSE
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 1_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 162_JPIB_K )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  ENDIF
+
+
+
+  ! Trace end of procedure (on success)
+  PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_METADATA )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
+    CASE ( ERRFLAG_SETLEVELS )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_ENTIRELAKE_SET_LEVELS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+#endif
+
+END MODULE GRIB2_SECTION4_ENTIRELAKE_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

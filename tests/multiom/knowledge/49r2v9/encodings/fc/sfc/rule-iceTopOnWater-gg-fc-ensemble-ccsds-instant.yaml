@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-surface-gg-fc-deterministic-ccsds-instant'
+name: 'rule-iceTopOnWater-gg-fc-ensemble-ccsds-instant'
 
 #
 # Future use
@@ -17,15 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '26:32', '34:43', '66:67', 74,
-        129, 134, 139, 141, 148, 159, '160:163', '165:168',
-        170, '172:174', '186:188', 198, 202, 207, '229:232',
-        '234:236', '243:245', 3020,
-        174096, 228003, 228012, '228015:228020',
-        228024, 228029, '228046:228048',
-        '228131:228132', '228217:228221',
-        228227, 228239, 228240, 228241, '228246:228247',
-        260015, 260048, 260109, 260121, 260123, 262139, 262140
+        228013
       ]
 
     - type: 'levtype'
@@ -41,7 +33,6 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
-      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -86,7 +77,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 0
+    template-number: 1
 
     point-in-time-configurator:
       type: 'default'
@@ -95,7 +86,10 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
+      type: 'icetoponwater'
+
+    ensemble-configurator:
+      type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:

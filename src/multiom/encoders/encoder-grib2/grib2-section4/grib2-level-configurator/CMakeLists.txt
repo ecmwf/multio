@@ -50,16 +50,16 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icelayerabovewatersurface_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icelayeronwater_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icelayerundersnowonwater_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icetoponwater_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icetoponwater_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_icetopundersnowonwater_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_indefinitesoildepth_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_isobariclayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_isothermal_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_isothermzero_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lakebottom_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lakebottom_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lowcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_maxwind_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meansea_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meansea_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mediumcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meltpondbottom_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meltpondtop_mod.F90
@@ -67,11 +67,11 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerdepthbydiffusivity_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerdepthbytemperature_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerdepthgeneric_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerparcel_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixinglayer_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mostunstableparcel_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerparcel_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixinglayer_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mostunstableparcel_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_neutralbuoyancy_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_nominaltop_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_nominaltop_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_oceanmodellayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_oceanmodel_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_oceansurface_mod.F90
@@ -93,7 +93,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_soil_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_thetalayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_totalsoillayer_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_tropopause_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_tropopause_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_urbancanyon_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_walllayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_wall_mod.F90

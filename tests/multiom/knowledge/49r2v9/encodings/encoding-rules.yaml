@@ -1,10 +1,59 @@
 encoding-rules:
 
+
   # Gridded hl for forecast
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/hl/rule-hl-gg-fc-deterministic-ccsds-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/hl/rule-hl-gg-fc-deterministic-simple-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/hl/rule-hl-gg-fc-ensemble-ccsds-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/hl/rule-hl-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded nominalTop for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-nominalTop-gg-fc-deterministic-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-nominalTop-gg-fc-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-nominalTop-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-nominalTop-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
+
+  # Gridded mixingLayer for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixingLayer-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixingLayer-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixingLayer-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixingLayer-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded mostUnstableParcel for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mostUnstableParcel-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mostUnstableParcel-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mostUnstableParcel-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mostUnstableParcel-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded tropopause for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-tropopause-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-tropopause-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-tropopause-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-tropopause-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded meanSea for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixedLayerParcel-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixedLayerParcel-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixedLayerParcel-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mixedLayerParcel-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded meanSea for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-meanSea-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-meanSea-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-meanSea-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-meanSea-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded iceOnWater for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lakeBottom-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lakeBottom-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lakeBottom-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lakeBottom-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded iceOnWater for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceTopOnWater-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceTopOnWater-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceTopOnWater-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceTopOnWater-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded surfaces for forecast
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-surface-gg-fc-deterministic-ccsds-instant.yaml'

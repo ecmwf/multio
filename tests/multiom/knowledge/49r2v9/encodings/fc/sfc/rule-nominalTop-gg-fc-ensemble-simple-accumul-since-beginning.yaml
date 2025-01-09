@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-surface-gg-fc-deterministic-ccsds-instant'
+name: 'rule-nominalTop-gg-fc-ensemble-simple-accumul-since-beginning'
 
 #
 # Future use
@@ -17,15 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '26:32', '34:43', '66:67', 74,
-        129, 134, 139, 141, 148, 159, '160:163', '165:168',
-        170, '172:174', '186:188', 198, 202, 207, '229:232',
-        '234:236', '243:245', 3020,
-        174096, 228003, 228012, '228015:228020',
-        228024, 228029, '228046:228048',
-        '228131:228132', '228217:228221',
-        228227, 228239, 228240, 228241, '228246:228247',
-        260015, 260048, 260109, 260121, 260123, 262139, 262140
+        '178:179', '208:209', 212
       ]
 
     - type: 'levtype'
@@ -41,11 +33,10 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
-      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'simple'
 
 
 #
@@ -86,20 +77,25 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 0
+    template-number: 11
 
-    point-in-time-configurator:
-      type: 'default'
+    time-statistics-configurator:
+      type: 'since-beginning-of-forecast'
+      type-of-statistical-processing: 'accumul'
+      encode-step-zero: true
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
+      type: 'nominaltop'
+
+    ensemble-configurator:
+      type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 42
+    template-number: 0
 
 
 

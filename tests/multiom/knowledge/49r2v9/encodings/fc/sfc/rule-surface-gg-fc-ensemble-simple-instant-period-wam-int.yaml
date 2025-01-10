@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-simple-instant-wam-int'
+name: 'rule-sfc-gg-fc-ensemble-simple-instant-period-wam-int'
 
 #
 # Future use
@@ -17,9 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '140098:140105', '140112:140129', '140207:140209',
-        '140211:140212', '140214:140239', 140244,
-        '140252:140254'
+        '140114:140120'
       ]
 
     - type: 'levtype'
@@ -79,9 +77,12 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 104
 
     point-in-time-configurator:
+      type: 'default'
+
+    period-configurator:
       type: 'default'
 
     param-configurator:

@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-deterministic-simple-instant-wam-int'
+name: 'rule-heightAboveGround-gg-fc-deterministic-simple-instant'
 
 #
 # Future use
@@ -17,9 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '140098:140105', '140112:140129', '140207:140209',
-        '140211:140212', '140214:140239', 140244,
-        '140252:140254'
+        '165:168', 207, 174096, 228029, '228131:228132'
       ]
 
     - type: 'levtype'
@@ -89,7 +87,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
+      type: 'heightaboveground'
 
   # Section 5: Data Representation Section
   data-representation-section:

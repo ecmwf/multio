@@ -15,6 +15,7 @@ add_subdirectory(grib2-param-configurator)
 add_subdirectory(grib2-level-configurator)
 add_subdirectory(grib2-ensemble-configurator)
 add_subdirectory(grib2-dirfreq-configurator)
+add_subdirectory(grib2-period-configurator)
 add_subdirectory(grib2-satellite-configurator)
 
 # Collect source files in module2
@@ -59,6 +60,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_SOURCES
   ${MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_ENSEMBLE_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_DIRFREQ_SOURCES}
+  ${MULTIOM_ENCODER_GRIB2_SECTION4_PERIOD_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_SATELLITE_SOURCES}
   CACHE INTERNAL "List of all sources in encoders directory"
 )

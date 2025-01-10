@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-ccsds-instant-wam-int'
+name: 'rule-sfc-gg-fc-deterministic-simple-instant-wam-int'
 
 #
 # Future use
@@ -17,7 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '140098:140105', '140112:140129', '140207:140209',
+        '140098:140105', '140112:140113', '140121:140129', '140207:140209',
         '140211:140212', '140214:140239', 140244,
         '140252:140254'
       ]
@@ -35,10 +35,11 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'simple'
 
 
 #
@@ -79,7 +80,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
@@ -90,12 +91,9 @@ encoder:
     level-configurator:
       type: 'surface'
 
-    ensemble-configurator:
-      type: 'default'
-
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 42
+    template-number: 0
 
 
 

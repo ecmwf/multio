@@ -683,6 +683,10 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ITMIN
+  INTEGER(KIND=JPIB_K) :: ITMAX
+
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
 
@@ -706,6 +710,26 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
 
+  ! Extract ITMIN and ITMAX
+  ITMIN = PAR%WAVE%ITMIN
+  ITMAX = PAR%WAVE%ITMAX
+
+  ! Logic to preset the wave parameters
+  IF ( ITMIN .NE. 0 .AND. ITMAX .NE. 0 ) THEN
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 7_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfLowerWavePeriodLimit', 0_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfLowerWavePeriodLimit', ITMIN)
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfUpperWavePeriodLimit', 0_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfUpperWavePeriodLimit', ITMAX)
+  ELSEIF ( ITMIN .NE. 0 ) THEN
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 3_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfLowerWavePeriodLimit', 0_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfLowerWavePeriodLimit', ITMIN )
+  ELSEIF ( ITMAX .NE. 0 ) THEN
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 4_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfUpperWavePeriodLimit', 0_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfUpperWavePeriodLimit', ITMAX )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )

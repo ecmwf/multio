@@ -1,4 +1,5 @@
 add_subdirectory(knowledge)
+add_subdirectory(scripts)
 
 file(GLOB output_manager_main_file RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
@@ -21,9 +22,11 @@ install(
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/run.sh
     ${CMAKE_BINARY_DIR}/bin/run.sh
-    COPYONLY)
+    COPYONLY
+)
 
 install(
     FILES       ${CMAKE_CURRENT_SOURCE_DIR}/run.sh
     DESTINATION bin
-    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)

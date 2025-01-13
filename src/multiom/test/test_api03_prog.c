@@ -12,7 +12,8 @@ printf( "Welcome from c API (test03) %p\n", dictionary_01 );
 ret = multio_grib2_dict_create( &dictionary_01, "mars" );
 
 printf( "Set from c API (test01) \n" );
-ret = multio_grib2_dict_set( dictionary_01, "mars", "asfsdfghjfjlghldkjsghls" );
+ret = multio_grib2_dict_set( dictionary_01, "stream", "oper" );
+ret = multio_grib2_dict_set( dictionary_01, "type", "fc" );
 
 printf( "Destroy from c API (test01) \n" );
 

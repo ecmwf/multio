@@ -9,6 +9,16 @@ namespace multio::message {
 
 static std::string PARAMETRIZATION_PAYLOAD_KEY = "payloadKey";
 
+/** Global singleton metadata object that contains information that may be send once at the beginning of a run
+ * 
+ *  Important: Key-value pairs are ment to be constant. It is possible to update a key with the same value multiple times.
+ *             However, to enforce consistency a key can not be updated with a different value - this will throw an exception to
+ *             notify about inconsistency.
+ *
+ *             This singleton object is shared accross multiple multio instances (e.g. IFS and NEMO). Hence it is assumed that
+ *             all global key-value pairs of different models are exclusive to each other or contain the same value.
+ *
+ */
 class Parametrization {
 public:
     Parametrization() = default;

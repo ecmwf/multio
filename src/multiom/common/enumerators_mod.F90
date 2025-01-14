@@ -434,6 +434,54 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: FLT_COMPOSE_ONE_E=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_FLT_COMPOSE=4_JPIB_K
 
+  !> Enumerators for origin/centre
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_AMMC=1_JPIB_K         ! Melbourne (WMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_RUMS=4_JPIB_K         ! Moscow (WMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_KWBC=7_JPIB_K         ! US National Weather Service - NCEP (WMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_FAPR=24_JPIB_K        ! Pretoria (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_VABB=28_JPIB_K        ! New Delhi (IMD)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_DEMS=29_JPIB_K        ! New Delhi (NCMRWF)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_RJTD=34_JPIB_K        ! Japanese Meteorological Agency - Tokyo (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_BABJ=38_JPIB_K        ! Beijing (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_RKSL=40_JPIB_K        ! Seoul
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_SABM=41_JPIB_K        ! Buenos Aires (RSMC/RAFC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_SBSJ=46_JPIB_K        ! Brasilian Space Agency - INPE
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_CWAO=54_JPIB_K        ! Canadian Meteorological Service - Montreal (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_FNMO=58_JPIB_K        ! US Navy - Fleet Numerical Oceanography Center
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_NZKL=69_JPIB_K        ! Wellington (RSMC/RAFC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EGRR=74_JPIB_K        ! U.K. Met Office - Exeter
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EDZW=78_JPIB_K        ! Offenbach (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_CNMC=80_JPIB_K        ! Rome (RSMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_ESWI=82_JPIB_K        ! Norrkoping
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_LFPW=84_JPIB_K        ! French Weather Service - Toulouse
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_LFPW_2=85_JPIB_K        ! French Weather Service - Toulouse
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EFKL=86_JPIB_K        ! Helsinki
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_ENMI=88_JPIB_K        ! Oslo
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EKMI=94_JPIB_K        ! Copenhagen
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_ECMF=98_JPIB_K        ! European Centre for Medium-Range Weather Forecasts
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_KNMI=99_JPIB_K        ! DeBilt, Netherlands
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_NASA=173_JPIB_K       ! US National Aeronautics and Space Administration (NASA)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_WIIX=195_JPIB_K       ! Indonesia (NMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_NIWA=204_JPIB_K       ! National Institute of Water and Atmospheric Research (NIWA - New Zealand)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_BIRK=213_JPIB_K       ! Reykjavik
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_LEMM=214_JPIB_K       ! INM Madrid
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_LSSW=215_JPIB_K       ! Zurich
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_HABP=218_JPIB_K       ! Budapest
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_LOWM=224_JPIB_K       ! Austria
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EBUM=227_JPIB_K       ! Belgium (NMC)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EIDB=233_JPIB_K       ! Dublin
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_INGV=235_JPIB_K       ! INGV
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_CRFC=239_JPIB_K       ! CERFAX
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_COSMO=250_JPIB_K      ! COnsortium for Small scale MOdelling (COSMO)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_MPIM=252_JPIB_K       ! Max Planck Institute for Meteorology (MPI-M)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_EUMS=254_JPIB_K       ! EUMETSAT Operation Centre
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_CONSENSUS=255_JPIB_K  ! Consensus
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_ANSO=291_JPIB_K       ! Alliance of International Science Organizations (Beijing, China)
+  INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_UFZ=292_JPIB_K        ! Helmholtz Centre for Environmental Research
+  
+  
+  
+
 
   !> Binary operations for integer operations
   INTEGER(KIND=JPIB_K), PARAMETER :: INTOP_UNARY_NEG_E=1_JPIB_K
@@ -906,6 +954,51 @@ IMPLICIT NONE
   PUBLIC :: TYPE_OF_TIME_RANGE_FIXED_SIZE_E
   PUBLIC :: N_TYPE_OF_TIME_RANGE
 
+  ! Enumerators for origin/centre
+  PUBLIC :: ORIGIN_AMMC
+  PUBLIC :: ORIGIN_RUMS
+  PUBLIC :: ORIGIN_KWBC
+  PUBLIC :: ORIGIN_FAPR
+  PUBLIC :: ORIGIN_VABB
+  PUBLIC :: ORIGIN_DEMS
+  PUBLIC :: ORIGIN_RJTD
+  PUBLIC :: ORIGIN_BABJ
+  PUBLIC :: ORIGIN_RKSL
+  PUBLIC :: ORIGIN_SABM
+  PUBLIC :: ORIGIN_SBSJ
+  PUBLIC :: ORIGIN_CWAO
+  PUBLIC :: ORIGIN_FNMO
+  PUBLIC :: ORIGIN_NZKL
+  PUBLIC :: ORIGIN_EGRR
+  PUBLIC :: ORIGIN_EDZW
+  PUBLIC :: ORIGIN_CNMC
+  PUBLIC :: ORIGIN_ESWI
+  PUBLIC :: ORIGIN_LFPW
+  PUBLIC :: ORIGIN_LFPW_2
+  PUBLIC :: ORIGIN_EFKL
+  PUBLIC :: ORIGIN_ENMI
+  PUBLIC :: ORIGIN_EKMI
+  PUBLIC :: ORIGIN_ECMF
+  PUBLIC :: ORIGIN_KNMI
+  PUBLIC :: ORIGIN_NASA
+  PUBLIC :: ORIGIN_WIIX
+  PUBLIC :: ORIGIN_NIWA
+  PUBLIC :: ORIGIN_BIRK
+  PUBLIC :: ORIGIN_LEMM
+  PUBLIC :: ORIGIN_LSSW
+  PUBLIC :: ORIGIN_HABP
+  PUBLIC :: ORIGIN_LOWM
+  PUBLIC :: ORIGIN_EBUM
+  PUBLIC :: ORIGIN_EIDB
+  PUBLIC :: ORIGIN_INGV
+  PUBLIC :: ORIGIN_CRFC
+  PUBLIC :: ORIGIN_COSMO
+  PUBLIC :: ORIGIN_MPIM
+  PUBLIC :: ORIGIN_EUMS
+  PUBLIC :: ORIGIN_CONSENSUS
+  PUBLIC :: ORIGIN_ANSO
+  PUBLIC :: ORIGIN_UFZ
+
   ! Enumerators for the integer filters to be used in filtering operations
   PUBLIC :: FLT_INT_MATCH_E
   PUBLIC :: FLT_INT_IGNORE_E
@@ -1027,6 +1120,10 @@ IMPLICIT NONE
   PUBLIC :: IPREFIX2ILEVTYPE
   PUBLIC :: IPARAMTYPE2CPARAMTYPE
   PUBLIC :: CPARAMTYPE2IPARAMTYPE
+  PUBLIC :: CORIGIN2IORIGIN
+  PUBLIC :: IORIGIN2CORIGIN
+  PUBLIC :: CINT2IINT
+  PUBLIC :: IINT2CINT
 
 CONTAINS
 
@@ -7924,6 +8021,635 @@ PP_ERROR_HANDLER
 END FUNCTION CPARAMTYPE2IPARAMTYPE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IORIGIN2CORIGIN'
+PP_THREAD_SAFE FUNCTION IORIGIN2CORIGIN( IORIGIN, CORIGIN, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: LOG_UTILS_MOD,     ONLY: TO_STRING
+  USE :: LOG_UTILS_MOD,     ONLY: MAX_STR_LEN
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IORIGIN
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CORIGIN
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+  
+  !> Local variables
+  CHARACTER(LEN=MAX_STR_LEN) :: CTEMP
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ERROR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CORIGIN = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IORIGIN )
+
+  case ( ORIGIN_AMMC )
+    CORIGIN =  'ammc'
+  case ( ORIGIN_RUMS )
+    CORIGIN =  'rums'
+  case ( ORIGIN_KWBC )
+    CORIGIN =  'kwbc'
+  case ( ORIGIN_FAPR )
+    CORIGIN =  'fapr'
+  case ( ORIGIN_VABB )
+    CORIGIN =  'vabb'
+  case ( ORIGIN_DEMS )
+    CORIGIN =  'dems'
+  case ( ORIGIN_RJTD )
+    CORIGIN =  'rjtd'
+  case ( ORIGIN_BABJ )
+    CORIGIN =  'babj'
+  case ( ORIGIN_RKSL )
+    CORIGIN =  'rksl'
+  case ( ORIGIN_SABM )
+    CORIGIN =  'sabm'
+  case ( ORIGIN_SBSJ )
+    CORIGIN =  'sbsj'
+  case ( ORIGIN_CWAO )
+    CORIGIN =  'cwao'
+  case ( ORIGIN_FNMO )
+    CORIGIN =  'fnmo'
+  case ( ORIGIN_NZKL )
+    CORIGIN =  'nzkl'
+  case ( ORIGIN_EGRR )
+    CORIGIN =  'egrr'
+  case ( ORIGIN_EDZW )
+    CORIGIN =  'edzw'
+  case ( ORIGIN_CNMC )
+    CORIGIN =  'cnmc'
+  case ( ORIGIN_ESWI )
+    CORIGIN =  'eswi'
+  case ( ORIGIN_LFPW )
+    CORIGIN =  'lfpw'
+  case ( ORIGIN_LFPW_2 )
+    CORIGIN =  'lfpw'
+  case ( ORIGIN_EFKL )
+    CORIGIN =  'efkl'
+  case ( ORIGIN_ENMI )
+    CORIGIN =  'enmi'
+  case ( ORIGIN_EKMI )
+    CORIGIN =  'ekmi'
+  case ( ORIGIN_ECMF )
+    CORIGIN =  'ecmf'
+  case ( ORIGIN_KNMI )
+    CORIGIN =  'knmi'
+  case ( ORIGIN_NASA )
+    CORIGIN =  'nasa'
+  case ( ORIGIN_WIIX )
+    CORIGIN =  'wiix'
+  case ( ORIGIN_NIWA )
+    CORIGIN =  'niwa'
+  case ( ORIGIN_BIRK )
+    CORIGIN =  'birk'
+  case ( ORIGIN_LEMM )
+    CORIGIN =  'lemm'
+  case ( ORIGIN_LSSW )
+    CORIGIN =  'lssw'
+  case ( ORIGIN_HABP )
+    CORIGIN =  'habp'
+  case ( ORIGIN_LOWM )
+    CORIGIN =  'lowm'
+  case ( ORIGIN_EBUM )
+    CORIGIN =  'ebum'
+  case ( ORIGIN_EIDB )
+    CORIGIN =  'eidb'
+  case ( ORIGIN_INGV )
+    CORIGIN =  'ingv'
+  case ( ORIGIN_CRFC )
+    CORIGIN =  'crfc'
+  case ( ORIGIN_COSMO )
+    CORIGIN =  'cosmo'
+  case ( ORIGIN_MPIM )
+    CORIGIN =  'mpim'
+  case ( ORIGIN_EUMS )
+    CORIGIN =  'eums'
+  case ( ORIGIN_CONSENSUS )
+    CORIGIN =  'consensus'
+  case ( ORIGIN_ANSO )
+    CORIGIN =  'anso'
+  case ( ORIGIN_UFZ )
+    CORIGIN =  'ufz'
+  CASE DEFAULT
+    PP_TRYCALL(ERRFLAG_CONVERT_ERROR) TO_STRING(IORIGIN, CTEMP, HOOKS)
+    PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(CTEMP).GT.16_JPIB_K, ERRFLAG_CONVERT_ERROR )
+    CORIGIN=CTEMP
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CONVERT_ERROR)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IORIGIN
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'could not convert iorigin: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IORIGIN2CORIGIN
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CORIGIN2IORIGIN'
+PP_THREAD_SAFE FUNCTION CORIGIN2IORIGIN( CORIGIN, IORIGIN, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_INTEGER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CORIGIN
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IORIGIN
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CORIGIN)) :: LOC_CORIGIN
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ORIGIN=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IORIGIN = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CORIGIN, LOC_CORIGIN, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CORIGIN)) )
+  
+  case ( 'ammc' )
+    IORIGIN = ORIGIN_AMMC
+  case ( 'rums' )
+    IORIGIN = ORIGIN_RUMS
+  case ( 'kwbc' )
+    IORIGIN = ORIGIN_KWBC
+  case ( 'fapr' )
+    IORIGIN = ORIGIN_FAPR
+  case ( 'vabb' )
+    IORIGIN = ORIGIN_VABB
+  case ( 'dems' )
+    IORIGIN = ORIGIN_DEMS
+  case ( 'rjtd' )
+    IORIGIN = ORIGIN_RJTD
+  case ( 'babj' )
+    IORIGIN = ORIGIN_BABJ
+  case ( 'rksl' )
+    IORIGIN = ORIGIN_RKSL
+  case ( 'sabm' )
+    IORIGIN = ORIGIN_SABM
+  case ( 'sbsj' )
+    IORIGIN = ORIGIN_SBSJ
+  case ( 'cwao' )
+    IORIGIN = ORIGIN_CWAO
+  case ( 'fnmo' )
+    IORIGIN = ORIGIN_FNMO
+  case ( 'nzkl' )
+    IORIGIN = ORIGIN_NZKL
+  case ( 'egrr' )
+    IORIGIN = ORIGIN_EGRR
+  case ( 'edzw' )
+    IORIGIN = ORIGIN_EDZW
+  case ( 'cnmc' )
+    IORIGIN = ORIGIN_CNMC
+  case ( 'eswi' )
+    IORIGIN = ORIGIN_ESWI
+  case ( 'lfpw' )
+    IORIGIN = ORIGIN_LFPW
+  case ( 'efkl' )
+    IORIGIN = ORIGIN_EFKL
+  case ( 'enmi' )
+    IORIGIN = ORIGIN_ENMI
+  case ( 'ekmi' )
+    IORIGIN = ORIGIN_EKMI
+  case ( 'ecmf' )
+    IORIGIN = ORIGIN_ECMF
+  case ( 'knmi' )
+    IORIGIN = ORIGIN_KNMI
+  case ( 'nasa' )
+    IORIGIN = ORIGIN_NASA
+  case ( 'wiix' )
+    IORIGIN = ORIGIN_WIIX
+  case ( 'niwa' )
+    IORIGIN = ORIGIN_NIWA
+  case ( 'birk' )
+    IORIGIN = ORIGIN_BIRK
+  case ( 'lemm' )
+    IORIGIN = ORIGIN_LEMM
+  case ( 'lssw' )
+    IORIGIN = ORIGIN_LSSW
+  case ( 'habp' )
+    IORIGIN = ORIGIN_HABP
+  case ( 'lowm' )
+    IORIGIN = ORIGIN_LOWM
+  case ( 'ebum' )
+    IORIGIN = ORIGIN_EBUM
+  case ( 'eidb' )
+    IORIGIN = ORIGIN_EIDB
+  case ( 'ingv' )
+    IORIGIN = ORIGIN_INGV
+  case ( 'crfc' )
+    IORIGIN = ORIGIN_CRFC
+  case ( 'cosmo' )
+    IORIGIN = ORIGIN_COSMO
+  case ( 'mpim' )
+    IORIGIN = ORIGIN_MPIM
+  case ( 'eums' )
+    IORIGIN = ORIGIN_EUMS
+  case ( 'consensus' )
+    IORIGIN = ORIGIN_CONSENSUS
+  case ( 'anso' )
+    IORIGIN = ORIGIN_ANSO
+  case ( 'ufz' )
+    IORIGIN = ORIGIN_UFZ
+  CASE DEFAULT
+  
+    PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(CORIGIN, IORIGIN, HOOKS)
+    
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'corigin: '//TRIM(ADJUSTL(CORIGIN)) )
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'corigin: '//TRIM(ADJUSTL(CORIGIN)) )
+    CASE (ERRFLAG_UNKNOWN_ORIGIN)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown corigin: '//TRIM(ADJUSTL(CORIGIN)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CORIGIN2IORIGIN
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IINT2CINT'
+PP_THREAD_SAFE FUNCTION IINT2CINT( IINT, CINT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: LOG_UTILS_MOD,     ONLY: TO_STRING
+  USE :: LOG_UTILS_MOD,     ONLY: MAX_STR_LEN
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IINT
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CINT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+  
+  !> Local variables
+  CHARACTER(LEN=MAX_STR_LEN) :: CTEMP
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ERROR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CINT = REPEAT(' ', 16)
+
+  PP_TRYCALL(ERRFLAG_CONVERT_ERROR) TO_STRING(IINT, CTEMP, HOOKS)
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(CTEMP).GT.16_JPIB_K, ERRFLAG_CONVERT_ERROR )
+  CINT=CTEMP
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CONVERT_ERROR)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IINT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'could not convert int: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IINT2CINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CINT2IINT'
+PP_THREAD_SAFE FUNCTION CINT2IINT( CINT, IINT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_INTEGER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CINT
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IINT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CINT)) :: LOC_CINT
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_INT=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IINT = UNDEF_PARAM_E
+
+ 
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(CINT, IINT, HOOKS)
+    
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'cint: '//TRIM(ADJUSTL(CINT)) )
+    CASE (ERRFLAG_UNKNOWN_INT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown corigin: '//TRIM(ADJUSTL(CINT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CINT2IINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 
 END MODULE ENUMERATORS_MOD
 #undef PP_SECTION_NAME

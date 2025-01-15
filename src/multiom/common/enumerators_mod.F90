@@ -8485,12 +8485,15 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   !> Initialization of the output variable
+  CTEMP = REPEAT(' ', MAX_STR_LEN)
   CINT = REPEAT(' ', 16)
+  
 
+  ! TODO ADJUSTL in TO_STRING
   PP_TRYCALL(ERRFLAG_CONVERT_ERROR) TO_STRING(IINT, CTEMP, HOOKS)
   PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(CTEMP).GT.16_JPIB_K, ERRFLAG_CONVERT_ERROR )
-  CINT=CTEMP
-
+  CINT=TRIM(CTEMP)
+  
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
@@ -8597,7 +8600,7 @@ IMPLICIT NONE
   !> Initialization of the output variable
   IINT = UNDEF_PARAM_E
 
- 
+
   PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(CINT, IINT, HOOKS)
     
   ! Trace end of procedure (on success)

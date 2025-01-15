@@ -40,7 +40,7 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
 
 void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
-    bool doOutput = onlyFields_ ? msg.tag() == message::Message::Tag::Field ? true : false : true;
+    bool doOutput = onlyFields_ ? (msg.tag() == message::Message::Tag::Field) : true;
     if (doOutput) {
         if (!prefix_.empty()) {
             (*os_) << prefix_ << ": ";

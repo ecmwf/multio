@@ -1124,6 +1124,8 @@ IMPLICIT NONE
   PUBLIC :: IORIGIN2CORIGIN
   PUBLIC :: CINT2IINT
   PUBLIC :: IINT2CINT
+  PUBLIC :: CFLOAT2IFLOAT
+  PUBLIC :: IFLOAT2CFLOAT
 
 CONTAINS
 
@@ -8553,7 +8555,6 @@ PP_THREAD_SAFE FUNCTION CINT2IINT( CINT, IINT, HOOKS ) RESULT(RET)
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
   USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_INTEGER
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -8579,7 +8580,6 @@ IMPLICIT NONE
   CHARACTER(LEN=LEN_TRIM(CINT)) :: LOC_CINT
 
   !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_INT=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -8628,8 +8628,6 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'cint: '//TRIM(ADJUSTL(CINT)) )
-    CASE (ERRFLAG_UNKNOWN_INT)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown corigin: '//TRIM(ADJUSTL(CINT)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -8649,6 +8647,227 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION CINT2IINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFLOAT2CFLOAT'
+PP_THREAD_SAFE FUNCTION IFLOAT2CFLOAT( IFLOAT, CFLOAT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: LOG_UTILS_MOD,     ONLY: TO_STRING
+  USE :: LOG_UTILS_MOD,     ONLY: MAX_STR_LEN
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  REAL(KIND=JPRD_K),    INTENT(IN)    :: IFLOAT
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CFLOAT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+  
+  !> Local variables
+  CHARACTER(LEN=MAX_STR_LEN) :: CTEMP
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ERROR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CTEMP = REPEAT(' ', MAX_STR_LEN)
+  CFLOAT = REPEAT(' ', 16)
+  
+
+  ! TODO ADJUSTL in TO_STRING
+  PP_TRYCALL(ERRFLAG_CONVERT_ERROR) TO_STRING(IFLOAT, CTEMP, HOOKS)
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(CTEMP).GT.16_JPIB_K, ERRFLAG_CONVERT_ERROR )
+  CFLOAT=TRIM(CTEMP)
+  
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CONVERT_ERROR)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IFLOAT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'could not convert float: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IFLOAT2CFLOAT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CFLOAT2IFLOAT'
+PP_THREAD_SAFE FUNCTION CFLOAT2IFLOAT( CFLOAT, IFLOAT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_REAL64
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CFLOAT
+  REAL(KIND=JPRD_K),    INTENT(OUT)   :: IFLOAT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+  INTEGER(KIND=JPIB_K) :: ERR
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CFLOAT)) :: LOC_CFLOAT
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IFLOAT = UNDEF_PARAM_E
+  
+  ! READ(CFLOAT,'(F11.4)',IOSTAT=ERR) IFLOAT
+
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_REAL64(CFLOAT, IFLOAT, HOOKS)
+    
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'cfloat: '//TRIM(ADJUSTL(CFLOAT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CFLOAT2IFLOAT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

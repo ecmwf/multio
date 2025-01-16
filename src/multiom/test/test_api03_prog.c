@@ -201,16 +201,16 @@ printf("initialstep: %s\n", readVal);
 assert(strcmp(readVal, "2") == 0);
 free(readVal);
 
-ret = multio_grib2_dict_set( dictionary_02, "lengthoftimestepinseconds", "30" );
+ret = multio_grib2_dict_set( dictionary_02, "lengthoftimestepinseconds", "60" );
 ret = multio_grib2_dict_get( dictionary_02, "lengthoftimestepinseconds", &readVal );
 printf("lengthoftimestepinseconds: %s\n", readVal);
-assert(strcmp(readVal, "30") == 0);
+assert(strcmp(readVal, "60") == 0);
 free(readVal);
 
-ret = multio_grib2_dict_set( dictionary_02, "lengthoftimerangeinseconds", "600" );
+ret = multio_grib2_dict_set( dictionary_02, "lengthoftimerangeinseconds", "3600" );
 ret = multio_grib2_dict_get( dictionary_02, "lengthoftimerangeinseconds", &readVal );
 printf("lengthoftimerangeinseconds: %s\n", readVal);
-assert(strcmp(readVal, "600") == 0);
+assert(strcmp(readVal, "3600") == 0);
 free(readVal);
 
 ret = multio_grib2_dict_set( dictionary_02, "valuesscalefactor", "1000.1" );

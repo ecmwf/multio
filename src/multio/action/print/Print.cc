@@ -21,6 +21,7 @@ namespace multio::action {
 Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
     stream_ = compConf.parsedConfig().getString("stream", "info");
     onlyFields_ = compConf.parsedConfig().getBool("only-fields", false);
+    onlyFlushes_ = compConf.parsedConfig().getBool("only-flushes", false);
 
     if (stream_ == "info") {
         os_ = &eckit::Log::info();
@@ -40,7 +41,9 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
 
 void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
-    bool doOutput = onlyFields_ ? (msg.tag() == message::Message::Tag::Field) : true;
+    if((onlyFields_ == true) && (onlyFlushes_ == true))  throw eckit::SeriousBug{"Not possible to select onlyFields && onlyFlushes at the same time", Here()};
+    bool doOutput = onlyFields_ ? (msg.tag() == message::Message::Tag::Field) 
+                                    : (onlyFlushes_ ? (msg.tag() == message::Message::Tag::Flush): true);
     if (doOutput) {
         if (!prefix_.empty()) {
             (*os_) << prefix_ << ": ";

@@ -2,7 +2,7 @@
 
 #include <map>
 #include <string>
-
+#include <algorithm>
 #include "eckit/config/LocalConfiguration.h"
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Glossary.h"

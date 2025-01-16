@@ -18,9 +18,9 @@
 
 #include "multio/domain/MaskCompression.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <random>
-#include <algorithm>
 
 namespace multio::test {
 

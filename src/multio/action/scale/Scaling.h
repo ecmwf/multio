@@ -1,13 +1,13 @@
 #pragma once
 
+#include <algorithm>
 #include <map>
 #include <string>
-#include <algorithm>
 #include "eckit/config/LocalConfiguration.h"
+#include "multio/action/scale/MetadataUtils.h"
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
-#include "multio/action/scale/MetadataUtils.h"
 
 namespace multio::action {
 

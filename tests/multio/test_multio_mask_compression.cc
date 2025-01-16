@@ -20,6 +20,7 @@
 
 #include <iomanip>
 #include <random>
+#include <algorithm>
 
 namespace multio::test {
 

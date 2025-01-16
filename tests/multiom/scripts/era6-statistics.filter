@@ -1,0 +1,15 @@
+# ==================================================================================================
+if ( gridType is "reduced_gg" ){
+  if ( stream is "lwda" && levtype is "sfc" && step < 1 ) {
+    if ( defined( typeOfStatisticslProcessing ) ){
+      if ( defied(typeOfLevel) ) {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-[typeOfLevel]_[productDefinitionTemplateNumber]-base-todo.grib";
+      }
+      else{
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-[productDefinitionTemplateNumber]-base-todo.grib";
+      }
+    }
+  }
+}

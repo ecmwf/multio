@@ -5,6 +5,13 @@ install(
 )
 
 install(
+    FILES       ${CMAKE_CURRENT_SOURCE_DIR}/era6-statistics.filter
+    DESTINATION share/multiom/bin
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
+
+install(
     FILES       ${CMAKE_CURRENT_SOURCE_DIR}/extract-era6-sfc.sh
     DESTINATION share/multiom/bin
     PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ

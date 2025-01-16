@@ -10,9 +10,9 @@
 #define PP_SECTION_NAME 'CONFIGURATION_UTILS_MOD'
 MODULE CONFIGURATION_UTILS_MOD
 
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: JPRD_K
-  USE :: MULTIOM_API, ONLY: JPRM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRM_K
 
 IMPLICIT NONE
 
@@ -2139,8 +2139,8 @@ PP_THREAD_SAFE FUNCTION PARSE_INTEGER_ARRAY( UNIT, POS, TERM_, N, S, HOOKS ) RES
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2434,8 +2434,8 @@ PP_THREAD_SAFE FUNCTION PARSE_INTEGER( UNIT, POS, TERM, N, S, HOOKS, F ) RESULT(
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2656,9 +2656,9 @@ PP_THREAD_SAFE FUNCTION PARSE_REAL64_ARRAY( UNIT, POS, TERM_, F64, S, HOOKS ) RE
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: JPRD_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2952,9 +2952,9 @@ PP_THREAD_SAFE FUNCTION PARSE_REAL64( UNIT, POS, TERM, F64, S, HOOKS, F ) RESULT
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: JPRD_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3177,9 +3177,9 @@ PP_THREAD_SAFE FUNCTION PARSE_REAL32_ARRAY( UNIT, POS, TERM_, F32, S, HOOKS ) RE
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: JPRM_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRM_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3473,9 +3473,9 @@ PP_THREAD_SAFE FUNCTION PARSE_REAL32( UNIT, POS, TERM, F32, S, HOOKS, F ) RESULT
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: MULTIOM_API, ONLY: JPIB_K
-  USE :: MULTIOM_API, ONLY: JPRD_K
-  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS

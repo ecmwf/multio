@@ -21,14 +21,12 @@ public:
     OperationWithData(const std::string& name, const std::string& operation, bool needRestart,
                       const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsOptions& opt, T initial_value = 0.0) :
-        Operation{name, operation, win, opt},
-        values_{},
-        needRestart_{needRestart},
-        initialValue_{initial_value} {
+        Operation{name, operation, win, opt}, values_{}, needRestart_{needRestart}, initialValue_{initial_value} {
         load(IOmanager, opt);
     }
 
-    void updateWindow(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
+    void updateWindow(const void* data, long sz, const message::Message& msg,
+                      const StatisticsConfiguration& cfg) override {
         std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
@@ -80,7 +78,7 @@ protected:
     void serialize(IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) const {
 
         size_t sz = values_.size();
-        size_t cnt=0;
+        size_t cnt = 0;
         // restartState[cnt] = static_cast<uint64_t>(sz);
         for (size_t i = 0; i < sz; ++i) {
             T lv = values_[i];
@@ -103,7 +101,7 @@ protected:
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
         restartState.checkChecksum();
-        size_t cnt=0;
+        size_t cnt = 0;
         size_t sz = values_.size();
         for (size_t i = 0; i < sz; ++i) {
             std::uint64_t lv = restartState[cnt];
@@ -129,7 +127,7 @@ protected:
         }
     };
 
-    void checkTimeInterval( const StatisticsConfiguration& cfg ) {
+    void checkTimeInterval(const StatisticsConfiguration& cfg) {
         long sec = win_.count() * cfg.stepFreq() * cfg.timeStep();
         if (sec == 0) {
             throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
@@ -141,7 +139,6 @@ protected:
     std::vector<T> values_;
 
 private:
-
     const std::string restartFileName() const { return name_ + "_" + (sizeof(T) == 4 ? "single" : "double"); };
 
     bool needRestart_;

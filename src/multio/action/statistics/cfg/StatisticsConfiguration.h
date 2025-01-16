@@ -1,18 +1,17 @@
 #pragma once
 
-#include "multio/action/statistics/cfg/StatisticsOptions.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/types/DateTime.h"
+#include "multio/action/Action.h"
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/action/Action.h"
 
 namespace multio::action {
 
 
 class StatisticsConfiguration {
 private:
-
     // Options
     const StatisticsOptions& opt_;
 
@@ -31,7 +30,7 @@ private:
     std::string logPrefix_;
 
     // Handle missing values
-    bool   bitmapPresent_;
+    bool bitmapPresent_;
     double missingValue_;
 
     // Unique key used for statistics map
@@ -76,15 +75,15 @@ private:
     eckit::DateTime getWinStart() const;
 
     bool computeBeginningOfHour() const;
-    bool isBeginningOfHour () const;
+    bool isBeginningOfHour() const;
     bool computeBeginningOfDay() const;
-    bool isBeginningOfDay () const;
+    bool isBeginningOfDay() const;
     bool computeBeginningOfMonth() const;
-    bool isBeginningOfMonth () const;
+    bool isBeginningOfMonth() const;
     bool computeBeginningOfYear() const;
-    bool isBeginningOfYear () const;
+    bool isBeginningOfYear() const;
 
-    void generateKey( const message::Metadata& md, const std::string& src );
+    void generateKey(const message::Metadata& md, const std::string& src);
 
     void readPrecision(const message::Metadata& md, const StatisticsOptions& opt);
     void readGridType(const message::Metadata& md, const StatisticsOptions& opt);
@@ -99,10 +98,8 @@ private:
     void readMissingValue(const message::Metadata& md, const StatisticsOptions& opt);
 
 
-
 public:
-
-    StatisticsConfiguration( const message::Message& msg, const StatisticsOptions& opt );
+    StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt);
 
     const StatisticsOptions& options() const;
     const std::string& key() const;
@@ -135,7 +132,6 @@ public:
     bool beginningOfDay() const;
     bool beginningOfMonth() const;
     bool beginningOfYear() const;
-
 };
 
-}
+}  // namespace multio::action

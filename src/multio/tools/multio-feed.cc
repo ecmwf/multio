@@ -70,12 +70,12 @@ public:
     std::vector<std::string> keys() { return eckit::LocalConfiguration::keys(); }
 };
 
-void parseStepRange(std::string const& stepRange, long& startStep, long& endStep ) {
+void parseStepRange(std::string const& stepRange, long& startStep, long& endStep) {
     static const std::regex period_grammar("([0-9]+)-([0-9]+)");
     std::smatch match;
     if (std::regex_match(stepRange, match, period_grammar)) {
         startStep = std::stol(match[1].str());
-        endStep   = std::stol(match[2].str());
+        endStep = std::stol(match[2].str());
     }
     else {
         throw eckit::SeriousBug("Wrong grammar in period definition : " + stepRange, Here());
@@ -152,14 +152,14 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
 
     args.get("plans", configPath_);
 
-    if ( args.has("stepRange") ){
+    if (args.has("stepRange")) {
         args.get("stepRange", stepRange_);
     }
     else {
         stepRange_ = "0-1000000000";
     }
 
-    parseStepRange( stepRange_, minStep_, maxStep_ );
+    parseStepRange(stepRange_, minStep_, maxStep_);
 
     if (!configPath_.empty()) {
         ::setenv("MULTIO_PLANS_FILE", configPath_.c_str(), 1);
@@ -204,7 +204,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 // metadata.set("step", metadataDetailed.getLong("step"));
             }
 
-            if (metadataDetailed.has("startStep") && metadataDetailed.has("endStep")){
+            if (metadataDetailed.has("startStep") && metadataDetailed.has("endStep")) {
                 long startStep = metadataDetailed.getLong("startStep");
                 long endStep = metadataDetailed.getLong("endStep");
                 if (startStep < minStep_ || endStep > maxStep_) {
@@ -214,7 +214,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 // metadata.set("endStep", metadataDetailed.getLong("endStep"));
             }
 
-            if (!metadataDetailed.has("startStep") && metadataDetailed.has("endStep")){
+            if (!metadataDetailed.has("startStep") && metadataDetailed.has("endStep")) {
                 long endStep = metadataDetailed.getLong("endStep");
                 if (endStep < minStep_ || endStep > maxStep_) {
                     continue;
@@ -337,13 +337,12 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             }
         }
 
-       if (imultio_flush_()) {
+        if (imultio_flush_()) {
             ASSERT(false);
         }
-
     }
 
-     if (imultio_flush_last_()) {
+    if (imultio_flush_last_()) {
         ASSERT(false);
     }
 

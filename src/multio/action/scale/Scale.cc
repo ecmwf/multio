@@ -21,8 +21,8 @@
 #include "multio/util/PrecisionTag.h"
 
 #include "multio/action/scale/Mapping.h"
-#include "multio/action/scale/Scaling.h"
 #include "multio/action/scale/MetadataUtils.h"
+#include "multio/action/scale/Scaling.h"
 
 
 namespace multio::action {
@@ -57,12 +57,12 @@ void Scale::executeImpl(message::Message msg) {
         executeNext(std::move(msg));
         return;
     }
-    //Scale the message
+    // Scale the message
     util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        ScaleMessage<Precision>(msg); // Modify msg in place
+        ScaleMessage<Precision>(msg);  // Modify msg in place
     });
-    //pass on the modified message
+    // pass on the modified message
     executeNext(std::move(msg));
     return;
 }

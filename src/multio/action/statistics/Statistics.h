@@ -17,8 +17,8 @@
 
 
 #include "PeriodUpdaters.h"
-#include "StatisticsIO.h"
 #include "RemapParamID.h"
+#include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
 
@@ -44,12 +44,12 @@ private:
     std::string generateRestartNameFromFlush(const message::Message& msg) const;
     void DeleteLatestSymLink();
     void CreateLatestSymLink();
-    void CreateMainRestartDirectory( const std::string& restartFolderName, bool is_master );
+    void CreateMainRestartDirectory(const std::string& restartFolderName, bool is_master);
     void DumpTemporalStatistics();
     std::unique_ptr<TemporalStatistics> LoadTemporalStatisticsFromKey(const std::string& key);
     bool HasRestartKey(const std::string& key);
     bool HasMainRestartDir();
-    void updateLatestDateTime( const StatisticsConfiguration& cfg );
+    void updateLatestDateTime(const StatisticsConfiguration& cfg);
     void print(std::ostream& os) const override;
     const StatisticsOptions opt_;
     const std::vector<std::string> operations_;

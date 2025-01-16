@@ -13,9 +13,9 @@ namespace multio::action {
 
 class SynopticFilter {
 public:
-    SynopticFilter(){};
+    SynopticFilter() {};
 
-    virtual ~SynopticFilter(){};
+    virtual ~SynopticFilter() {};
 
     virtual void fillMetadata(size_t idx, message::Metadata& metadata) const = 0;
 

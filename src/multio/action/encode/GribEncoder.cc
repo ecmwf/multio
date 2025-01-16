@@ -32,9 +32,9 @@
 
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
+#include "multio/util/Environment.h"
 #include "multio/util/Metadata.h"
 #include "multio/util/Substitution.h"
-#include "multio/util/Environment.h"
 
 #include "multio/util/PrecisionTag.h"
 

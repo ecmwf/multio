@@ -38,7 +38,7 @@ std::unique_ptr<PeriodUpdater> make_period_updater(std::string const& output_fre
 
     long span;
     std::string periodKind;
-    parsePeriodGrammar( output_freq, span, periodKind );
+    parsePeriodGrammar(output_freq, span, periodKind);
 
     if (periodKind == "hour" || periodKind == "h") {
         return std::make_unique<HourPeriodUpdater>(span);
@@ -50,23 +50,23 @@ std::unique_ptr<PeriodUpdater> make_period_updater(std::string const& output_fre
         return std::make_unique<MonthPeriodUpdater>(span);
     }
     throw eckit::SeriousBug("Unknown period kind : " + periodKind, Here());
-
 };
 
-std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
+std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>& IOmanager,
+                                                   const StatisticsOptions& opt) {
 
     std::unique_ptr<PeriodUpdater> ret;
-    IOmanager->pushDir( "periodUpdater" );
+    IOmanager->pushDir("periodUpdater");
     std::vector<eckit::PathName> files = IOmanager->getFiles();
 
     if (files.empty()) {
         throw eckit::SeriousBug("No files found in: " + IOmanager->getCurrentDir(), Here());
     }
-    if ( files.size() > 1 ) {
+    if (files.size() > 1) {
         throw eckit::SeriousBug("More than one file found in: " + IOmanager->getCurrentDir(), Here());
     }
 
-    std::string periodKind=files[0].baseName(false).asString();
+    std::string periodKind = files[0].baseName(false).asString();
     // parsePeriodFileName( files[0].baseName(false).asString(), periodKind );
 
     // std::ostringstream logos;
@@ -84,16 +84,15 @@ std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>
     }
     if (periodKind == "month") {
         found = true;
-        ret =  std::make_unique<MonthPeriodUpdater>(IOmanager, opt);
+        ret = std::make_unique<MonthPeriodUpdater>(IOmanager, opt);
     }
-    IOmanager->popDir( );
+    IOmanager->popDir();
 
-    if ( !found ){
+    if (!found) {
         throw eckit::SeriousBug("Unknown period kind : " + periodKind, Here());
     }
 
     return ret;
-
 };
 
 

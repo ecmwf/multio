@@ -57,16 +57,16 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
+OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
     eckit::DateTime epochPoint{cfg.epoch()};
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
     eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
     long windowType = 0;
-    if ( cfg.options().windowType() == "forward-offset" ){
+    if (cfg.options().windowType() == "forward-offset") {
         windowType = 0;
     }
-    else if ( cfg.options().windowType() == "backward-offset" ) {
+    else if (cfg.options().windowType() == "backward-offset") {
         windowType = 1;
     }
     else {
@@ -77,8 +77,8 @@ OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater
     return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};
 };
 
-OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) {
-    IOmanager->pushDir( "operationWindow" );
+OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
+    IOmanager->pushDir("operationWindow");
     // std::ostringstream logos;
     // logos << "     - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
     // LOG_DEBUG_LIB(LibMultio) << logos.str() << std::endl;
@@ -125,15 +125,15 @@ long OperationWindow::count() const {
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     restartState.zero();
-    serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt );
-    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize() );
+    serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
+    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize());
     IOmanager->flush();
     return;
 }
 
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
-    IOmanager->read( "operationWindow", restartSize() );
+    IOmanager->read("operationWindow", restartSize());
     deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
     return;
@@ -163,9 +163,11 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
 std::string OperationWindow::windowType() const {
     if (type_ == 0) {
         return std::string{"forward-offset"};
-    } else if (type_ == 1) {
+    }
+    else if (type_ == 1) {
         return std::string{"backward-offset"};
-    } else {
+    }
+    else {
         std::ostringstream os;
         os << *this << " Unknown window type " << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -175,10 +177,10 @@ std::string OperationWindow::windowType() const {
 
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret;
-    if ( type_ == 0 ) {
+    if (type_ == 0) {
         ret = gtLowerBound(dt, false) && leUpperBound(dt, false);
     }
-    else if ( type_ == 1 ) {
+    else if (type_ == 1) {
         ret = geLowerBound(dt, false) && ltUpperBound(dt, false);
     }
     else {
@@ -434,7 +436,7 @@ long OperationWindow::lastFlushInSteps() const {
 
 void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
 
-    if ( opt.debugRestart() ) {
+    if (opt.debugRestart()) {
         std::ofstream outFile(fname);
         outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
         outFile << "startPoint_ :: " << startPoint_ << std::endl;
@@ -493,7 +495,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     count_ = static_cast<long>(currState[15]);
     type_ = static_cast<long>(currState[16]);
 
-    if ( opt.debugRestart() ) {
+    if (opt.debugRestart()) {
         std::ofstream outFile(fname);
         outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
         outFile << "startPoint_ :: " << startPoint_ << std::endl;

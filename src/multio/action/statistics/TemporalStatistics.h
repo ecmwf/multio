@@ -20,9 +20,9 @@ public:
     op::iterator begin() { return statistics_.begin(); };
     op::iterator end() { return statistics_.end(); };
 
-    TemporalStatistics(const std::string& output_freq,
-                       const std::vector<std::string>& operations, const message::Message& msg,
-                       std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    TemporalStatistics(const std::string& output_freq, const std::vector<std::string>& operations,
+                       const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
+                       const StatisticsConfiguration& cfg);
 
     TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
@@ -31,7 +31,7 @@ public:
     void updateData(message::Message& msg, const StatisticsConfiguration& cfg);
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg);
 
-    void dump(std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt) const;
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
 
     const OperationWindow& cwin() const;
     OperationWindow& win();

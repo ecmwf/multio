@@ -66,8 +66,8 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
 
 
 template <typename Precision>
-std::unique_ptr<Operation> load_operation( const std::string& opname, std::shared_ptr<StatisticsIO>& IOmanager,
-                                           const OperationWindow& win, const StatisticsOptions& opt) {
+std::unique_ptr<Operation> load_operation(const std::string& opname, std::shared_ptr<StatisticsIO>& IOmanager,
+                                          const OperationWindow& win, const StatisticsOptions& opt) {
 
     std::unique_ptr<Operation> ret;
     bool found = false;
@@ -105,14 +105,13 @@ std::unique_ptr<Operation> load_operation( const std::string& opname, std::share
         ret = std::make_unique<FixedWindowFluxAverage<Precision>>(opname, win, IOmanager, opt);
     }
 
-    if ( !found ){
-      std::ostringstream os;
-      os << "Invalid opname in statistics operation :: " << opname << std::endl;
-      throw eckit::UserError(os.str(), Here());
+    if (!found) {
+        std::ostringstream os;
+        os << "Invalid opname in statistics operation :: " << opname << std::endl;
+        throw eckit::UserError(os.str(), Here());
     }
 
     return ret;
-
 }
 
 std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,

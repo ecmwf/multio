@@ -98,7 +98,7 @@ void IOBuffer::checkChecksum() const {
 
 StatisticsIO::StatisticsIO(const std::string& basePath, const std::string& uniqueID, const std::string& ext) :
     hasValidDateTime_{false}, basePath_{basePath}, uniqueID_{uniqueID}, ext_{ext}, dateTime_{""}, buffer_{8192, 0} {
-    if ( ! eckit::PathName{basePath_}.exists() ) {
+    if (!eckit::PathName{basePath_}.exists()) {
         std::ostringstream os;
         os << "ERROR : base path does not exist: " << basePath_;
         throw eckit::SeriousBug{os.str(), Here()};
@@ -108,7 +108,7 @@ StatisticsIO::StatisticsIO(const std::string& basePath, const std::string& uniqu
     return;
 };
 
-StatisticsIO::~StatisticsIO(){
+StatisticsIO::~StatisticsIO() {
     buffer_.clear();
     return;
 };
@@ -124,7 +124,7 @@ std::string StatisticsIO::getDateTime() {
 }
 
 std::string StatisticsIO::pushDir(const std::string& directory) {
-    if ( !hasValidDateTime_ ) {
+    if (!hasValidDateTime_) {
         std::ostringstream os;
         os << "ERROR : no valid datetime found";
         throw eckit::SeriousBug{os.str(), Here()};
@@ -149,8 +149,8 @@ IOBuffer StatisticsIO::getBuffer(std::size_t size) {
 };
 
 
-std::vector<eckit::PathName> StatisticsIO::getFiles( ) {
-    if ( !currentDirExists() ) {
+std::vector<eckit::PathName> StatisticsIO::getFiles() {
+    if (!currentDirExists()) {
         std::ostringstream os;
         os << "ERROR : Curret director does not exists: " << getCurrentDir();
         throw eckit::SeriousBug{os.str(), Here()};
@@ -159,9 +159,9 @@ std::vector<eckit::PathName> StatisticsIO::getFiles( ) {
     std::vector<eckit::PathName> files_tmp;
     std::vector<eckit::PathName> files;
     std::vector<eckit::PathName> dirs;
-    eckit::PathName{path}.children( files_tmp, dirs );
-    for ( const auto& file : files_tmp ) {
-        if ( file.extension() != ".txt" ) {
+    eckit::PathName{path}.children(files_tmp, dirs);
+    for (const auto& file : files_tmp) {
+        if (file.extension() != ".txt") {
             files.push_back(file);
             LOG_DEBUG_LIB(LibMultio) << "File found :: " << file << ", " << file.extension() << std::endl;
         }
@@ -170,8 +170,8 @@ std::vector<eckit::PathName> StatisticsIO::getFiles( ) {
 };
 
 
-std::vector<eckit::PathName> StatisticsIO::getDirs( ) {
-    if ( !currentDirExists() ) {
+std::vector<eckit::PathName> StatisticsIO::getDirs() {
+    if (!currentDirExists()) {
         std::ostringstream os;
         os << "ERROR : Curret directory does not exists: " << getCurrentDir();
         throw eckit::SeriousBug{os.str(), Here()};
@@ -180,7 +180,7 @@ std::vector<eckit::PathName> StatisticsIO::getDirs( ) {
     std::vector<eckit::PathName> files;
     std::vector<eckit::PathName> dirs;
     eckit::PathName path2{path};
-    path2.children( files, dirs );
+    path2.children(files, dirs);
     return dirs;
 };
 
@@ -192,14 +192,14 @@ std::string StatisticsIO::getUniqueRestartDir() const {
 };
 
 std::string StatisticsIO::getCurrentDir() const {
-    if ( !hasValidDateTime_ ) {
+    if (!hasValidDateTime_) {
         std::ostringstream os;
         os << "ERROR : no valid datetime found";
         throw eckit::SeriousBug{os.str(), Here()};
     }
     std::ostringstream os;
     os << basePath_ << "/" << uniqueID_ << "/" << dateTime_;
-    for ( const auto& dir : path_ ) {
+    for (const auto& dir : path_) {
         os << "/" << dir;
     }
     return os.str();
@@ -207,7 +207,7 @@ std::string StatisticsIO::getCurrentDir() const {
 
 std::string StatisticsIO::getRestartSymLink() const {
     std::ostringstream os;
-    os << basePath_ << "/" << uniqueID_<< "/" << "latest";
+    os << basePath_ << "/" << uniqueID_ << "/" << "latest";
     return os.str();
 }
 
@@ -221,7 +221,7 @@ void StatisticsIO::createCurrentDir() const {
 };
 
 void StatisticsIO::createDateTimeDir() const {
-    if ( !hasValidDateTime_ ) {
+    if (!hasValidDateTime_) {
         std::ostringstream os;
         os << "ERROR : no valid datetime found";
         throw eckit::SeriousBug{os.str(), Here()};
@@ -269,7 +269,7 @@ void StatisticsIOFactory::list(std::ostream& out) {
 }
 
 std::shared_ptr<StatisticsIO> StatisticsIOFactory::build(const std::string& name, const std::string& basePath,
-                                                         const std::string& uniqueID ) {
+                                                         const std::string& uniqueID) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for StatisticsIOFactory [" << name << "]" << std::endl;

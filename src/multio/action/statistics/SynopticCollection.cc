@@ -114,7 +114,7 @@ SynopticCollection::SynopticCollection(const std::string& operation, const messa
                                        const StatisticsConfiguration& cfg) :
     win_{win},
     op_{parseOperationName(operation, filterConf)},
-    filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}//,
+    filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}  //,
 //    statistics_{make_operations(op_[2], msg, filter_->size(), IOmanager, win, cfg)}
 {
     LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection standard constructor "
@@ -129,7 +129,7 @@ SynopticCollection::SynopticCollection(const std::string& operation, const std::
                                        const StatisticsConfiguration& cfg) :
     win_{win},
     op_{parseOperationName(operation, filterConf)},
-    filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}//,
+    filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}  //,
 //    statistics_{load_operations(op_[2], precision, filter_->size(), IOmanager, win, cfg)}
 {
     LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection load constructor " << std::endl;
@@ -154,7 +154,7 @@ void SynopticCollection::resetWindow(const message::Message& msg, const Statisti
         // TODO: add profiling code
         // TODO: handling the time for a better metadata control
         // TODO: update data must have control over
-        statistics_[key]->updateWindow(msg,cfg);
+        statistics_[key]->updateWindow(msg, cfg);
     }
     return;
 };
@@ -166,7 +166,7 @@ void SynopticCollection::updateData(const message::Message& msg, const Statistic
     if (filter_->match(msg, cfg, key)) {
         // TODO: add profiling code
         // TODO: handling the time for a better metadata control
-        statistics_[key]->updateData(msg.Payload(),msg.size(),cfg);
+        statistics_[key]->updateData(msg.Payload(), msg.size(), cfg);
     }
     return;
 };

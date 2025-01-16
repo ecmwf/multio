@@ -10,7 +10,6 @@
 #include "multio/config/ComponentConfiguration.h"
 
 
-
 namespace multio::action {
 
 
@@ -108,7 +107,7 @@ class DailyCustomFilter final : public SynopticFilter {
 public:
     DailyCustomFilter(const eckit::LocalConfiguration& compConf, const StatisticsConfiguration& cfg) :
         reqHours_{initDailyCustomFilter(compConf, cfg)}, reqHoursInv_{initReqHouorsInv(reqHours_)} {};
-    ~DailyCustomFilter(){};
+    ~DailyCustomFilter() {};
 
     size_t size() const { return reqHours_.size(); };
 
@@ -136,4 +135,3 @@ public:
 
 
 }  // namespace multio::action
-

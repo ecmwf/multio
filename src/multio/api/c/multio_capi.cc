@@ -463,10 +463,10 @@ int multio_delete_handle(multio_handle_t* mio) {
 
         multio::message::Metadata md;
         md.set("flushKind", "end-of-simulation");
-        
-	mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
-        
-	// TODO add sleep
+
+        mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+
+        // TODO add sleep
         delete mio;
     });
 #else
@@ -507,13 +507,13 @@ int multio_close_connections(multio_handle_t* mio) {
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
-            
-	    multio::message::Metadata md;
+
+            multio::message::Metadata md;
             md.set("flushKind", "end-of-simulation");
-            
-	    mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
-            
-	    mio->closeConnections();
+
+            mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+
+            mio->closeConnections();
         },
         mio);
 #else
@@ -700,7 +700,7 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set("format", "raw");
-            
+
             if (byte_size == 4) {
                 md->md.modify().set("precision", "single");
             }

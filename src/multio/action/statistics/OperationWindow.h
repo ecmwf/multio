@@ -6,10 +6,10 @@
 #include "eckit/types/DateTime.h"
 
 
-#include "multio/action/statistics/cfg/StatisticsOptions.h"
-#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
-#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
 #include "StatisticsIO.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
+#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
 #include "multio/message/Message.h"
 #include "multio/util/DateTime.h"
 
@@ -20,8 +20,8 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                    long timeStepInSeconds, long windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds,
+                    long windowType);
 
     long count() const;
 
@@ -29,7 +29,7 @@ public:
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
-    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
+    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     std::string windowType() const;
     bool isWithin(const eckit::DateTime& dt) const;
@@ -123,8 +123,7 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);
 };
 
-OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
-OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
+OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
+OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
 }  // namespace multio::action
-

@@ -7,9 +7,9 @@ namespace multio::action {
 
 class AllTimesFilter final : public SynopticFilter {
 public:
-    AllTimesFilter(){};
+    AllTimesFilter() {};
 
-    ~AllTimesFilter(){};
+    ~AllTimesFilter() {};
 
     size_t size() const { return static_cast<size_t>(1); };
 
@@ -30,4 +30,3 @@ public:
 };
 
 }  // namespace multio::action
-

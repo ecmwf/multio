@@ -10,10 +10,29 @@
 #define PP_SECTION_NAME 'CONFIGURATION_UTILS_MOD'
 MODULE CONFIGURATION_UTILS_MOD
 
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: JPRD_K
+  USE :: MULTIOM_API, ONLY: JPRM_K
+
 IMPLICIT NONE
 
 !> Default symbols visibility
 PRIVATE
+
+TYPE :: INT_CONTAINER_T
+  INTEGER(KIND=JPIB_K) :: PAR
+  TYPE(INT_CONTAINER_T), POINTER :: NEXT=>NULL()
+END TYPE
+
+TYPE :: REAL64_CONTAINER_T
+  REAL(KIND=JPRD_K) :: PAR
+  TYPE(REAL64_CONTAINER_T), POINTER :: NEXT=>NULL()
+END TYPE
+
+TYPE :: REAL32_CONTAINER_T
+  REAL(KIND=JPRM_K) :: PAR
+  TYPE(REAL32_CONTAINER_T), POINTER :: NEXT=>NULL()
+END TYPE
 
 ! Exposed interface
 INTERFACE STRING_TO_REAL
@@ -21,12 +40,20 @@ INTERFACE STRING_TO_REAL
   MODULE PROCEDURE STRING_TO_REAL64
 END INTERFACE
 
+
+INTERFACE STRING_TO_REAL_ARRAY
+  MODULE PROCEDURE STRING_TO_REAL32_ARRAY
+  MODULE PROCEDURE STRING_TO_REAL64_ARRAY
+END INTERFACE
+
 ! Whitelist of public symbols
 PUBLIC :: STRING_TO_REAL
+PUBLIC :: STRING_TO_REAL_ARRAY
 PUBLIC :: STRING_IS_INTEGER
 PUBLIC :: STRING_IS_INTEGER_RANGE
 PUBLIC :: STRING_IS_INTEGER_RANGE_BY
 PUBLIC :: STRING_TO_INTEGER
+PUBLIC :: STRING_TO_INTEGER_ARRAY
 PUBLIC :: STRING_TO_INTEGER_RANGE
 PUBLIC :: STRING_TO_INTEGER_RANGE_BY
 
@@ -601,6 +628,386 @@ PP_ERROR_HANDLER
 END FUNCTION STRING_TO_INTEGER
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Converts a string to an integer value.
+!>
+!> This function parses the input `STRING` and converts it to an integer value (`VALUE`).
+!> If the conversion fails, the function returns an error code.
+!>
+!> @section interface
+!> @param [in] STRING   Input string representing the integer value.
+!> @param [out] VALUE   The resulting integer value.
+!> @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
+!>
+!> @return Integer error code (`RET`) indicating success or failure:
+!>         - `0`: Success
+!>         - `1`: Failure
+!>
+!> @section Dependencies of this function:
+!>
+!> @subsubsection module dependencies
+!>   - @dependency [PROCEDURE] READ_INTEGER_PATTERNS
+!>
+!> @subsection local dependencies
+!>   - @dependency [PARAMETER] DATAKINDS_DEF_MOD::JPIB_K
+!>
+!> @subsection special dependencies
+!>   - @dependency [*] PP_DEBUG_USE_VARS::*
+!>   - @dependency [*] PP_LOG_USE_VARS::*
+!>   - @dependency [*] PP_TRACE_USE_VARS::*
+!>
+!> @see STRING_TO_INTEGER_RANGE
+!> @see STRING_IS_INTEGER
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'STRING_TO_INTEGER_ARRAY'
+PP_THREAD_SAFE FUNCTION STRING_TO_INTEGER_ARRAY( STRING, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                                INTENT(IN)    :: STRING
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),                                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: POS
+  CHARACTER(LEN=1) :: S
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARSE_ERROR=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_ALLOCATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ALLOCATED=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOCATED(VALUE), ERRFLAG_ALREADY_ALLOCATED )
+
+  ! Parse the string
+  POS=1
+  PP_TRYCALL(ERRFLAG_PARSE_ERROR) PARSE_INTEGER_ARRAY( STRING, POS, ']', VALUE, S, HOOKS )
+
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(VALUE), ERRFLAG_NOT_ALLOCATED )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=32) :: TMPSTR1
+
+    ! Initializa a new error frame
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_PARSE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Failed to parse string: '//TRIM(ADJUSTL(STRING)) )
+    CASE (ERRFLAG_ALREADY_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array already allocated' )
+    CASE (ERRFLAG_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array not allocated after parsing' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION STRING_TO_INTEGER_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'STRING_TO_REAL64_ARRAY'
+PP_THREAD_SAFE FUNCTION STRING_TO_REAL64_ARRAY( STRING, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                             INTENT(IN)    :: STRING
+  REAL(KIND=JPRD_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),                                INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: POS
+  CHARACTER(LEN=1) :: S
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARSE_ERROR=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_ALLOCATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ALLOCATED=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOCATED(VALUE), ERRFLAG_ALREADY_ALLOCATED )
+
+  ! Parse the string
+  POS=1
+  PP_TRYCALL(ERRFLAG_PARSE_ERROR) PARSE_REAL64_ARRAY( STRING, POS, ']', VALUE, S, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(VALUE), ERRFLAG_NOT_ALLOCATED )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=32) :: TMPSTR1
+
+    ! Initializa a new error frame
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_PARSE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Failed to parse string: '//TRIM(ADJUSTL(STRING)) )
+    CASE (ERRFLAG_ALREADY_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array already allocated' )
+    CASE (ERRFLAG_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array not allocated after parsing' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION STRING_TO_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'STRING_TO_REAL32_ARRAY'
+PP_THREAD_SAFE FUNCTION STRING_TO_REAL32_ARRAY( STRING, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                             INTENT(IN)    :: STRING
+  REAL(KIND=JPRM_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),                                INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: POS
+  CHARACTER(LEN=1) :: S
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARSE_ERROR=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_ALLOCATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ALLOCATED=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOCATED(VALUE), ERRFLAG_ALREADY_ALLOCATED )
+
+  ! Parse the string
+  POS=1
+  PP_TRYCALL(ERRFLAG_PARSE_ERROR) PARSE_REAL32_ARRAY( STRING, POS, ']', VALUE, S, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(VALUE), ERRFLAG_NOT_ALLOCATED )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=32) :: TMPSTR1
+
+    ! Initializa a new error frame
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_PARSE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Failed to parse string: '//TRIM(ADJUSTL(STRING)) )
+    CASE (ERRFLAG_ALREADY_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array already allocated' )
+    CASE (ERRFLAG_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Output array not allocated after parsing' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION STRING_TO_REAL32_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -1720,6 +2127,1563 @@ PP_ERROR_HANDLER
 END FUNCTION READ_INTEGER
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_INTEGER_ARRAY'
+PP_THREAD_SAFE FUNCTION PARSE_INTEGER_ARRAY( UNIT, POS, TERM_, N, S, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                                INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),                            INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),                                INTENT(IN)    :: TERM_
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: N
+  CHARACTER(LEN=1),                                INTENT(OUT)   :: S
+  TYPE(HOOKS_T),                                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  TYPE(INT_CONTAINER_T), POINTER :: HEAD=>NULL()
+  TYPE(INT_CONTAINER_T), POINTER :: THIS=>NULL()
+  LOGICAL :: SCALAR
+  LOGICAL :: R
+  LOGICAL :: END_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TERM
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: ALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_READ_INTEGER = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER_ARRAY = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FLAG = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !...Initialization
+  EX = .TRUE.
+  R = .TRUE.
+  TERM = TERM_
+  END_ = .FALSE.
+
+  ! Read Data From UNIT
+  CNT = 0
+  S = ' '
+  main : DO
+
+    ! if thre is an already readed character skip read operation
+    IF ( R ) THEN
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      ENDIF
+    ELSE
+      BUF = S
+      STAT = 0
+    ENDIF
+
+    ! End of file exception
+    IF ( STAT .EQ. -1 ) THEN
+      R = .TRUE.
+      EXIT main
+    ENDIF
+
+    ! Check if the token is an array
+    IF ( BUF .EQ. '[' .AND. CNT .EQ. 0 ) THEN
+      SCALAR = .FALSE.
+      TERM = TERM//']'
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_INTEGER( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Check if the token is not an array
+    IF ( BUF .NE. '[' .AND. &
+         BUF .NE. ' ' .AND. &
+         CNT .EQ. 0 ) THEN
+      SCALAR = .TRUE.
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_INTEGER( UNIT, POS, TERM, THIS%PAR, S, HOOKS, BUF )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Read another token
+    IF ( BUF .EQ. ',' ) THEN
+      CNT = CNT + 1
+      ! Coherence check
+      IF ( CNT .GT. 1 .AND. SCALAR ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        EX = .FALSE.
+        CNT = CNT - 1
+        PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+        EXIT main
+      END IF
+      IF ( END_ ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        CYCLE main
+      END IF
+      ALLOCATE( THIS%NEXT, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => THIS%NEXT
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_INTEGER( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! jump the close bracket
+    IF ( BUF .EQ. ']' ) THEN
+      R = .TRUE.
+      END_ =.TRUE.
+      CYCLE main
+    ENDIF
+
+    ! Exit condition
+    DO J = 1, LEN_TRIM(TERM_)
+      IF ( BUF .EQ. TERM_(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    ENDDO
+
+    R = .TRUE.
+
+  ENDDO main
+
+  ! Error handling
+  IF ( CNT .EQ. 0 .OR. .NOT.EX ) THEN
+    S = ' '
+    EX = .FALSE.
+    THIS=>HEAD
+    DO
+      IF ( .NOT. ASSOCIATED(THIS) ) THEN
+        EXIT
+      ENDIF
+      THIS => THIS%NEXT
+      DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      HEAD => THIS
+    END DO
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+  ENDIF
+
+  ! Allocate output memory
+  ALLOCATE( N(CNT), STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+
+  ! Fill the integer array
+  THIS=>HEAD
+  CNT = 0
+  DO
+
+    CNT = CNT + 1
+
+    IF ( .NOT. ASSOCIATED(THIS) ) THEN
+      EXIT
+    ENDIF
+
+    N(CNT) = THIS%PAR
+
+    THIS => THIS%NEXT
+
+    DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+
+    HEAD => THIS
+
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to call read integer' )
+    CASE(ERRFLAG_UNABLE_TO_ALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER_ARRAY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer array' )
+    CASE(ERRFLAG_INVALID_FLAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid flag' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_INTEGER_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_INTEGER'
+PP_THREAD_SAFE FUNCTION PARSE_INTEGER( UNIT, POS, TERM, N, S, HOOKS, F ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),           INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),       INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),           INTENT(IN)    :: TERM
+  INTEGER(KIND=JPIB_K),       INTENT(OUT)   :: N
+  CHARACTER(LEN=1),           INTENT(OUT)   :: S
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=1), OPTIONAL, INTENT(IN)    :: F
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  LOGICAL :: READ_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TMP
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: READ_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_CHARACTER = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_STATE = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization
+  EX = .TRUE.
+  TMP=''
+
+  ! Read Data From UNIT
+  CNT = 0
+  READ_ = .TRUE.
+  main : DO
+
+    IF ( PRESENT(F) .AND. READ_ ) THEN
+
+      BUF = F
+      READ_ = .FALSE.
+      STAT = 0
+
+    ELSE
+
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      END IF
+
+    END IF
+
+    ! End of file
+    IF ( STAT .EQ. -1 ) THEN
+      EXIT main
+    END IF
+
+    ! Check for special terminators
+    DO J = 1, LEN(TERM)
+      IF ( BUF .EQ. TERM(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    END DO
+
+    ! Check for standard terminator
+    IF ( BUF .EQ. ',' ) THEN
+      S = BUF
+      EXIT main
+    END IF
+
+    ! Update token
+    IF ( BUF .EQ. ' ' .AND. CNT .EQ. 0 ) THEN
+      CYCLE main
+    ELSE
+      CNT = CNT + 1
+      TMP = TMP(:)//BUF
+    END IF
+
+  END DO main
+
+  ! Error handling
+  IF ( STAT .EQ. -2 ) THEN
+    IF ( ALLOCATED(TMP) ) THEN
+      DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+    END IF
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_STATE )
+  END IF
+
+  ! Create output variable
+  TMP = TRIM(ADJUSTL(TMP(:)))
+  DO I = 1 , LEN(TMP)
+    IF ( (IACHAR( TMP(I:I) ) .LT. 48 .OR. IACHAR( TMP(I:I) ) .GT. 57) .AND. IACHAR( TMP(I:I) ) .NE. 45 ) THEN
+      EX = .FALSE.
+      IF ( ALLOCATED(TMP) ) THEN
+        DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+      PP_DEBUG_CRITICAL_THROW(ERRFLAG_INVALID_CHARACTER)
+    END IF
+  END DO
+
+  ! Read the number and free memory
+  IF ( ALLOCATED(TMP) ) THEN
+    ! WRITE(*,*) ' + Reading: ', TMP(:)
+    READ(TMP(:),*, IOSTAT=READ_STAT) N
+    PP_DEBUG_CRITICAL_COND_THROW( READ_STAT .NE. 0, ERRFLAG_ERROR_READING_INTEGER )
+    DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+  ELSE
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED )
+  END IF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STAT)
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer' )
+    CASE(ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error integer not allocated' )
+    CASE(ERRFLAG_INVALID_CHARACTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid character' )
+    CASE(ERRFLAG_INVALID_STATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid state' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_INTEGER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_REAL64_ARRAY'
+PP_THREAD_SAFE FUNCTION PARSE_REAL64_ARRAY( UNIT, POS, TERM_, F64, S, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: JPRD_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                             INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),                         INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),                             INTENT(IN)    :: TERM_
+  REAL(KIND=JPRD_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: F64
+  CHARACTER(LEN=1),                             INTENT(OUT)   :: S
+  TYPE(HOOKS_T),                                INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  TYPE(REAL64_CONTAINER_T), POINTER :: HEAD=>NULL()
+  TYPE(REAL64_CONTAINER_T), POINTER :: THIS=>NULL()
+  LOGICAL :: SCALAR
+  LOGICAL :: R
+  LOGICAL :: END_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TERM
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: ALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_READ_INTEGER = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER_ARRAY = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FLAG = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !...Initialization
+  EX = .TRUE.
+  R = .TRUE.
+  TERM = TERM_
+  END_ = .FALSE.
+
+  ! Read Data From UNIT
+  CNT = 0
+  S = ' '
+  main : DO
+
+    ! if thre is an already readed character skip read operation
+    IF ( R ) THEN
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      ENDIF
+    ELSE
+      BUF = S
+      STAT = 0
+    ENDIF
+
+    ! End of file exception
+    IF ( STAT .EQ. -1 ) THEN
+      R = .TRUE.
+      EXIT main
+    ENDIF
+
+    ! Check if the token is an array
+    IF ( BUF .EQ. '[' .AND. CNT .EQ. 0 ) THEN
+      SCALAR = .FALSE.
+      TERM = TERM//']'
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL64( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Check if the token is not an array
+    IF ( BUF .NE. '[' .AND. &
+         BUF .NE. ' ' .AND. &
+         CNT .EQ. 0 ) THEN
+      SCALAR = .TRUE.
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL64( UNIT, POS, TERM, THIS%PAR, S, HOOKS, BUF )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Read another token
+    IF ( BUF .EQ. ',' ) THEN
+      CNT = CNT + 1
+      ! Coherence check
+      IF ( CNT .GT. 1 .AND. SCALAR ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        EX = .FALSE.
+        CNT = CNT - 1
+        PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+        EXIT main
+      END IF
+      IF ( END_ ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        CYCLE main
+      END IF
+      ALLOCATE( THIS%NEXT, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => THIS%NEXT
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL64( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! jump the close bracket
+    IF ( BUF .EQ. ']' ) THEN
+      R = .TRUE.
+      END_ =.TRUE.
+      CYCLE main
+    ENDIF
+
+    ! Exit condition
+    DO J = 1, LEN_TRIM(TERM_)
+      IF ( BUF .EQ. TERM_(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    ENDDO
+
+    R = .TRUE.
+
+  ENDDO main
+
+  ! Error handling
+  IF ( CNT .EQ. 0 .OR. .NOT.EX ) THEN
+    S = ' '
+    EX = .FALSE.
+    THIS=>HEAD
+    DO
+      IF ( .NOT. ASSOCIATED(THIS) ) THEN
+        EXIT
+      ENDIF
+      THIS => THIS%NEXT
+      DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      HEAD => THIS
+    END DO
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+  ENDIF
+
+  ! Allocate output memory
+  ALLOCATE( F64(CNT), STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+
+  ! Fill the integer array
+  THIS=>HEAD
+  CNT = 0
+  DO
+
+    CNT = CNT + 1
+
+    IF ( .NOT. ASSOCIATED(THIS) ) THEN
+      EXIT
+    ENDIF
+
+    F64(CNT) = THIS%PAR
+
+    THIS => THIS%NEXT
+
+    DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+
+    HEAD => THIS
+
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to call read integer' )
+    CASE(ERRFLAG_UNABLE_TO_ALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER_ARRAY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer array' )
+    CASE(ERRFLAG_INVALID_FLAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid flag' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_REAL64'
+PP_THREAD_SAFE FUNCTION PARSE_REAL64( UNIT, POS, TERM, F64, S, HOOKS, F ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: JPRD_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),           INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),       INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),           INTENT(IN)    :: TERM
+  REAL(KIND=JPRD_K),          INTENT(OUT)   :: F64
+  CHARACTER(LEN=1),           INTENT(OUT)   :: S
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=1), OPTIONAL, INTENT(IN)    :: F
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  LOGICAL :: READ_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TMP
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: READ_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_CHARACTER = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_STATE = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization
+  EX = .TRUE.
+  TMP=''
+
+  ! Read Data From UNIT
+  CNT = 0
+  READ_ = .TRUE.
+  main : DO
+
+    IF ( PRESENT(F) .AND. READ_ ) THEN
+
+      BUF = F
+      READ_ = .FALSE.
+      STAT = 0
+
+    ELSE
+
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      END IF
+
+    END IF
+
+    ! End of file
+    IF ( STAT .EQ. -1 ) THEN
+      EXIT main
+    END IF
+
+    ! Check for special terminators
+    DO J = 1, LEN(TERM)
+      IF ( BUF .EQ. TERM(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    END DO
+
+    ! Check for standard terminator
+    IF ( BUF .EQ. ',' ) THEN
+      S = BUF
+      EXIT main
+    END IF
+
+    ! Update token
+    IF ( BUF .EQ. ' ' .AND. CNT .EQ. 0 ) THEN
+      CYCLE main
+    ELSE
+      CNT = CNT + 1
+      TMP = TMP(:)//BUF
+    END IF
+
+  END DO main
+
+  ! Error handling
+  IF ( STAT .EQ. -2 ) THEN
+    IF ( ALLOCATED(TMP) ) THEN
+      DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+    END IF
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_STATE )
+  END IF
+
+  ! Create output variable
+  TMP = TRIM(ADJUSTL(TMP(:)))
+  DO I = 1 , LEN(TMP)
+    IF ( (IACHAR( TMP(I:I) ) .LT. 48 .OR. IACHAR( TMP(I:I) ) .GT. 57) .AND. &
+&     (IACHAR( TMP(I:I) ) .NE. 45 .AND. IACHAR( TMP(I:I) ) .NE. 46 .AND. IACHAR( TMP(I:I) ) .NE. 69 .AND. IACHAR( TMP(I:I) ) .NE. 101)  ) THEN
+      EX = .FALSE.
+      IF ( ALLOCATED(TMP) ) THEN
+        DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+      PP_DEBUG_CRITICAL_THROW(ERRFLAG_INVALID_CHARACTER)
+    END IF
+  END DO
+
+  ! Read the number and free memory
+  IF ( ALLOCATED(TMP) ) THEN
+    ! WRITE(*,*) ' + Reading: ', TMP(:)
+    READ(TMP(:),*, IOSTAT=READ_STAT) F64
+    PP_DEBUG_CRITICAL_COND_THROW( READ_STAT .NE. 0, ERRFLAG_ERROR_READING_INTEGER )
+    DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+  ELSE
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED )
+  END IF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STAT)
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer' )
+    CASE(ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error integer not allocated' )
+    CASE(ERRFLAG_INVALID_CHARACTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid character' )
+    CASE(ERRFLAG_INVALID_STATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid state' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_REAL64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_REAL32_ARRAY'
+PP_THREAD_SAFE FUNCTION PARSE_REAL32_ARRAY( UNIT, POS, TERM_, F32, S, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: JPRM_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                             INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),                         INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),                             INTENT(IN)    :: TERM_
+  REAL(KIND=JPRM_K), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: F32
+  CHARACTER(LEN=1),                             INTENT(OUT)   :: S
+  TYPE(HOOKS_T),                                INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  TYPE(REAL32_CONTAINER_T), POINTER :: HEAD=>NULL()
+  TYPE(REAL32_CONTAINER_T), POINTER :: THIS=>NULL()
+  LOGICAL :: SCALAR
+  LOGICAL :: R
+  LOGICAL :: END_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TERM
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: ALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_READ_INTEGER = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER_ARRAY = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FLAG = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !...Initialization
+  EX = .TRUE.
+  R = .TRUE.
+  TERM = TERM_
+  END_ = .FALSE.
+
+  ! Read Data From UNIT
+  CNT = 0
+  S = ' '
+  main : DO
+
+    ! if thre is an already readed character skip read operation
+    IF ( R ) THEN
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      ENDIF
+    ELSE
+      BUF = S
+      STAT = 0
+    ENDIF
+
+    ! End of file exception
+    IF ( STAT .EQ. -1 ) THEN
+      R = .TRUE.
+      EXIT main
+    ENDIF
+
+    ! Check if the token is an array
+    IF ( BUF .EQ. '[' .AND. CNT .EQ. 0 ) THEN
+      SCALAR = .FALSE.
+      TERM = TERM//']'
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL32( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Check if the token is not an array
+    IF ( BUF .NE. '[' .AND. &
+         BUF .NE. ' ' .AND. &
+         CNT .EQ. 0 ) THEN
+      SCALAR = .TRUE.
+      CNT = CNT + 1
+      ALLOCATE( HEAD, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => HEAD
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL32( UNIT, POS, TERM, THIS%PAR, S, HOOKS, BUF )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! Read another token
+    IF ( BUF .EQ. ',' ) THEN
+      CNT = CNT + 1
+      ! Coherence check
+      IF ( CNT .GT. 1 .AND. SCALAR ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        EX = .FALSE.
+        CNT = CNT - 1
+        PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+        EXIT main
+      END IF
+      IF ( END_ ) THEN
+        DO J = 1, LEN_TRIM(TERM_)
+          IF ( BUF .EQ. TERM_(J:J) ) THEN
+            S = BUF
+            CNT = CNT - 1
+            EXIT main
+          ENDIF
+        ENDDO
+        CYCLE main
+      END IF
+      ALLOCATE( THIS%NEXT, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+      THIS => THIS%NEXT
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER) PARSE_REAL32( UNIT, POS, TERM, THIS%PAR, S, HOOKS )
+      R = .FALSE.
+      PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, ERRFLAG_INVALID_FLAG)
+      ! IF (.NOT. EX ) EXIT main
+      CYCLE main
+    ENDIF
+
+    ! jump the close bracket
+    IF ( BUF .EQ. ']' ) THEN
+      R = .TRUE.
+      END_ =.TRUE.
+      CYCLE main
+    ENDIF
+
+    ! Exit condition
+    DO J = 1, LEN_TRIM(TERM_)
+      IF ( BUF .EQ. TERM_(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    ENDDO
+
+    R = .TRUE.
+
+  ENDDO main
+
+  ! Error handling
+  IF ( CNT .EQ. 0 .OR. .NOT.EX ) THEN
+    S = ' '
+    EX = .FALSE.
+    THIS=>HEAD
+    DO
+      IF ( .NOT. ASSOCIATED(THIS) ) THEN
+        EXIT
+      ENDIF
+      THIS => THIS%NEXT
+      DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      HEAD => THIS
+    END DO
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_INTEGER_ARRAY )
+  ENDIF
+
+  ! Allocate output memory
+  ALLOCATE( F32(CNT), STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
+
+  ! Fill the integer array
+  THIS=>HEAD
+  CNT = 0
+  DO
+
+    CNT = CNT + 1
+
+    IF ( .NOT. ASSOCIATED(THIS) ) THEN
+      EXIT
+    ENDIF
+
+    F32(CNT) = THIS%PAR
+
+    THIS => THIS%NEXT
+
+    DEALLOCATE(HEAD, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+
+    HEAD => THIS
+
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CALL_READ_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to call read integer' )
+    CASE(ERRFLAG_UNABLE_TO_ALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED( ERRMSG ) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER_ARRAY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer array' )
+    CASE(ERRFLAG_INVALID_FLAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid flag' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_REAL32_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PARSE_REAL32'
+PP_THREAD_SAFE FUNCTION PARSE_REAL32( UNIT, POS, TERM, F32, S, HOOKS, F ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: JPRD_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),           INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),       INTENT(INOUT) :: POS
+  CHARACTER(LEN=*),           INTENT(IN)    :: TERM
+  REAL(KIND=JPRM_K),          INTENT(OUT)   :: F32
+  CHARACTER(LEN=1),           INTENT(OUT)   :: S
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=1), OPTIONAL, INTENT(IN)    :: F
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local Variables
+  LOGICAL :: EX
+  LOGICAL :: READ_
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: TMP
+  CHARACTER(LEN=1) :: BUF
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  INTEGER(KIND=JPIB_K) :: READ_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_READING_INTEGER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_CHARACTER = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_STATE = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization
+  EX = .TRUE.
+  TMP=''
+
+  ! Read Data From UNIT
+  CNT = 0
+  READ_ = .TRUE.
+  main : DO
+
+    IF ( PRESENT(F) .AND. READ_ ) THEN
+
+      BUF = F
+      READ_ = .FALSE.
+      STAT = 0
+
+    ELSE
+
+      POS = POS+1
+      IF ( POS .GT. LEN(UNIT) ) THEN
+        STAT = -1
+      ELSE
+        STAT = 0
+        BUF = UNIT(POS:POS)
+      END IF
+
+    END IF
+
+    ! End of file
+    IF ( STAT .EQ. -1 ) THEN
+      EXIT main
+    END IF
+
+    ! Check for special terminators
+    DO J = 1, LEN(TERM)
+      IF ( BUF .EQ. TERM(J:J) ) THEN
+        S = BUF
+        EXIT main
+      END IF
+    END DO
+
+    ! Check for standard terminator
+    IF ( BUF .EQ. ',' ) THEN
+      S = BUF
+      EXIT main
+    END IF
+
+    ! Update token
+    IF ( BUF .EQ. ' ' .AND. CNT .EQ. 0 ) THEN
+      CYCLE main
+    ELSE
+      CNT = CNT + 1
+      TMP = TMP(:)//BUF
+    END IF
+
+  END DO main
+
+  ! Error handling
+  IF ( STAT .EQ. -2 ) THEN
+    IF ( ALLOCATED(TMP) ) THEN
+      DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+    END IF
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_STATE )
+  END IF
+
+  ! Create output variable
+  TMP = TRIM(ADJUSTL(TMP(:)))
+  DO I = 1 , LEN(TMP)
+    IF ( (IACHAR( TMP(I:I) ) .LT. 48 .OR. IACHAR( TMP(I:I) ) .GT. 57) .AND. &
+&     (IACHAR( TMP(I:I) ) .NE. 45 .AND. IACHAR( TMP(I:I) ) .NE. 46 .AND. IACHAR( TMP(I:I) ) .NE. 69 .AND. IACHAR( TMP(I:I) ) .NE. 101)  ) THEN
+      EX = .FALSE.
+      IF ( ALLOCATED(TMP) ) THEN
+        DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+      PP_DEBUG_CRITICAL_THROW(ERRFLAG_INVALID_CHARACTER)
+    END IF
+  END DO
+
+  ! Read the number and free memory
+  IF ( ALLOCATED(TMP) ) THEN
+    ! WRITE(*,*) ' + Reading: ', TMP(:)
+    READ(TMP(:),*, IOSTAT=READ_STAT) F32
+    PP_DEBUG_CRITICAL_COND_THROW( READ_STAT .NE. 0, ERRFLAG_ERROR_READING_INTEGER )
+    DEALLOCATE(TMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+  ELSE
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED )
+  END IF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STAT)
+      END IF
+    CASE(ERRFLAG_ERROR_READING_INTEGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading integer' )
+    CASE(ERRFLAG_ERROR_INTEGER_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error integer not allocated' )
+    CASE(ERRFLAG_INVALID_CHARACTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid character' )
+    CASE(ERRFLAG_INVALID_STATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid state' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PARSE_REAL32
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 
 END MODULE CONFIGURATION_UTILS_MOD
 #undef PP_SECTION_NAME

@@ -268,6 +268,13 @@ printf("bitspervalue: %s\n", readVal);
 assert(strcmp(readVal, "16") == 0);
 free(readVal);
 
+
+ret = multio_grib2_dict_set( dictionary_02, "levels", "[1.2, 2.3, 4.5]" );
+ret = multio_grib2_dict_get( dictionary_02, "levels", &readVal );
+printf("levels: %s\n", readVal);
+assert(strcmp(readVal, "[1.2, 2.3, 4.5]") == 0);
+free(readVal);
+
 printf( "Destroy from c API (test02) \n" );
 
 ret = multio_grib2_dict_destroy( dictionary_02 );

@@ -1,0 +1,20 @@
+plans:
+  - name: reduced_gg_to_HEALPix_32_nested_direct
+    actions:
+      - type: select
+        match:
+          - paramId: 133
+      - type: interpolate
+        input: O1280
+        grid: H32_nested
+        options:
+          caching: false
+      - type: encode
+        format: grib
+        template: Reference_HEALPix_32_nested.grib
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false
+          path: MultIO_reduced_gg_to_HEALPix_32_nested_direct.grib

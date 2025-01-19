@@ -1,0 +1,1598 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'api_mars_dictionary_utils_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'API_MARS_DICTIONARY_UTILS_MOD'
+MODULE API_MARS_DICTIONARY_UTILS_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+IMPLICIT NONE
+
+!> Default visibility of the module
+PRIVATE
+
+!> Enumerators for the iterator
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_STREAM = 1_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_TYPE = 2_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_CLASS = 3_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_ORIGIN = 4_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_ANOFFSET = 5_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_PACKING = 6_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_NUMBER = 7_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_IDENT = 8_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_INSTRUMENT = 9_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_CHANNEL = 10_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_PARAMTYPE = 11_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_CHEM = 12_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_PARAM = 13_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_MODEL = 14_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_LEVTYPE = 15_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_LEVELIST = 16_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_DIRECTION = 17_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_FREQUENCY = 18_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_DATE = 19_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_TIME = 20_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_STEP = 21_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_REPRES = 22_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_TRUNCATION = 23_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_TIMEPROC = 24_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_EXPVER = 25_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_GRID = 26_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: MARS_ITERATOR_UNDEF = 27_JPIB_K
+
+
+! Whitelist of public symbols
+PUBLIC :: MARS_DICTIONARY_MAX_ITERATOR
+PUBLIC :: MARS_DICTIONARY_INIT_ITERATOR
+PUBLIC :: MARS_DICTIONARY_NAME2ITERATOR
+PUBLIC :: MARS_DICTIONARY_GET_NEXT_ITERATOR
+PUBLIC :: MARS_DICTIONARY_HAS
+PUBLIC :: MARS_DICTIONARY_GET_KEY_AS_STRING
+PUBLIC :: MARS_DICTIONARY_GET_VALUE_AS_STRING
+PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_STRING
+
+CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_MAX_ITERATOR'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_MAX_ITERATOR( MARS_DICTIONARY, MAX_ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: MAX_ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  MAX_ITERATOR = MARS_ITERATOR_UNDEF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_MAX_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_INIT_ITERATOR'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_INIT_ITERATOR( MARS_DICTIONARY, ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  ITERATOR = 1_JPIB_K
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_INIT_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_GET_NEXT_ITERATOR'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_GET_NEXT_ITERATOR( MARS_DICTIONARY, ITERATOR, END_OF_ITERATORS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  LOGICAL,                 INTENT(OUT)   :: END_OF_ITERATORS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: HAS_KEY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HAS_ITERATOR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  HAS_KEY = .FALSE.
+  END_OF_ITERATORS = .FALSE.
+  DO WHILE(.NOT.HAS_KEY)
+
+    ! Get the next iterator
+    ITERATOR = ITERATOR + 1
+
+    ! Check if the iterator is the last one
+    IF ( ITERATOR .EQ. MARS_ITERATOR_UNDEF ) THEN
+      END_OF_ITERATORS = .TRUE.
+      HAS_KEY = .TRUE.
+    ELSE
+      PP_TRYCALL(ERRFLAG_HAS_ITERATOR) MARS_DICTIONARY_HAS( MARS_DICTIONARY, ITERATOR, HAS_KEY, HOOKS )
+    ENDIF
+
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_HAS_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check if the iterator exists' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_GET_NEXT_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_NAME2ITERATOR'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_NAME2ITERATOR( MARS_DICTIONARY, KEY, ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  CHARACTER(LEN=*),        INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=LEN(KEY)) :: KEY_LOW
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Convert to string to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( KEY, KEY_LOW, HOOKS )
+
+  ! Get the iterator from the key name
+  SELECT CASE ( KEY_LOW )
+
+  CASE ( 'stream' )
+    ITERATOR = MARS_ITERATOR_STREAM
+
+  CASE ( 'type' )
+    ITERATOR = MARS_ITERATOR_TYPE
+
+  CASE ( 'class' )
+    ITERATOR = MARS_ITERATOR_CLASS
+
+  CASE ( 'origin' )
+    ITERATOR = MARS_ITERATOR_ORIGIN
+
+  CASE ( 'anoffset' )
+    ITERATOR = MARS_ITERATOR_ANOFFSET
+
+  CASE ( 'packing' )
+    ITERATOR = MARS_ITERATOR_PACKING
+
+  CASE ( 'number' )
+    ITERATOR = MARS_ITERATOR_NUMBER
+
+  CASE ( 'ident' )
+    ITERATOR = MARS_ITERATOR_IDENT
+
+  CASE ( 'instrument' )
+    ITERATOR = MARS_ITERATOR_INSTRUMENT
+
+  CASE ( 'channel' )
+    ITERATOR = MARS_ITERATOR_CHANNEL
+
+  CASE ( 'paramtype' )
+    ITERATOR = MARS_ITERATOR_PARAMTYPE
+
+  CASE ( 'chem' )
+    ITERATOR = MARS_ITERATOR_CHEM
+
+  CASE ( 'param' )
+    ITERATOR = MARS_ITERATOR_PARAM
+
+  CASE ( 'model' )
+    ITERATOR = MARS_ITERATOR_MODEL
+
+  CASE ( 'levtype' )
+    ITERATOR = MARS_ITERATOR_LEVTYPE
+
+  CASE ( 'levelist' )
+    ITERATOR = MARS_ITERATOR_LEVELIST
+
+  CASE ( 'direction' )
+    ITERATOR = MARS_ITERATOR_DIRECTION
+
+  CASE ( 'frequency' )
+    ITERATOR = MARS_ITERATOR_FREQUENCY
+
+  CASE ( 'date' )
+    ITERATOR = MARS_ITERATOR_DATE
+
+  CASE ( 'time' )
+    ITERATOR = MARS_ITERATOR_TIME
+
+  CASE ( 'step' )
+    ITERATOR = MARS_ITERATOR_STEP
+
+  CASE ( 'repres' )
+    ITERATOR = MARS_ITERATOR_REPRES
+
+  CASE ( 'truncation' )
+    ITERATOR = MARS_ITERATOR_TRUNCATION
+
+  CASE ( 'timeproc' )
+    ITERATOR = MARS_ITERATOR_TIMEPROC
+
+  CASE ( 'expver' )
+    ITERATOR = MARS_ITERATOR_EXPVER
+
+  CASE ( 'grid' )
+    ITERATOR = MARS_ITERATOR_GRID
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert to lowercase' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
+    CASE(ERRFLAG_NO_MARS_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'No MARS key found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_NAME2ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_HAS'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_HAS( MARS_DICTIONARY, ITERATOR, HAS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  LOGICAL,                 INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( MARS_ITERATOR_STREAM )
+    IF ( MARS_DICTIONARY%STREAM .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TYPE )
+    IF ( MARS_DICTIONARY%TYPE .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CLASS )
+    IF ( MARS_DICTIONARY%CLASS .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_ORIGIN )
+    IF ( MARS_DICTIONARY%ORIGIN .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_ANOFFSET )
+    IF ( MARS_DICTIONARY%ANOFFSET .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PACKING )
+    IF ( MARS_DICTIONARY%PACKING .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_NUMBER )
+    IF ( MARS_DICTIONARY%NUMBER .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_IDENT )
+    IF ( MARS_DICTIONARY%IDENT .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_INSTRUMENT )
+    IF ( MARS_DICTIONARY%INSTRUMENT .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CHANNEL )
+    IF ( MARS_DICTIONARY%CHANNEL .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PARAMTYPE )
+    IF ( MARS_DICTIONARY%PARAM_TYPE .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CHEM )
+    IF ( MARS_DICTIONARY%CHEM .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PARAM )
+    IF ( MARS_DICTIONARY%PARAM .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_MODEL )
+    IF ( MARS_DICTIONARY%MODEL .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_LEVTYPE )
+    IF ( MARS_DICTIONARY%LEVTYPE .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_LEVELIST )
+    IF ( MARS_DICTIONARY%LEVELIST .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_DIRECTION )
+    IF ( MARS_DICTIONARY%DIRECTION .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_FREQUENCY )
+    IF ( MARS_DICTIONARY%FREQUENCY .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_DATE )
+    IF ( MARS_DICTIONARY%DATE .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TIME )
+    IF ( MARS_DICTIONARY%TIME .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_STEP )
+    IF ( MARS_DICTIONARY%STEP .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_REPRES )
+    IF ( MARS_DICTIONARY%REPRES .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TRUNCATION )
+    IF ( MARS_DICTIONARY%TRUNCATION .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TIMEPROC )
+    IF ( MARS_DICTIONARY%TIMEPROC .NE. REPEAT('*',8) ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_EXPVER )
+    IF ( MARS_DICTIONARY%EXPVER .NE. REPEAT('*',4) ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_GRID )
+    IF ( MARS_DICTIONARY%GRID .NE. REPEAT('*',8) ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_MARS_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_HAS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_GET_KEY_AS_STRING'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_GET_KEY_AS_STRING( MARS_DICTIONARY, ITERATOR, KEY, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  CHARACTER(LEN=64),       INTENT(OUT)   :: KEY
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ENUM_STRING=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialize the value
+  KEY = REPEAT( ' ', LEN(KEY) )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( MARS_ITERATOR_STREAM )
+    KEY = 'stream'
+
+  CASE ( MARS_ITERATOR_TYPE )
+    KEY = 'type'
+
+  CASE ( MARS_ITERATOR_CLASS )
+    KEY = 'class'
+
+  CASE ( MARS_ITERATOR_ORIGIN )
+    KEY = 'origin'
+
+  CASE ( MARS_ITERATOR_ANOFFSET )
+    KEY = 'anoffset'
+
+  CASE ( MARS_ITERATOR_PACKING )
+    KEY = 'packing'
+
+  CASE ( MARS_ITERATOR_NUMBER )
+    KEY = 'number'
+
+  CASE ( MARS_ITERATOR_IDENT )
+    KEY = 'ident'
+
+  CASE ( MARS_ITERATOR_INSTRUMENT )
+    KEY = 'instrument'
+
+  CASE ( MARS_ITERATOR_CHANNEL )
+    KEY = 'channel'
+
+  CASE ( MARS_ITERATOR_PARAMTYPE )
+    KEY = 'paramtype'
+
+  CASE ( MARS_ITERATOR_CHEM )
+    KEY = 'chem'
+
+  CASE ( MARS_ITERATOR_PARAM )
+    KEY = 'param'
+
+  CASE ( MARS_ITERATOR_MODEL )
+    KEY = 'model'
+
+  CASE ( MARS_ITERATOR_LEVTYPE )
+    KEY = 'levtype'
+
+  CASE ( MARS_ITERATOR_LEVELIST )
+    KEY = 'levelist'
+
+  CASE ( MARS_ITERATOR_DIRECTION )
+    KEY = 'direction'
+
+  CASE ( MARS_ITERATOR_FREQUENCY )
+    KEY = 'frequency'
+
+  CASE ( MARS_ITERATOR_DATE )
+    KEY = 'date'
+
+  CASE ( MARS_ITERATOR_TIME )
+    KEY = 'time'
+
+  CASE ( MARS_ITERATOR_STEP )
+    KEY = 'step'
+
+  CASE ( MARS_ITERATOR_REPRES )
+    KEY = 'repres'
+
+  CASE ( MARS_ITERATOR_TRUNCATION )
+    KEY = 'truncation'
+
+  CASE ( MARS_ITERATOR_TIMEPROC )
+    KEY = 'timeproc'
+
+  CASE ( MARS_ITERATOR_EXPVER )
+    KEY = 'expver'
+
+  CASE ( MARS_ITERATOR_GRID )
+    KEY = 'grid'
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_MARS_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE(ERRFLAG_CONVERT_ENUM_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert enumerator to string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_GET_KEY_AS_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_GET_VALUE_AS_STRING'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_GET_VALUE_AS_STRING( MARS_DICTIONARY, ITERATOR, VALUE, HAS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,     ONLY: ISTREAM2CSTREAM
+  USE :: ENUMERATORS_MOD,     ONLY: ITYPE2CTYPE
+  USE :: ENUMERATORS_MOD,     ONLY: ICLASS2CCLASS
+  USE :: ENUMERATORS_MOD,     ONLY: ILEVTYPE2CLEVTYPE
+  USE :: ENUMERATORS_MOD,     ONLY: IORIGIN2CORIGIN
+  USE :: ENUMERATORS_MOD,     ONLY: IINT2CINT
+  USE :: ENUMERATORS_MOD,     ONLY: IFLOAT2CFLOAT
+  USE :: ENUMERATORS_MOD,     ONLY: IREPRES2CREPRES
+  USE :: ENUMERATORS_MOD,     ONLY: IPACKING2CPACKING
+  USE :: ENUMERATORS_MOD,     ONLY: IMODEL2CMODEL
+  USE :: ENUMERATORS_MOD,     ONLY: IPARAMTYPE2CPARAMTYPE
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  CHARACTER(LEN=64),       INTENT(OUT)   :: VALUE
+  LOGICAL,                 INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ENUM_STRING=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialize the value
+  VALUE = REPEAT( ' ', LEN(VALUE) )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( MARS_ITERATOR_STREAM )
+    IF ( MARS_DICTIONARY%STREAM .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) ISTREAM2CSTREAM(MARS_DICTIONARY%STREAM, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TYPE )
+    IF ( MARS_DICTIONARY%TYPE .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) ITYPE2CTYPE(MARS_DICTIONARY%TYPE, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CLASS )
+    IF ( MARS_DICTIONARY%CLASS .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) ICLASS2CCLASS(MARS_DICTIONARY%CLASS, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_ORIGIN )
+    IF ( MARS_DICTIONARY%ORIGIN .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IORIGIN2CORIGIN(MARS_DICTIONARY%ORIGIN, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_ANOFFSET )
+    IF ( MARS_DICTIONARY%ANOFFSET .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%ANOFFSET, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PACKING )
+    IF ( MARS_DICTIONARY%PACKING .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IPACKING2CPACKING(MARS_DICTIONARY%PACKING, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_NUMBER )
+    IF ( MARS_DICTIONARY%NUMBER .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%NUMBER, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_IDENT )
+    IF ( MARS_DICTIONARY%IDENT .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%IDENT, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_INSTRUMENT )
+    IF ( MARS_DICTIONARY%INSTRUMENT .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%INSTRUMENT, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CHANNEL )
+    IF ( MARS_DICTIONARY%CHANNEL .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%CHANNEL, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PARAMTYPE )
+    IF ( MARS_DICTIONARY%PARAM_TYPE .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IPARAMTYPE2CPARAMTYPE(MARS_DICTIONARY%PARAM_TYPE, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_CHEM )
+    IF ( MARS_DICTIONARY%CHEM .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%CHEM, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_PARAM )
+    IF ( MARS_DICTIONARY%PARAM .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%PARAM, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_MODEL )
+    IF ( MARS_DICTIONARY%MODEL .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IMODEL2CMODEL(MARS_DICTIONARY%MODEL, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_LEVTYPE )
+    IF ( MARS_DICTIONARY%LEVTYPE .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) ILEVTYPE2CLEVTYPE(MARS_DICTIONARY%LEVTYPE, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_LEVELIST )
+    IF ( MARS_DICTIONARY%LEVELIST .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%LEVELIST, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_DIRECTION )
+    IF ( MARS_DICTIONARY%DIRECTION .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%DIRECTION, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_FREQUENCY )
+    IF ( MARS_DICTIONARY%FREQUENCY .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%FREQUENCY, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_DATE )
+    IF ( MARS_DICTIONARY%DATE .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%DATE, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TIME )
+    IF ( MARS_DICTIONARY%TIME .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%TIME, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_STEP )
+    IF ( MARS_DICTIONARY%STEP .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%STEP, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_REPRES )
+    IF ( MARS_DICTIONARY%REPRES .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IREPRES2CREPRES(MARS_DICTIONARY%REPRES, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TRUNCATION )
+    IF ( MARS_DICTIONARY%TRUNCATION .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) IINT2CINT(MARS_DICTIONARY%TRUNCATION, VALUE, HOOKS)
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_TIMEPROC )
+    IF ( MARS_DICTIONARY%TIMEPROC .NE. REPEAT('*',8) ) THEN
+      VALUE = TRIM(ADJUSTL(MARS_DICTIONARY%TIMEPROC))
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_EXPVER )
+    IF ( MARS_DICTIONARY%EXPVER .NE. REPEAT('*',8) ) THEN
+      VALUE = TRIM(ADJUSTL(MARS_DICTIONARY%EXPVER))
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE ( MARS_ITERATOR_GRID )
+    IF ( MARS_DICTIONARY%GRID .NE. REPEAT('*',8) ) THEN
+      VALUE = TRIM(ADJUSTL(MARS_DICTIONARY%GRID))
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    END IF
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_MARS_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE(ERRFLAG_CONVERT_ENUM_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert enumerator to string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_GET_VALUE_AS_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_SET_VALUE_FROM_STRING'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_STRING( MARS_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,     ONLY: CSTREAM2ISTREAM
+  USE :: ENUMERATORS_MOD,     ONLY: CTYPE2ITYPE
+  USE :: ENUMERATORS_MOD,     ONLY: CCLASS2ICLASS
+  USE :: ENUMERATORS_MOD,     ONLY: CLEVTYPE2ILEVTYPE
+  USE :: ENUMERATORS_MOD,     ONLY: CORIGIN2IORIGIN
+  USE :: ENUMERATORS_MOD,     ONLY: CINT2IINT
+  USE :: ENUMERATORS_MOD,     ONLY: CFLOAT2IFLOAT
+  USE :: ENUMERATORS_MOD,     ONLY: CREPRES2IREPRES
+  USE :: ENUMERATORS_MOD,     ONLY: CPACKING2IPACKING
+  USE :: ENUMERATORS_MOD,     ONLY: CMODEL2IMODEL
+  USE :: ENUMERATORS_MOD,     ONLY: CPARAMTYPE2IPARAMTYPE
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  CHARACTER(LEN=*),        INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITEMP
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_MARS_TO_ENUM=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( MARS_ITERATOR_STREAM )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CSTREAM2ISTREAM(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%STREAM=ITEMP
+
+  CASE ( MARS_ITERATOR_TYPE )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CTYPE2ITYPE(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%TYPE=ITEMP
+
+  CASE ( MARS_ITERATOR_CLASS )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CCLASS2ICLASS(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%CLASS=ITEMP
+
+  CASE ( MARS_ITERATOR_ORIGIN )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CORIGIN2IORIGIN(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%ORIGIN=ITEMP
+
+  CASE ( MARS_ITERATOR_ANOFFSET )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%ANOFFSET=ITEMP
+
+  CASE ( MARS_ITERATOR_PACKING )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CPACKING2IPACKING(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%PACKING=ITEMP
+
+  CASE ( MARS_ITERATOR_NUMBER )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%NUMBER=ITEMP
+
+  CASE ( MARS_ITERATOR_IDENT )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%IDENT=ITEMP
+
+  CASE ( MARS_ITERATOR_INSTRUMENT )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%INSTRUMENT=ITEMP
+
+  CASE ( MARS_ITERATOR_CHANNEL )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%CHANNEL=ITEMP
+
+  CASE ( MARS_ITERATOR_PARAMTYPE )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CPARAMTYPE2IPARAMTYPE(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%PARAM_TYPE=ITEMP
+
+  CASE ( MARS_ITERATOR_CHEM )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%CHEM=ITEMP
+
+  CASE ( MARS_ITERATOR_PARAM )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%PARAM=ITEMP
+
+  CASE ( MARS_ITERATOR_MODEL )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CMODEL2IMODEL(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%MODEL=ITEMP
+
+  CASE ( MARS_ITERATOR_LEVTYPE )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CLEVTYPE2ILEVTYPE(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%LEVTYPE=ITEMP
+
+  CASE ( MARS_ITERATOR_LEVELIST )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%LEVELIST=ITEMP
+
+  CASE ( MARS_ITERATOR_DIRECTION )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%DIRECTION=ITEMP
+
+  CASE ( MARS_ITERATOR_FREQUENCY )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%FREQUENCY=ITEMP
+
+  CASE ( MARS_ITERATOR_DATE )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%DATE=ITEMP
+
+  CASE ( MARS_ITERATOR_TIME )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%time=ITEMP
+
+  CASE ( MARS_ITERATOR_STEP )
+        ! TODO handle step range?
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%step=ITEMP
+
+  CASE ( MARS_ITERATOR_REPRES )
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CREPRES2IREPRES(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%repres=ITEMP
+
+  CASE ( MARS_ITERATOR_TRUNCATION )
+        ! TODO
+        PP_TRYCALL(ERRFLAG_CONVERT_MARS_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+        MARS_DICTIONARY%TRUNCATION=ITEMP
+
+  CASE ( MARS_ITERATOR_TIMEPROC )
+        MARS_DICTIONARY%TIMEPROC=VALUE
+
+  CASE ( MARS_ITERATOR_EXPVER )
+        MARS_DICTIONARY%EXPVER=VALUE
+
+  CASE ( MARS_ITERATOR_GRID )
+        MARS_DICTIONARY%GRID=VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_MARS_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE( ERRFLAG_CONVERT_MARS_TO_ENUM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert MARS to enumerator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+END MODULE API_MARS_DICTIONARY_UTILS_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

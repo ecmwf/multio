@@ -33,16 +33,16 @@ ret = multio_grib2_encoder_open( optdict, &multio_grib2_10 );
 
 printf( "Hello from c API (test01) %p\n", multio_grib2_01 );
 
-ret = multio_grib2_encoder_close( multio_grib2_10 );
-ret = multio_grib2_encoder_close( multio_grib2_09 );
-ret = multio_grib2_encoder_close( multio_grib2_08 );
-ret = multio_grib2_encoder_close( multio_grib2_07 );
-ret = multio_grib2_encoder_close( multio_grib2_06 );
-ret = multio_grib2_encoder_close( multio_grib2_05 );
-ret = multio_grib2_encoder_close( multio_grib2_04 );
-ret = multio_grib2_encoder_close( multio_grib2_03 );
-ret = multio_grib2_encoder_close( multio_grib2_02 );
-ret = multio_grib2_encoder_close( multio_grib2_01 );
+ret = multio_grib2_encoder_close( &multio_grib2_10 );
+ret = multio_grib2_encoder_close( &multio_grib2_09 );
+ret = multio_grib2_encoder_close( &multio_grib2_08 );
+ret = multio_grib2_encoder_close( &multio_grib2_07 );
+ret = multio_grib2_encoder_close( &multio_grib2_06 );
+ret = multio_grib2_encoder_close( &multio_grib2_05 );
+ret = multio_grib2_encoder_close( &multio_grib2_04 );
+ret = multio_grib2_encoder_close( &multio_grib2_03 );
+ret = multio_grib2_encoder_close( &multio_grib2_02 );
+ret = multio_grib2_encoder_close( &multio_grib2_01 );
 
 printf( "Goodbye from c API (test01) \n" );
 

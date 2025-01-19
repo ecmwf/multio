@@ -2752,7 +2752,7 @@ IMPLICIT NONE
       R = .TRUE.
       EXIT main
     ENDIF
-    
+
     ! Check if the token is an array
     IF ( BUF .EQ. '[' .AND. CNT .EQ. 0 ) THEN
       SCALAR = .FALSE.
@@ -2783,8 +2783,8 @@ IMPLICIT NONE
       ! IF (.NOT. EX ) EXIT main
       CYCLE main
     ENDIF
-    
-    
+
+
 
     ! Read another token
     IF ( BUF .EQ. ',' ) THEN
@@ -2841,8 +2841,8 @@ IMPLICIT NONE
     R = .TRUE.
 
   ENDDO main
-  
-  
+
+
   ! Error handling
   IF ( CNT .EQ. 0 .OR. .NOT.EX ) THEN
     S = ' '
@@ -2860,7 +2860,7 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_ERROR_READING_REAL_ARRAY )
   ENDIF
 
-  
+
   ! Allocate output memory
   ALLOCATE( F64(CNT), STAT=ALLOC_STAT, ERRMSG=ERRMSG )
   PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_ALLOCATE )
@@ -2887,7 +2887,7 @@ IMPLICIT NONE
     HEAD => THIS
 
   ENDDO
-  
+
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

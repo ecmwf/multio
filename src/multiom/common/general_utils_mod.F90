@@ -25,7 +25,6 @@ PUBLIC :: CUSTOM_FINDLOC
 PUBLIC :: NEED_FIT_SPECTRUM
 PUBLIC :: TOLOWER
 PUBLIC :: TOUPPER
-PUBLIC :: FILLCSTR
 
 CONTAINS
 
@@ -1037,128 +1036,6 @@ PP_ERROR_HANDLER
 END FUNCTION TOUPPER
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
-
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FILLCSTR'
-PP_THREAD_SAFE FUNCTION FILLCSTR( F_STR, C_STR, HOOKS ) RESULT(RET)
-
-  ! Symbols imported from other modules within the project.
-  USE, intrinsic :: ISO_C_BINDING, ONLY: C_PTR
-  USE, intrinsic :: ISO_C_BINDING, ONLY: C_CHAR
-  USE, intrinsic :: ISO_C_BINDING, ONLY: C_NULL_CHAR
-  USE, intrinsic :: ISO_C_BINDING, ONLY: C_LOC
-  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
-  USE :: HOOKS_MOD,                ONLY: HOOKS_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  CHARACTER(LEN=*),     INTENT(IN)    :: F_STR
-  TYPE(C_PTR),          INTENT(OUT)   :: C_STR
-  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
-
-  !> Function result
-  INTEGER(KIND=JPIB_K) :: RET
-  INTEGER(KIND=JPIB_K) :: I
-  
-  !> Local variables
-  CHARACTER(LEN=1, KIND=C_CHAR), DIMENSION(LEN_TRIM(F_STR) + 1), TARGET :: TEMP
-  
-  INTERFACE
-    FUNCTION FILLCSTR_C(F_STR, C_STR) RESULT(RET) BIND(C, NAME='fillcstr')
-        USE, intrinsic :: ISO_C_BINDING, only : C_PTR
-        USE, intrinsic :: ISO_C_BINDING, only : C_INT
-        IMPLICIT NONE
-        TYPE(C_PTR), VALUE, INTENT(IN)  :: F_STR
-        TYPE(C_PTR),        INTENT(OUT) :: C_STR
-        INTEGER(KIND=C_INT) :: RET
-    END FUNCTION
-  END INTERFACE
-
-  !> Errorflags
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOC_CSTR=1_JPIB_K
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-
-  DO I=1,LEN_TRIM(F_STR)
-    TEMP(I) = F_STR(I:I)
-  END DO
-  
-  TEMP(SIZE(TEMP)) = C_NULL_CHAR
-  
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_ALLOC_CSTR) FILLCSTR_C(C_LOC(TEMP), C_STR)
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ! Initialization of bad path return value
-  PP_SET_ERR_FAILURE( RET )
-
-#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
-!$omp critical(ERROR_HANDLER)
-
-  BLOCK
-
-    ! Error handling variables
-    PP_DEBUG_PUSH_FRAME()
-
-    ! Handle different errors
-    SELECT CASE(ERRIDX)
-
-    CASE (ERRFLAG_UNABLE_TO_ALLOC_CSTR)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Can not allocate c string' )
-    CASE DEFAULT
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT
-
-  END BLOCK
-
-!$omp end critical(ERROR_HANDLER)
-#endif
-
-  ! Exit point on error
-  RETURN
-
-END FUNCTION FILLCSTR
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
 
 END MODULE GENERAL_UTILS_MOD
 #undef PP_SECTION_NAME

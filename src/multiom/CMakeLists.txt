@@ -307,6 +307,7 @@ endif()
 
 # add tests
 set(HAVE_OUTPUT_MANAGER_TESTS 1)
-add_subdirectory( test )
+add_subdirectory( tests-components )
+add_subdirectory( tests-api )
 
 endif()

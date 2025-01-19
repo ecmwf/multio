@@ -17,8 +17,8 @@ ret = multio_grib2_dict_create( &dictionary_02, "parametrization" );
 
 printf( "Hello from c API (test01) \n" );
 
-ret = multio_grib2_dict_destroy( dictionary_02 );
-ret = multio_grib2_dict_destroy( dictionary_01 );
+ret = multio_grib2_dict_destroy( &dictionary_02 );
+ret = multio_grib2_dict_destroy( &dictionary_01 );
 // ret = multio_grib2_dict_create( &dictionary_03, "options" );
 
 printf( "Goodbye from c API (test02)\n" );

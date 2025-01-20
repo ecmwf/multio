@@ -254,6 +254,7 @@ IMPLICIT NONE
   INTEGER(KIND=C_INT) :: RET
 
   !> Local variables
+  TYPE(C_PTR), POINTER, DIMENSION(:) :: TMP
   LOGICAL :: INITIALIZED
   LOGICAL :: MAP_HAS_ENCODER
   LOGICAL :: ENCODER_REMOVED
@@ -301,10 +302,12 @@ IMPLICIT NONE
   !> Print the encoder map
   !> NOTE: To be uncommented for debugging the API
   ! PP_TRYCALL(ERRFLAG_MAP_LIST) SHARED_ENCODER_MAP%LIST( 6_JPIB_K, 'ENCODERS_MAP: ', HOOKS )
+  TMP => NULL()
+  CALL C_F_POINTER( MULTIO_GRIB2, TMP, [1] )
 
   !> Get th fortran handle from the c handle
   F_MULTIO_GRIB2 => NULL()
-  CALL C_F_POINTER( MULTIO_GRIB2, F_MULTIO_GRIB2, [2] )
+  CALL C_F_POINTER( TMP(1), F_MULTIO_GRIB2, [2] )
 
   !> Check the allocation status of the fortran handle
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_MULTIO_GRIB2), ERRFLAG_KEY_NOT_ASSOCIATED )
@@ -334,6 +337,9 @@ IMPLICIT NONE
 
 !$omp end critical(API_ENCODER_MAP_REMOVE)
 
+  ! Reset the input pointer
+  TMP(1) = C_NULL_PTR
+
   !> Be sure we don't have any memory leaks
   CALL HOOKS%DEBUG_HOOK_%FREE( )
 
@@ -350,6 +356,8 @@ PP_ERROR_HANDLER
 !$omp critical(ERROR_HANDLER)
 
   BLOCK
+
+    CHARACTER(LEN=32) :: CTMP
 
     ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
@@ -378,7 +386,10 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_GET_SIZE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the size of the map' )
     CASE (ERRFLAG_WRONG_HANDLE)
+      CTMP = REPEAT(' ', 32)
+      WRITE(CTMP, *, IOSTAT=DEALLOC_STAT) F_MULTIO_GRIB2(1)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong handle (handle is not from an encoder)' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle is: '//TRIM(ADJUSTL(CTMP)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
     END SELECT

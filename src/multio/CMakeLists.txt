@@ -40,6 +40,25 @@ list( APPEND multio_util_srcs
     util/Timing.h
 )
 
+if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
+    list( APPEND multio_util_srcs
+        util/RingBuffer.h
+        util/Tracer.h
+        util/Tracer.cc
+        util/TraceEventIds.h
+        util/MemoryInformation.h
+        util/MemoryInformation.cc
+    )
+endif()
+
+if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE )
+    list(APPEND multio_utils_definitions "MULTIO_SERVER_MEMORY_PROFILE_ENABLED")
+endif()
+
+if ( HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
+    list(APPEND multio_utils_definitions "MULTIO_CLIENT_MEMORY_PROFILE_ENABLED")
+endif()
+
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
     config/ComponentConfiguration.h
@@ -201,6 +220,8 @@ ecbuild_add_library(
     PRIVATE_INCLUDES
       ${METKIT_INCLUDE_DIRS}
       ${ECKIT_INCLUDE_DIRS}
+
+    PRIVATE_DEFINITIONS ${multio_utils_definitions}
 
     PUBLIC_LIBS
         metkit eckit eckit_mpi)

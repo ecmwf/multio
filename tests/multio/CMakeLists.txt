@@ -53,6 +53,10 @@ ecbuild_add_test( TARGET    test_multio_metadata
                   SOURCES   test_multio_metadata.cc
                   LIBS      multio )
 
+ecbuild_add_test( TARGET    test_multio_metadata_parametrization
+                  SOURCES   test_multio_metadata_parametrization.cc
+                  LIBS      multio )
+
 ecbuild_add_test( TARGET    test_multio_metadata_mapping
                   SOURCES   test_multio_metadata_mapping.cc
                   NO_AS_NEEDED

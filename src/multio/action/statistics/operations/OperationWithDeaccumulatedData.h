@@ -21,17 +21,15 @@ public:
 
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, bool needRestart,
                                    const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-                                    const StatisticsOptions& opt) :
-        Operation{name, operation, win, opt},
-        values_{},
-        initValues_{},
-        needRestart_{needRestart} {
+                                   const StatisticsOptions& opt) :
+        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart} {
         load(IOmanager, opt);
         return;
     }
 
-    void updateWindow(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
-        checkSize(sz,cfg);
+    void updateWindow(const void* data, long sz, const message::Message& msg,
+                      const StatisticsConfiguration& cfg) override {
+        checkSize(sz, cfg);
         if (solverResetAccumulatedFields(msg, cfg)) {
             std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                            [](const T& v1) { return static_cast<T>(0.0); });
@@ -54,7 +52,7 @@ public:
     };
 
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
-        checkSize(sz,cfg);
+        checkSize(sz, cfg);
         if (solverResetAccumulatedFields(msg, cfg)) {
             std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                            [](const T& v1) { return static_cast<T>(0.0); });
@@ -110,7 +108,7 @@ public:
 protected:
     void serialize(IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) const {
         size_t sz = values_.size();
-        size_t cnt=0;
+        size_t cnt = 0;
         // restartState[cnt] = static_cast<uint64_t>(sz);
         for (size_t i = 0; i < sz; ++i) {
             T lv = initValues_[i];
@@ -130,11 +128,11 @@ protected:
             std::ofstream outFile(fname);
             outFile << "initValues(" << sz << ")" << std::endl;
             for (size_t i = 0; i < sz; ++i) {
-                outFile <<  i << ", " << initValues_[i] << std::endl;
+                outFile << i << ", " << initValues_[i] << std::endl;
             }
             outFile << "values(" << sz << ")" << std::endl;
             for (size_t i = 0; i < sz; ++i) {
-                outFile <<  i << ", " << values_[i] << std::endl;
+                outFile << i << ", " << values_[i] << std::endl;
             }
             outFile.close();
         }
@@ -143,7 +141,7 @@ protected:
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
         restartState.checkChecksum();
-        size_t cnt=0;
+        size_t cnt = 0;
         size_t sz = values_.size();
         // size_t sz = static_cast<size_t>(restartState[cnt]);
         for (size_t i = 0; i < sz; ++i) {
@@ -163,11 +161,11 @@ protected:
             std::ofstream outFile(fname);
             outFile << "initValues(" << sz << ")" << std::endl;
             for (size_t i = 0; i < sz; ++i) {
-                outFile <<  i << ", " << initValues_[i] << std::endl;
+                outFile << i << ", " << initValues_[i] << std::endl;
             }
             outFile << "values(" << sz << ")" << std::endl;
             for (size_t i = 0; i < sz; ++i) {
-                outFile <<  i << ", " << values_[i] << std::endl;
+                outFile << i << ", " << values_[i] << std::endl;
             }
             outFile.close();
         }
@@ -181,7 +179,7 @@ protected:
         }
     };
 
-    void checkTimeInterval( const StatisticsConfiguration& cfg ) {
+    void checkTimeInterval(const StatisticsConfiguration& cfg) {
         long sec = win_.count() * cfg.stepFreq() * cfg.timeStep();
         if (sec == 0) {
             throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
@@ -217,7 +215,8 @@ private:
         }
 
         std::ostringstream os;
-        os << "Invalid reset period of accumulated fields :: " << cfg.options().solverResetAccumulatedFields() << std::endl;
+        os << "Invalid reset period of accumulated fields :: " << cfg.options().solverResetAccumulatedFields()
+           << std::endl;
         throw eckit::UserError(os.str(), Here());
     }
 };

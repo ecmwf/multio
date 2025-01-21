@@ -32,6 +32,7 @@ public:
     void setValue(const char* key, const std::vector<std::string>& values);
 
     void setValue(const char* key, const std::vector<bool>& values);
+    void setValue(const char* key, const std::vector<unsigned char>& values);
 
     void setValue(const char* key, const std::vector<double>& values);
     void setValue(const char* key, const std::vector<float>& values);
@@ -58,6 +59,7 @@ public:
     void setValue(const std::string& key, const std::vector<std::string>& values) { setValue(key.c_str(), values); };
 
     void setValue(const std::string& key, const std::vector<bool>& values) { setValue(key.c_str(), values); };
+    void setValue(const std::string& key, const std::vector<unsigned char>& values) { setValue(key.c_str(), values); };
 
     void setValue(const std::string& key, const std::vector<double>& values) { setValue(key.c_str(), values); };
     void setValue(const std::string& key, const std::vector<float>& values) { setValue(key.c_str(), values); };

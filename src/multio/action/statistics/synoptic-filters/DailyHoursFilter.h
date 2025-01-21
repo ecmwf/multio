@@ -3,13 +3,12 @@
 #include "multio/action/statistics/synoptic-filters/Filter.h"
 
 
-
 namespace multio::action {
 
 class DailyHoursFilter final : public SynopticFilter {
 public:
-    DailyHoursFilter(){};
-    ~DailyHoursFilter(){};
+    DailyHoursFilter() {};
+    ~DailyHoursFilter() {};
 
     size_t size() const { return static_cast<size_t>(24); };
 
@@ -30,4 +29,3 @@ public:
 };
 
 }  // namespace multio::action
-

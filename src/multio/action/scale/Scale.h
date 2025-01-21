@@ -1,7 +1,7 @@
 #pragma once
 
 #include "multio/action/ChainedAction.h"
-#include "multio/config/ComponentConfiguration.h" 
+#include "multio/config/ComponentConfiguration.h"
 
 #include "multio/action/scale/Mapping.h"
 #include "multio/action/scale/Scaling.h"

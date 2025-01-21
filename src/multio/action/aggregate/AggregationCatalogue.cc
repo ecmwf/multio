@@ -3,6 +3,8 @@
 
 #include "multio/domain/Mappings.h"
 
+#include "multio/message/Parametrization.h"
+
 namespace multio::action {
 
 message::Message& AggregationCatalogue::getMessage(const std::string& key) {

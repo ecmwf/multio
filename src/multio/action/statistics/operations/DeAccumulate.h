@@ -22,22 +22,22 @@ public:
         OperationWithDeaccumulatedData<T>{name, "accumulate", sz, true, win, cfg} {}
 
     DeAccumulate(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-                  const StatisticsOptions& opt) :
+                 const StatisticsOptions& opt) :
         OperationWithDeaccumulatedData<T>{name, "accumulate", true, win, IOmanager, opt} {};
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() ? computeWithMissing(val,cfg) : computeWithoutMissing(val,cfg);
+        cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);
         return;
     }
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz,cfg);
+        checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? updateWithMissing(val,cfg) : updateWithoutMissing(val,cfg);
+        cfg.bitmapPresent() ? updateWithMissing(val, cfg) : updateWithoutMissing(val, cfg);
         return;
     }
 

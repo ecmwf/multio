@@ -32,10 +32,10 @@ public:
     };
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz,cfg);
+        checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? updateWithMissing(val,cfg) : updateWithoutMissing(val,cfg);
+        cfg.bitmapPresent() ? updateWithMissing(val, cfg) : updateWithoutMissing(val, cfg);
         return;
     };
 

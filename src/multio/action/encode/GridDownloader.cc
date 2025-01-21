@@ -25,8 +25,8 @@
 #include "eckit/mpi/Comm.h"
 
 #include "multio/message/Glossary.h"
-#include "multio/util/Substitution.h"
 #include "multio/util/Environment.h"
+#include "multio/util/Substitution.h"
 
 namespace {
 const std::unordered_map<std::string, int> latParamIds{

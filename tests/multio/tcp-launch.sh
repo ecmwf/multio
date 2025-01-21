@@ -35,6 +35,7 @@ echo "All clients and servers stopped... spawning test child"
 cmd="$binary --transport=\"tcp\" --check-data-only=true"
 eval $cmd
 tmp=$?
+code=0
 if [[ $tmp != 0 ]]; then code=$tmp; fi
 
 exit $code

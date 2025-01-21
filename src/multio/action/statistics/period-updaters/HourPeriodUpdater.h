@@ -1,13 +1,13 @@
 #pragma once
 
 
+#include <iomanip>  // For setw
 #include <iostream>
-#include <iomanip> // For setw
 
+#include "eckit/types/DateTime.h"
+#include "multio/action/statistics/TimeUtils.h"
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "multio/action/statistics/period-updaters/PeriodUpdater.h"
-#include "multio/action/statistics/TimeUtils.h"
-#include "eckit/types/DateTime.h"
 #include "multio/message/Message.h"
 
 
@@ -16,20 +16,19 @@ namespace multio::action {
 class HourPeriodUpdater final : public PeriodUpdater {
 public:
     HourPeriodUpdater(long span) : PeriodUpdater{span} {};
-    HourPeriodUpdater( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt):
-        PeriodUpdater{ timeUnit(), IOmanager, opt}{ };
+    HourPeriodUpdater(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
+        PeriodUpdater{timeUnit(), IOmanager, opt} {};
 
-    void dump( std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt ) const {
-       std::ostringstream os;
-       os  << timeUnit() << "_" << std::setw(4) << std::setfill('0') << span_;
-       PeriodUpdater::baseDump(timeUnit(), IOmanager, opt);
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
+        std::ostringstream os;
+        os << timeUnit() << "_" << std::setw(4) << std::setfill('0') << span_;
+        PeriodUpdater::baseDump(timeUnit(), IOmanager, opt);
     };
 
 
-    const std::string name() const{
+    const std::string name() const {
         std::ostringstream os;
-        os << std::setw(4) << std::setfill('0') << span_ << "-"
-           << timeUnit();
+        os << std::setw(4) << std::setfill('0') << span_ << "-" << timeUnit();
         return os.str();
     };
 
@@ -49,7 +48,6 @@ public:
         eckit::DateTime tmp = startPoint + static_cast<eckit::Second>(3600 * span_);
         return eckit::DateTime{tmp.date(), eckit::Time{tmp.time().hours(), 0, 0}};
     };
-
 };
 
-}
+}  // namespace multio::action

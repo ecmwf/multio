@@ -11,14 +11,14 @@
 namespace multio::action {
 
 
-TemporalStatistics::TemporalStatistics(const std::string& output_freq,
-                                       const std::vector<std::string>& operations, const message::Message& msg,
-                                       std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
+TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std::vector<std::string>& operations,
+                                       const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
+                                       const StatisticsConfiguration& cfg) :
     periodUpdater_{make_period_updater(output_freq, cfg)},
     window_{make_window(periodUpdater_, cfg)},
     statistics_{make_operations(operations, msg, IOmanager, window_, cfg)} {}
 
-TemporalStatistics::TemporalStatistics( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) :
+TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
     periodUpdater_{load_period_updater(IOmanager, opt)},
     window_{load_window(IOmanager, opt)},
     statistics_{load_operations(IOmanager, window_, opt)} {
@@ -26,17 +26,17 @@ TemporalStatistics::TemporalStatistics( std::shared_ptr<StatisticsIO>& IOmanager
 }
 
 
-void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt) const {
+void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Dump restart files" << std::endl;
-    IOmanager->pushDir( "periodUpdater" );
+    IOmanager->pushDir("periodUpdater");
     IOmanager->createCurrentDir();
     periodUpdater_->dump(IOmanager, opt);
     IOmanager->popDir();
-    IOmanager->pushDir( "operationWindow" );
+    IOmanager->pushDir("operationWindow");
     IOmanager->createCurrentDir();
     window_.dump(IOmanager, opt);
     IOmanager->popDir();
-    IOmanager->pushDir( "operations" );
+    IOmanager->pushDir("operations");
     IOmanager->createCurrentDir();
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, opt);

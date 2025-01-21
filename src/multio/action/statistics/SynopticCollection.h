@@ -11,9 +11,9 @@
 
 
 #include "multio/action/statistics/OperationWindow.h"
-#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "multio/action/statistics/StatisticsIO.h"
 #include "multio/action/statistics/SynopticFilters.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "multio/action/statistics/operations/Operation.h"
 #include "multio/config/ComponentConfiguration.h"
 

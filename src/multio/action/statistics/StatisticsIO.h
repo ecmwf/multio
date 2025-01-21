@@ -54,10 +54,10 @@ public:
     std::string getDateTime();
 
 
-    std::string pushDir( const std::string& directory );
-    std::string popDir( );
-    std::string getRestartSymLink(  ) const; //This returns the restart dir for the current plan
-    std::string getCurrentDir(  ) const;
+    std::string pushDir(const std::string& directory);
+    std::string popDir();
+    std::string getRestartSymLink() const;  // This returns the restart dir for the current plan
+    std::string getCurrentDir() const;
     std::string getUniqueRestartDir() const;
     bool currentDirExists() const;
     void createCurrentDir() const;
@@ -68,9 +68,9 @@ public:
     std::vector<eckit::PathName> getDirs();
 
     virtual void write(const std::string& name, std::size_t fieldSize, size_t writeSize) = 0;
-    virtual void readSize(const std::string& name, size_t& readSize ) = 0;
-    virtual void read(const std::string& name, size_t readSize ) = 0;
-    virtual void flush ( ) = 0;
+    virtual void readSize(const std::string& name, size_t& readSize) = 0;
+    virtual void read(const std::string& name, size_t readSize) = 0;
+    virtual void flush() = 0;
 
 protected:
     std::string generatePathName() const;
@@ -87,12 +87,6 @@ protected:
 };
 
 
-
-
-
-
-
-
 class StatisticsIOBuilderBase;
 
 class StatisticsIOFactory : private eckit::NonCopyable {
@@ -107,7 +101,8 @@ public:  // methods
 
     void list(std::ostream&);
 
-    std::shared_ptr<StatisticsIO> build(const std::string& name, const std::string& basePath, const std::string& uniqueID);
+    std::shared_ptr<StatisticsIO> build(const std::string& name, const std::string& basePath,
+                                        const std::string& uniqueID);
 
 private:  // members
     std::map<std::string, const StatisticsIOBuilderBase*> factories_;

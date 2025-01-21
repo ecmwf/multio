@@ -6,6 +6,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
+#include "multio/message/Parametrization.h"
 
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
@@ -61,6 +62,11 @@ void Dispatcher::handle(message::Message msg) const {
 
         case message::Message::Tag::Mask:
             domain::Mask::instance().add(std::move(msg));
+            break;
+
+        case message::Message::Tag::Parametrization:
+            LOG_DEBUG_LIB(multio::LibMultio) << "Server received parametrization: " << msg << std::endl;
+            message::Parametrization::instance().update(std::move(msg));
             break;
 
         default:

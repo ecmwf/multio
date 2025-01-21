@@ -72,7 +72,7 @@ void AtlasIO::readSize(const std::string& name, std::size_t& readSize) {
     checkFileExist(fname);
     std::uint64_t sz;
     atlas::io::RecordReader record(fname);
-    record.read("size", sz ).wait();
+    record.read("size", sz).wait();
     readSize = static_cast<std::size_t>(sz);
     return;
 };

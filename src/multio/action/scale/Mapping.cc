@@ -3,10 +3,10 @@
 #include <cstdlib>
 #include <string>
 
+#include "MetadataUtils.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
-#include "MetadataUtils.h"
 
 
 namespace multio::action {
@@ -35,7 +35,7 @@ void ScaleMapping::applyMapping(message::Metadata& md) const {
 
         auto it = scaleMap_.find(cparam);
         if (it != scaleMap_.end()) {
-            md.set(glossary().paramId, std::stoll(it->second)); 
+            md.set(glossary().paramId, std::stoll(it->second));
             md.set(glossary().param, it->second.c_str());
         }
     }

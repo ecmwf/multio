@@ -32,7 +32,7 @@ public:
     }
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz,cfg);
+        checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
         std::copy(val, val + (sz / sizeof(T)), values_.begin());

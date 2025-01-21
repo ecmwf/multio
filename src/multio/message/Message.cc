@@ -31,13 +31,22 @@ int Message::protocolVersion() {
 }
 
 std::string Message::tag2str(Tag t) {
-    static std::map<Tag, std::string> m
-        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},   {Tag::Close, "Close"}, {Tag::Domain, "Domain"},
-           {Tag::Mask, "Mask"},   {Tag::Field, "Field"}, {Tag::Flush, "Flush"}, {Tag::Notification, "Notification"}};
+    static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
+                                           {Tag::Open, "Open"},
+                                           {Tag::Close, "Close"},
+                                           {Tag::Domain, "Domain"},
+                                           {Tag::Mask, "Mask"},
+                                           {Tag::Field, "Field"},
+                                           {Tag::Flush, "Flush"},
+                                           {Tag::Notification, "Notification"},
+                                           {Tag::Parametrization, "Parametrization"}};
 
     ASSERT(t < Tag::ENDTAG);
 
-    return m.find(t)->second;
+    auto tstr = m.find(t);
+    ASSERT(tstr != m.end());
+
+    return tstr->second;
 }
 
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}

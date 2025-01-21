@@ -6,6 +6,5 @@
 #include "multio/message/Metadata.h"
 
 namespace multio::action {
-    std::string extractParam(const multio::message::Metadata& md);
-
+std::string extractParam(const multio::message::Metadata& md);
 }

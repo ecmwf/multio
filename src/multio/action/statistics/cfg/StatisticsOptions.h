@@ -3,9 +3,9 @@
 #include <string>
 
 #include "eckit/config/LocalConfiguration.h"
+#include "multio/action/Action.h"
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/action/Action.h"
 
 
 namespace multio::action {
@@ -13,9 +13,8 @@ namespace multio::action {
 /*
  * This class handle all the statistics configurations under the option keyword in the yaml
  */
-class StatisticsOptions{
+class StatisticsOptions {
 private:
-
     // Default values for configurations
     long stepFreq_;
     long timeStep_;
@@ -35,7 +34,6 @@ private:
     std::string accumulatedFieldsResetFreqency_;
 
 private:
-
     void parseUseDateTime(const eckit::LocalConfiguration& cfg);
     void parseCheckMissingValues(const eckit::LocalConfiguration& cfg);
     void parseStepFrequency(const eckit::LocalConfiguration& cfg);
@@ -58,8 +56,7 @@ private:
     void usage();
 
 public:
-
-    StatisticsOptions( const config::ComponentConfiguration& compConf );
+    StatisticsOptions(const config::ComponentConfiguration& compConf);
 
     const std::string& logPrefix() const;
     const std::string& windowType() const;
@@ -83,7 +80,6 @@ public:
     const std::string& restartPrefix() const;
     const std::string& restartLib() const;
     const std::string& solverResetAccumulatedFields() const;
-
 };
 
-}
+}  // namespace multio::action

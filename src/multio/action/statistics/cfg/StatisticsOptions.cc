@@ -4,7 +4,7 @@
 namespace multio::action {
 
 
-StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& compConf ):
+StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compConf) :
     stepFreq_{1},
     timeStep_{3600},
     solverSendInitStep_{false},
@@ -13,14 +13,13 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     debugRestart_{false},
     useDateTime_{false},
     clientSideStatistics_{false},
-    restartTime_{"latest"},//00000000-000000
+    restartTime_{"latest"},  // 00000000-000000
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"},
     restartLib_{"fstream_io"},
     logPrefix_{"Plan"},
     windowType_{"forward-offset"},
-    accumulatedFieldsResetFreqency_{"month"}
-{
+    accumulatedFieldsResetFreqency_{"month"} {
     // Dump usage
     if (compConf.parsedConfig().has("help")) {
         usage();
@@ -29,7 +28,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
 
 
     // Read the options
-    if ( compConf.parsedConfig().has("options") ) {
+    if (compConf.parsedConfig().has("options")) {
         const auto& options = compConf.parsedConfig().getSubConfiguration("options");
         parseUseDateTime(options);
         parseStepFrequency(options);
@@ -58,7 +57,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
 
 void StatisticsOptions::parseUseDateTime(const eckit::LocalConfiguration& cfg) {
     // Distance in steps between two messages
-    useDateTime_ = cfg.getLong("use-current-time", false );
+    useDateTime_ = cfg.getLong("use-current-time", false);
     return;
 };
 
@@ -155,7 +154,7 @@ void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& c
         if (!path.exists() || !path.isDir()) {
             std::ostringstream os;
             os << "Restart path does not exist :: " << restartPath_ << std::endl;
-            throw eckit::UserError{ os.str(), Here()};
+            throw eckit::UserError{os.str(), Here()};
         }
     }
     return;
@@ -174,7 +173,7 @@ void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& c
 
 
 void StatisticsOptions::parseRestartPrefix(const config::ComponentConfiguration& compConf,
-                                                 const eckit::LocalConfiguration& cfg) {
+                                           const eckit::LocalConfiguration& cfg) {
     // Prefix used for the restart file names in order
     // to make the file name unique across different plans
     restartPrefix_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-prefix", "StatisticsDump"));
@@ -187,14 +186,16 @@ void StatisticsOptions::parseRestartLib(const eckit::LocalConfiguration& cfg) {
 };
 
 
-void StatisticsOptions::parseLogPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseLogPrefix(const config::ComponentConfiguration& compConf,
+                                       const eckit::LocalConfiguration& cfg) {
     logPrefix_ = cfg.getString("log-prefix", "Plan");
     return;
 };
 
-void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& compConf,
+                                        const eckit::LocalConfiguration& cfg) {
     windowType_ = cfg.getString("window-type", "forward-offset");
-    if ( windowType_ != "forward-offset" && windowType_ != "backward-offset" ) {
+    if (windowType_ != "forward-offset" && windowType_ != "backward-offset") {
         std::ostringstream os;
         os << "Invalid window type :: " << windowType_ << std::endl;
         throw eckit::UserError(os.str(), Here());
@@ -203,7 +204,7 @@ void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& co
 };
 
 void StatisticsOptions::parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
-                                                                const eckit::LocalConfiguration& cfg) {
+                                                          const eckit::LocalConfiguration& cfg) {
     // Used in the deaccumulate action to not deaccumulate twice
     accumulatedFieldsResetFreqency_ = cfg.getString("solver-reset-accumulate-fields-every", "month");
 
@@ -218,8 +219,7 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
 };
 
 
-const std::string& StatisticsOptions::logPrefix() const
-{
+const std::string& StatisticsOptions::logPrefix() const {
     return logPrefix_;
 };
 
@@ -287,8 +287,6 @@ const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
 };
 
 
-
-
 void StatisticsOptions::dumpOptions() {
     // TODO: Implement this function
     return;
@@ -300,4 +298,4 @@ void StatisticsOptions::usage() {
     return;
 }
 
-}
+}  // namespace multio::action

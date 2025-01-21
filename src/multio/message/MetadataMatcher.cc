@@ -74,9 +74,9 @@ bool MatchKeys::matches(const Metadata& md) const {
             break;
         }
         if (kv.second.find(searchKey->second) == kv.second.end()) {
-            if (enforceSameKeyTypes_ && kv.second.size() > 0 ) {
+            if (enforceSameKeyTypes_ && kv.second.size() > 0) {
                 // Note: NEMO needs the possibiity to use empty sets!!!
-                //if (kv.second.size() == 0) {
+                // if (kv.second.size() == 0) {
                 //    std::ostringstream oss;
                 //    oss << "[enforce-same-key-type] Matcher for key \"" << kv.first << "\" is an empty set";
                 //    throw MetadataException(oss.str());

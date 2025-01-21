@@ -12,6 +12,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
+#include "multio/message/Parametrization.h"
 #include "multio/transport/TransportRegistry.h"
 
 using multio::message::Message;
@@ -195,6 +196,10 @@ void MultioClient::dispatch(message::Message msg) {
             }
         }
         else {
+            if (msg.tag() == message::Message::Tag::Parametrization) {
+                message::Parametrization::instance().update(msg);
+            }
+
             for (const auto& plan : plans_) {
                 plan->process(msg);
             }

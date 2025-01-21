@@ -10,6 +10,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
+#include "multio/message/Parametrization.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
@@ -568,6 +569,43 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
     return MULTIO_SUCCESS;
 #endif
 }
+
+
+int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, md]() {
+            ASSERT(mio);
+            ASSERT(md);
+
+            mio->dispatch(md->md, eckit::Buffer{}, Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_array(multio_handle_t* mio, const char* key, const int* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int)};
+
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}},
+                          std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
 
 int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
 #if !defined(MULTIO_DUMMY_API)

@@ -4,9 +4,9 @@
 #include <string>
 
 #include "multio/action/statistics/OperationWindow.h"
+#include "multio/action/statistics/StatisticsIO.h"
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
-#include "multio/action/statistics/StatisticsIO.h"
 
 namespace multio::action {
 
@@ -23,7 +23,8 @@ public:
 
     virtual void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) = 0;
 
-    virtual void updateWindow(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg)
+    virtual void updateWindow(const void* data, long sz, const message::Message& msg,
+                              const StatisticsConfiguration& cfg)
         = 0;
     virtual void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
 

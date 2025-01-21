@@ -22,6 +22,17 @@ set_tests_properties(${DATA_PREFIX}_get_data_healpix_ring2nest PROPERTIES
     FIXTURES_SETUP ${DATA_PREFIX}_get_data_healpix_ring2nest
 )
 
+ecbuild_get_test_multidata(
+    TARGET   ${DATA_PREFIX}_get_data_interpolate_healpix
+    DIRNAME  multio/tests/actions/interpolate-healpix-nested
+    DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
+    NAMES    "Reference_reduced_gg_to_HEALPix_32_nested.grib"
+             "Reference_reduced_gg_to_HEALPix_1024_nested.grib"
+)
+set_tests_properties(${DATA_PREFIX}_get_data_interpolate_healpix PROPERTIES
+    FIXTURES_SETUP ${DATA_PREFIX}_get_data_interpolate_healpix
+)
+
 foreach (_n
     32
     1024
@@ -49,12 +60,21 @@ foreach (_n
     )
 
     ecbuild_add_test(
-        TARGET  ${PREFIX}_compare
+        TARGET  ${PREFIX}_compare_original
         COMMAND grib_compare
         ARGS    MultIO_reduced_gg_to_HEALPix_${_n}_nested_original.grib MultIO_reduced_gg_to_HEALPix_${_n}_nested_direct.grib
     )
-    set_tests_properties(${PREFIX}_compare PROPERTIES
+    set_tests_properties(${PREFIX}_compare_original PROPERTIES
         FIXTURES_REQUIRED "${PREFIX}_original;${PREFIX}_direct"
+    )
+
+    ecbuild_add_test(
+        TARGET  ${PREFIX}_compare_reference
+        COMMAND grib_compare
+        ARGS    Reference_reduced_gg_to_HEALPix_${_n}_nested.grib MultIO_reduced_gg_to_HEALPix_${_n}_nested_direct.grib
+    )
+    set_tests_properties(${PREFIX}_compare_reference PROPERTIES
+        FIXTURES_REQUIRED "${DATA_PREFIX}_get_data_interpolate_healpix;${PREFIX}_direct"
     )
 
 endforeach()

@@ -409,12 +409,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             md.set("gridded", true);
             md.set("gridType", "HEALPix");
             md.set("Nside", (std::int64_t)grid[0]);
-
-            if (gridKind == "HEALPix_nested") {
-                md.set("orderingConvention", "nested");
-            } else {
-                md.set("orderingConvention", "ring");
-            }
+            md.set("orderingConvention", gridKind == "HEALPix_nested" ? "nested" : "ring");
 
             // If no interpolation matrix name is provided, generate one
             if (interpolationMatrix) {
@@ -435,7 +430,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                     char* env = ::getenv(lookUpKey.c_str());
                     return env ? std::optional<std::string>{env} : std::optional<std::string>{};
                 });
-                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], "ring");
+                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
         }

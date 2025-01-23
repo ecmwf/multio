@@ -1,0 +1,16 @@
+dependency_cmake_options: |
+  ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
+dependencies: |
+  ecmwf/ecbuild
+  ecmwf/eccodes
+  ecmwf/eckit
+  ecmwf/metkit
+  ecmwf/fckit
+  ecmwf/fdb
+  ecmwf/atlas
+  ecmwf/atlas-orca
+  ecmwf/mir
+  ecmwf/multio
+dependency_branch: develop
+parallelism_factor: 8
+self_build: false

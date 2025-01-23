@@ -27,7 +27,8 @@ Select::Select(const ComponentConfiguration& compConf) :
     ChainedAction{compConf}, selectors_{MatchReduce::construct(compConf.parsedConfig())} {}
 
 void Select::executeImpl(Message msg) {
-    if (matches(msg)) {
+    //pass through action for everything that is not a field, e.g. Flush
+    if (matches(msg) || (msg.tag() != message::Message::Tag::Field)) {
         executeNext(std::move(msg));
     }
 }

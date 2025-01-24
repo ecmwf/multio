@@ -29,7 +29,7 @@ jobs:
     uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@feature/add_pymultio
     with:
       multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
-      pymultio: pymultio:ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      pymultio: pymultio:ecmwf/multio/pymultio@${{ github.event.pull_request.head.sha || github.sha }}
       codecov_upload: true
       clang_format: false
     secrets: inherit
@@ -60,7 +60,7 @@ jobs:
     uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@feature/add_pymultio
     with:
       multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
-      pymultio: pymultio:ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      pymultio: pymultio:ecmwf/multio/pymultio@${{ github.event.pull_request.head.sha || github.sha }}
     secrets: inherit
 
   # Run CI of private downstream packages on HPC

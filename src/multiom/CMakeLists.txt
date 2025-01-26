@@ -90,6 +90,7 @@ configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_pre
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_logging_utils.h  )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_errhdl_utils.h  )
 
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/api/c/api.h  ${ECOM_INCLUDE_DIR}/api.h COPYONLY )
 
 #
 # Recursive add fo all the files in the grib directory

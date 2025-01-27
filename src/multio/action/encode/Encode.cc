@@ -62,7 +62,15 @@ GridType createGrid(const std::string& atlasNamedGrid) {
 void updateGaussianGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
     const auto gaussianGrid = createGrid<atlas::GaussianGrid>(atlasNamedGrid);
 
-    int err = codes_set_long(handle, "N", gaussianGrid.N());
+    std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
+    bool isReducedGaussian = std::regex_match(atlasNamedGrid, reducedGaussianMatch);
+    std::string gridType{isReducedGaussian ? "reduced_gg" : "regular_gg"};
+    size_t gridTypeSize = gridType.size();
+    int err = codes_set_string(handle, "gridType", gridType.c_str(), &gridTypeSize);
+    handleCodesError("eccodes error while setting the gridType to reduced_gg/regular_gg", err, Here());
+
+
+    err = codes_set_long(handle, "N", gaussianGrid.N());
     handleCodesError("eccodes error while setting the N value: ", err, Here());
 
     auto tmp = gaussianGrid.nx();
@@ -97,7 +105,13 @@ void updateGaussianGrid(codes_handle* handle, const std::string& atlasNamedGrid)
 
 void updateRegularLatLonGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
     const auto llGrid = createGrid<atlas::RegularLonLatGrid>(atlasNamedGrid);
-    int err = codes_set_long(handle, "Ni", llGrid.nx());
+
+    std::string gridType{"regular_ll"};
+    size_t gridTypeSize = gridType.size();
+    int err = codes_set_string(handle, "gridType", gridType.c_str(), &gridTypeSize);
+    handleCodesError("eccodes error while setting the gridType to regular_ll", err, Here());
+
+    err = codes_set_long(handle, "Ni", llGrid.nx());
     handleCodesError("eccodes error while setting the Ni value: ", err, Here());
     err = codes_set_long(handle, "Nj", llGrid.ny());
     handleCodesError("eccodes error while setting the Nj value: ", err, Here());

@@ -1,5 +1,3 @@
-
-
 if ( HAVE_OUTPUT_MANAGER )
 
 # Update on new big features

@@ -104,7 +104,10 @@ IMPLICIT NONE
     !> TODO: Add more options to add messages to the frame (i.e. int message, float messge, etc.)
 
     !> Print all error frames and their messages
-    PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT_ERROR_STACK => DEBUG_PRINT_ERROR_STACK
+    PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT_ERROR_STACK_I64 => DEBUG_PRINT_ERROR_STACK_I64
+    PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT_ERROR_STACK_I32 => DEBUG_PRINT_ERROR_STACK_I32
+
+    GENERIC, PUBLIC :: PRINT_ERROR_STACK => PRINT_ERROR_STACK_I64, PRINT_ERROR_STACK_I32
 
   END TYPE
 
@@ -360,7 +363,7 @@ END SUBROUTINE DEBUG_PUSH_ERROR_MSG
 !> @param [in] THIS The `DEBUG_T` object containing the error stack to be printed.
 !> @param [in] UNIT The output unit where the error stack will be printed.
 !>                  This can be a file unit or the standard output.
-SUBROUTINE DEBUG_PRINT_ERROR_STACK( THIS, UNIT )
+SUBROUTINE DEBUG_PRINT_ERROR_STACK_I64( THIS, UNIT )
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -506,6 +509,40 @@ IMPLICIT NONE
   !> Exit point
   RETURN
 
-END SUBROUTINE DEBUG_PRINT_ERROR_STACK
+END SUBROUTINE DEBUG_PRINT_ERROR_STACK_I64
+
+!>
+!> @brief Prints all error frames and their associated messages in the `DEBUG_T` structure.
+!>
+!> This subroutine traverses the error stack in the `DEBUG_T` object and prints
+!> each error frame along with its corresponding error messages to the specified
+!> output unit. This is useful for debugging purposes, as it provides a complete
+!> overview of all recorded errors.
+!>
+!> @param [in] THIS The `DEBUG_T` object containing the error stack to be printed.
+!> @param [in] UNIT The output unit where the error stack will be printed.
+!>                  This can be a file unit or the standard output.
+SUBROUTINE DEBUG_PRINT_ERROR_STACK_I32( THIS, UNIT )
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(DEBUG_T),       INTENT(IN) :: THIS
+  INTEGER(KIND=JPIM_K), INTENT(IN) :: UNIT
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: LOC_UNIT
+
+  !> Convert the integer unit to the default kind
+  LOC_UNIT = INT(UNIT, KIND=JPIB_K)
+
+  !> Call the I64 version of the subroutine
+  CALL THIS%PRINT_ERROR_STACK_I64( LOC_UNIT )
+
+END SUBROUTINE DEBUG_PRINT_ERROR_STACK_I32
 
 END MODULE DEBUG_MOD

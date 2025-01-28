@@ -35,3 +35,10 @@ int multio_grib2_dict_has(void* dict, const char* key, int* has) {
     int klen = strlen(key);
     return multio_grib2_dict_has_f(dict, key, klen, has);
 };
+
+
+int multio_grib2_dict_to_yaml( void* dict, const char* fname){
+  int len = strlen(fname);
+  return multio_grib2_dict_to_yaml_f( dict, fname, len );
+
+};

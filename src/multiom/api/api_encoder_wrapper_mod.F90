@@ -20,7 +20,6 @@ PUBLIC :: MULTIO_GRIB2_ENCODER_OPEN
 PUBLIC :: MULTIO_GRIB2_ENCODER_CLOSE
 PUBLIC :: MULTIO_GRIB2_ENCODER_ENCODE64
 PUBLIC :: MULTIO_GRIB2_ENCODER_ENCODE32
-PUBLIC :: MULTIO_GRIB2_ENCODER_EXTRACT_METADATA
 
 CONTAINS
 
@@ -416,76 +415,6 @@ END FUNCTION MULTIO_GRIB2_ENCODER_CLOSE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_EXTRACT_METADATA'
-PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_EXTRACT_METADATA( MULTIO_GRIB2, GRIB_HANDLE, MARS_DICT, PAR_DICT ) &
- BIND(C,NAME='multio_grib2_encoder_extract_metadata') RESULT(RET)
-
-  !> Symbols imported from intrinsic modules.
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
-
-  ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  !> Dummy arguments
-  TYPE(C_PTR), VALUE, INTENT(IN)    :: MULTIO_GRIB2
-  TYPE(C_PTR), VALUE, INTENT(IN)    :: GRIB_HANDLE
-  TYPE(C_PTR),        INTENT(INOUT) :: MARS_DICT
-  TYPE(C_PTR),        INTENT(INOUT) :: PAR_DICT
-
-  !> Function result
-  INTEGER(KIND=C_INT) :: RET
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (On success)
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ! Initialization of bad path return value
-  PP_SET_ERR_FAILURE( RET )
-
-  ! TODO: Add error handling code here
-
-  RETURN
-
-END FUNCTION MULTIO_GRIB2_ENCODER_EXTRACT_METADATA
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

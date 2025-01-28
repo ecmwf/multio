@@ -1,4 +1,4 @@
-if ( HAVE_OUTPUT_MANAGER )
+if ( HAVE_MULTIO_OUTPUT_MANAGER )
 
 # Update on new big features
 set(OUTPUT_MANAGER_MAJOR 0)

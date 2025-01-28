@@ -1,5 +1,8 @@
 add_subdirectory( multio )
 
-# if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+if (NOT CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+message(STATUS "Building multiom")
 add_subdirectory( multiom )
-# endif()
+else ()
+message(WARNING "Skipping multiom because the GNU Fortran compiler is too slow.")
+endif()

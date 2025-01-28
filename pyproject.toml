@@ -8,15 +8,22 @@
 
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-vv -s"
+testpaths = [
+    "pymultio/tests"
+]
+
 [build-system]
 requires = [ "setuptools>=60", "setuptools-scm>=8" ]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymultio"
-
+readme = "README.md"
 description = "A Python interface to multio."
 keywords = [ "multio", "multiopython", "tools" ]
-
 license = { file = "LICENSE" }
 authors = [
   { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
@@ -56,6 +63,8 @@ urls.Repository = "https://github.com/ecmwf/multio/"
 
 
 [tool.setuptools]
+packages = ["multio"]
+package-dir = { "multio" = "./pymultio/src/multio" }
 include-package-data = true
 zip-safe = true
 

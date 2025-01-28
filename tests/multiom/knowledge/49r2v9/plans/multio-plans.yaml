@@ -1,0 +1,10 @@
+plans:
+
+  - name: 'Just a test'
+    actions:
+      - type: print
+        stream: out
+        prefix: "Just a test"
+
+      - type: sink
+        sinks: []

@@ -1,0 +1,392 @@
+# ==================================================================================================
+if ( gridType is "reduced_gg" ){
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireAtmosphere" ){
+      if (  productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-atmosphere-instant-base.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-atmosphere-instant-base-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireAtmosphere"  ){
+      if ( productDefinitionTemplateNumber == 40 || productDefinitionTemplateNumber == 41 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-atmosphere-instant-chem.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-atmosphere-instant-chem-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "heightAboveGround"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-height-above-ground-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-height-above-ground-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "cloudBase"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-cloud-base-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-cloud-base-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "iceTopOnWater" ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-ice-top-on-water-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-ice-top-on-water-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "lakeBottom" ) {
+      if ( productDefinitionTemplateNumber == 0 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-lake-bottom-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-lake-bottom-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "meanSea"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mean-sea-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mean-sea-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mixedLayerParcel"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixed-layer-parcel-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixed-layer-parcel-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mixingLayer"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixing-layer-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixing-layer-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "tropopause"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixed-tropopause-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-mixed-tropopause-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "nominalTop"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-nominal-top-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-nominal-top-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mostUnstableParcel"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-most-unstable-parcel-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-most-unstable-parcel-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireLake"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-lake-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-entire-lake-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( levtype is "sfc" && step == 0 ) {
+    if ( stream is "lwwv"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        if ( typeOfLevel is "heightAboveSea" ) {
+          print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+          write "./comparisons/sfc/reference-sfc-gg-height-above-sea-wave-base-instant.grib";
+        }
+        else {
+          print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+          write "./comparisons/sfc/reference-sfc-gg-surface-wave-base-instant.grib";
+        }
+      }
+      if (productDefinitionTemplateNumber == 103 || productDefinitionTemplateNumber == 104 ) {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-surface-wave-period-instant.grib";
+      }
+      if ( productDefinitionTemplateNumber == 99 || productDefinitionTemplateNumber == 100 ) {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-gg-wave-spectra-instant.grib";
+      }
+    }
+  }
+}
+# ==================================================================================================
+# ==================================================================================================
+# ==================================================================================================
+# ==================================================================================================
+# ==================================================================================================
+if ( gridType is "sh" ){
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireAtmosphere" ){
+      if (  productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-atmosphere-instant-base.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-atmosphere-instant-base-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireAtmosphere"  ){
+      if ( productDefinitionTemplateNumber == 40 || productDefinitionTemplateNumber == 41 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-atmosphere-instant-chem.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-atmosphere-instant-chem-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "heightAboveGround"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-height-above-ground-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-height-above-ground-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "cloudBase"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-cloud-base-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-cloud-base-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "iceTopOnWater" ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-ice-top-on-water-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-ice-top-on-water-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "lakeBottom" ) {
+      if ( productDefinitionTemplateNumber == 0 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-lake-bottom-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-lake-bottom-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "meanSea"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mean-sea-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mean-sea-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mixedLayerParcel"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixed-layer-parcel-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixed-layer-parcel-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mixingLayer"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixing-layer-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixing-layer-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "tropopause"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixed-tropopause-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-mixed-tropopause-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "nominalTop"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-nominal-top-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-nominal-top-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "mostUnstableParcel"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-most-unstable-parcel-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-most-unstable-parcel-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( stream is "lwda" && levtype is "sfc" && step == 0 ) {
+    if ( typeOfLevel is "entireLake"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-lake-instant.grib";
+      }
+      else {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-entire-lake-instant-todo.grib";
+      }
+    }
+  }
+  # ==================================================================================================
+  if ( levtype is "sfc" && step == 0 ) {
+    if ( stream is "lwwv"  ){
+      if ( productDefinitionTemplateNumber == 0 || productDefinitionTemplateNumber == 1 ){
+        if ( typeOfLevel is "heightAboveSea" ) {
+          print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+          write "./comparisons/sfc/reference-sfc-sh-height-above-sea-wave-base-instant.grib";
+        }
+        else {
+          print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+          write "./comparisons/sfc/reference-sfc-sh-surface-wave-base-instant.grib";
+        }
+      }
+      if (productDefinitionTemplateNumber == 103 || productDefinitionTemplateNumber == 104 ) {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-surface-wave-period-instant.grib";
+      }
+      if ( productDefinitionTemplateNumber == 99 || productDefinitionTemplateNumber == 100 ) {
+        print "writing testCompare/[date]_[time]_[expver]_[class]_[type]_[stream]_[levtype]_[param]";
+        write "./comparisons/sfc/reference-sfc-sh-wave-spectra-instant.grib";
+      }
+    }
+  }
+}

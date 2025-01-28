@@ -1,0 +1,1544 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'api_par_dictionary_utils_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'API_PAR_DICTIONARY_UTILS_MOD'
+MODULE API_PAR_DICTIONARY_UTILS_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+IMPLICIT NONE
+
+!> Default visibility of the module
+PRIVATE
+
+!> Enumerators for the iterator
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_TABLES_VERSION = 1_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER = 2_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_INITIAL_STEP = 3_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_LENGTH_OF_TIME_STEP = 4_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_LENGTH_OF_TIME_RANGE = 5_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_VALUES_SCALE_FACTOR = 6_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_PV = 7_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_NUMBER_OF_MISSING_VALUES = 8_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_VALUE_OF_MISSING_VALUES = 9_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_SYSTEM_NUMBER = 10_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_METHOD_NUMBER = 11_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST = 12_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE = 13_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_LENGTH_OF_TIME_WINDOW = 14_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_BITS_PER_VALUE = 15_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_PERIOD_MIN  = 16_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_PERIOD_MAX = 17_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_DIR = 18_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_FREQ = 19_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_SATELLITE_SERIES = 20_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER = 21_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER = 22_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_GEOMETRY = 23_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: PAR_ITERATOR_UNDEF = 24_JPIB_K
+
+! Whitelist of public symbols
+PUBLIC :: PAR_DICTIONARY_MAX_ITERATOR
+PUBLIC :: PAR_DICTIONARY_INIT_ITERATOR
+PUBLIC :: PAR_DICTIONARY_NAME2ITERATOR
+PUBLIC :: PAR_DICTIONARY_GET_NEXT_ITERATOR
+PUBLIC :: PAR_DICTIONARY_HAS
+PUBLIC :: PAR_DICTIONARY_GET_KEY_AS_STRING
+PUBLIC :: PAR_DICTIONARY_GET_VALUE_AS_STRING
+PUBLIC :: PAR_DICTIONARY_SET_VALUE_FROM_STRING
+
+CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_MAX_ITERATOR'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_MAX_ITERATOR( PAR_DICTIONARY, MAX_ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: MAX_ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  MAX_ITERATOR = PAR_ITERATOR_UNDEF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_MAX_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_INIT_ITERATOR'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_INIT_ITERATOR( PAR_DICTIONARY, ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  ITERATOR = 1_JPIB_K
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_INIT_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_GET_NEXT_ITERATOR'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_GET_NEXT_ITERATOR( PAR_DICTIONARY, ITERATOR, END_OF_ITERATORS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  LOGICAL,                 INTENT(OUT)   :: END_OF_ITERATORS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: HAS_KEY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HAS_ITERATOR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  HAS_KEY = .FALSE.
+  END_OF_ITERATORS = .FALSE.
+  DO WHILE(.NOT.HAS_KEY)
+
+    ! Get the next iterator
+    ITERATOR = ITERATOR + 1
+
+    ! Check if the iterator is the last one
+    IF ( ITERATOR .EQ. PAR_ITERATOR_UNDEF ) THEN
+      END_OF_ITERATORS = .TRUE.
+      HAS_KEY = .TRUE.
+    ELSE
+      PP_TRYCALL(ERRFLAG_HAS_ITERATOR) PAR_DICTIONARY_HAS( PAR_DICTIONARY, ITERATOR, HAS_KEY, HOOKS )
+    ENDIF
+
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_HAS_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check if the iterator exists' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_GET_NEXT_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_NAME2ITERATOR'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_NAME2ITERATOR( PAR_DICTIONARY, KEY, ITERATOR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  CHARACTER(LEN=*),        INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=LEN(KEY)) :: KEY_LOW
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_PAR_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Convert to string to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( KEY, KEY_LOW, HOOKS )
+
+  ! Get the iterator from the key name
+  SELECT CASE ( KEY_LOW )
+
+  CASE ( 'tablesversion', 'tables-version' )
+    ITERATOR = PAR_ITERATOR_TABLES_VERSION
+
+  CASE ( 'generatingprocessidentifier', 'generating-process-identifier' )
+    ITERATOR = PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER
+
+  CASE ( 'initialstep', 'initial-step' )
+    ITERATOR = PAR_ITERATOR_INITIAL_STEP
+
+  CASE ( 'lengthoftimestepinseconds', 'length-of-time-step-in-seconds' )
+    ITERATOR = PAR_ITERATOR_LENGTH_OF_TIME_STEP
+
+  CASE ( 'lengthoftimerangeinseconds', 'length-of-time-range-in-seconds' )
+    ITERATOR = PAR_ITERATOR_LENGTH_OF_TIME_RANGE
+
+  CASE ( 'valuesscalefactor', 'values-scale-factor' )
+    ITERATOR = PAR_ITERATOR_VALUES_SCALE_FACTOR
+
+  CASE ( 'pv' )
+    ITERATOR = PAR_ITERATOR_PV
+
+  CASE ( 'numberofmissingvalues', 'number-of-missing-values' )
+    ITERATOR = PAR_ITERATOR_NUMBER_OF_MISSING_VALUES
+
+  CASE ( 'valueofmissingvalues', 'value-of-missing-values' )
+    ITERATOR = PAR_ITERATOR_VALUE_OF_MISSING_VALUES
+
+  CASE ( 'systemnumber', 'system-number' )
+    ITERATOR = PAR_ITERATOR_SYSTEM_NUMBER
+
+  CASE ( 'methodnumber', 'method-number' )
+    ITERATOR = PAR_ITERATOR_METHOD_NUMBER
+
+  CASE ( 'typeofensembleforecast', 'type-of-ensemble-forecast' )
+    ITERATOR = PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST
+
+  CASE ( 'numberofforecastsinensemble', 'number-of-forecasts-in-ensemble' )
+    ITERATOR = PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE
+
+  CASE ( 'lengthoftimewindow', 'length-of-time-window' )
+    ITERATOR = PAR_ITERATOR_LENGTH_OF_TIME_WINDOW
+
+  CASE ( 'bitspervalue', 'bits-per-value' )
+    ITERATOR = PAR_ITERATOR_BITS_PER_VALUE
+
+  CASE ( 'periodmin', 'period-min' )
+    ITERATOR = PAR_ITERATOR_PERIOD_MIN
+
+  CASE ( 'periodmax', 'period-max' )
+    ITERATOR = PAR_ITERATOR_PERIOD_MAX
+
+  CASE ( 'wavedirections', 'wave-directions' )
+    ITERATOR = PAR_ITERATOR_DIR
+
+  CASE ( 'wavefrequencies', 'wave-frequencies' )
+    ITERATOR = PAR_ITERATOR_FREQ
+
+  CASE ( 'satelliteseries', 'satellite-series' )
+    ITERATOR = PAR_ITERATOR_SATELLITE_SERIES
+
+  CASE ( 'scaledfactorofcentralwavenumber', 'scaled-factor-of-central-wave-number' )
+    ITERATOR = PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER
+
+  CASE ( 'scaledvalueofcentralwavenumber', 'scaled-value-of-central-wave-number' )
+    ITERATOR = PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER
+
+  CASE ( 'geometry' )
+    ITERATOR = PAR_ITERATOR_GEOMETRY
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_PAR_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert to lowercase' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
+    CASE(ERRFLAG_NO_PAR_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'No PAR key found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_NAME2ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_HAS'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_HAS( PAR_DICTIONARY, ITERATOR, HAS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPRD_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(INOUT) :: ITERATOR
+  LOGICAL,                 INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_PAR_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE (PAR_ITERATOR_TABLES_VERSION)
+    IF ( PAR_DICTIONARY%TABLES_VERSION .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER)
+    IF ( PAR_DICTIONARY%GENERATING_PROCESS_IDENTIFIER .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_INITIAL_STEP)
+    IF ( PAR_DICTIONARY%TIME%INITIAL_STEP_ .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_STEP)
+    IF ( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_RANGE)
+    IF ( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_RANGE_IN_SECONDS_ .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_VALUES_SCALE_FACTOR)
+    IF ( PAR_DICTIONARY%VALUES_SCALE_FACTOR  .NE. 1.0_JPRD_K ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_PV)
+    IF ( ASSOCIATED(PAR_DICTIONARY%LEVELS%PV)  ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_NUMBER_OF_MISSING_VALUES)
+    IF ( PAR_DICTIONARY%BITMAP%NUMBER_OF_MISSING_VALUES_ .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_VALUE_OF_MISSING_VALUES)
+    HAS = .TRUE.
+
+  CASE (PAR_ITERATOR_SYSTEM_NUMBER)
+    IF ( PAR_DICTIONARY%ENSEMBLE%SYSTEM_NUMBER_  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_METHOD_NUMBER)
+    IF ( PAR_DICTIONARY%ENSEMBLE%METHOD_NUMBER_  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST)
+    IF ( PAR_DICTIONARY%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE)
+    IF ( PAR_DICTIONARY%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_WINDOW)
+    IF ( PAR_DICTIONARY%ANALYSIS%LENGTH_OF_TIME_WINDOW_  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_BITS_PER_VALUE)
+    HAS = .TRUE.
+
+  CASE (PAR_ITERATOR_PERIOD_MIN)
+    IF ( PAR_DICTIONARY%WAVE%ITMIN  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_PERIOD_MAX)
+    IF ( PAR_DICTIONARY%WAVE%ITMAX .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_DIR)
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%DIRS_)  ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_FREQ)
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%FREQ_)  ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SATELLITE_SERIES)
+    IF ( PAR_DICTIONARY%SATELLITE%SATELLITE_SERIES  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER)
+    IF ( PAR_DICTIONARY%SATELLITE%SCALED_FACTOR_OF_CENTRAL_VAWENUMBER  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER)
+    IF ( PAR_DICTIONARY%SATELLITE%SCALED_VALUE_OF_CENTRAL_VAWENUMBER  .NE. UNDEF_PARAM_E ) THEN
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_GEOMETRY)
+    IF ( ASSOCIATED(PAR_DICTIONARY%GEOMETRY%REPRES)  ) THEN
+      ! WRITE(6_JPIB_K,*) 'GEOMETRY TO YAML: '
+      ! RET = PAR_DICTIONARY%GEOMETRY%REPRES%WRITE_TO_YAML( 6_JPIB_K, 0_JPIB_K, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_PAR_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_PAR_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_HAS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_GET_KEY_AS_STRING'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_GET_KEY_AS_STRING( PAR_DICTIONARY, ITERATOR, KEY, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  CHARACTER(LEN=64),       INTENT(OUT)   :: KEY
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_PAR_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ENUM_STRING=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialize the value
+  KEY = REPEAT( ' ', LEN(KEY) )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE (PAR_ITERATOR_TABLES_VERSION)
+    KEY = 'tables-version'
+
+  CASE (PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER)
+    KEY = 'generating-process-identifier'
+
+  CASE (PAR_ITERATOR_INITIAL_STEP)
+    KEY = 'initial-step'
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_STEP)
+    KEY = 'length-of-time-step'
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_RANGE)
+    KEY = 'length-of-time-range'
+
+  CASE (PAR_ITERATOR_VALUES_SCALE_FACTOR)
+    KEY = 'values-scale-factor'
+
+  CASE (PAR_ITERATOR_PV)
+    KEY = 'pv'
+
+  CASE (PAR_ITERATOR_NUMBER_OF_MISSING_VALUES)
+    KEY = 'number-of-missing-values'
+
+  CASE (PAR_ITERATOR_VALUE_OF_MISSING_VALUES)
+    KEY = 'value-of-missing-values'
+
+  CASE (PAR_ITERATOR_SYSTEM_NUMBER)
+    KEY = 'system-number'
+
+  CASE (PAR_ITERATOR_METHOD_NUMBER)
+    KEY = 'method-number'
+
+  CASE (PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST)
+    KEY = 'type-of-ensemble-forecast'
+
+  CASE (PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE)
+    KEY = 'number-of-forecasts-in-ensemble'
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_WINDOW)
+    KEY = 'length-of-time-window'
+
+  CASE (PAR_ITERATOR_BITS_PER_VALUE)
+    KEY = 'bits-per-value'
+
+  CASE (PAR_ITERATOR_PERIOD_MIN)
+    KEY = 'period-min'
+
+  CASE (PAR_ITERATOR_PERIOD_MAX)
+    KEY = 'period-max'
+
+  CASE (PAR_ITERATOR_DIR)
+    KEY = 'wave-directions'
+
+  CASE (PAR_ITERATOR_FREQ)
+    KEY = 'wave-frequencies'
+
+  CASE (PAR_ITERATOR_SATELLITE_SERIES)
+    KEY = 'satellite-series'
+
+  CASE (PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER)
+    KEY = 'scaled-factor-of-central-wave-number'
+
+  CASE (PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER)
+    KEY = 'scaled-value-of-central-wave-number'
+
+  CASE (PAR_ITERATOR_GEOMETRY)
+    KEY = 'geometry'
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_PAR_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_PAR_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE(ERRFLAG_CONVERT_ENUM_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert enumerator to string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_GET_KEY_AS_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_GET_VALUE_AS_STRING'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_GET_VALUE_AS_STRING( PAR_DICTIONARY, ITERATOR, VALUE, HAS, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD,   ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPRD_K
+  USE :: HOOKS_MOD,             ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,       ONLY: UNDEF_PARAM_E
+  USE :: API_GENERAL_UTILS_MOD, ONLY: CONVERT_TO_C_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  TYPE(C_PTR),             INTENT(INOUT) :: VALUE
+  LOGICAL,                 INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_PAR_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_ENUM_STRING=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+
+  CASE (PAR_ITERATOR_TABLES_VERSION)
+    IF ( PAR_DICTIONARY%TABLES_VERSION .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%TABLES_VERSION, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER)
+    IF ( PAR_DICTIONARY%GENERATING_PROCESS_IDENTIFIER .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%GENERATING_PROCESS_IDENTIFIER, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_INITIAL_STEP)
+    IF ( PAR_DICTIONARY%TIME%INITIAL_STEP_ .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%TIME%INITIAL_STEP_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_STEP)
+    IF ( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_RANGE)
+    IF ( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_RANGE_IN_SECONDS_ .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%TIME%LENGTH_OF_TIME_RANGE_IN_SECONDS_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_VALUES_SCALE_FACTOR)
+    IF ( PAR_DICTIONARY%VALUES_SCALE_FACTOR  .NE. 1.0_JPRD_K ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%VALUES_SCALE_FACTOR, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_PV)
+    IF ( ASSOCIATED(PAR_DICTIONARY%LEVELS%PV)  ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%LEVELS%PV, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_NUMBER_OF_MISSING_VALUES)
+    IF ( PAR_DICTIONARY%BITMAP%NUMBER_OF_MISSING_VALUES_ .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%BITMAP%NUMBER_OF_MISSING_VALUES_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_VALUE_OF_MISSING_VALUES)
+    PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%BITMAP%VALUE_OF_MISSING_VALUES_, VALUE, HOOKS )
+    HAS = .TRUE.
+
+  CASE (PAR_ITERATOR_SYSTEM_NUMBER)
+    IF ( PAR_DICTIONARY%ENSEMBLE%SYSTEM_NUMBER_  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%ENSEMBLE%SYSTEM_NUMBER_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_METHOD_NUMBER)
+    IF ( PAR_DICTIONARY%ENSEMBLE%METHOD_NUMBER_  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%ENSEMBLE%METHOD_NUMBER_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST)
+    IF ( PAR_DICTIONARY%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE)
+    IF ( PAR_DICTIONARY%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_WINDOW)
+    IF ( PAR_DICTIONARY%ANALYSIS%LENGTH_OF_TIME_WINDOW_  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%ANALYSIS%LENGTH_OF_TIME_WINDOW_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_BITS_PER_VALUE)
+    PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%DATA_REPRESENTATION%BITS_PER_VALUE_, VALUE, HOOKS )
+    HAS = .TRUE.
+
+  CASE (PAR_ITERATOR_PERIOD_MIN)
+    IF ( PAR_DICTIONARY%WAVE%ITMIN  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%WAVE%ITMIN, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_PERIOD_MAX)
+    IF ( PAR_DICTIONARY%WAVE%ITMAX .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%WAVE%ITMAX, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_DIR)
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%DIRS_)  ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%WAVE%DIRS_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_FREQ)
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%FREQ_)  ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%WAVE%FREQ_, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SATELLITE_SERIES)
+    IF ( PAR_DICTIONARY%SATELLITE%SATELLITE_SERIES  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%SATELLITE%SATELLITE_SERIES, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER)
+    IF ( PAR_DICTIONARY%SATELLITE%SCALED_FACTOR_OF_CENTRAL_VAWENUMBER  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%SATELLITE%SCALED_FACTOR_OF_CENTRAL_VAWENUMBER, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER)
+    IF ( PAR_DICTIONARY%SATELLITE%SCALED_VALUE_OF_CENTRAL_VAWENUMBER  .NE. UNDEF_PARAM_E ) THEN
+      PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%SATELLITE%SCALED_VALUE_OF_CENTRAL_VAWENUMBER, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE (PAR_ITERATOR_GEOMETRY)
+    IF ( ASSOCIATED(PAR_DICTIONARY%GEOMETRY%REPRES)  ) THEN
+      ! PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING( PAR_DICTIONARY%, VALUE, HOOKS )
+      HAS = .TRUE.
+    ELSE
+      HAS = .FALSE.
+    ENDIF
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_PAR_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_PAR_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE(ERRFLAG_CONVERT_ENUM_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert enumerator to string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_GET_VALUE_AS_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PAR_DICTIONARY_SET_VALUE_FROM_STRING'
+PP_THREAD_SAFE FUNCTION PAR_DICTIONARY_SET_VALUE_FROM_STRING( PAR_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: PARAMETRIZATION_MOD,     ONLY: PARAMETRIZATION_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,         ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,         ONLY: CINT2IINT
+  USE :: ENUMERATORS_MOD,         ONLY: CFLOAT2IFLOAT
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_REAL_ARRAY
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  CHARACTER(LEN=*),        INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITEMP
+  REAL(KIND=JPRD_K) :: FTEMP
+  INTEGER(KIND=JPIB_K) :: ALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  REAL(KIND=JPRD_K), DIMENSION(:), ALLOCATABLE :: F_ARR
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_PAR_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_PAR_TO_ENUM=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_PAR=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOC_FAILURE=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEALLOC_FAILURE=6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE (PAR_ITERATOR_TABLES_VERSION)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%TABLES_VERSION=ITEMP
+
+  CASE (PAR_ITERATOR_GENERATING_PROCESS_IDENTIFIER)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%GENERATING_PROCESS_IDENTIFIER=ITEMP
+
+  CASE (PAR_ITERATOR_INITIAL_STEP)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%TIME%SET_INITIAL_STEP(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_STEP)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%TIME%SET_LENGTH_OF_TIME_STEP_IN_SECONDS(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_RANGE)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%TIME%SET_LENGTH_OF_TIME_RANGE_IN_SECONDS(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_VALUES_SCALE_FACTOR)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CFLOAT2IFLOAT(VALUE, FTEMP, HOOKS)
+    PAR_DICTIONARY%VALUES_SCALE_FACTOR=FTEMP
+
+  CASE (PAR_ITERATOR_PV)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) STRING_TO_REAL_ARRAY(VALUE, F_ARR, HOOKS)
+
+    IF ( ASSOCIATED(PAR_DICTIONARY%LEVELS%PV) ) THEN
+        DEALLOCATE(PAR_DICTIONARY%LEVELS%PV, STAT=ALLOC_STATUS, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+    ENDIF
+
+    ALLOCATE( PAR_DICTIONARY%LEVELS%PV(SIZE(F_ARR) ), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
+    DO ITEMP = 1, SIZE(F_ARR)
+        PAR_DICTIONARY%LEVELS%PV(ITEMP) = F_ARR(ITEMP)
+    END DO
+    PAR_DICTIONARY%LEVELS%TO_BE_DEALLOCATED=.TRUE.
+
+    DEALLOCATE( F_ARR, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+
+  CASE (PAR_ITERATOR_NUMBER_OF_MISSING_VALUES)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%BITMAP%SET_NUMBER_OF_MISSING_VALUES(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_VALUE_OF_MISSING_VALUES)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CFLOAT2IFLOAT(VALUE, FTEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%BITMAP%SET_VALUE_OF_MISSING_VALUES(FTEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_SYSTEM_NUMBER)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%ENSEMBLE%SET_SYSTEM_NUMBER(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_METHOD_NUMBER)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%ENSEMBLE%SET_METHOD_NUMBER(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_TYPE_OF_ENSEMBLE_FORECAST)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%ENSEMBLE%SET_TYPE_OF_ENSEMBLE_FORECAST(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_NUMBER_OF_FORECASTS_IN_ENSEMBLE)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PAR) PAR_DICTIONARY%ENSEMBLE%GET_NUMBER_OF_FORECASTS_IN_ENSEMBLE(ITEMP, HOOKS)
+
+  CASE (PAR_ITERATOR_LENGTH_OF_TIME_WINDOW)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%ANALYSIS%LENGTH_OF_TIME_WINDOW_ = ITEMP
+
+  CASE (PAR_ITERATOR_BITS_PER_VALUE)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%DATA_REPRESENTATION%BITS_PER_VALUE_ = ITEMP
+
+  CASE (PAR_ITERATOR_PERIOD_MIN)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%WAVE%ITMIN = ITEMP
+
+  CASE (PAR_ITERATOR_PERIOD_MAX)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%WAVE%ITMAX = ITEMP
+
+  CASE (PAR_ITERATOR_DIR)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) STRING_TO_REAL_ARRAY(VALUE, F_ARR, HOOKS)
+
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%DIRS_) ) THEN
+        DEALLOCATE(PAR_DICTIONARY%WAVE%DIRS_, STAT=ALLOC_STATUS, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+    ENDIF
+
+    ALLOCATE( PAR_DICTIONARY%WAVE%DIRS_(SIZE(F_ARR) ), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
+    DO ITEMP = 1, SIZE(F_ARR)
+        PAR_DICTIONARY%WAVE%DIRS_(ITEMP) = F_ARR(ITEMP)
+    END DO
+    PAR_DICTIONARY%LEVELS%TO_BE_DEALLOCATED=.TRUE.
+
+    DEALLOCATE( F_ARR, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+
+  CASE (PAR_ITERATOR_FREQ)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) STRING_TO_REAL_ARRAY(VALUE, F_ARR, HOOKS)
+
+    IF ( ASSOCIATED(PAR_DICTIONARY%WAVE%FREQ_) ) THEN
+        DEALLOCATE(PAR_DICTIONARY%WAVE%FREQ_, STAT=ALLOC_STATUS, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+    ENDIF
+
+    ALLOCATE( PAR_DICTIONARY%WAVE%FREQ_(SIZE(F_ARR) ), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
+    DO ITEMP = 1, SIZE(F_ARR)
+        PAR_DICTIONARY%WAVE%FREQ_(ITEMP) = F_ARR(ITEMP)
+    END DO
+    PAR_DICTIONARY%LEVELS%TO_BE_DEALLOCATED=.TRUE.
+
+    DEALLOCATE( F_ARR, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+
+  CASE (PAR_ITERATOR_SATELLITE_SERIES)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%SATELLITE%SATELLITE_SERIES = ITEMP
+
+  CASE (PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%SATELLITE%SCALED_FACTOR_OF_CENTRAL_VAWENUMBER = ITEMP
+
+  CASE (PAR_ITERATOR_SCALED_VALUE_OF_CENTRAL_WAVE_NUMBER)
+    PP_TRYCALL(ERRFLAG_CONVERT_PAR_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
+    PAR_DICTIONARY%SATELLITE%SCALED_VALUE_OF_CENTRAL_VAWENUMBER = ITEMP
+
+  CASE (PAR_ITERATOR_GEOMETRY)
+
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_PAR_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_PAR_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE( ERRFLAG_CONVERT_PAR_TO_ENUM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert PAR to enumerator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PAR_DICTIONARY_SET_VALUE_FROM_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+END MODULE API_PAR_DICTIONARY_UTILS_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

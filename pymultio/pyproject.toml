@@ -60,7 +60,7 @@ include-package-data = true
 zip-safe = true
 
 [tool.setuptools_scm]
-version_file = "multio/_version.py"
+version_file = "_version.py"
 
 [tool.setuptools.package-data]
 multio = ["*.h"]

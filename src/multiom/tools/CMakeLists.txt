@@ -66,3 +66,9 @@ ecbuild_add_executable(
   LINKER_LANGUAGE Fortran
 
 )
+
+
+ecbuild_add_executable( TARGET    multiom-mtg2
+                        SOURCES   multiom-mtg2.cc ../../multio/tools/MultioTool.cc
+                        NO_AS_NEEDED
+                        LIBS      multio multiom eckit fckit metkit eccodes eccodes_f90 )

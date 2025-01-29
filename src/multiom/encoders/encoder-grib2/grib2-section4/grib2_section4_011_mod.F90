@@ -1,9 +1,9 @@
 !>
-!> @file grib2_section4_011_mod.F90
+!> @file G2S4_011_mod.F90
 !>
 !> @brief Module for managing GRIB2 Section 4 operations.
 !>
-!> The `GRIB2_SECTION4_011_MOD` module contains procedures to initialize, allocate,
+!> The `G2S4_011_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 4 objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see GRIB2_SECTION4_011_INIT
-!>   - @see GRIB2_SECTION4_011_ALLOCATE
-!>   - @see GRIB2_SECTION4_011_PRESET
-!>   - @see GRIB2_SECTION4_011_RUNTIME
-!>   - @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!>   - @see GRIB2_SECTION4_011_FREE
+!>   - @see G2S4_011_INIT
+!>   - @see G2S4_011_ALLOCATE
+!>   - @see G2S4_011_PRESET
+!>   - @see G2S4_011_RUNTIME
+!>   - @see G2S4_011_TO_BE_ENCODED
+!>   - @see G2S4_011_FREE
 !>
 !> @section dependencies
 !>
@@ -52,6 +52,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
+
 #define PP_FILE_NAME 'grib2_section4_011_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'GRIB2_SECTION4_011_MOD'
@@ -67,10 +68,13 @@ IMPLICIT NONE
 !> Default symbols visibility
 PRIVATE
 
+!> Name of the object (to be used in the register)
+CHARACTER(LEN=*), PARAMETER :: G2S4_011_NAME = 'g2s4::011'
+
 !>
 !> @brief Type definition for GRIB2 Section 4 handler.
 !>
-!> The `GRIB2_SECTION4_011_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `G2S4_011_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runtime,
 !> encoding checks, and cleanup operations for GRIB2 Section 4 objects.
 !>
@@ -78,13 +82,19 @@ PRIVATE
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_011_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: G2S4_011_T
 
   !> Default symbols visibility
   PRIVATE
 
   !> Integer section number
   INTEGER(KIND=JPIB_K) :: TEMPLATE_NUMBER_ = 11_JPIB_K
+
+  !> Name of the sub sections
+  CHARACTER(LEN=64) :: TIME_SUBSECTION_NAME_ = REPEAT( ' ', 64 )
+  CHARACTER(LEN=64) :: LEVEL_SUBSECTION_NAME_ = REPEAT( ' ', 64 )
+  CHARACTER(LEN=64) :: PARAMID_SUBSECTION_NAME_ = REPEAT( ' ', 64 )
+  CHARACTER(LEN=64) :: ENSEMBLE_SUBSECTION_NAME_ = REPEAT( ' ', 64 )
 
   !> Type definition for GRIB2 Section 4 handler.
   CLASS(GRIB_SECTION_BASE_A), POINTER :: TIME_ => NULL()
@@ -102,7 +112,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => GRIB2_SECTION4_011_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_011_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 4 object.
@@ -112,7 +122,7 @@ CONTAINS
   !> The preocedure starts from a message and fro the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => GRIB2_SECTION4_011_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_011_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 4 object.
@@ -120,7 +130,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => GRIB2_SECTION4_011_ALLOCATE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_011_ALLOCATE
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 4 object.
@@ -128,7 +138,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runtime execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => GRIB2_SECTION4_011_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_011_PRESET
 
   !>
   !> @brief Manages the runtime execution of GRIB2 Section 4 operations.
@@ -136,7 +146,7 @@ CONTAINS
   !> This procedure handles operations and computations during runtime,
   !> making use of time and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => GRIB2_SECTION4_011_RUNTIME
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_011_RUNTIME
 
   !>
   !> @brief Determines if the GRIB2 Section 4 object needs to be encoded.
@@ -144,7 +154,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => GRIB2_SECTION4_011_TO_BE_ENCODED
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_011_TO_BE_ENCODED
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 4 object.
@@ -152,7 +162,7 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => GRIB2_SECTION4_011_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_011_FREE
 
   !>
   !> @brief Print informations related to the section
@@ -160,7 +170,7 @@ CONTAINS
   !> This procedure print informatin about the section and eventually call
   !> the print method of the nested sub-sections
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT => GRIB2_SECTION4_011_PRINT
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT => G2S4_011_PRINT
 
 
   !>
@@ -168,42 +178,209 @@ CONTAINS
   !>
   !> This procedure allocates the proper time configurator for this section
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR => GRIB2_SECTION4_011_BUILD_TIME_HANDLER
+  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_CFG => G2S4_011_BUILD_TIME_HANDLER_CFG
 
   !>
   !> @brief Build the param configurator object
   !>
   !> This procedure allocates the proper param configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR => GRIB2_SECTION4_011_BUILD_PARAM_HANDLER
+  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_CFG => G2S4_011_BUILD_PARAM_HANDLER_CFG
 
   !>
   !> @brief Build the level configurator object
   !>
   !> This procedure allocates the proper level configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR => GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER
+  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_CFG => G2S4_011_BUILD_LEVEL_HANDLER_CFG
 
   !>
   !> @brief Build the ensemble configurator object
   !>
   !> This procedure allocates the proper ensemble configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR => GRIB2_SECTION4_011_BUILD_ENSEMBLE_HANDLER
+  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_CFG => G2S4_011_BUILD_ENSEMBLE_HANDLER_CFG
+
+
+  !>
+  !> @brief Build the time configurator object
+  !>
+  !> This procedure allocates the proper time configurator for this section
+  !>
+  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_LAZY => G2S4_011_BUILD_TIME_HANDLER_LAZY
+
+  !>
+  !> @brief Build the param configurator object
+  !>
+  !> This procedure allocates the proper param configurator
+  !>
+  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_LAZY => G2S4_011_BUILD_PARAM_HANDLER_LAZY
+
+  !>
+  !> @brief Build the level configurator object
+  !>
+  !> This procedure allocates the proper level configurator
+  !>
+  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_LAZY => G2S4_011_BUILD_LEVEL_HANDLER_LAZY
+
+  !>
+  !> @brief Build the ensemble configurator object
+  !>
+  !> This procedure allocates the proper ensemble configurator
+  !>
+  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_LAZY => G2S4_011_BUILD_ENSEMBLE_HANDLER_LAZY
 
 END TYPE
 
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: G2S4_011_ALLOCATE
+PUBLIC :: G2S4_011_MAKE
+PUBLIC :: G2S4_011_REGISTER
+PUBLIC :: G2S4_011_DESTROY
 
 CONTAINS
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_011_ALLOCATE'
-PP_THREAD_SAFE FUNCTION G2S4_011_ALLOCATE( GRIB_SECTION, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_011_REGISTER'
+PP_THREAD_SAFE FUNCTION G2S4_011_REGISTER( IDX ) BIND(C, NAME='g2s4_011_register') RESULT(RET)
+
+  !> Symbols imported from intrinsics modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,         ONLY: JPIB_K
+  USE :: GRIB_SECTION_BASE_MOD,     ONLY: GRIB_SECTION_BASE_A
+  USE :: GRIB_SECTION_BASE_MOD,     ONLY: SECTION_ALLOCATOR_IF
+  USE :: GRIB_SECTION_BASE_MOD,     ONLY: SECTION_DEALLOCATOR_IF
+  USE :: GRIB_ENCODER_REGISTER_MOD, ONLY: GRIB_SECTION_REGISTER_T
+  USE :: HOOKS_MOD,                 ONLY: HOOKS_T
+
+  USE :: GRIB_ENCODER_TUNNELING_MOD, ONLY: GET_TUNNELING_INFO
+  USE :: GRIB_ENCODER_TUNNELING_MOD, ONLY: GET_SECTIONS_REGISTER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=INT64), INTENT(INOUT) :: IDX
+
+  !> Function result
+  INTEGER(KIND=INT64) :: RET
+
+  !> Local variables
+  TYPE(GRIB_SECTION_REGISTER_T), POINTER :: REG
+  TYPE(HOOKS_T), POINTER :: HOOKS
+  INTEGER(KIND=JPIB_K) :: LOC_IDX
+  PROCEDURE(SECTION_ALLOCATOR_IF), POINTER   :: FA
+  PROCEDURE(SECTION_DEALLOCATOR_IF), POINTER :: FD
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_REGISTER=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+!$omp single
+  ! Obtain the section register and the hooks
+  LOC_IDX = INT(IDX,KIND=JPIB_K)
+
+  ! Get the hooks data structure
+  HOOKS => NULL()
+  CALL GET_TUNNELING_INFO( LOC_IDX, HOOKS )
+
+  ! Only if hooks is associated then proceed
+  IF ( ASSOCIATED(HOOKS) ) THEN
+
+    ! Get the section register
+    REG => NULL()
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER) GET_SECTIONS_REGISTER( REG, HOOKS )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(REG), ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER)
+
+    ! Associate the allocator
+    FA => G2S4_011_MAKE
+    FD => G2S4_011_DESTROY
+
+    ! Register the section (since the register is shared, constructors needs to be registered only once)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_REGISTER) REG%REGISTER( G2S4_011_NAME, FA, FD, HOOKS )
+
+  ENDIF
+!omp end single
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_UNABLE_TO_REGISTER )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to register section: '//TRIM(ADJUSTL(G2S4_011_NAME)) )
+    CASE ( ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to get section register' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_REGISTER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_MAKE'
+PP_THREAD_SAFE FUNCTION G2S4_011_MAKE( GRIB_SECTION, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -255,8 +432,11 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(GRIB_SECTION), ERRFLAG_ALREADY_ASSOCIATED )
 
   ! Allocate concrete class
-  ALLOCATE( GRIB2_SECTION4_011_T::GRIB_SECTION, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+
+!$omp critical(G2S4_ALLOCATE)
+  ALLOCATE( G2S4_011_T::GRIB_SECTION, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
   PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_ALLOCATION_ERROR )
+!$omp end critical(G2S4_ALLOCATE)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -306,7 +486,122 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_011_ALLOCATE
+END FUNCTION G2S4_011_MAKE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_DESTROY'
+PP_THREAD_SAFE FUNCTION G2S4_011_DESTROY( GRIB_SECTION, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: GRIB_SECTION_BASE_MOD,    ONLY: GRIB_SECTION_BASE_A
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(GRIB_SECTION_BASE_A), POINTER, INTENT(INOUT) :: GRIB_SECTION
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEALLOCATION_ERROR=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(GRIB_SECTION), ERRFLAG_ALREADY_ASSOCIATED )
+
+  ! Allocate concrete class
+
+!$omp critical(G2S4_ALLOCATE)
+  DEALLOCATE( GRIB_SECTION, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_DEALLOCATION_ERROR )
+!$omp end critical(G2S4_ALLOCATE)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not associated' )
+    CASE ( ERRFLAG_DEALLOCATION_ERROR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'deallocation error' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STATUS)
+      END IF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_DESTROY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -318,7 +613,7 @@ END FUNCTION G2S4_011_ALLOCATE
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_011_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `G2S4_011_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -340,16 +635,16 @@ END FUNCTION G2S4_011_ALLOCATE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_INIT_CFG'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_011_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -370,7 +665,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -406,10 +701,10 @@ IMPLICIT NONE
   THIS%KIND_   = '4.11'
 
   ! Time, level and paramId subcomponents of the section
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_TIME_HANDLER) THIS%BUILD_TIME_CONFIGURATOR( CFG, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_PARAM_HANDLER) THIS%BUILD_PARAM_CONFIGURATOR( CFG, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_LEVEL_HANDLER) THIS%BUILD_LEVEL_CONFIGURATOR( CFG, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_ENSEMBLE_HANDLER) THIS%BUILD_ENSEMBLE_CONFIGURATOR( CFG, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_TIME_HANDLER) THIS%BUILD_TIME_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_PARAM_HANDLER) THIS%BUILD_PARAM_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_LEVEL_HANDLER) THIS%BUILD_LEVEL_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_ENSEMBLE_HANDLER) THIS%BUILD_ENSEMBLE_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
 
   ! Time, level and paramId subcomponents of the section
 
@@ -461,7 +756,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_INIT_CFG
+END FUNCTION G2S4_011_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -473,7 +768,7 @@ END FUNCTION GRIB2_SECTION4_011_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_011_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `G2S4_011_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -496,16 +791,16 @@ END FUNCTION GRIB2_SECTION4_011_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_011_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -531,7 +826,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -631,7 +926,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_INIT_LAZY
+END FUNCTION G2S4_011_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -645,7 +940,7 @@ END FUNCTION GRIB2_SECTION4_011_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_011_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `G2S4_011_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -670,16 +965,16 @@ END FUNCTION GRIB2_SECTION4_011_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_ALLOCATE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_ALLOCATE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_ALLOCATE'
+PP_THREAD_SAFE FUNCTION G2S4_011_ALLOCATE( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -702,7 +997,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_ALLOCATE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),     INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -745,8 +1040,6 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
-
-  WRITE(*,*) 'ALLOCATE SECTION 4.11'
 
   ! Enable section 4
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'productDefinitionTemplateNumber', THIS%TEMPLATE_NUMBER_ )
@@ -816,7 +1109,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_ALLOCATE
+END FUNCTION G2S4_011_ALLOCATE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -829,7 +1122,7 @@ END FUNCTION GRIB2_SECTION4_011_ALLOCATE
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_011_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `G2S4_011_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -854,16 +1147,16 @@ END FUNCTION GRIB2_SECTION4_011_ALLOCATE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_PRESET'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_011_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -886,7 +1179,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),     INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -998,7 +1291,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_PRESET
+END FUNCTION G2S4_011_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1012,7 +1305,7 @@ END FUNCTION GRIB2_SECTION4_011_PRESET
 !> the success or failure of the runtime operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_011_T` representing the GRIB section for runtime execution.
+!>   @param [in]    THIS      An object of type `G2S4_011_T` representing the GRIB section for runtime execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -1041,16 +1334,16 @@ END FUNCTION GRIB2_SECTION4_011_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_RUNTIME'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_RUNTIME( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_RUNTIME'
+PP_THREAD_SAFE FUNCTION G2S4_011_RUNTIME( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1075,7 +1368,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_RUNTIME( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),     INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -1186,7 +1479,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_RUNTIME
+END FUNCTION G2S4_011_RUNTIME
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1200,7 +1493,7 @@ END FUNCTION GRIB2_SECTION4_011_RUNTIME
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_011_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `G2S4_011_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -1228,16 +1521,16 @@ END FUNCTION GRIB2_SECTION4_011_RUNTIME
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_TO_BE_ENCODED'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_TO_BE_ENCODED( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_TO_BE_ENCODED'
+PP_THREAD_SAFE FUNCTION G2S4_011_TO_BE_ENCODED( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1261,7 +1554,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_TO_BE_ENCODED( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1373,7 +1666,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_TO_BE_ENCODED
+END FUNCTION G2S4_011_TO_BE_ENCODED
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1386,7 +1679,7 @@ END FUNCTION GRIB2_SECTION4_011_TO_BE_ENCODED
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_011_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `G2S4_011_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1402,15 +1695,15 @@ END FUNCTION GRIB2_SECTION4_011_TO_BE_ENCODED
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_FREE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_011_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_011_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1433,7 +1726,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1515,7 +1808,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_FREE
+END FUNCTION G2S4_011_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1528,7 +1821,7 @@ END FUNCTION GRIB2_SECTION4_011_FREE
 !> @brief Print informations related to the grib section
 !>
 !> @section interface
-!>   @param [inout] THIS   An object of type `GRIB2_SECTION4_011_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS   An object of type `G2S4_011_T` representing the GRIB section to be freed.
 !>   @param [in]    UNIT   The unit number to print the information.
 !>   @param [in]    OFFSET The offset to print the information.
 !>   @param [in]    OPT    The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -1552,8 +1845,8 @@ END FUNCTION GRIB2_SECTION4_011_FREE
 !>   None.
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_PRINT'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_PRINT( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_PRINT'
+PP_THREAD_SAFE FUNCTION G2S4_011_PRINT( THIS, &
 & UNIT, OFFSET, OPT, HOOKS, SEPARATOR ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1573,7 +1866,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_PRINT( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T), INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   INTEGER(KIND=JPIB_K),         INTENT(IN)    :: UNIT
   INTEGER(KIND=JPIB_K),         INTENT(IN)    :: OFFSET
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -1714,7 +2007,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_PRINT
+END FUNCTION G2S4_011_PRINT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1752,16 +2045,16 @@ END FUNCTION GRIB2_SECTION4_011_PRINT
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNTIME
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNTIME
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_BUILD_TIME_HANDLER'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_TIME_HANDLER( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_TIME_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_TIME_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1786,7 +2079,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_TIME_HANDLER( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -1893,9 +2186,121 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_BUILD_TIME_HANDLER
+END FUNCTION G2S4_011_BUILD_TIME_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_TIME_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_TIME_HANDLER_LAZY( THIS, &
+&               MSG, PAR, OPT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD,    ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,         ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,         ONLY: PARAMETRIZATION_T
+  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_LAZY_RULES_MOD, ONLY: TIME_CONFIGURATOR_NAME
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUILD_TIME_CONFUGIRATOR_LAZY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%LEVEL_), ERRFLAG_TIME_CONFIGURATOR_ALREADY_ASSOCIATED )
+
+  !> Construct the name of the param configurator form message and parameter
+  PP_TRYCALL(ERRFLAG_BUILD_TIME_CONFUGIRATOR_LAZY) TIME_CONFIGURATOR_NAME( MSG, PAR, THIS%TIME_SUBSECTION_NAME_, OPT, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_TIME_CONFIGURATOR_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'time configurator already associated' )
+    CASE ( ERRFLAG_BUILD_TIME_CONFUGIRATOR_LAZY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build time configurator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_BUILD_TIME_HANDLER_LAZY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
 
 
 
@@ -1934,16 +2339,16 @@ END FUNCTION GRIB2_SECTION4_011_BUILD_TIME_HANDLER
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNPARAM
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNPARAM
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_BUILD_PARAM_HANDLER'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_PARAM_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_PARAM_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1968,7 +2373,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2075,12 +2480,119 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER
+END FUNCTION G2S4_011_BUILD_PARAM_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_PARAM_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_PARAM_HANDLER_LAZY( THIS, &
+&               MSG, PAR, OPT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD,    ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,         ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,         ONLY: PARAMETRIZATION_T
+  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_LAZY_RULES_MOD, ONLY: PARAM_CONFIGURATOR_NAME
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAM_CONFIGURATOR_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUILD_PARAM_CONFUGIRATOR_LAZY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAM_CONFIGURATOR_ALREADY_ASSOCIATED )
+
+  !> Construct the name of the param configurator form message and parameter
+  PP_TRYCALL(ERRFLAG_BUILD_PARAM_CONFUGIRATOR_LAZY) PARAM_CONFIGURATOR_NAME( MSG, PAR, THIS%PARAMID_SUBSECTION_NAME_, OPT, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_PARAM_CONFIGURATOR_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'param configurator already associated' )
+    CASE ( ERRFLAG_BUILD_PARAM_CONFUGIRATOR_LAZY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build param configurator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_BUILD_PARAM_HANDLER_LAZY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 !>
@@ -2116,16 +2628,16 @@ END FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_011_INIT
-!> @see GRIB2_SECTION4_011_ALLOCATE
-!> @see GRIB2_SECTION4_011_PRESET
-!> @see GRIB2_SECTION4_011_RUNLEVEL
-!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_011_FREE
+!> @see G2S4_011_INIT
+!> @see G2S4_011_ALLOCATE
+!> @see G2S4_011_PRESET
+!> @see G2S4_011_RUNLEVEL
+!> @see G2S4_011_TO_BE_ENCODED
+!> @see G2S4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_LEVEL_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_LEVEL_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2150,7 +2662,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2256,18 +2768,124 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER
+END FUNCTION G2S4_011_BUILD_LEVEL_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_LEVEL_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_LEVEL_HANDLER_LAZY( THIS, &
+&               MSG, PAR, OPT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD,    ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,         ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,         ONLY: PARAMETRIZATION_T
+  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_LAZY_RULES_MOD, ONLY: LEVEL_CONFIGURATOR_NAME
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUILD_LEVEL_CONFUGIRATOR_LAZY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_ALREADY_ASSOCIATED )
+
+  !> Construct the name of the param configurator form message and parameter
+  PP_TRYCALL(ERRFLAG_BUILD_LEVEL_CONFUGIRATOR_LAZY) LEVEL_CONFIGURATOR_NAME( MSG, PAR, THIS%LEVEL_SUBSECTION_NAME_, OPT, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_LEVEL_CONFIGURATOR_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator already associated' )
+    CASE ( ERRFLAG_BUILD_LEVEL_CONFUGIRATOR_LAZY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build level configurator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_BUILD_LEVEL_HANDLER_LAZY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_BUILD_ENSEMBLE_HANDLER'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_ENSEMBLE_HANDLER( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_ENSEMBLE_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_ENSEMBLE_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2292,7 +2910,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_011_BUILD_ENSEMBLE_HANDLER( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_011_T),  INTENT(INOUT) :: THIS
+  CLASS(G2S4_011_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2399,11 +3017,117 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION4_011_BUILD_ENSEMBLE_HANDLER
+END FUNCTION G2S4_011_BUILD_ENSEMBLE_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_011_BUILD_ENSEMBLE_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_011_BUILD_ENSEMBLE_HANDLER_LAZY( THIS, &
+&               MSG, PAR, OPT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD,    ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,         ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,         ONLY: PARAMETRIZATION_T
+  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_LAZY_RULES_MOD, ONLY: ENSEMBLE_CONFIGURATOR_NAME
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(G2S4_011_T),            INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUILD_ENSEMBLE_CONFUGIRATOR_LAZY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%LEVEL_), ERRFLAG_ENSEMBLE_CONFIGURATOR_ALREADY_ASSOCIATED )
+
+  !> Construct the name of the param configurator form message and parameter
+  PP_TRYCALL(ERRFLAG_BUILD_ENSEMBLE_CONFUGIRATOR_LAZY) ENSEMBLE_CONFIGURATOR_NAME( MSG, PAR, THIS%ENSEMBLE_SUBSECTION_NAME_, OPT, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ensemble configurator already associated' )
+    CASE ( ERRFLAG_BUILD_ENSEMBLE_CONFUGIRATOR_LAZY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build ensemble configurator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_011_BUILD_ENSEMBLE_HANDLER_LAZY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 END MODULE GRIB2_SECTION4_011_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE

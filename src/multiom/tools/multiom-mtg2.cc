@@ -173,7 +173,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         eckit::message::Message inputMsg{&inputCodesContent};
         inputMsg.getDoubleArray("values", values);
         
-        ASSERT(multio_grib2_encoder_encode64(encoder, &marsDict, &parDict, values.data(), values.size(), &rawOutputCodesHandle) == 0);
+        ASSERT(multio_grib2_encoder_encode64(encoder, &marsDict, &parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
         outputCodesHandle.reset(rawOutputCodesHandle);
         rawOutputCodesHandle=NULL;
         

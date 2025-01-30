@@ -21,6 +21,7 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_extract_metadata_c.cc
+  ${MULTIOM_API_DIR}/api_encode_c.cc
 )
 
 # Collect source files in module2

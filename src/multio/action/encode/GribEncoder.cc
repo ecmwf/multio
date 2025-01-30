@@ -436,8 +436,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
-    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
-
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "perturbationNumber"), LookUpLong(md, "perturbationNumber"),
                 LookUpLong(md, "ensembleMember"), LookUpLong(md, "ensemble-member"));

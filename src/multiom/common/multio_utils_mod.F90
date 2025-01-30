@@ -40,6 +40,7 @@ PUBLIC :: MULTIO_FLUSH_AND_TRIGGER_RESTART
 PUBLIC :: MULTIO_FLUSH_LAST_STEP
 PUBLIC :: MULTIO_FLUSH_END_OF_SIMULATION
 PUBLIC :: MULTIO_NOTIFY_STEP
+PUBLIC :: GET_GRIB_MESSAGE
 
 CONTAINS
 
@@ -345,19 +346,15 @@ END FUNCTION MULTIO_DELETE
 
 
 !>
-!> @brief send a encoded buffer through multIO.
+!> @brief Extracts a grib message to a fortran array
 !>
-!> @param [inout] mio_handle A MultIO handle
-!> @param [in]    istep      The current step to be notified
+!> @param [inout] buffer  Allocatable byet array
+!> @param [in]    handle  Codes fortran handle
 !>
-!> @see MULTIO_FLUSH_AND_TRIGGER_RESTART
-!> @see MULTIO_FLUSH_LAST_STEP
-!> @see MULTIO_FLUSH_END_OF_SIMULATION
-!> @see MULTIO_NOTIFY_STEP
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'MULTIO_WRITE_BINARY_GRIB'
-PP_THREAD_SAFE FUNCTION MULTIO_WRITE_BINARY_GRIB( MIO_HANDLE, BUFFER, HANDLE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'GET_GRIB_MESSAGE'
+PP_THREAD_SAFE FUNCTION GET_GRIB_MESSAGE( BUFFER, HANDLE, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -369,9 +366,6 @@ PP_THREAD_SAFE FUNCTION MULTIO_WRITE_BINARY_GRIB( MIO_HANDLE, BUFFER, HANDLE, HO
   USE :: GRIB_API,   ONLY: GRIB_GET_MESSAGE_SIZE
   USE :: GRIB_API,   ONLY: GRIB_COPY_MESSAGE
   USE :: GRIB_API,   ONLY: GRIB_GET_ERROR_STRING
-  USE :: MULTIO_API, ONLY: MULTIO_HANDLE
-  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
-  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -385,7 +379,6 @@ PP_THREAD_SAFE FUNCTION MULTIO_WRITE_BINARY_GRIB( MIO_HANDLE, BUFFER, HANDLE, HO
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(MULTIO_HANDLE),                         INTENT(INOUT) :: MIO_HANDLE
   CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: BUFFER
   INTEGER(KIND=JPIM_K),                        INTENT(IN)    :: HANDLE
   TYPE(HOOKS_T),                               INTENT(INOUT) :: HOOKS
@@ -406,7 +399,6 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_BUFFER=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_BUFFER=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_COPY_MESSAGE_TO_BUFFER=5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO=6_JPIB_K
 
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -447,10 +439,9 @@ IMPLICIT NONE
   CALL GRIB_COPY_MESSAGE(HANDLE, BUFFER, STATUS=KRET)
   PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_COPY_MESSAGE_TO_BUFFER)
 
-  ! Write encoded message to multio
-  ERR = MIO_HANDLE%WRITE_GRIB_ENCODED( BUFFER(1:DATA_LENGTH) )
-  PP_DEBUG_CRITICAL_COND_THROW(ERR.NE.MULTIO_SUCCESS, ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO)
-
+  ! ! Write encoded message to multio
+  ! ERR = MIO_HANDLE%WRITE_GRIB_ENCODED( BUFFER(1:DATA_LENGTH) )
+  ! PP_DEBUG_CRITICAL_COND_THROW(ERR.NE.MULTIO_SUCCESS, ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -514,6 +505,141 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to copy the message to the buffer' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error code: '//TRIM(ADJUSTL(TMP)) )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error message: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GET_GRIB_MESSAGE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+!>
+!> @brief send a encoded buffer through multIO.
+!>
+!> @param [inout] mio_handle A MultIO handle
+!> @param [in]    istep      The current step to be notified
+!>
+!> @see MULTIO_FLUSH_AND_TRIGGER_RESTART
+!> @see MULTIO_FLUSH_LAST_STEP
+!> @see MULTIO_FLUSH_END_OF_SIMULATION
+!> @see MULTIO_NOTIFY_STEP
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_WRITE_BINARY_GRIB'
+PP_THREAD_SAFE FUNCTION MULTIO_WRITE_BINARY_GRIB( MIO_HANDLE, BUFFER, HANDLE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from external libraries.
+  USE :: MULTIO_API, ONLY: MULTIO_HANDLE
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MULTIO_HANDLE),                         INTENT(INOUT) :: MIO_HANDLE
+  CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: BUFFER
+  INTEGER(KIND=JPIM_K),                        INTENT(IN)    :: HANDLE
+  TYPE(HOOKS_T),                               INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIM_K) :: DATA_LENGTH
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIM_K) :: ERR
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_GRIB_MESSAGE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO=2_JPIB_K
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_GRIB_MESSAGE) GET_GRIB_MESSAGE( BUFFER, HANDLE, HOOKS )
+
+  ! Write encoded message to multio
+  ! ERR = MIO_HANDLE%WRITE_GRIB_ENCODED( BUFFER )
+  ERR = MIO_HANDLE%WRITE_GRIB_ENCODED( BUFFER(1:DATA_LENGTH) )
+  PP_DEBUG_CRITICAL_COND_THROW(ERR.NE.MULTIO_SUCCESS, ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO)
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+    CHARACTER(LEN=32) :: TMP
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_UNABLE_TO_GET_GRIB_MESSAGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the grib message to the buffer' )
 
     CASE (ERRFLAG_UNABLE_TO_WRITE_ENCODED_GRIB_THROUGH_MULTIO)
       MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)

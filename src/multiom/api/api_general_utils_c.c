@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "eccodes.h"
 
 
 int convert_int8_to_cstring(const void* intvar, char** cstring) {
@@ -479,3 +480,22 @@ int free_iterator(void* iterator) {
     free(iterator);
     return 0;
 }
+
+
+int set_codes_handle_c(const void* values, int len, void** location) {
+    if (values == NULL) {
+        return 1;
+    }
+    if (len < 0) {
+        return 1;
+    }
+    if (location == NULL) {
+        return 1;
+    }
+    
+    *location = codes_handle_new_from_message(NULL, values, len);
+    if (*location == NULL) {
+        return 1;
+    }
+    return 0;
+};

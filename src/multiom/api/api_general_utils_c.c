@@ -492,7 +492,6 @@ int set_codes_handle_c(const void* values, int len, void** location) {
     if (location == NULL) {
         return 1;
     }
-    
     *location = codes_handle_new_from_message(NULL, values, len);
     if (*location == NULL) {
         return 1;

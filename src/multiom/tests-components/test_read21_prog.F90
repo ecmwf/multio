@@ -150,7 +150,7 @@ IMPLICIT NONE
   OFFSET = 1
   CALL HOOKS%DEBUG_HOOK_%INIT( )
 
-  !> Load teh debug points
+  !> Load the debug points
   PP_TRYCALL(ERRFLAG_LOAD_TEST_CASES) DEBUG_POINTS%INIT( DEBUG_FNAME, HOOKS )
 
   !> Open the configuration file

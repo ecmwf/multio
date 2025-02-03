@@ -140,9 +140,14 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Reader reader{args(0)};
     eckit::FileHandle outputFileHandle{args(1), true}; // overwrite output
     
-    void* optDict;
-    void* encoder;
+    void* optDict=NULL;
+    void* encoder=NULL;
+    ASSERT(multio_grib2_dict_create(&optDict, "options") == 0);
     ASSERT(multio_grib2_init_options(&optDict) == 0);
+    
+    ASSERT(multio_grib2_dict_set(optDict, "sample", "sample") == 0);
+    // ASSERT(multio_grib2_dict_set(optDict, "sample", "{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/samples/sample.tmpl") == 0);
+    // ASSERT(multio_grib2_dict_set(optDict, "sample", "/MEMFS/samples/GRIB2.tmpl") == 0);
     
     ASSERT(multio_grib2_encoder_open(optDict, &encoder) == 0);
 
@@ -160,8 +165,9 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         mh = NULL;
         
         // now inputCodesHandle is save to use
-        void* marsDict; 
-        void* parDict;
+        void* marsDict=NULL; 
+        void* parDict=NULL;
+        std::cout << "Extract... " << std::endl;
         ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
         
         // How to know if data is encoded with single precision or double precision?
@@ -173,7 +179,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         eckit::message::Message inputMsg{&inputCodesContent};
         inputMsg.getDoubleArray("values", values);
         
-        ASSERT(multio_grib2_encoder_encode64(encoder, &marsDict, &parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
+        ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
         outputCodesHandle.reset(rawOutputCodesHandle);
         rawOutputCodesHandle=NULL;
         
@@ -188,6 +194,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     
     outputFileHandle.close(); 
     ASSERT(multio_grib2_encoder_close(&encoder) == 0);
+    ASSERT(multio_grib2_dict_destroy(&optDict) == 0);
 }
 
 }  // namespace test

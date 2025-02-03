@@ -19,9 +19,9 @@ IMPLICIT NONE
 PRIVATE
 
 TYPE :: API_OPTIONS_T
-  CHARACTER(LEN=8192) :: ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/mappings/mapping-rules.yaml'
-  CHARACTER(LEN=8192) :: MAPPING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/encodings/encoding-rules.yaml'
-  CHARACTER(LEN=8192) :: SAMPLE_RULES_FNAME = '{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/samples/sample.tmpl'
+  CHARACTER(LEN=8192) :: MAPPING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/mappings/mapping-rules.yaml'
+  CHARACTER(LEN=8192) :: ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/encodings/encoding-rules.yaml'
+  CHARACTER(LEN=8192) :: SAMPLE_RULES_FNAME = '{MULTIO_INSTALL_DIR}/samples/sample.tmpl'
   CHARACTER(LEN=8192) :: ENCODER_TYPE = REPEAT(' ',1024)  ! For future use
 END TYPE
 

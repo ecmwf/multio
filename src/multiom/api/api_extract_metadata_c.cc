@@ -113,9 +113,9 @@ namespace {
     return 0;
   }
 
-  using GridTypeFunction = std::function<int(codes_handle*, void*)>;
+  using GridTypeFunction = std::function<int(codes_handle*, void*, void*)>;
 
-  int handleReducedGG(codes_handle* h, void* par_dict) {
+  int handleReducedGG(codes_handle* h, void* mars_dict, void* par_dict) {
       void* geom = NULL;
       int ret = multio_grib2_dict_create( &geom, "reduced-gg" );
 
@@ -143,11 +143,14 @@ namespace {
 
       ret = getAndSetLongArray(h, geom, "pl", "pl");
       if(ret != 0) return ret;
+      
+      ret = multio_grib2_dict_set(mars_dict, "repres", "gg");
+      if(ret != 0) return ret;
 
       return multio_grib2_dict_set_geometry( par_dict, geom );
   }
 
-  int handleSH(codes_handle* h, void* par_dict) {
+  int handleSH(codes_handle* h, void* mars_dict, void* par_dict) {
       void* geom = NULL;
       int ret = multio_grib2_dict_create( &geom, "sh" );
 
@@ -160,25 +163,59 @@ namespace {
 
       ret = getAndSet(h, geom, "pentagonalResolutionParameterM", "pentagonal-resolution-m");
       if(ret != 0) return ret;
+      
+      ret = multio_grib2_dict_set(mars_dict, "repres", "sh");
+      if(ret != 0) return ret;
+
+
+      return multio_grib2_dict_set_geometry( par_dict, geom );
+  }
+  
+  int handleLL(codes_handle* h, void* mars_dict, void* par_dict) {
+      void* geom = NULL;
+      int ret = multio_grib2_dict_create( &geom, "ll" );
+
+      
+      ret = multio_grib2_dict_set(mars_dict, "repres", "ll");
+      if(ret != 0) return ret;
 
 
       return multio_grib2_dict_set_geometry( par_dict, geom );
   }
 
-  int handleGridType(codes_handle* h, const std::string& gridType, void* par_dict) {
+  int handleGridType(codes_handle* h, const std::string& gridType, void* mars_dict, void* par_dict) {
         const static std::unordered_map<std::string, GridTypeFunction> gridMap{
             { "reduced_gg", &handleReducedGG },
-            { "sh", &handleSH }
+            { "regular_ll", &handleLL },
+            { "sh", &handleSH },
           };
 
         const auto gridTypeFunc = gridMap.find(gridType);
         std::cout << "GridType: " << gridType << " " << (gridType == "reduced_gg") << std::endl;
 
         if (gridTypeFunc != gridMap.cend()) {
-            return gridTypeFunc->second(h, par_dict);
+            return gridTypeFunc->second(h, mars_dict, par_dict);
         }
 
         std::cerr << "Unhandled gridType '" << gridType  << "'" << std::endl;
+        return -1;
+  };
+
+  int handlePackingType(codes_handle* h, const std::string& packingType, void* mars_dict) {
+        const static std::unordered_map<std::string, std::string> packingMap{
+            { "grid_simple", "simple" },
+            { "grid_complex", "complex" },
+            { "spectral_complex", "complex" },
+            { "ccsds", "ccsds" },
+          };
+
+        const auto packingTypeVal = packingMap.find(packingType);
+
+        if (packingTypeVal != packingMap.cend()) {
+              return multio_grib2_dict_set(mars_dict, "packing", packingTypeVal->second.c_str());
+        }
+
+        std::cerr << "Unhandled packingType '" << packingType  << "'" << std::endl;
         return -1;
   };
 
@@ -209,13 +246,15 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "class");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *mars_dict, "origin");
-    if(ret != 0) return ret;
+    if (hasKey(h, "origin")) {
+        ret = getAndSet(h, *mars_dict, "origin");
+        if(ret != 0) return ret;
+    } else if (hasKey(h, "centre")) {
+        ret = getAndSet(h, *mars_dict, "centre", "origin");
+        if(ret != 0) return ret;
+    }
 
     ret = getAndSet(h, *mars_dict, "anoffest");
-    if(ret != 0) return ret;
-
-    ret = getAndSet(h, *mars_dict, "packing");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "number");
@@ -246,7 +285,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "levtype");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *mars_dict, "levelist");
+    ret = getAndSet(h, *mars_dict, "level", "levelist");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "direction");
@@ -265,9 +304,6 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
     // For some reason mars returns an empty string for step
     ret = getAndSet(h, *mars_dict, "step", "step", {"0"});
-    if(ret != 0) return ret;
-
-    ret = getAndSet(h, *mars_dict, "repres");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "truncation");
@@ -351,11 +387,20 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *par_dict, "scaledvalueofcentralwavenumber");
     if(ret != 0) return ret;
 
+    if(hasKey(h, "setPackingType")) {
+        std::string setPackingType = getString(h, "setPackingType");
+        std::cout << "setPackingType: " << setPackingType << std::endl;
+
+        ret = handlePackingType(h, setPackingType, *mars_dict);
+        if(ret != 0) return ret;
+    }
+
+
     if(hasKey(h, "gridType")) {
         std::string gridType = getString(h, "gridType");
         std::cout << "Grid: " << gridType << std::endl;
-
-        ret = handleGridType(h, gridType, *par_dict);
+        
+        ret = handleGridType(h, gridType, *mars_dict, *par_dict);
         if(ret != 0) return ret;
     }
 

@@ -1,0 +1,24 @@
+plans:
+  - name: reduced_gg_to_HEALPix_32_nested_original
+    actions:
+      - type: select
+        match:
+          - paramId: 133
+      - type: interpolate
+        input: O1280
+        grid: H32
+        options:
+          caching: false
+      - type: metadata-mapping
+        mapping: '{~}/mapping_32.yaml'
+      - type: renumber-healpix
+        cache-file-name: HEALPix_ring2nest.atlas
+      - type: encode
+        format: grib
+        template: Reference_HEALPix_32_nested.grib
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false
+          path: MultIO_reduced_gg_to_HEALPix_32_nested_original.grib

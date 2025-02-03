@@ -27,6 +27,8 @@ ecbuild_add_executable(
 
     SOURCES
         FesomCacheGenerator.cc
+        HEALPix.cc
+        HEALPix.h
         ../../tools/MultioTool.cc
 
     CONDITION

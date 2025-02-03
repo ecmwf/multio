@@ -140,6 +140,8 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Reader reader{args(0)};
     eckit::FileHandle outputFileHandle{args(1), true}; // overwrite output
     
+    outputFileHandle.openForWrite(1234); // Stupid argument...
+    
     void* optDict=NULL;
     void* encoder=NULL;
     ASSERT(multio_grib2_dict_create(&optDict, "options") == 0);
@@ -180,6 +182,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         inputMsg.getDoubleArray("values", values);
         
         ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
+        ASSERT(rawOutputCodesHandle != NULL);
         outputCodesHandle.reset(rawOutputCodesHandle);
         rawOutputCodesHandle=NULL;
         

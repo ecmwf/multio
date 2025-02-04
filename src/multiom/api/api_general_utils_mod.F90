@@ -39,6 +39,7 @@ PUBLIC :: CONVERT_TO_C_STRING
 PUBLIC :: ALLOCATE_ITERATOR
 PUBLIC :: DEALLOCATE_ITERATOR
 PUBLIC :: GRIB_MESSAGE_TO_C_CODES_HANDLE
+PUBLIC :: COPY_F_BUFFER_TO_C_BUFFER
 
 CONTAINS
 
@@ -2328,6 +2329,128 @@ PP_ERROR_HANDLER
 END FUNCTION GRIB_MESSAGE_TO_C_CODES_HANDLE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'COPY_F_BUFFER_TO_C_BUFFER'
+PP_THREAD_SAFE FUNCTION COPY_F_BUFFER_TO_C_BUFFER( F_BUF, C_BUF, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_PTR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_INT
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_LOC
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=1, KIND=C_CHAR), DIMENSION(:), INTENT(IN)    :: F_BUF
+  TYPE(C_PTR),                                 INTENT(OUT)   :: C_BUF
+  TYPE(HOOKS_T),                               INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+  INTEGER(KIND=JPIB_K) :: I
+
+  !> Local variables
+  INTEGER(KIND=C_INT)  :: BUF_SIZE
+
+  INTERFACE
+    FUNCTION COPY_F_BUFFER_TO_C_BUFFER_C(F_BUF, BUF_SIZE, C_BUF) RESULT(RET) BIND(C, NAME='copy_f_buf_to_c_buf_c')
+      USE, intrinsic :: ISO_C_BINDING, only : C_PTR
+      USE, intrinsic :: ISO_C_BINDING, only : C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR),         VALUE, INTENT(IN)  :: F_BUF
+      INTEGER(KIND=C_INT), VALUE, INTENT(IN)  :: BUF_SIZE
+      TYPE(C_PTR),                INTENT(OUT) :: C_BUF
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION COPY_F_BUFFER_TO_C_BUFFER_C
+  END INTERFACE
+
+  !> Errorflags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOC_CSTR=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+  
+  BUF_SIZE=INT(SIZE(F_BUF), KIND=C_INT)
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_ALLOC_CSTR) COPY_F_BUFFER_TO_C_BUFFER_C( C_LOC(F_BUF), BUF_SIZE, C_BUF)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_UNABLE_TO_ALLOC_CSTR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Can not allocate c string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COPY_F_BUFFER_TO_C_BUFFER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 
 END MODULE API_GENERAL_UTILS_MOD

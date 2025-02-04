@@ -13,6 +13,25 @@ filter:
   type: 'composed'
   operation: 'all'
   filters:
+  
+    # This triggers section2 36!!!!
+    - type: 'composed'
+      operation: 'any'
+      filters:
+        - type: 'stream'
+          operation: 'match'
+          values: [ 'lwda', 'lwwv', 'elda', 'ewla' ]
+
+        - type: 'composed'
+          operation: 'all'
+          filters:
+            - type: 'stream'
+              operation: 'match'
+              values: [ 'efas', 'wfas' ]
+
+            - type: 'type'
+              operation: 'match'
+              values: [ 'sfo', 'fu', 'go' ]
 
     - type: 'param'
       operation: 'match'
@@ -71,7 +90,7 @@ encoder:
 
   # Section 2: Local Use Section
   local-use-section:
-    template-number: 1
+    template-number: 36
 
   # Section 3: Grid Definition Section
   grid-definition-section:

@@ -2145,6 +2145,7 @@ IMPLICIT NONE
   END IF
 
   ! Set global size and values into the grib handle
+  WRITE(*,*) 'Values size: ', SIZE(VALUES_DP)
   PP_TRYCALL(ERRFLAG_UNABLE_TO_SET) MD%SET( 'values', VALUES_DP, HOOKS )
 
 

@@ -3,9 +3,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
+#include <iomanip>
 #include <string.h>
 #include "eccodes.h"
 
+extern "C" {
 
 int convert_int8_to_cstring(const void* intvar, char** cstring) {
     if (intvar == NULL) {
@@ -498,3 +501,12 @@ int set_codes_handle_c(const void* values, int len, void** location) {
     }
     return 0;
 };
+
+int copy_f_buf_to_c_buf_c(const char* val, int len, void** location) {
+    *location=malloc(len*sizeof(char));
+    if (*location == NULL) return -1;
+    memcpy(*location, val, len);
+    return 0;
+}
+
+}

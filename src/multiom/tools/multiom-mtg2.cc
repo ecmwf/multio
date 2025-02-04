@@ -16,9 +16,11 @@
 
 #include <fstream>
 #include <regex>
+#include <stdio.h>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/io/FileHandle.h"
 #include "eckit/io/MemoryHandle.h"
 #include "eckit/io/PeekHandle.h"
@@ -64,7 +66,9 @@ private:
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options] inputFile outputFile " << std::endl;
         eckit::Log::info() << std::endl
                            << "\tinputFile:\t"
-                           << "GRIB file" << std::endl;
+                           << "GRIB file" << std::endl
+                           << "\toutputFile:\t"
+                           << "output file location" << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;
@@ -89,6 +93,15 @@ private:
 
 MultioMMtg2::MultioMMtg2(int argc, char** argv) :
     multio::MultioTool{argc, argv} {
+    // TODO 
+    // - skip or copy grib2 messages (by reading edition key?)
+    //   - --all (to explicitly reencode all messages, default is copy)
+    // - test all AIFS output (read from fdb)
+    // - module on HPC with this tool being deployed
+    // - remove environmental variables (use lib info)
+    // - load sample FROM_FILE
+    
+    
     // options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
     // options_.push_back(
     //     new eckit::option::SimpleOption<bool>("decode",
@@ -138,9 +151,20 @@ void MultioMMtg2::finish(const eckit::option::CmdArgs&) {}
 void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     using eckit::message::ValueRepresentation;
     eckit::message::Reader reader{args(0)};
-    eckit::FileHandle outputFileHandle{args(1), true}; // overwrite output
+    eckit::PathName outPath{args(1)};
     
-    outputFileHandle.openForWrite(1234); // Stupid argument...
+    if (outPath.exists()) {
+        const int result = remove(((std::string) outPath).c_str());
+        if( result == 0 ){
+            std::cout << "Removed existing file " << outPath << std::endl;
+        } else {
+            std::cerr << "Could not remove existing file " << outPath << std::endl;
+            return;
+        }
+    }
+    eckit::FileHandle outputFileHandle{outPath, true}; // overwrite output
+    
+    outputFileHandle.openForWrite(0); 
     
     void* optDict=NULL;
     void* encoder=NULL;
@@ -163,6 +187,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         
         ASSERT(mh != NULL);
         std::unique_ptr<codes_handle> inputCodesHandle{codes_handle_new_from_message(NULL, mh->data(), mh->size())};
+        // codes_handle* inputCodesHandle=codes_handle_new_from_message(NULL, mh->data(), mh->size());
         dh.reset(nullptr);
         mh = NULL;
         
@@ -171,26 +196,26 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         void* parDict=NULL;
         std::cout << "Extract... " << std::endl;
         ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
+        // ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle, &marsDict, &parDict) == 0);
         
-        // How to know if data is encoded with single precision or double precision?
         codes_handle* rawOutputCodesHandle=NULL;
         std::unique_ptr<codes_handle> outputCodesHandle=NULL;
         
         std::vector<double> values;
-        metkit::codes::CodesContent inputCodesContent{inputCodesHandle.get(), false};
-        eckit::message::Message inputMsg{&inputCodesContent};
+        // metkit::codes::CodesContent inputCodesContent{inputCodesHandle.get(), false};
+        metkit::codes::CodesContent* inputCodesContent = new metkit::codes::CodesContent{inputCodesHandle.get(), false};
+        eckit::message::Message inputMsg{inputCodesContent};
         inputMsg.getDoubleArray("values", values);
         
         ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
         ASSERT(rawOutputCodesHandle != NULL);
-        outputCodesHandle.reset(rawOutputCodesHandle);
-        rawOutputCodesHandle=NULL;
+        // outputCodesHandle.reset(rawOutputCodesHandle);
+        // rawOutputCodesHandle=NULL;
         
         
         {
             // Output by writing all to the same binary file
-            metkit::codes::CodesContent outputCodesContent{outputCodesHandle.get(), false}; // codesContent does not own outputHandle
-            eckit::message::Message outputMsg{&outputCodesContent};
+            eckit::message::Message outputMsg{new metkit::codes::CodesContent{rawOutputCodesHandle, true}};
             outputMsg.write(outputFileHandle);
         }
     }

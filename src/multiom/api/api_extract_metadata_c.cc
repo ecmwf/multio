@@ -226,6 +226,11 @@ extern "C" {
 int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void** mars_dict, void** par_dict ) {
     int ret=0;
     codes_handle* h=NULL;
+    
+    
+    // TODO
+    // - add defaults
+    // - try to iterate mars namespace
 
     h = (codes_handle*) grib;
     printf("extract metadat...\n");
@@ -273,7 +278,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "paramType");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *mars_dict, "chem");
+    ret = getAndSet(h, *mars_dict, "chemId", "chem");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "paramId");
@@ -296,11 +301,9 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
     ret = getAndSet(h, *mars_dict, "date");
     if(ret != 0) return ret;
-
-    if(hasKey(h,"time")) {
-        ret = multio_grib2_dict_set(*mars_dict, "time", getString(h,"time").data());
-        if(ret != 0) return ret;
-    }
+    
+    ret = getAndSet(h, *mars_dict, "time");
+    if(ret != 0) return ret;
 
     // For some reason mars returns an empty string for step
     ret = getAndSet(h, *mars_dict, "step", "step", {"0"});

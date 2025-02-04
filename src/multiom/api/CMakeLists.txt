@@ -33,7 +33,7 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_reduced_gg_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_sh_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_general_utils_mod.F90
-  ${MULTIOM_API_DIR}/api_general_utils_c.c
+  ${MULTIOM_API_DIR}/api_general_utils_c.cc
   ${MULTIOM_API_DIR}/api_shared_data_mod.F90
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90

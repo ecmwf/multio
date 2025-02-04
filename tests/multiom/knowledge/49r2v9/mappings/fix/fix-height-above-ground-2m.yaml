@@ -1,0 +1,31 @@
+name: 'modify heightAboveGround fields on levtype sfc and levelist 2'
+
+tag: 'fix-height-above-ground-2m'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      values: [ 167, 168, 174096, 228037 ]
+    - type: 'levtype'
+      operation: 'match'
+      value: 'sfc'
+    - type: 'levelist'
+      operation: 'match'
+      value: 0
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'levelist'
+          expression:
+            type: 'constant'
+            value: 2

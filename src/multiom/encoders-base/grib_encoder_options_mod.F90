@@ -23,7 +23,9 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
   ! Variables used to control the cache dump functionality
   LOGICAL :: ALLOW_MULTIPLE_ENCODING_RULES = .FALSE.
   LOGICAL :: DUMP_SAMPLES_TO_ONE_FILE = .TRUE.
-  CHARACTER(LEN=256) :: DUMP_PATH = './dump'
+  LOGICAL :: PRINT_DICTIONARIES = .FALSE.
+  LOGICAL :: WRITE_DEBUG_FIELDS = .FALSE.
+  CHARACTER(LEN=256) :: DUMP_PATH = '.'
 
   ! Variables used to control the size of the cache
   LOGICAL :: CACHE_LOCAL_USE_INFO          = .TRUE. ! Should always be true
@@ -39,10 +41,6 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
 
   ! Variables used to control the cache usage
   LOGICAL :: ENABLE_CACHE = .FALSE.
-
-
-
-
 
   LOGICAL :: USE_TYPE_OF_LEVEL = .FALSE.
   INTEGER(KIND=JPIB_K) :: CACHE_STRATEGY = OPT_CACHE_FULL_E

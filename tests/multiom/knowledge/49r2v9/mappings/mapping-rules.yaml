@@ -1,5 +1,7 @@
 mapping-rules:
 
+  #
+  # Fix ifs output
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-heightAboveSea.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-U-200m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-200m.yaml'
@@ -7,3 +9,11 @@ mapping-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-100m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-10m.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
+
+  #
+  # Inject bits-per-value
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/rules/fix-wave-bits-per-value-s1.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/rules/fix-wave-bits-per-value.yaml'

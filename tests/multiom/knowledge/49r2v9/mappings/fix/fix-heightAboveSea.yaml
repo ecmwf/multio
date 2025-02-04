@@ -5,7 +5,7 @@ tag: 'change bits per value'
 filter:
   type: 'param'
   operation: 'match'
-  values: [ 140245, 140249 ]
+  values: [ 140233, 140245, 140249 ]
 
 assignment:
   type: 'composed'

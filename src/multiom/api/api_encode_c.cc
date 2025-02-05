@@ -31,7 +31,7 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
   
   std::size_t messageLength2 = messageLength;
   
-  *out_handle = codes_handle_new_from_message(NULL, message, messageLength2);
+  *out_handle = codes_handle_new_from_message_copy(NULL, message, messageLength2);
   if (*out_handle == NULL) { return -1; };
   free(message);
   CODES_CHECK(codes_set_double_array((codes_handle*) *out_handle, "values", data, data_len), "Error setting data values on codes handle");

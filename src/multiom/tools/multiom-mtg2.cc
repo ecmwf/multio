@@ -17,6 +17,7 @@
 #include <fstream>
 #include <regex>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -36,6 +37,7 @@
 #include "metkit/codes/CodesContent.h"
 #include "metkit/codes/CodesHandleDeleter.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/LibMultio.h"
 #include "multiom/api/c/api.h"
 #include "eccodes.h"
 
@@ -83,7 +85,12 @@ private:
     int minimumPositionalArguments() const override { return 2; }
     
 
-    // bool testSubtoc_ = false;
+    bool copyGrib2Messages_ = true;
+    std::string knowledgeRoot_ = "";
+    std::string sampleFile_ = "";
+    std::string encodingFile_ = "";
+    std::string mappingFile_ = "";
+    long verbosity_ = 0;
     // bool encode32_ = false;
     // std::string configPath_ = "";
     // std::string stepRange_ = "";
@@ -98,11 +105,24 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
     //   - --all (to explicitly reencode all messages, default is copy)
     // - test all AIFS output (read from fdb)
     // - module on HPC with this tool being deployed
-    // - remove environmental variables (use lib info)
-    // - load sample FROM_FILE
+    // x remove environmental variables (use lib info)
+    // x load sample FROM_FILE
+    // - pass down verbosity to fortran
     
     
-    // options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("all", "If specified also grib2 messages will reencoded instead of copied"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("knowledge-root", "Path to knowledege root dir containing grib2 sample, encoding and mapping rules. Default: MULTIO_HOME/share/multiom/49r2v9"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("encoding-rules", "Path to encoding-rules.yaml. Default: KNOWLEDGE_ROOT/encodings/encoding-rules.yaml"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("mapping-rules", "Path to mapping-rules.yaml. Default: KNOWLEDGE_ROOT/mappings/mapping-rules.yaml"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("sample", "Path to sample grib2 file. Default: KNOWLEDGE_ROOT/samples/sample.tmpl"));
+    options_.push_back(
+        new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 1"));
+    options_.push_back(
+        new eckit::option::SimpleOption<long>("verbosity", "Verbosity level"));
     // options_.push_back(
     //     new eckit::option::SimpleOption<bool>("decode",
     //                                           "Decode messages and pass raw data with metadata through the pipeline "
@@ -119,16 +139,48 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
 }
 
 void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
-    // args.get("test-subtoc", testSubtoc_);
+    bool verbose = false;
+    args.get("verbose", verbose);
+    if (verbose) {
+        verbosity_ = 1;
+    }
+    args.get("verbosity", verbosity_);
+    
+    bool all=false;
+    args.get("all", all);
+    copyGrib2Messages_ = !all;
+    
+    args.get("knowledge-root", knowledgeRoot_);
+    if(knowledgeRoot_.empty()) {
+        knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom/49r2v9";
+    }
+    args.get("sample", sampleFile_);
+    if(sampleFile_.empty()) {
+        sampleFile_ = knowledgeRoot_ + "/samples/sample.tmpl";
+    }
+    args.get("encodingFile_", encodingFile_);
+    if(encodingFile_.empty()) {
+        encodingFile_ = knowledgeRoot_ + "/encodings/encoding-rules.yaml";
+    }
+    args.get("mappingFile_", mappingFile_);
+    if(mappingFile_.empty()) {
+        mappingFile_ = knowledgeRoot_ + "/mappings/mapping-rules.yaml";
+    }
+    
+    if(verbosity_ > 0) {
+        std::cout << "knowledge-root: " << knowledgeRoot_ << std::endl;    
+        std::cout << "sample: " << sampleFile_ << std::endl;    
+        std::cout << "encoding-rules: " << encodingFile_ << std::endl;    
+        std::cout << "mapping-rules: " << mappingFile_ << std::endl;    
+    }
+    setenv("KNOWLEDGE_VERSION", "/", 0);
+    setenv("MULTIO_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
+    
     // if (testSubtoc_) {
     //     std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
     //     fdbRootPath_.mkdir();
     // }
-    // args.get("encode32", encode32_); // TODO evalue bitsPerValue ?
 
-    // if (decodeDoubleData_ && decodeSingleData_) {
-    //     throw eckit::UserError{"Both double and single precision requested", Here()};
-    // }
 
     // args.get("plans", configPath_);
 
@@ -171,7 +223,10 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     ASSERT(multio_grib2_dict_create(&optDict, "options") == 0);
     ASSERT(multio_grib2_init_options(&optDict) == 0);
     
-    ASSERT(multio_grib2_dict_set(optDict, "sample", "sample") == 0);
+    
+    ASSERT(multio_grib2_dict_set(optDict, "sample", sampleFile_.c_str()) == 0);
+    ASSERT(multio_grib2_dict_set(optDict, "encoding-rules", encodingFile_.c_str()) == 0);
+    ASSERT(multio_grib2_dict_set(optDict, "mapping-rules", mappingFile_.c_str()) == 0);
     // ASSERT(multio_grib2_dict_set(optDict, "sample", "{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/samples/sample.tmpl") == 0);
     // ASSERT(multio_grib2_dict_set(optDict, "sample", "/MEMFS/samples/GRIB2.tmpl") == 0);
     
@@ -187,33 +242,41 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         
         ASSERT(mh != NULL);
         std::unique_ptr<codes_handle> inputCodesHandle{codes_handle_new_from_message(NULL, mh->data(), mh->size())};
-        // codes_handle* inputCodesHandle=codes_handle_new_from_message(NULL, mh->data(), mh->size());
+        
         dh.reset(nullptr);
         mh = NULL;
         
-        // now inputCodesHandle is save to use
-        void* marsDict=NULL; 
-        void* parDict=NULL;
-        std::cout << "Extract... " << std::endl;
-        ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
-        // ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle, &marsDict, &parDict) == 0);
-        
-        codes_handle* rawOutputCodesHandle=NULL;
-        std::unique_ptr<codes_handle> outputCodesHandle=NULL;
-        
-        std::vector<double> values;
-        // metkit::codes::CodesContent inputCodesContent{inputCodesHandle.get(), false};
         metkit::codes::CodesContent* inputCodesContent = new metkit::codes::CodesContent{inputCodesHandle.get(), false};
         eckit::message::Message inputMsg{inputCodesContent};
-        inputMsg.getDoubleArray("values", values);
         
-        ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
-        ASSERT(rawOutputCodesHandle != NULL);
-        // outputCodesHandle.reset(rawOutputCodesHandle);
-        // rawOutputCodesHandle=NULL;
-        
-        
-        {
+        std::string edition = inputMsg.getString("edition");
+        if (edition == "2" && copyGrib2Messages_) {
+            // Write the message directly
+            if(verbosity_ > 0) {
+                std::cout << "Copying grib2 message..." << std::endl;
+            }
+            inputMsg.write(outputFileHandle);
+        } else {
+            // now inputCodesHandle is save to use
+            void* marsDict=NULL; 
+            void* parDict=NULL;
+            if(verbosity_ > 0) {
+                std::cout << "Extracting metadata..." << std::endl;
+            }
+            ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
+            
+            codes_handle* rawOutputCodesHandle=NULL;
+            std::unique_ptr<codes_handle> outputCodesHandle=NULL;
+            
+            std::vector<double> values;
+            inputMsg.getDoubleArray("values", values);
+            
+            if(verbosity_ > 0) {
+                std::cout << "Encoding with extracted metadata..." << std::endl;
+            }
+            ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(), (void**) &rawOutputCodesHandle) == 0);
+            ASSERT(rawOutputCodesHandle != NULL);
+            
             // Output by writing all to the same binary file
             eckit::message::Message outputMsg{new metkit::codes::CodesContent{rawOutputCodesHandle, true}};
             outputMsg.write(outputFileHandle);

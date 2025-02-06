@@ -1,3 +1,5 @@
+if(HAVE_MULTIO_BUILD_TOOLS)
+
 set(PREFIX multio_tests_action_healpix_ring2nest)
 
 
@@ -51,3 +53,5 @@ ecbuild_add_test(
     TEST_DEPENDS ${PREFIX}_HEALPix_1024_ring2nest_check_metadata
     COMMAND      grib_compare
     ARGS         -P -T10 Reference_HEALPix_1024_nested.grib MultIO_HEALPix_1024_nested.grib)
+
+endif()

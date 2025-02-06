@@ -104,6 +104,10 @@ ecbuild_add_option( FEATURE MULTIO_BUILD_TOOLS
                     DEFAULT ${_default_multio_tools}
                     DESCRIPTION "Build the command line MULTIO tools" )
 
+ecbuild_add_option( FEATURE GRIB1_TO_GRIB2
+                    DEFAULT ${_default_multio_tools}
+                    DESCRIPTION "Build the command line GRIB1-to-GRIB2 converter tool" )
+
 
 ### HEALPix tests
 

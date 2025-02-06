@@ -6,7 +6,7 @@ doc/latex
 *.sublime-workspace
 .*.sw*
 .*un~
-build*
+build/*
 docs/_build
 **/.ccls-cache
 __pycache__

@@ -10,14 +10,9 @@ filter:
       operation: 'match'
       values: [
         '140098:140105', '140112:140129', '140207:140209',
-        '140211:140212', '140214:140232', '140234:140239', 140244,
-        '140252:140254'
+        '140211:140212', '140214:140232', '140234:140239',
+        140244, '140251:140254'
       ]
-
-    - type: 'step'
-      operation: 'lower-equal'
-      treshold: 1
-
 
 assignment:
   type: 'composed'
@@ -32,8 +27,3 @@ assignment:
           expression:
             type: 'constant'
             value: 24
-        - type: 'message-int'
-          name: 'step'
-          expression:
-            type: 'constant'
-            value: 0

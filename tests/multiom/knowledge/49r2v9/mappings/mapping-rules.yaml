@@ -15,5 +15,4 @@ mapping-rules:
 
   #
   # Inject bits-per-value
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/rules/fix-wave-bits-per-value-s1.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/rules/fix-wave-bits-per-value.yaml'

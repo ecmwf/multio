@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-ccsds-instant-period-wam-int'
+name: 'rule-surface-gg-fc-ensemble-simple-instant-wam-spectra'
 
 #
 # Future use
@@ -35,9 +35,7 @@ filter:
 
     - type: 'param'
       operation: 'match'
-      values: [
-        '140114:140120'
-      ]
+      value: 140251
 
     - type: 'levtype'
       operation: 'match'
@@ -55,7 +53,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'simple'
 
 
 #
@@ -96,26 +94,23 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 104
+    template-number: 100
 
     point-in-time-configurator:
-      type: 'default'
-
-    period-configurator:
       type: 'default'
 
     param-configurator:
       type: 'paramId'
 
-    level-configurator:
-      type: 'surface'
+    directions-frequencies-configurator:
+      type: 'default'
 
     ensemble-configurator:
       type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 42
+    template-number: 0
 
 
 

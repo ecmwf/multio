@@ -5,7 +5,7 @@
 
 #define PP_LOG_DECL_VARS
 
-#if 0
+#if 1
 #define PP_LOG_DEVELOP_STR( STR ) \
 WRITE(*,*) STR
 #else

@@ -30,7 +30,7 @@ ecbuild_add_executable(
         ../../tools/MultioTool.cc
 
     CONDITION
-        HAVE_MIR AND HAVE_ATLAS_IO
+        HAVE_MIR AND HAVE_ATLAS_IO AND HAVE_MULTIO_BUILD_TOOLS
 
     LIBS
         multio

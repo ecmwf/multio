@@ -173,3 +173,8 @@ ecbuild_add_executable(
       eccodes
       eccodes_f90
 )
+ecbuild_add_executable( TARGET    grib1-to-grib2
+                        CONDITION HAVE_GRIB1_TO_GRIB2
+                        SOURCES   multiom-mtg2.cc ../../multio/tools/MultioTool.cc
+                        NO_AS_NEEDED
+                        LIBS      multio multiom eckit fckit metkit eccodes eccodes_f90 )

@@ -1,3 +1,5 @@
+if(HAVE_MULTIO_BUILD_TOOLS)
+
 set(PREFIX multio_tests_action_interpolate-fesom)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cache)
@@ -174,3 +176,5 @@ foreach(_gridType   CORE2 )
         endforeach()
     endforeach()
 endforeach()
+
+endif()

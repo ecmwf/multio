@@ -1,4 +1,6 @@
 
+if(HAVE_MULTIO_BUILD_TOOLS)
+
 list( APPEND _multio_server_tools
   "multio-hammer" "multio-probe" "multio-encode-ocean"
   "multio-replay-nemo-capi" "multio-replay-nemo-capi-partial-agg"
@@ -61,3 +63,5 @@ ecbuild_add_executable( TARGET    multio-generate-grib-template
 ecbuild_add_executable( TARGET    multio-convert-trace-log
                         SOURCES   multio-convert-trace-log.cc MultioTool.cc
                         LIBS      multio eckit )
+
+endif()

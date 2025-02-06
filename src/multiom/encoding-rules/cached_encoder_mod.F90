@@ -149,6 +149,8 @@ IMPLICIT NONE
   PP_LOG_DEVELOP_STR( ' ' )
   PP_LOG_DEVELOP_STR( ' --------------------------------------------------------------------- ' )
   PP_LOG_DEVELOP_STR( ' * INITIALIZE A NEW NODE IN THE CACHE MAP' )
+  PP_LOG_DEVELOP_STR( ' * NAME: '//TRIM(ADJUSTL(NAME)) )
+  PP_LOG_DEVELOP_STR( ' * TAG:  '//TRIM(ADJUSTL(TAG)) )
 
   IF ( ASSOCIATED(THIS%SAMPLE_) ) THEN
     ! Call the Clone constructor of metadata
@@ -221,7 +223,7 @@ IMPLICIT NONE
   ! Initialize the time history
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_TIME_HISTORY) THIS%TIME_HISTORY_%INIT( OPT%TIME_HISTORY_CAPACITY, HOOKS)
 
-  WRITE(*,'(A)') 'CACHED_ENCODER_INIT :: Created a new encoder from rule : "'//TRIM(ADJUSTL(NAME))//'"'
+  WRITE(*,'(A,I8)') 'CACHED_ENCODER_INIT :: Created a new encoder from rule : "'//TRIM(ADJUSTL(NAME))//'"', MSG%LEVELIST
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

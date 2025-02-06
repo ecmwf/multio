@@ -524,6 +524,7 @@ IMPLICIT NONE
       PP_LOG_STRICT_DEVELOP( 'Node created' )
     ELSE
       PP_LOG_STRICT_DEVELOP( 'Node already in the map' )
+      WRITE(*,*) 'ENCODER FOUND :: ', INSERTION_POINT%KEY%LEVELIST
       ! If the node is in the map then return the value
       INSERTED =.FALSE.
       ENCODERS => INSERTION_POINT%ENCODERS_

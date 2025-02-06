@@ -89,7 +89,7 @@ encoder:
 
   # Section 2: Local Use Section
   local-use-section:
-    template-number: 136
+    template-number: 36
 
   # Section 3: Grid Definition Section
   grid-definition-section:

@@ -846,6 +846,7 @@ IMPLICIT NONE
   PP_LOG_DEVELOP_STR( 'RUNTIME ISOBARICINPA' )
 
   ! Set the level
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'isobaricInPa' )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
 
   ! Trace end of procedure (on success)

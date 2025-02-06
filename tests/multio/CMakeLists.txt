@@ -111,6 +111,8 @@ ecbuild_add_test( TARGET    test_multio_maestro
                   CONDITION HAVE_MAESTRO
                   LIBS      multio-maestro )
 
+if(HAVE_MULTIO_BUILD_TOOLS)
+
 # Test api
 
 list( APPEND _test_environment
@@ -291,3 +293,5 @@ endif(eckit_HAVE_MPI)
 add_subdirectory(config)
 
 add_subdirectory(action)
+
+endif()

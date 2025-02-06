@@ -47,9 +47,11 @@ ecbuild_add_executable(
 
   TARGET multiom-feed
 
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
+
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_feed_prog.F90
-
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 

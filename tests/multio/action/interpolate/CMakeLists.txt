@@ -1,5 +1,4 @@
-
-if( HAVE_MIR )
+if(HAVE_MIR AND HAVE_MULTIO_BUILD_TOOLS)
 
 set(PREFIX multio_tests_action_interpolate)
 
@@ -91,8 +90,6 @@ foreach(_test
             ARGS         -P -T10 ${_reference} ${_result})
     endif()
 endforeach()
-
-
 
 
 if ( HAVE_HEALPIX_EXAMPLES )
@@ -202,4 +199,4 @@ endforeach()
 
 endif()
 
-endif( HAVE_MIR )
+endif()

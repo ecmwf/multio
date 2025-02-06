@@ -845,9 +845,12 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Logging
-  PP_LOG_DEVELOP_STR( 'RUNTIME ISOBARICINPA' )
+  PP_LOG_DEVELOP_STR( 'RUNTIME ISOBARICINHPA' )
 
   ! According to the options decide where to set the levels (preset or runlevel)
+  ! MIVAL: This is an hack to enforce the isobaricInHpa level type. Explicitly setting it in the preset
+  ! is not enough, as the level type is magically reset by eccodes when I set the paramId
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'isobaricInhPa' )
   LEVEL = MSG%LEVELIST/100_JPIB_K
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', LEVEL )
 

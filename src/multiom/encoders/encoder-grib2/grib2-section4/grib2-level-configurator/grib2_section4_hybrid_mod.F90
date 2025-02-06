@@ -845,6 +845,7 @@ IMPLICIT NONE
   PP_LOG_DEVELOP_STR( 'RUNTIME HYBRID' )
 
   ! According to the options decide where to set the levels (preset or runlevel)
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'hybrid' )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
 
   ! Trace end of procedure (on success)

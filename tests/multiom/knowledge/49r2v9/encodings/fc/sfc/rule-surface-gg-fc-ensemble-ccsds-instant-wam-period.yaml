@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-pl-sh-fc-ensemble-ccsds-instant-hpa'
+name: 'rule-sfc-gg-fc-ensemble-ccsds-instant-wam-period'
 
 #
 # Future use
@@ -36,20 +36,16 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        129, 130, 135, 138, 152, 155, 157
+        '140114:140120'
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'pl'
-
-    - type: 'levelist'
-      operation: 'greater-equal'
-      treshold: 100
+      value: 'sfc'
 
     - type: 'repres'
       operation: 'match'
-      value: 'spherical-harmonics'
+      value: 'gaussian-grid'
 
     - type: 'type'
       operation: 'match'
@@ -59,7 +55,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'complex'
+      value: 'ccsds'
 
 
 #
@@ -96,27 +92,30 @@ encoder:
 
   # Section 3: Grid Definition Section
   grid-definition-section:
-    template-number: 50
+    template-number: 40
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 104
 
     point-in-time-configurator:
+      type: 'default'
+
+    period-configurator:
       type: 'default'
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
-      type: 'isobaricinhpa'
+      type: 'surface'
 
     ensemble-configurator:
       type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 51
+    template-number: 42
 
 
 

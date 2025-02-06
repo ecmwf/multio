@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-deterministic-simple-instant-period-wam-int'
+name: 'rule-sfc-gg-fc-deterministic-simple-instant-wam-period'
 
 #
 # Future use

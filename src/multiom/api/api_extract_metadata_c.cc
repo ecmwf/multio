@@ -64,8 +64,14 @@ namespace {
       ret.resize(size);
       return ret;
   }
-
-  int getAndSet(codes_handle* h, void* dict, const char* key, const char* setName=NULL, std::optional<std::string> defaultVal = {}) {
+  
+  enum class SetDefault: unsigned long {
+    IfKeyGiven = 0,
+    Always = 1,
+  };
+  
+  using OptVal = std::optional<std::string>;
+  int getAndSet(codes_handle* h, void* dict, const char* key, const char* setName=NULL, OptVal defaultVal = {}, SetDefault defPolicy = SetDefault::IfKeyGiven) {
     if(hasKey(h, key)) {
         std::string val = getString(h, key);
         if (val.empty() && defaultVal) {
@@ -73,6 +79,24 @@ namespace {
         }
         int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, val.data());
         if(ret != 0) return ret;
+    } else {
+        if(defaultVal && (defPolicy == SetDefault::Always)) {
+            int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, defaultVal->data());
+            if(ret != 0) return ret;
+        }
+    }
+    return 0;
+  }
+  int getAndSet(codes_handle* h, void* dict, const char* key, OptVal defaultVal, SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    return getAndSet(h, dict, key, NULL, defaultVal, defPolicy);
+  }
+  int getAndSetIfNonZero(codes_handle* h, void* dict, const char* key, const char* setName=NULL) {
+    if(hasKey(h, key)) {
+        std::string val = getString(h, key);
+        if (!val.empty() && val != "0") {
+            int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, val.data());
+            if(ret != 0) return ret;
+        }
     }
     return 0;
   }
@@ -123,10 +147,10 @@ namespace {
       ret = getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "numberOfPointsALongAMeridian", "number-of-points-along-a-meridian");
+      ret = getAndSetIfNonZero(h, geom, "numberOfPointsALongAMeridian", "number-of-points-along-a-meridian");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "numberOfParallelsBetweenPoleAndEquator", "number-of-parallels-between-pole-and-equator");
+      ret = getAndSetIfNonZero(h, geom, "numberOfParallelsBetweenPoleAndEquator", "number-of-parallels-between-pole-and-equator");
       if(ret != 0) return ret;
 
       ret = getAndSet(h, geom, "latitudeOfFirstGridPointInDegrees", "latitude-of-first-grid-point-in-degrees");
@@ -324,70 +348,70 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
 
     // Handling parametrization keys
-    ret = getAndSet(h, *par_dict, "tablesversion");
+    ret = getAndSet(h, *par_dict, "tablesVersion");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "generatingprocessidentifier");
+    ret = getAndSet(h, *par_dict, "generatingProcessIdentifier");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "initialstep");
+    ret = getAndSet(h, *par_dict, "initialStep", OptVal{"0"}, SetDefault::Always);
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "lengthoftimestepinseconds");
+    ret = getAndSet(h, *par_dict, "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "lengthoftimerangeinseconds");
+    ret = getAndSet(h, *par_dict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "valuesscalefactor");
+    ret = getAndSet(h, *par_dict, "valuesScaleFactor");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *par_dict, "pv");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "numberofmissingvalues");
+    ret = getAndSetIfNonZero(h, *par_dict, "numberOfMissingValues");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "valueofmissingvalues");
+    ret = getAndSet(h, *par_dict, "valueOfMissingValues");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "systemnumber");
+    ret = getAndSet(h, *par_dict, "systemNumber");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "methodnumber");
+    ret = getAndSet(h, *par_dict, "methodNumber");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "typeofensembleforecast");
+    ret = getAndSet(h, *par_dict, "typeOfEnsembleForecast");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "numberofforecastsinensemble");
+    ret = getAndSetIfNonZero(h, *par_dict, "numberOfForecastsInEnsemble");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "lengthoftimewindow");
+    ret = getAndSet(h, *par_dict, "lengthOfTimeWindow");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "bitspervalue");
+    ret = getAndSet(h, *par_dict, "bitsPerValue", OptVal{"24"});
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "periodmin");
+    ret = getAndSet(h, *par_dict, "periodMin");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "periodmax");
+    ret = getAndSet(h, *par_dict, "periodMax");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "wavedirections");
+    ret = getAndSet(h, *par_dict, "waveDirections");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "wavefrequencies");
+    ret = getAndSet(h, *par_dict, "waveFrequencies");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "satelliteseries");
+    ret = getAndSet(h, *par_dict, "satelliteSeries");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "scaledfactorofcentralwavenumber");
+    ret = getAndSet(h, *par_dict, "scaledFactorOfCentralWavenumber");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "scaledvalueofcentralwavenumber");
+    ret = getAndSet(h, *par_dict, "scaledValueOfCentralWavenumber");
     if(ret != 0) return ret;
 
     if(hasKey(h, "setPackingType")) {

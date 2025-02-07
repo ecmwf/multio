@@ -11,6 +11,7 @@ foreach(ommf ${output_manager_main_file})
                    COPYONLY)
 endforeach()
 
+if(HAVE_MULTIO_BUILD_TOOLS)
 
 install(
     FILES       ${output_manager_main_file}
@@ -30,3 +31,6 @@ install(
     DESTINATION bin
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
 )
+
+endif()
+

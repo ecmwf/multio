@@ -22,6 +22,12 @@ IMPLICIT NONE
 !> Default visibility of the module
 PRIVATE
 
+!> Verbosity level
+LOGICAL :: GVERBOSE=.FALSE.
+
+!> Need to compute field statistics
+LOGICAL :: GCOMPUTE_FIELD_STATISTICS=.FALSE.
+
 !> Dr Hook interface for tracing forwarding
 INTERFACE
   SUBROUTINE DR_HOOK_DEFAULT8_IF(CDNAME,KSWITCH,PKEY)
@@ -35,8 +41,8 @@ INTERFACE
 END INTERFACE
 
 !> Tracing variables
-PROCEDURE(DR_HOOK_DEFAULT8_IF), POINTER :: DR_HOOK => NULL()
-LOGICAL :: LHOOK_ = .FALSE.
+PROCEDURE(DR_HOOK_DEFAULT8_IF), POINTER :: GDR_HOOK => NULL()
+LOGICAL :: GLHOOK = .FALSE.
 
 !> Default error unit
 INTEGER(KIND=JPIB_K) :: JPERR_UNIT=ERROR_UNIT
@@ -46,59 +52,491 @@ INTEGER(KIND=JPIB_K) :: JPOUT_UNIT=OUTPUT_UNIT
 PUBLIC :: DR_HOOK_DEFAULT8_IF
 
 !> Whitelist of public symbols (Procedures)
-PUBLIC :: SET_CUSTOM_UNITS
-PUBLIC :: SET_DR_HOOK
 PUBLIC :: ENVVAR_IS_DEFINED
 PUBLIC :: READ_ENVVAR
 PUBLIC :: REPLACE_ENVVAR_IN_STRING
 PUBLIC :: READ_TYPE_FROM_ENV
 PUBLIC :: READ_YAML_FROM_ENV
 PUBLIC :: CUSTOM_FINDLOC
-PUBLIC :: NEED_FIT_SPECTRUM
 PUBLIC :: TOLOWER
 PUBLIC :: TOUPPER
 PUBLIC :: IS_DIRECTORY
 PUBLIC :: MAKE_DIRECTORY
 PUBLIC :: FILE_SET_PERMISSION
+PUBLIC :: NEED_FIT_SPECTRUM
+PUBLIC :: GET_VERBOSE
+PUBLIC :: SET_VERBOSE
+PUBLIC :: GET_COMPUTE_FIELD_STATISTICS
+PUBLIC :: SET_COMPUTE_FIELD_STATISTICS
+PUBLIC :: SET_DR_HOOK
+PUBLIC :: GET_DR_HOOK
+PUBLIC :: SET_CUSTOM_UNITS
+PUBLIC :: GET_CUSTOM_UNITS
 
 CONTAINS
 
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GET_COMPUTE_FIELD_STATISTICS'
+PP_THREAD_SAFE FUNCTION GET_COMPUTE_FIELD_STATISTICS( LCOMPUTE_FIELD_STATISTICS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  LOGICAL,       INTENT(OUT)   :: LCOMPUTE_FIELD_STATISTICS
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Set the hook
+!$omp critical(NEED_FIELD_STATISTICS)
+  LCOMPUTE_FIELD_STATISTICS = GCOMPUTE_FIELD_STATISTICS
+!$omp end critical(NEED_FIELD_STATISTICS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION GET_COMPUTE_FIELD_STATISTICS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SET_COMPUTE_FIELD_STATISTICS'
+PP_THREAD_SAFE FUNCTION SET_COMPUTE_FIELD_STATISTICS( LCOMPUTE_FIELD_STATISTICS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  LOGICAL,       INTENT(IN)    :: LCOMPUTE_FIELD_STATISTICS
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Set the hook
+!$omp critical(NEED_FIELD_STATISTICS)
+  GCOMPUTE_FIELD_STATISTICS = LCOMPUTE_FIELD_STATISTICS
+!$omp end critical(NEED_FIELD_STATISTICS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION SET_COMPUTE_FIELD_STATISTICS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GET_VERBOSE'
+PP_THREAD_SAFE FUNCTION GET_VERBOSE( VERBOSE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  LOGICAL,       INTENT(OUT)   :: VERBOSE
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Set the hook
+!$omp critical(ACCESS_VERBOSITY)
+  VERBOSE = GVERBOSE
+!$omp end critical(ACCESS_VERBOSITY)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION GET_VERBOSE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SET_VERBOSE'
+PP_THREAD_SAFE FUNCTION SET_VERBOSE( VERBOSE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  LOGICAL,       INTENT(IN)    :: VERBOSE
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Set the hook
+!$omp critical(ACCESS_VERBOSITY)
+  GVERBOSE = VERBOSE
+!$omp end critical(ACCESS_VERBOSITY)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION SET_VERBOSE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'SET_DR_HOOK'
-SUBROUTINE SET_DR_HOOK( LHOOK, DR_HOOK_PROCEDURE )
+PP_THREAD_SAFE FUNCTION SET_DR_HOOK( LHOOK, DR_HOOK_PROCEDURE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
 IMPLICIT NONE
 
   ! Dummy arguments
   LOGICAL,                                 INTENT(IN) :: LHOOK
   PROCEDURE(DR_HOOK_DEFAULT8_IF), POINTER, INTENT(IN) :: DR_HOOK_PROCEDURE
+  TYPE(HOOKS_T),                           INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
 
   !> Set the hook
-  LHOOK_  = LHOOK
-  DR_HOOK => DR_HOOK_PROCEDURE
+!$omp critical(MANAGE_DR_HOOK)
+  GLHOOK  = LHOOK
+  GDR_HOOK => DR_HOOK_PROCEDURE
+!$omp end critical(MANAGE_DR_HOOK)
 
-END SUBROUTINE SET_DR_HOOK
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION SET_DR_HOOK
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'SET_CUSTOM_UNITS'
-SUBROUTINE SET_CUSTOM_UNITS( CUSTOM_OUTPUT_UNIT, CUSTOM_ERROR_UNIT )
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GET_DR_HOOK'
+PP_THREAD_SAFE FUNCTION GET_DR_HOOK( LHOOK, DR_HOOK_PROCEDURE, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
 
 IMPLICIT NONE
 
   ! Dummy arguments
-  INTEGER(KIND=JPIM_K), INTENT(IN) :: CUSTOM_OUTPUT_UNIT
-  INTEGER(KIND=JPIM_K), INTENT(IN) :: CUSTOM_ERROR_UNIT
+  LOGICAL,                                 INTENT(OUT)   :: LHOOK
+  PROCEDURE(DR_HOOK_DEFAULT8_IF), POINTER, INTENT(OUT)   :: DR_HOOK_PROCEDURE
+  TYPE(HOOKS_T),                           INTENT(INOUT) :: HOOKS
 
-  JPERR_UNIT = CUSTOM_ERROR_UNIT
-  JPOUT_UNIT = CUSTOM_OUTPUT_UNIT
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
 
-END SUBROUTINE SET_CUSTOM_UNITS
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Set the hook
+!$omp critical(MANAGE_DR_HOOK)
+  LHOOK  = GLHOOK
+  DR_HOOK_PROCEDURE => GDR_HOOK
+!$omp end critical(MANAGE_DR_HOOK)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION GET_DR_HOOK
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SET_CUSTOM_UNITS'
+PP_THREAD_SAFE FUNCTION SET_CUSTOM_UNITS( CUSTOM_OUTPUT_UNIT, CUSTOM_ERROR_UNIT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIM_K), INTENT(IN)    :: CUSTOM_OUTPUT_UNIT
+  INTEGER(KIND=JPIM_K), INTENT(IN)    :: CUSTOM_ERROR_UNIT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+!$omp critical(MANAGE_CUSTOM_UNITS)
+  JPERR_UNIT = CUSTOM_ERROR_UNIT
+  JPOUT_UNIT = CUSTOM_OUTPUT_UNIT
+!$omp end critical(MANAGE_CUSTOM_UNITS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION SET_CUSTOM_UNITS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GET_CUSTOM_UNITS'
+PP_THREAD_SAFE FUNCTION GET_CUSTOM_UNITS( CUSTOM_OUTPUT_UNIT, CUSTOM_ERROR_UNIT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIM_K), INTENT(OUT)   :: CUSTOM_OUTPUT_UNIT
+  INTEGER(KIND=JPIM_K), INTENT(OUT)   :: CUSTOM_ERROR_UNIT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+!$omp critical(MANAGE_CUSTOM_UNITS)
+  CUSTOM_ERROR_UNIT = JPERR_UNIT
+  CUSTOM_OUTPUT_UNIT = JPOUT_UNIT
+!$omp end critical(MANAGE_CUSTOM_UNITS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION GET_CUSTOM_UNITS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'NEED_FIT_SPECTRUM'

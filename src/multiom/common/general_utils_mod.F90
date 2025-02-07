@@ -57,6 +57,9 @@ PUBLIC :: CUSTOM_FINDLOC
 PUBLIC :: NEED_FIT_SPECTRUM
 PUBLIC :: TOLOWER
 PUBLIC :: TOUPPER
+PUBLIC :: IS_DIRECTORY
+PUBLIC :: MAKE_DIRECTORY
+PUBLIC :: FILE_SET_PERMISSION
 
 CONTAINS
 
@@ -149,6 +152,613 @@ IMPLICIT NONE
   RETURN
 
 END FUNCTION NEED_FIT_SPECTRUM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FMODE2CMODE'
+FUNCTION FMODE2CMODE( F_MODE, C_MODE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=9),                            INTENT(IN)    :: F_MODE
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(10), INTENT(OUT)   :: C_MODE
+  TYPE(HOOKS_T),                               INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRLFAG_INVALID_MODE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! HAndle permission (Case insenistive whitelist)
+  SELECT CASE( F_MODE(1:1) )
+  CASE ( 'R', 'r' )
+    C_MODE(1) = 'r'
+  CASE ( '-' )
+    C_MODE(1) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(2:2) )
+  CASE ( 'W', 'w' )
+    C_MODE(2) = 'w'
+  CASE ( '-' )
+    C_MODE(2) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(3:3) )
+  CASE ( 'X', 'x' )
+    C_MODE(3) = 'x'
+  CASE ( '-' )
+    C_MODE(3) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+
+  SELECT CASE( F_MODE(4:4) )
+  CASE ( 'R', 'r' )
+    C_MODE(4) = 'r'
+  CASE ( '-' )
+    C_MODE(4) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(5:5) )
+  CASE ( 'W', 'w' )
+    C_MODE(5) = 'w'
+  CASE ( '-' )
+    C_MODE(5) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(6:6) )
+  CASE ( 'X', 'x' )
+    C_MODE(6) = 'x'
+  CASE ( '-' )
+    C_MODE(6) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+
+  SELECT CASE( F_MODE(7:7) )
+  CASE ( 'R', 'r' )
+    C_MODE(7) = 'r'
+  CASE ( '-' )
+    C_MODE(7) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(8:8) )
+  CASE ( 'W', 'w' )
+    C_MODE(8) = 'w'
+  CASE ( '-' )
+    C_MODE(8) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  SELECT CASE( F_MODE(9:9) )
+  CASE ( 'X', 'x' )
+    C_MODE(9) = 'x'
+  CASE ( '-' )
+    C_MODE(9) = '-'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRLFAG_INVALID_MODE )
+  END SELECT
+  C_MODE(10) = C_NULL_CHAR
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRLFAG_INVALID_MODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invlid rquested mode' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'mode name: "'//TRIM(ADJUSTL(F_MODE))//'"' )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FMODE2CMODE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IS_DIRECTORY'
+FUNCTION IS_DIRECTORY( DIRECTORY_NAME, IS_DIR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: DIRECTORY_NAME
+  LOGICAL,          INTENT(OUT)   :: IS_DIR
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_INT)  :: C_STATUS
+  CHARACTER(KIND=C_CHAR,LEN=LEN_TRIM(DIRECTORY_NAME)+1), TARGET :: C_DIRECTORY_NAME
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_DIRECTORY = 1_JPIB_K
+
+  ! Explicit interfaces
+  INTERFACE
+    FUNCTION C_ISDIR( C_PATH ) RESULT(C_STATUS) BIND(C, NAME="is_directory")
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PATH
+      INTEGER(C_INT) :: C_STATUS
+    END FUNCTION C_ISDIR
+  END INTERFACE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Fill the c character
+  C_DIRECTORY_NAME = REPEAT(C_NULL_CHAR,LEN_TRIM(DIRECTORY_NAME)+1)
+  DO I = 1, LEN_TRIM(DIRECTORY_NAME)
+      C_DIRECTORY_NAME(I:I) = DIRECTORY_NAME(I:I)
+  ENDDO
+
+  ! Call the C function
+  C_STATUS = C_ISDIR( C_LOC(C_DIRECTORY_NAME) )
+
+  ! Assign the output flag
+  IF ( C_STATUS .EQ. 1 ) THEN
+    IS_DIR = .TRUE.
+  ELSE
+    IS_DIR = .FALSE.
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_UNABLE_TO_CHECK_DIRECTORY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check directory' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory name: "'//TRIM(ADJUSTL(DIRECTORY_NAME))//'"' )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IS_DIRECTORY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAKE_DIRECTORY'
+FUNCTION MAKE_DIRECTORY( F_DIRECTORY_NAME, F_MODE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: F_DIRECTORY_NAME
+  CHARACTER(LEN=9), INTENT(IN)    :: F_MODE
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_INT)  :: C_STATUS
+  CHARACTER(KIND=C_CHAR,LEN=LEN_TRIM(F_DIRECTORY_NAME)+1), TARGET :: C_DIRECTORY_NAME
+  CHARACTER(KIND=C_CHAR,LEN=1), DIMENSION(10), TARGET :: C_MODE
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRLFAG_INVALID_MODE = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_DIRECTORY = 2_JPIB_K
+
+  ! Explicit interfaces
+  INTERFACE
+    FUNCTION C_MKDIR( C_PATH, C_MODE ) RESULT(C_STATUS) BIND(C, NAME="make_directory_sym")
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PATH
+      TYPE(C_PTR), VALUE, INTENT(IN) :: C_MODE
+      INTEGER(C_INT) :: C_STATUS
+    END FUNCTION C_MKDIR
+  END INTERFACE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Fill the c character
+  C_DIRECTORY_NAME = REPEAT(C_NULL_CHAR,LEN_TRIM(F_DIRECTORY_NAME)+1)
+  DO I = 1, LEN_TRIM(F_DIRECTORY_NAME)
+      C_DIRECTORY_NAME(I:I) = F_DIRECTORY_NAME(I:I)
+  ENDDO
+
+  ! Handle permission (Case insenistive whitelist)
+  PP_TRYCALL(ERRLFAG_INVALID_MODE) FMODE2CMODE( F_MODE, C_MODE, HOOKS )
+
+  ! Call the C function
+  C_STATUS = C_MKDIR( C_LOC(C_DIRECTORY_NAME), C_LOC(C_MODE) )
+  PP_DEBUG_CRITICAL_COND_THROW( C_STATUS.NE.0, ERRFLAG_UNABLE_TO_CREATE_DIRECTORY )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRLFAG_INVALID_MODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invlid mode in directory creation' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory name: "'//TRIM(ADJUSTL(F_DIRECTORY_NAME))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory mode: "'//TRIM(ADJUSTL(F_MODE))//'"' )
+
+    CASE (ERRFLAG_UNABLE_TO_CREATE_DIRECTORY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to create directory' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory name: "'//TRIM(ADJUSTL(F_DIRECTORY_NAME))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory mode: "'//TRIM(ADJUSTL(F_MODE))//'"' )
+      IF ( C_STATUS .EQ. 1_C_INT ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to parse symbolic mode' )
+      ELSEIF ( C_STATUS .EQ. 2_C_INT ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error calling "mkdir"' )
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MAKE_DIRECTORY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FILE_SET_PERMISSION'
+FUNCTION FILE_SET_PERMISSION( F_FILE_NAME, F_MODE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: F_FILE_NAME
+  CHARACTER(LEN=9), INTENT(IN)    :: F_MODE
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_INT)  :: C_STATUS
+  CHARACTER(KIND=C_CHAR,LEN=LEN_TRIM(F_FILE_NAME)+1), TARGET :: C_FILE_NAME
+  CHARACTER(KIND=C_CHAR,LEN=1), DIMENSION(10), TARGET :: C_MODE
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRLFAG_INVALID_MODE = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_FILE_PERMISSION = 2_JPIB_K
+
+  ! Explicit interfaces
+  INTERFACE
+    FUNCTION C_SET_PERM( C_PATH, C_MODE ) RESULT(C_STATUS) BIND(C, NAME="set_perm")
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PATH
+      TYPE(C_PTR), VALUE, INTENT(IN) :: C_MODE
+      INTEGER(C_INT) :: C_STATUS
+    END FUNCTION C_SET_PERM
+  END INTERFACE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Fill the c character
+  C_FILE_NAME = REPEAT(C_NULL_CHAR,LEN_TRIM(F_FILE_NAME)+1)
+  DO I = 1, LEN_TRIM(F_FILE_NAME)
+      C_FILE_NAME(I:I) = F_FILE_NAME(I:I)
+  ENDDO
+
+  ! Handle permission (Case insenistive whitelist)
+  PP_TRYCALL(ERRLFAG_INVALID_MODE) FMODE2CMODE( F_MODE, C_MODE, HOOKS )
+
+  ! Call the C function
+  C_STATUS = C_SET_PERM( C_LOC(C_FILE_NAME), C_LOC(C_MODE) )
+  PP_DEBUG_CRITICAL_COND_THROW( C_STATUS.NE.0, ERRFLAG_UNABLE_TO_SET_FILE_PERMISSION )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRLFAG_INVALID_MODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invlid mode in directory creation' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory name: "'//TRIM(ADJUSTL(F_FILE_NAME))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory mode: "'//TRIM(ADJUSTL(F_MODE))//'"' )
+
+    CASE (ERRFLAG_UNABLE_TO_SET_FILE_PERMISSION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to create directory' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory name: "'//TRIM(ADJUSTL(F_FILE_NAME))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'drectory mode: "'//TRIM(ADJUSTL(F_MODE))//'"' )
+      IF ( C_STATUS .EQ. 1_C_INT ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to parse symbolic mode' )
+      ELSEIF ( C_STATUS .EQ. 2_C_INT ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error calling "chmod"' )
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FILE_SET_PERMISSION
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

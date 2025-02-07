@@ -10,6 +10,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 set( MULTIOM_COMMON_SOURCES
   ${MULTIOM_COMMON_DIR}/datakinds_def_mod.F90
   ${MULTIOM_COMMON_DIR}/enumerators_mod.F90
+  ${MULTIOM_COMMON_DIR}/general_utils_c.c
   ${MULTIOM_COMMON_DIR}/general_utils_mod.F90
   ${MULTIOM_COMMON_DIR}/datetime_utils_mod.F90
   ${MULTIOM_COMMON_DIR}/constants_mod.F90

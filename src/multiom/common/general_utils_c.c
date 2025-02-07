@@ -41,6 +41,12 @@ int make_directory_sym(const char *path, const char *mode_str) {
     if ( mkdir(path, mode) != 0 ) {
         return 2; // Error creating directory
     }
+
+    if (chmod(path, mode) != 0) {
+        return 3;
+    }
+
+    return 0;
 }
 
 int is_directory( const char *path ) {

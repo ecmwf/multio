@@ -18,6 +18,8 @@
 #include <regex>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unordered_set>
+#include <unordered_map>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -47,15 +49,99 @@ namespace multiom {
 namespace test {
 
 namespace {
-class TempFile {
-    const std::string path_;
 
-public:
-    TempFile(std::string&& path) : path_{std::move(path)} {}
-    ~TempFile() { std::remove(path_.c_str()); }
+    using ValueSet = std::unordered_set<std::string>;
+    
+    using FieldValueMap = std::unordered_map<std::string, ValueSet>;
+    
+    FieldValueMap parseFieldValueMap(std::string s, int verbosity) {
+        const std::string FIELD_DELIM=";";
+        const std::string FIELDVAL_DELIM="=";
+        const std::string VALUES_DELIM=",";
+        FieldValueMap ret;
+        
+        size_t posField = 0;
+        std::string fieldAndVals;
+        do  {
+            posField = s.find(FIELD_DELIM);
+            fieldAndVals = s.substr(0, posField);
+            s.erase(0, posField + FIELD_DELIM.length());
+            
+            // Separate field from values by split on =
+            size_t posFieldVal = fieldAndVals.find(FIELDVAL_DELIM);
+            ASSERT(posFieldVal != std::string::npos);
+            std::string field = fieldAndVals.substr(0, posFieldVal);
+            fieldAndVals.erase(0, posFieldVal + FIELDVAL_DELIM.length());
+            // fieldAndVals should contain only values now
+            if (verbosity >= 1) {
+                std::cout << "Parsed field " << field << std::endl;
+            }
+            
+            size_t posVals = 0;
+            std::string val;
+            ValueSet values;
+            do  {
+                posVals = fieldAndVals.find(VALUES_DELIM);
+                val = fieldAndVals.substr(0, posVals);
+                fieldAndVals.erase(0, posVals + VALUES_DELIM.length());
+                
+                if (verbosity >= 1) {
+                    std::cout << "   parsed value: " << val << std::endl;
+                }
+                
+                values.insert(val);
+            } while (posVals != std::string::npos);
+            
+            ret.emplace(std::move(field), std::move(values));
+        } while ( posField != std::string::npos);
 
-    const std::string& path() const { return path_; }
-};
+        return ret;
+    }
+    
+    bool matches(eckit::message::Message msg, const FieldValueMap& map, int verbosity=0) {
+        for(const auto& fieldVals: map) {
+            std::string fieldVal = msg.getString(fieldVals.first);
+            
+            bool has = (fieldVals.second.find(fieldVal) != fieldVals.second.end());
+            if (has) {
+                if (verbosity >= 1) {
+                    std::cout << "Matched field \"" << fieldVals.first << "\" with value \"" << fieldVal << "\"" << std::endl;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static const ValueSet filteredStatParamId{
+        "143",
+        "144",
+        // "151",
+        // "160",
+        // "163",
+        // "164",
+        // "165",
+        // "166",
+        // "167",
+        // "168",
+        "169",
+        // "170",
+        // "172",
+        "175",
+        // "186",
+        // "187",
+        // "188",
+        "205",
+        "228",
+        // "228246",
+        // "228247",
+        // "235",
+        // "39",
+    };
+    
+    
+    
+    
 
 }  // namespace
 
@@ -91,6 +177,9 @@ private:
     std::string encodingFile_ = "";
     std::string mappingFile_ = "";
     long verbosity_ = 0;
+    
+    std::optional<FieldValueMap> excludeMap_ = {};
+    std::optional<FieldValueMap> filterMap_ = {};
     // bool encode32_ = false;
     // std::string configPath_ = "";
     // std::string stepRange_ = "";
@@ -123,6 +212,10 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
         new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 1"));
     options_.push_back(
         new eckit::option::SimpleOption<long>("verbosity", "Verbosity level"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("exclude", "Keys and values to be excluded. Multiple values are separated by ','. Multiple key-values pairs are separated by ';'. Example --exclude paramId=130,131,133;levtype=pl,sfc"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("filter", "Keys and values to be included. Multiple values are separated by ','. Multiple key-values pairs are separated by ';'. Example --filter paramId=130,131,133;levtype=pl,sfc"));
     // options_.push_back(
     //     new eckit::option::SimpleOption<bool>("decode",
     //                                           "Decode messages and pass raw data with metadata through the pipeline "
@@ -175,6 +268,18 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     }
     setenv("KNOWLEDGE_VERSION", "/", 0);
     setenv("MULTIO_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
+    
+    std::string excludeStr ="";
+    args.get("exclude", excludeStr);
+    if(!excludeStr.empty()) {
+        excludeMap_ = parseFieldValueMap(std::move(excludeStr), verbosity_);
+    }
+    
+    std::string filterStr ="";
+    args.get("filter", filterStr);
+    if(!filterStr.empty()) {
+        filterMap_ = parseFieldValueMap(std::move(filterStr), verbosity_);
+    }
     
     // if (testSubtoc_) {
     //     std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
@@ -233,7 +338,6 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     ASSERT(multio_grib2_encoder_open(optDict, &encoder) == 0);
 
     eckit::message::Message msg;
-
     while ((msg = reader.next())) {
         // Extract message from datahandle... we expect it to be a memory handle 
         // TODO: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
@@ -249,7 +353,28 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         metkit::codes::CodesContent* inputCodesContent = new metkit::codes::CodesContent{inputCodesHandle.get(), false};
         eckit::message::Message inputMsg{inputCodesContent};
         
+        
+        if (excludeMap_) {
+           bool ret = matches(msg, *excludeMap_, verbosity_);
+           if (ret) {
+               if (verbosity_ >= 1) {
+                   std::cout << "exclude map  matched... skipping message" << std::endl;
+               }
+               continue;
+           }
+        }
+        if (filterMap_) {
+           bool ret = matches(msg, *filterMap_, verbosity_);
+           if (!ret) {
+               if (verbosity_ >= 1) {
+                   std::cout << "filter map did not match... skipping message" << std::endl;
+               }
+               continue;
+           }
+        }
+        
         std::string edition = inputMsg.getString("edition");
+        // std::string paramId = inputMsg.getString("paramId");
         if (edition == "2" && copyGrib2Messages_) {
             // Write the message directly
             if(verbosity_ > 0) {
@@ -257,6 +382,11 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             }
             inputMsg.write(outputFileHandle);
         } else {
+            // if (auto searchFilteredParamId = filteredStatParamId.find(paramId); searchFilteredParamId != filteredStatParamId.end()) {
+            //     std::cout << "Ignoring paramId " << paramId << std::endl;
+            //     continue;
+            // }
+            
             // now inputCodesHandle is save to use
             void* marsDict=NULL; 
             void* parDict=NULL;
@@ -264,6 +394,13 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
             ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
+            
+            if(verbosity_ > 0) {
+                std::cout << "Extracted MARS dict:" << std::endl;
+                multio_grib2_dict_to_yaml(marsDict, "stdout");
+                std::cout << "Extracted PAR dict:" << std::endl;
+                multio_grib2_dict_to_yaml(parDict, "stdout");
+            }
             
             codes_handle* rawOutputCodesHandle=NULL;
             std::unique_ptr<codes_handle> outputCodesHandle=NULL;

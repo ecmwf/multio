@@ -12,6 +12,7 @@ mapping-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-10m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-map-to-sol.yaml'
 
   #
   # Inject bits-per-value

@@ -337,9 +337,6 @@ IMPLICIT NONE
 
   ! TODO: this check is very naive, it should be replaced with a more complex one
   ! IF ( IFS_PAR%SIM_%NLOCGRB .EQ. 36 ) THEN ! -> Trivial check
-  WRITE(*,*) 'IS_ANALYSIS: ', ANY(CONDITIONS1), ISTREAM
-  WRITE(*,*) 'IS_ANALYSIS: ', ANY(CONDITIONS2)
-  WRITE(*,*) 'IS_ANALYSIS: ', ANY(CONDITIONS3)
   IF ( ANY( [ ANY(CONDITIONS1), ALL( [ ANY(CONDITIONS2), ANY(CONDITIONS3) ] ) ] ) ) THEN
     IS_ANALYSIS = .TRUE.
   ELSE

@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-simple-max-over-last-6h'
+name: 'rule-height-above-ground-gg-fc-ensemble-ccsds-max-over-last-6h'
 
 #
 # Future use
@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        228224, 228035, 228036
+        121, 123
       ]
 
     - type: 'levtype'
@@ -55,7 +55,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -107,14 +107,14 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
+      type: 'heightaboveground'
 
     ensemble-configurator:
       type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

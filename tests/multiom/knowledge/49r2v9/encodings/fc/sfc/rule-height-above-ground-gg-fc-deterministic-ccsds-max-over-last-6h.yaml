@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-simple-max-over-last-6h'
+name: 'rule-height-above-ground-gg-fc-deterministic-ccsds-max-over-last-6h'
 
 #
 # Future use
@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        228224, 228035, 228036
+        121, 123
       ]
 
     - type: 'levtype'
@@ -52,10 +52,11 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -96,7 +97,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 11
+    template-number: 8
 
     time-statistics-configurator:
       type: 'fixed-timerange'
@@ -107,14 +108,11 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'heightaboveground'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

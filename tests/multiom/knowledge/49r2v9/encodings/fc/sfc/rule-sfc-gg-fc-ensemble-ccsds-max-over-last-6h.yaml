@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        121, 123, 228224, 228035, 228036
+        228224, 228035, 228036
       ]
 
     - type: 'levtype'

@@ -451,7 +451,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, glossary().systemNumber), lookUp<std::int64_t>(md, glossary().systemNumber),
                 lookUp<std::int64_t>(md, glossary().systemNumberKC));
 
-    withFirstOf(valueSetter(g, glossary().setPackingType), lookUp<std::string>(md, glossary().setPackingType));
 
     withFirstOf(valueSetter(g, glossary().expver), lookUp<std::string>(md, glossary().expver),
                 lookUp<std::string>(md, glossary().experimentVersionNumber));

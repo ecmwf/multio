@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-height-above-ground-gg-fc-deterministic-ccsds-max-over-last-6h'
+name: 'rule-sfc-gg-fc-deterministic-simple-max-over-last-3h-paramIdECMF'
 
 #
 # Future use
@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        121
+        228026
       ]
 
     - type: 'levtype'
@@ -56,7 +56,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'simple'
 
 
 #
@@ -102,17 +102,17 @@ encoder:
     time-statistics-configurator:
       type: 'fixed-timerange'
       type-of-statistical-processing: 'max'
-      overall-length-of-timerange: '6h'
+      overall-length-of-timerange: '3h'
 
     param-configurator:
-      type: 'paramId'
+      type: 'paramIdECMF'
 
     level-configurator:
-      type: 'heightaboveground'
+      type: 'surface'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 42
+    template-number: 0
 
 
 

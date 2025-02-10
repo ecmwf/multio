@@ -7,12 +7,13 @@ mapping-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-200m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-U-100m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-100m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-100m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-10m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-map-to-sol.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-change-123--levelist-to-10.yaml'
 
   #
   # Inject bits-per-value

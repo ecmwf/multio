@@ -191,11 +191,23 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-max-over-last-3h.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-max-over-last-3h.yaml'
 
+  # Gridded surfaces for forecast max over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-max-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-max-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-max-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-max-over-last-3h-paramIdECMF.yaml'
+
   # Gridded surfaces for forecast max over last 6h
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-max-over-last-6h.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-max-over-last-6h.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-max-over-last-6h.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-max-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast max over last 6h (paramIdECMF)
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-deterministic-ccsds-max-over-last-6h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-deterministic-simple-max-over-last-6h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-ensemble-ccsds-max-over-last-6h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-ensemble-simple-max-over-last-6h-paramIdECMF.yaml'
 
   # Gridded height above ground for forecast max over last 6h
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-deterministic-ccsds-max-over-last-6h.yaml'
@@ -210,10 +222,10 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-ensemble-simple-min-since-last-pp.yaml'
 
   # Gridded surfaces for forecast min over last 3h
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-min-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-min-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-min-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-min-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-min-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-min-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-min-over-last-3h-paramIdECMF.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-min-over-last-3h-paramIdECMF.yaml'
 
   # Gridded surfaces for forecast min over last 6h
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-height-above-ground-gg-fc-deterministic-ccsds-min-over-last-6h.yaml'

@@ -1260,8 +1260,21 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_PARAMID) THIS%PARAMID_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(3), HOOKS )
 
   ! Check if all subcomponents are ready to be encoded
-  WRITE(*,*) 'SEC4::TO_BE_ENCODED_SUBS:', TO_BE_ENCODED_SUBS
   TO_BE_ENCODED = ALL( TO_BE_ENCODED_SUBS )
+
+  ! If the field is skipped, then print the reason
+  IF ( .NOT.TO_BE_ENCODED ) THEN
+    WRITE(*,*) 'SEC4::TO_BE_ENCODED_SUBS:', TO_BE_ENCODED_SUBS
+    IF ( .NOT. TO_BE_ENCODED_SUBS(1) ) THEN
+      WRITE(*,*) '  - Time configurator not ready to be encoded'
+    ENDIF
+    IF ( .NOT. TO_BE_ENCODED_SUBS(1) ) THEN
+      WRITE(*,*) '  -  Level configurator not ready to be encoded'
+    ENDIF
+    IF ( .NOT. TO_BE_ENCODED_SUBS(1) ) THEN
+      WRITE(*,*) '  -  Param configurator not ready to be encoded'
+    ENDIF
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

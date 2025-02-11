@@ -28,7 +28,7 @@ Select::Select(const ComponentConfiguration& compConf) :
 
 void Select::executeImpl(Message msg) {
     //pass through action for everything that is not a field, e.g. Flush
-    if (matches(msg) || (msg.tag() != message::Message::Tag::Field)) {
+    if (matches(msg) || ((msg.tag() != message::Message::Tag::Field) || (msg.tag() != message::Message::Tag::Mask) || (msg.tag() != message::Message::Tag::Domain)) ) {
         executeNext(std::move(msg));
     }
 }

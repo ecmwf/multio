@@ -1163,7 +1163,7 @@ IMPLICIT NONE
   ELSE
     PP_LOG_STR( 'To be encoded: 2' )
     TO_BE_ENCODED = .TRUE.
-  ! END IF
+  END IF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

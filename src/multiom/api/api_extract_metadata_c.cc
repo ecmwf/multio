@@ -414,6 +414,11 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *par_dict, "scaledValueOfCentralWavenumber");
     if(ret != 0) return ret;
 
+
+    // TODO - this should be only set to 1 for statistical fields with step 0
+    ret = multio_grib2_dict_set(*par_dict, "encodeStepZero", "1");
+    if(ret != 0) return ret;
+
     if(hasKey(h, "setPackingType")) {
         std::string setPackingType = getString(h, "setPackingType");
         std::cout << "setPackingType: " << setPackingType << std::endl;

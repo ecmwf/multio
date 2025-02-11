@@ -37,6 +37,16 @@ int main() {
     assert(strcmp(readVal, "52") == 0);
     free(readVal);
     readVal = NULL;
+    
+    
+    ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "encodestepzero", "1");
+    ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "encodestepzero", &readVal);
+    printf("encodestepzero: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    assert(strcmp(readVal, "1") == 0);
+    free(readVal);
+    readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "initialstep", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "initialstep", "2");

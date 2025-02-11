@@ -1,0 +1,23 @@
+build:
+  python: "3.10"
+  modules:
+    - ninja
+  dependencies:
+    - ecmwf/ecbuild@develop
+    - ecmwf/eccodes@develop
+    - ecmwf/eckit@develop
+    - ecmwf/metkit@develop
+    - ecmwf/fckit@develop
+    - ecmwf/fdb@develop
+    - ecmwf/atlas@develop
+    - ecmwf/atlas-orca@develop
+    - ecmwf/mir@develop
+    - ecmwf/multio@develop
+  dependency_cmake_options:
+    - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
+    - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
+  parallel: 64
+  env:
+    - CTEST_PARALLEL_LEVEL=1
+    - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
+    - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions

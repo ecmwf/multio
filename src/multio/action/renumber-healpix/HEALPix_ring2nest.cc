@@ -115,6 +115,8 @@ HEALPixRingToNest::HEALPixRingToNest(const ComponentConfiguration& compConf) :
 
 void HEALPixRingToNest::executeImpl(message::Message msg) {
 
+    eckit::Log::warning() << "Action 'renumber-healpix' is no longer needed to interpolate to HEALPix nested. Interpolating to HEALPix nested can now be done in the 'interpolate' action directly!" << std::endl;
+
     // Bypass if it is not a field
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);

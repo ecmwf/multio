@@ -877,14 +877,14 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
 
-  ! Compute current time (Part of effort to move away from tiem history since now in mars there is the timeproc keyword)
-  ISEC =  MSG%STEP*PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ + MSG%STEP*PAR%TIME%INITIAL_STEP_ * HOURS2SECONDS
+  ! Compute current time (Part of effort to move away from time history since now in mars there is the timeproc keyword)
+  !! ISEC =  MSG%STEP*PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ + MSG%STEP*PAR%TIME%INITIAL_STEP_ * HOURS2SECONDS
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( MOD(ISEC,HOURS2SECONDS) .NE. 0, ERRFLAG_WRONG_TIME )
+  !! PP_DEBUG_CRITICAL_COND_THROW( MOD(ISEC,HOURS2SECONDS) .NE. 0, ERRFLAG_WRONG_TIME )
 
   ! Set the forecast time
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'forecastTime',  ISEC/HOURS2SECONDS )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'step',  MSG%STEP )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -1048,11 +1048,11 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Not condition applicable for section 4 time configuration to avoid encoding the field
-  IF ( THIS%ENCODE_STEP_ZERO_ .AND. MSG%STEP .EQ. 0_JPIB_K ) THEN
-    TO_BE_ENCODED = .FALSE.
-  ELSE
+  !IF ( .NOT.THIS%ENCODE_STEP_ZERO_ .AND. MSG%STEP .EQ. 0_JPIB_K ) THEN
+  !  TO_BE_ENCODED = .FALSE.
+  !ELSE
     TO_BE_ENCODED = .TRUE.
-  ENDIF
+  ! ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

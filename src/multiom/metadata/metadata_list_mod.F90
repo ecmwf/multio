@@ -445,7 +445,7 @@ IMPLICIT NONE
 
   ! Update the size of the list
   THIS%SIZE_ = THIS%SIZE_ + 1
-  WRITE(*,*) 'Push node', THIS%SIZE_
+
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
@@ -610,7 +610,7 @@ IMPLICIT NONE
 
   ! Update the size of the list
   THIS%SIZE_ = THIS%SIZE_ - 1
-  WRITE(*,*) 'Pop node', THIS%SIZE_
+
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW(  THIS%SIZE_ .LT. 0, ERRFLAG_INCONSISTENT_SIZE )
 

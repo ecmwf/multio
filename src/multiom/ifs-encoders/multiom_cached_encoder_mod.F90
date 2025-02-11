@@ -442,10 +442,10 @@ IMPLICIT NONE
 
       !> If encdong required/done then add the metadata the the list
       IF ( ENCODING_DONE ) THEN
-        IF (  THIS%ENCODER_OPTIONS%WRITE_DEBUG_FIELDS ) THEN
-          PP_LOG_STR( 'Add a new encoder' )
-          PP_TRYCALL(ERRFLAG_MARS_TO_JSON) METADATA%DUMP_SAMPLE( 'after_encode.grib', HOOKS )
-        ENDIF
+        ! IF (  THIS%ENCODER_OPTIONS%WRITE_DEBUG_FIELDS ) THEN
+        !   PP_LOG_STR( 'Add a new encoder' )
+        !   PP_TRYCALL(ERRFLAG_MARS_TO_JSON) METADATA%DUMP_SAMPLE( 'after_encode.grib', HOOKS )
+        ! ENDIF
         PP_TRYCALL(ERRFLAG_UNABLE_TO_ADD_METADATA) METADATA_LIST%PUSH( MAPPED_MSG, MAPPED_PAR, &
 &            MAPPING_TAG, MAPPING_NAME, ENCODER_TAG, ENCODER_NAME, METADATA, HOOKS )
       ENDIF

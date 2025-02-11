@@ -1627,6 +1627,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
+  CHARACTER(LEN=LEN(OMYAML)) :: CTMP
   INTEGER(KIND=JPIB_K) :: NENVLN
   INTEGER(KIND=JPIB_K) :: STAT
   LOGICAL :: IS_DEFINED
@@ -1637,6 +1638,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_ENVVAR = 2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENVVAR = 3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_YAML_FILE_DOES_NOT_EXISTS = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_REPLACE_ENVVAR_IN_STRING = 5_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1664,7 +1666,11 @@ IMPLICIT NONE
   IF ( IS_DEFINED ) THEN
 
     ! Read the environment variable
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ENVVAR) READ_ENVVAR( 'OUTPUT_MANAGER_YAML', OMYAML, NENVLN, HOOKS )
+    CTMP = REPEAT(' ',LEN(CTMP))
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ENVVAR) READ_ENVVAR( 'OUTPUT_MANAGER_YAML', CTMP, NENVLN, HOOKS )
+
+    ! Replace ENV var in string
+    PP_TRYCALL(ERRFLAG_REPLACE_ENVVAR_IN_STRING) REPLACE_ENVVAR_IN_STRING( CTMP, OMYAML, HOOKS )
 
     ! Check if the file exsts
     INQUIRE( FILE=TRIM(OMYAML), EXIST=EX )
@@ -1673,8 +1679,6 @@ IMPLICIT NONE
   ELSE
 
     ! Default value for output manager type when environment variable
-    ! is not defined.
-    ! "../" Because the output manager "main" directory is: "io_serv.0000?.d"
     OMYAML = '../output-manager-config.yaml'
 
   ENDIF
@@ -1696,19 +1700,33 @@ PP_ERROR_HANDLER
 
   BLOCK
 
+    ! Temporary debug variables
+    CHARACTER(LEN=32) :: CTMP1
+    CHARACTER(LEN=32) :: CTMP2
+
     ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_ENVVAR_TOO_LONG)
+      CTMP1 = REPEAT(' ',32)
+      CTMP2 = REPEAT(' ',32)
+      WRITE(CTMP1, '(I32)', IOSTAT=STAT) LEN(OMYAML)
+      WRITE(CTMP2, '(I32)', IOSTAT=STAT) NENVLN
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'OUTPUT_MANAGER_YAML env. var. too long' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'env. var. length: "'//TRIM(ADJUSTL(CTMP1))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'required length: "'//TRIM(ADJUSTL(CTMP2))//'"' )
     CASE (ERRFLAG_UNABLE_TO_CHECK_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error checking: "OUTPUT_MANAGER_YAML" env. var.' )
     CASE (ERRFLAG_UNABLE_TO_READ_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading: "OUTPUT_MANAGER_YAML" env. var.' )
+    CASE (ERRFLAG_REPLACE_ENVVAR_IN_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to replace envvar in string' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'string: "'//TRIM(ADJUSTL(CTMP))//'"' )
     CASE (ERRFLAG_YAML_FILE_DOES_NOT_EXISTS)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'YAML file does not exists' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'file: "'//TRIM(ADJUSTL(OMYAML))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

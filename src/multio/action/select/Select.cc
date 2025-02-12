@@ -28,8 +28,13 @@ Select::Select(const ComponentConfiguration& compConf) :
 
 void Select::executeImpl(Message msg) {
     //pass through action for everything that is not a field, e.g. Flush
-    if (matches(msg) || ((msg.tag() != message::Message::Tag::Field) || (msg.tag() != message::Message::Tag::Mask) || (msg.tag() != message::Message::Tag::Domain)) ) {
+    if ((msg.tag() == message::Message::Tag::Flush) || (msg.tag() == message::Message::Tag::Notification)) {
         executeNext(std::move(msg));
+        return;
+    }
+    if ( matches(msg) ) {
+        executeNext(std::move(msg));
+        return;
     }
 }
 

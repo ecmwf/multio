@@ -1,0 +1,200 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+#define PP_FILE_NAME 'test_read04_prog.F90'
+#define PP_SECTION_TYPE 'PROGRAM'
+#define PP_SECTION_NAME 'TEST_READ04_PROG'
+#define PP_PROCEDURE_TYPE 'PROGRAM'
+#define PP_PROCEDURE_NAME 'MAIN'
+PROGRAM TEST_READ04_PROG
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_T
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATIONS_T
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_NEW_CONFIGURATION_FROM_FILE
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_HAS_KEY
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_GET_SUBCONFIGURATIONS
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATIONS
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATION
+
+
+  USE :: FILTER_OPTIONS_MOD, ONLY: FILTER_OPTIONS_T
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+  USE :: ENCODING_RULES_MOD, ONLY: ENCODING_RULE_CONTAINER_T
+  USE :: ENCODING_RULES_FACTORY_MOD, ONLY: MAKE_ENCODING_RULES
+  USE :: ENCODING_RULES_FACTORY_MOD, ONLY: DESTROY_ENCODING_RULES
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Test encodr object
+  TYPE(HOOKS_T) :: HOOKS
+  TYPE(YAML_CONFIGURATION_T) :: CONFIG
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: UNIT
+  INTEGER(KIND=JPIB_K) :: OFFSET
+  INTEGER(KIND=JPIB_K) :: RET
+  INTEGER(KIND=JPIB_K) :: LENGTH
+  LOGICAL :: HAS_ENCODING_RULES
+  TYPE(YAML_CONFIGURATIONS_T) :: ENCODING_RULES_CONFIGURATION
+  TYPE(ENCODING_RULE_CONTAINER_T), POINTER, DIMENSION(:) :: ENCODING_RULES
+
+  TYPE(FILTER_OPTIONS_T)       :: FILTER_OPT
+  TYPE(GRIB_ENCODER_OPTIONS_T) :: ENCODER_OPT
+  LOGICAL :: FEXIST
+
+
+  CHARACTER(LEN=256) :: FNAME
+
+  ! Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_FILE_DOES_NOT_EXIST = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_FILE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECTIONS_UNDEFINED = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_SUBCFG = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MAKE_ENCODING_RULE = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_CONFIGURATIONS = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODING_RULE_DEALLOCATION_ERROR = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODING_RULE_PRINT_ERROR = 9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODING_RULES_DEALLOCATION_ERROR = 10_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Get the first command-line argument (index starts from 1)
+  FNAME = REPEAT(' ', 256)
+  IF ( COMMAND_ARGUMENT_COUNT() .EQ. 1 ) THEN
+    ! Get the first command-line argument (index starts from 1)
+    CALL GET_COMMAND_ARGUMENT(1, FNAME, LENGTH, RET )
+    IF (RET .NE. 0) THEN
+      FNAME = 'config-rule.yaml'
+    END IF
+  ELSE
+    FNAME = 'config-rule.yaml'
+  END IF
+
+  ! Inquire file existence
+  INQUIRE( FILE=TRIM(ADJUSTL(FNAME)), EXIST=FEXIST )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. FEXIST, ERRFLAG_CFG_FILE )
+
+  !> Set the unit and offset
+  UNIT = 6
+  OFFSET = 1
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+
+  !> Open the configuration file
+  PP_TRYCALL(ERRFLAG_CFG_FILE_DOES_NOT_EXIST) YAML_NEW_CONFIGURATION_FROM_FILE( TRIM(ADJUSTL(FNAME)), CONFIG, HOOKS )
+
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CONFIG, 'rules', HAS_ENCODING_RULES, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. HAS_ENCODING_RULES, ERRFLAG_SECTIONS_UNDEFINED )
+
+  !> Read all the subconfigurations
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SUBCFG) YAML_GET_SUBCONFIGURATIONS( CONFIG, 'rules', ENCODING_RULES_CONFIGURATION, HOOKS )
+
+  !> Deallocate section configuration
+  PP_TRYCALL(ERRFLAG_MAKE_ENCODING_RULE) MAKE_ENCODING_RULES( ENCODING_RULES, ENCODING_RULES_CONFIGURATION, FILTER_OPT, ENCODER_OPT, HOOKS )
+
+  !> Destroy the configuration object
+  PP_TRYCALL(ERRFLAG_DELETE_CONFIGURATIONS) YAML_DELETE_CONFIGURATIONS( ENCODING_RULES_CONFIGURATION, HOOKS )
+
+  !> Deallocate section configuration
+  PP_TRYCALL( ERRFLAG_ENCODING_RULE_DEALLOCATION_ERROR ) YAML_DELETE_CONFIGURATION( CONFIG, HOOKS )
+
+  !> Print all the rules
+  DO I = 1, SIZE(ENCODING_RULES)
+    PP_TRYCALL( ERRFLAG_ENCODING_RULE_PRINT_ERROR ) ENCODING_RULES(I)%RULE_%PRINT( UNIT, OFFSET, ENCODER_OPT, HOOKS )
+  END DO
+
+  ! Deallocate all the rules
+  PP_TRYCALL( ERRFLAG_ENCODING_RULES_DEALLOCATION_ERROR ) DESTROY_ENCODING_RULES( ENCODING_RULES, ENCODER_OPT, HOOKS )
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  !> Exit point (on success)
+  STOP 0
+
+! Error handler
+PP_ERROR_HANDLER
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CFG_FILE_DOES_NOT_EXIST)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The configuration file does not exist' )
+    CASE (ERRFLAG_CFG_FILE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The configuration file does not exist' )
+    CASE (ERRFLAG_UNABLE_TO_READ_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the encoder configuration' )
+    CASE (ERRFLAG_SECTIONS_UNDEFINED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The encoder configuration does not have the "rules" key' )
+    CASE (ERRFLAG_UNABLE_TO_READ_SUBCFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the subconfigurations' )
+    CASE (ERRFLAG_MAKE_ENCODING_RULE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the rules' )
+    CASE (ERRFLAG_DELETE_CONFIGURATIONS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the configurations' )
+    CASE (ERRFLAG_ENCODING_RULE_DEALLOCATION_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the rule' )
+    CASE (ERRFLAG_ENCODING_RULE_PRINT_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the rule' )
+    CASE (ERRFLAG_ENCODING_RULES_DEALLOCATION_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the rules' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( 6_JPIB_K )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  STOP 1
+
+END PROGRAM TEST_READ04_PROG
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

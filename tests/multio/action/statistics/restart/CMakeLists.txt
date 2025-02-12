@@ -41,9 +41,11 @@ ecbuild_add_test(
     COMMAND ${CMAKE_COMMAND}
     ARGS    -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${RESTART_MAIN_FOLDER}
 )
+if ( TEST ${PREFIX}_clean_dir )
 set_tests_properties(${PREFIX}_clean_dir PROPERTIES
     FIXTURES_SETUP ${PREFIX}_clean_dir
 )
+endif()
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_run_0-24_new_restart
@@ -53,10 +55,12 @@ ecbuild_add_test(
     COMMAND      multio-feed
     ARGS         --stepRange=0-24 --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
 )
+if ( TEST ${PREFIX}_run_0-24_new_restart )
 set_tests_properties(${PREFIX}_run_0-24_new_restart PROPERTIES
     FIXTURES_SETUP    ${PREFIX}_run_0-24_new_restart
     FIXTURES_REQUIRED ${PREFIX}_clean_dir
 )
+endif()
 
 # Set the number of steps and loop through them
 set(NUM_STEPS 11)
@@ -87,10 +91,12 @@ foreach(i RANGE 1 ${NUM_STEPS})
         COMMAND     multio-feed
         ARGS        --stepRange=${stepRange} --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
     )
-    set_tests_properties(${PREFIX}_run_${stepRange}_new_restart PROPERTIES
-    FIXTURES_SETUP    ${PREFIX}_run_${stepRange}_new_restart
-    FIXTURES_REQUIRED ${PREFIX}_run_${prevStepRange}_new_restart
-    )
+    if ( TEST ${PREFIX}_run_${stepRange}_new_restart )
+      set_tests_properties(${PREFIX}_run_${stepRange}_new_restart PROPERTIES
+        FIXTURES_SETUP    ${PREFIX}_run_${stepRange}_new_restart
+        FIXTURES_REQUIRED ${PREFIX}_run_${prevStepRange}_new_restart
+      )
+    endif()
 
     set( prevStepRange "${stepRange}" )
 
@@ -112,28 +118,34 @@ ecbuild_add_test(
     COMMAND      multio-feed
     ARGS         --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
 )
-set_tests_properties(${PREFIX}_run_single_chunk_new_restart PROPERTIES
+if ( TEST ${PREFIX}_run_single_chunk_new_restart )
+  set_tests_properties(${PREFIX}_run_single_chunk_new_restart PROPERTIES
     FIXTURES_SETUP    ${PREFIX}_run_single_chunk_new_restart
     FIXTURES_REQUIRED ${PREFIX}_clean_dir
-)
+  )
+endif()
 
 ecbuild_add_test(
     TARGET  ${PREFIX}_check_metadata_single_chunk_new_restart
     ARGS    -H "Result_single_chunk.grib" "Reference_single_chunk.grib"
     COMMAND grib_compare
 )
-set_tests_properties(${PREFIX}_check_metadata_single_chunk_new_restart PROPERTIES
+if ( TEST ${PREFIX}_check_metadata_single_chunk_new_restart )
+  set_tests_properties(${PREFIX}_check_metadata_single_chunk_new_restart PROPERTIES
     FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
-)
+  )
+endif()
 
 ecbuild_add_test(
     TARGET  ${PREFIX}_check_values_single_chunk_new_restart
     ARGS    -P -T10 "Result_single_chunk.grib" "Reference_single_chunk.grib"
     COMMAND grib_compare
 )
-set_tests_properties(${PREFIX}_check_values_single_chunk_new_restart PROPERTIES
+if ( TEST ${PREFIX}_check_values_single_chunk_new_restart )
+  set_tests_properties(${PREFIX}_check_values_single_chunk_new_restart PROPERTIES
     FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
-)
+  )
+endif()
 
 #
 # Final comparison
@@ -142,15 +154,19 @@ ecbuild_add_test(
     ARGS    -H "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
     COMMAND grib_compare
 )
-set_tests_properties(${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart PROPERTIES
+if ( TEST ${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart )
+  set_tests_properties(${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart PROPERTIES
     FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
-)
+  )
+endif()
 
 ecbuild_add_test(
     TARGET  ${PREFIX}_check_values_singleVSrestart_chunk_new_restart
     ARGS    -P -T10 "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
     COMMAND grib_compare
 )
-set_tests_properties(${PREFIX}_check_values_singleVSrestart_chunk_new_restart PROPERTIES
+if ( TEST ${PREFIX}_check_values_singleVSrestart_chunk_new_restart )
+  set_tests_properties(${PREFIX}_check_values_singleVSrestart_chunk_new_restart PROPERTIES
     FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
-)
+  )
+endif()

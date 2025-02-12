@@ -5,10 +5,10 @@ on:
   # Trigger the workflow on all pushes, except on tag creation
   push:
     branches:
-      - 'master'
-      - 'develop'
+      - "master"
+      - "develop"
     tags-ignore:
-      - '**'
+      - "**"
 
   # Trigger the workflow on all pull requests
   pull_request: ~
@@ -25,9 +25,11 @@ jobs:
   downstream-ci:
     name: downstream-ci
     if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
-    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@main
+    # uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@main
+    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@feature/add_pymultio
     with:
       multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      pymultio: pymultio:ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
       codecov_upload: true
       clang_format: false
     secrets: inherit
@@ -54,9 +56,11 @@ jobs:
   downstream-ci-hpc:
     name: downstream-ci-hpc
     if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
-    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@main
+    # uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@main
+    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@feature/add_pymultio
     with:
       multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      pymultio: pymultio:ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
     secrets: inherit
 
   # Run CI of private downstream packages on HPC

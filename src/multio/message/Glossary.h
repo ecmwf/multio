@@ -237,12 +237,22 @@ struct Glossary {
     // Regular ll
     const KeyType ni{"Ni"};
     const KeyType nj{"Nj"};
+
+    // Regular ll - mapped
     const KeyType north{"north"};
     const KeyType west{"west"};
     const KeyType south{"south"};
     const KeyType east{"east"};
     const KeyType westEastIncrement{"west_east_increment"};
     const KeyType southNorthIncrement{"south_north_increment"};
+
+    // Regular ll - direct
+    const KeyType latitudeOfFirstGridPoint{"latitudeOfFirstGridPoint"};
+    const KeyType latitudeOfLastGridPoint{"latitudeOfLastGridPoint"};
+    const KeyType longitudeOfFirstGridPoint{"longitudeOfFirstGridPoint"};
+    const KeyType longitudeOfLastGridPoint{"longitudeOfLastGridPoint"};
+    const KeyType jDirectionIncrement{"jDirectionIncrement"};
+    const KeyType iDirectionIncrement{"iDirectionIncrement"};
 
 
     static const Glossary& instance() {

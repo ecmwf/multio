@@ -50,7 +50,7 @@ private:
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
         double m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(), [m](T v1, T v2) {
-            return static_cast<T>(m == v2 ? m : v1 < v2 ? v1 : v2);
+            return static_cast<T>(m == v1 || m == v2 ? m : v1 < v2 ? v1 : v2);
         });
         return;
     }

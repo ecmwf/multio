@@ -46,7 +46,7 @@ private:
         const double m = cfg.missingValue();
         const double c = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg.stepFreq() * cfg.timeStep());
         std::transform(values_.begin(), values_.end(), initValues_.begin(), buf,
-                       [c, m](T v1, T v2) { return static_cast<T>(m == v1 ? m : (v1 - v2) * c); });
+                       [c, m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : (v1 - v2) * c); });
         return;
     }
 

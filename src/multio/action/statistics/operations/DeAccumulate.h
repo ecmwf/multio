@@ -37,7 +37,7 @@ public:
         checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? updateWithMissing(val, cfg) : updateWithoutMissing(val, cfg);
+        std::copy(val, val + (sz / sizeof(T)), values_.begin());
         return;
     }
 
@@ -51,21 +51,7 @@ private:
     void computeWithMissing(T* val, const StatisticsConfiguration& cfg) {
         double m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), initValues_.begin(), val,
-                       [m](T v1, T v2) { return static_cast<T>(m == v1 ? m : v1 - v2); });
-        return;
-    }
-
-
-    void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {
-        std::transform(values_.begin(), values_.end(), val, values_.begin(),
-                       [](T v1, T v2) { return static_cast<T>(v2); });
-        return;
-    }
-
-    void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
-        double m = cfg.missingValue();
-        std::transform(values_.begin(), values_.end(), val, values_.begin(),
-                       [m](T v1, T v2) { return static_cast<T>(m == v2 ? m : v2); });
+                       [m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 - v2); });
         return;
     }
 

@@ -48,7 +48,7 @@ private:
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
         const double c2 = icntpp(), c1 = sc(c2), m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
-                       [c1, c2, m](T v1, T v2) { return static_cast<T>(m == v2 ? m : v1 * c1 + v2 * c2); });
+                       [c1, c2, m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 * c1 + v2 * c2); });
         return;
     }
     double icntpp() const { return double(1.0) / double(win_.count()); };

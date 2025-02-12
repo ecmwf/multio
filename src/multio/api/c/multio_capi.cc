@@ -505,6 +505,7 @@ int multio_close_connections(multio_handle_t* mio) {
             multio::message::Metadata md;
             md.set("flushKind", "close-connection");
             md.set("toAllServers",true);
+            md.set("domain","global");
             mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
 
             mio->closeConnections();

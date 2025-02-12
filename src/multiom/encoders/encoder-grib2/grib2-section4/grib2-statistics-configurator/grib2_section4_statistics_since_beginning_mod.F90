@@ -941,9 +941,10 @@ IMPLICIT NONE
   !> Should be equal to the OVERALL_LENGTH_OF_TIMERANGE_IN_SECONDS, otherwise the field should not be encoded
   LOC_LENGTH_OF_TIME_RANGE = TIME_SINCE_START - FORECAST_TIME
 
-  IF ( MSG%TIMEPROC.NE.UNDEF_PARAM_E ) THEN
-    PP_DEBUG_CRITICAL_COND_THROW( MSG%TIMEPROC.NE.MSG%STEP, ERRFLAG_WRONG_TIMERANGE )
-  ENDIF
+  ! MIVAL: TODO improve handling of timeproc and step in order to avoid this check
+  !! IF ( MSG%TIMEPROC.NE.UNDEF_PARAM_E ) THEN
+  !!   PP_DEBUG_CRITICAL_COND_THROW( MSG%TIMEPROC.NE.MSG%STEP, ERRFLAG_WRONG_TIMERANGE )
+  !! ENDIF
 
   !> Set the current point in time for the current loop
   ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'forecastTime',  FORECAST_TIME/3600 )
@@ -993,7 +994,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'no forecast time' )
     CASE ( ERRFLAG_WRONG_TIMERANGE )
       CTMP1 = REPEAT( ' ', 32 )
-      WRITE( CTMP1, '(I32)' ) LOC_LENGTH_OF_TIME_RANGE/3600
+      WRITE( CTMP1, '(I32)' ) MSG%STEP
       CTMP2 = REPEAT( ' ', 32 )
       WRITE( CTMP2, '(I32)' ) MSG%TIMEPROC
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong time range' )

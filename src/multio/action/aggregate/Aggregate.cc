@@ -61,11 +61,22 @@ auto Aggregate::flushCount(const Message& msg) {
 bool Aggregate::handleFlush(const Message& msg) {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.actionTiming_};
+    // to allow flushes coming without a domain to direclty pass through.
+    auto domain = msg.metadata().get<std::string>("domain");
+    if(domain=="global") {
+        return true;
+    }
+    // get domain info if existant
+    const auto& domainMap = domain::Mappings::instance().get(domain);
 
-    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
     auto flCount = flushCount(msg);
 
-    return domainMap.isComplete() && flCount == domainMap.size();
+    if(domainMap.isComplete() && flCount == domainMap.size()){
+        //if complete, pass through and reset counter
+        flushes_.erase(msg.fieldId());
+        return true;
+    }
+    return false;
 }
 
 bool Aggregate::allPartsArrived(const Message& msg) const {

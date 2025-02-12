@@ -1354,6 +1354,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Destination string too short' )
     CASE (ERRFLAG_ENVVAR_NOT_DEFINED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Environment variable is not defined' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'String: "'//TRIM(ADJUSTL(INPSTR))//'"' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Var. name: "'//TRIM(ADJUSTL(TMPSTR))//'"' )
     CASE (ERRFLAG_OUT_OF_BOUNDS_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Environment variable too short' )
@@ -1715,7 +1716,7 @@ PP_ERROR_HANDLER
       WRITE(CTMP1, '(I32)', IOSTAT=STAT) LEN(OMYAML)
       WRITE(CTMP2, '(I32)', IOSTAT=STAT) NENVLN
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'OUTPUT_MANAGER_YAML env. var. too long' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'env. var. length: "'//TRIM(ADJUSTL(CTMP1))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'variable length: "'//TRIM(ADJUSTL(CTMP1))//'"' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'required length: "'//TRIM(ADJUSTL(CTMP2))//'"' )
     CASE (ERRFLAG_UNABLE_TO_CHECK_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error checking: "OUTPUT_MANAGER_YAML" env. var.' )

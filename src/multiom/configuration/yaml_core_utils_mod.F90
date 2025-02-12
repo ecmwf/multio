@@ -3142,6 +3142,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read string from configuration' )
     CASE (ERRFLAG_UNABLE_TO_REPLACE_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to replace environment variables in string' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'string: "'//TRIM(ADJUSTL(VALUE))//'"' )
     CASE (ERRFLAG_UNABLE_TO_DEALLOCATE_VALUE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error deallocating VALUE' )
       IF ( ALLOCATED(ERRMSG) ) THEN

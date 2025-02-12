@@ -71,7 +71,7 @@ bool Aggregate::handleFlush(const Message& msg) {
 
     auto flCount = flushCount(msg);
 
-    if((domainMap.isComplete() && flCount == domainMap.size()) == true){
+    if(domainMap.isComplete() && flCount == domainMap.size()){
         //if complete, pass through and reset counter
         flushes_.erase(msg.fieldId());
         return true;

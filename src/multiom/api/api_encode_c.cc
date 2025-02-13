@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <vector>
 #include <functional>
@@ -34,6 +35,23 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
   *out_handle = codes_handle_new_from_message_copy(NULL, message, messageLength2);
   if (*out_handle == NULL) { return -1; };
   free(message);
+  
+  char* scaleFactorCStr = NULL;
+  std::optional<double> scaleFactor;
+  ret = multio_grib2_dict_get(par_dict, "values-scale-factor", &scaleFactorCStr);
+  if(ret !=0) return ret;
+  if(scaleFactorCStr != NULL) {
+      scaleFactor = std::stod(scaleFactorCStr);
+      free(scaleFactorCStr);
+  }
+  
+  std::vector<double> scaledValues;
+  if(scaleFactor && (*scaleFactor != 1.0)) {
+      scaledValues.reserve(data_len);
+      std::transform(data, data+data_len, std::back_inserter(scaledValues), [&scaleFactor](const double& v){ return v*(*scaleFactor); });
+      data = scaledValues.data();
+  } 
+  
   CODES_CHECK(codes_set_double_array((codes_handle*) *out_handle, "values", data, data_len), "Error setting data values on codes handle");
   return ret;
 }
@@ -41,8 +59,8 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
                                   
 int multio_grib2_encoder_encode32(void* multio_grib2, void* mars_dict, void* par_dict, float* data, size_t data_len,
                                   void** out_handle) {
-    std::vector<double> values{data, data+data_len};
-    return multio_grib2_encoder_encode64(multio_grib2, mars_dict, par_dict, values.data(), data_len, out_handle);
+  std::vector<double> values{data, data+data_len};
+  return multio_grib2_encoder_encode64(multio_grib2, mars_dict, par_dict, values.data(), data_len, out_handle);
 }
 
       

@@ -133,6 +133,15 @@ int main() {
     assert(strcmp(readVal, "123") == 0);
     free(readVal);
     readVal = NULL;
+    
+    ret = multio_grib2_dict_has(dictionary_01, "param", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "param", "123.283");
+    ret = multio_grib2_dict_has(dictionary_01, "param", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "param", &readVal);
+    printf("param: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    assert(strcmp(readVal, "123283") == 0);
+    free(readVal);
+    readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "model", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "model", "atmosphere");

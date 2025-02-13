@@ -7,7 +7,7 @@ dump-fortran-data-reproducer:
 
 grib-header-to-multio:
   samples-path: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/samples'
-  multio-plans-file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/plans/multio-plans.yaml'
+  multio-plans-file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/plans/multio-sink-only-plan.yaml'
   mapping-rules-file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/mapping-rules.yaml'
   encoding-rules-file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/encoding-rules.yaml'
   log-path: '{MULTIO_LOG_PATH}'

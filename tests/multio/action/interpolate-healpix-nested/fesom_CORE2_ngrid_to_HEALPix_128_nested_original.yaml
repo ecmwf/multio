@@ -1,0 +1,25 @@
+plans:
+  - name: fesom_CORE2_ngrid_to_HEALPix_128_nested_original
+    actions:
+      - type: metadata-mapping
+        mapping: "{~}/fesom_CORE2_ngrid_mappings.yaml"
+        overwrite-existing: true
+      - type: interpolate
+        input: fesom
+        grid: H128
+        cache-path: .
+        options:
+          interpolation: matrix
+      - type: metadata-mapping
+        mapping: '{~}/mapping_128.yaml'
+      - type: renumber-healpix
+        cache-file-name: HEALPix_ring2nest.atlas
+      - type: encode
+        format: grib
+        template: Reference_HEALPix_32_nested.grib  # This seems to work for H128_nested
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false
+          path: MultIO_fesom_CORE2_ngrid_to_HEALPix_128_nested_original.grib

@@ -26,7 +26,7 @@ configure_file(  ${MULTIOM_TEMPLATES_DIR}/map_pkey_mod.F90 ${CMAKE_CURRENT_BINAR
 
 # Collect source files in module2
 set( MULTIOM_API_MAIN_SOURCES
-  ${MULTIOM_API_DIR}/c/api.c
+  ${MULTIOM_API_DIR}/c/api.cc
   ${MULTIOM_API_DIR}/api_options_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_mars_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_par_dictionary_utils_mod.F90

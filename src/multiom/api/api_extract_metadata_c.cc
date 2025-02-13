@@ -30,7 +30,8 @@ namespace {
       // Now eccodes is writing in the buffer...
       CODES_CHECK(codes_get_string(handle, key, ret.data(), &keylen), nullptr);
       // Now a second resize will only shrink (never enlarge) the buffer and just adjust the size without modifying the buffer
-      ret.resize(keylen-1);
+      // ret.resize(keylen-1);
+      ret.resize(strlen(ret.c_str())); // does also work and might be more reliable
       std::cout << "Get string " << key << " (len: " << keylen << ", stringsize: " << ret.size() << ": " << std::string(ret) <<std::endl;
       return ret;
   }
@@ -305,7 +306,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "chemId", "chem");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *mars_dict, "paramId");
+    ret = getAndSet(h, *mars_dict, "param");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "model");

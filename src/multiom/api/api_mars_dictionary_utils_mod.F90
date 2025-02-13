@@ -458,7 +458,7 @@ IMPLICIT NONE
   CASE ( 'chem' )
     ITERATOR = MARS_ITERATOR_CHEM
 
-  CASE ( 'paramid' )
+  CASE ( 'param' )
     ITERATOR = MARS_ITERATOR_PARAM
 
   CASE ( 'model' )
@@ -940,7 +940,7 @@ IMPLICIT NONE
     KEY = 'chem'
 
   CASE ( MARS_ITERATOR_PARAM )
-    KEY = 'paramId'
+    KEY = 'param'
 
   CASE ( MARS_ITERATOR_MODEL )
     KEY = 'model'

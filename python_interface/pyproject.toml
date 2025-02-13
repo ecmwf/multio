@@ -24,7 +24,7 @@ name = "pymultio"
 readme = "README.md"
 description = "A Python interface to multio."
 keywords = [ "multio", "multiopython", "tools" ]
-license = { file = "LICENSE" }
+license = { file = "../LICENSE" }
 authors = [
   { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
 ]

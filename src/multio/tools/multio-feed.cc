@@ -292,6 +292,14 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 metadata.set("step-frequency", 1);
             }
 
+            // Metadata required to handle missing values in statistics and interpolation
+            if (metadataDetailed.has("bitmapPresent")) {
+                metadata.set("bitmapPresent", metadataDetailed.getBool("bitmapPresent"));
+            }
+            if (metadataDetailed.has("missingValue")) {
+                metadata.set("missingValue", metadataDetailed.getDouble("missingValue"));
+            }
+
             // Multio pipelines require hhmmss format
             if (metadata.has("time")) {
                 auto time = metadata.getLong("time");

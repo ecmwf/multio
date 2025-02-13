@@ -15,7 +15,7 @@ int convert_int8_to_cstring(const void* intvar, char** cstring) {
         return 1;
     }
     int8_t* val = (int8_t*)intvar;
-    const int max_length = snprintf(NULL, 0, "%" PRId8, val) + 1;
+    const int max_length = snprintf(NULL, 0, "%" PRId8, *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;
@@ -30,7 +30,7 @@ int convert_int16_to_cstring(const void* intvar, char** cstring) {
         return 1;
     }
     int16_t* val = (int16_t*)intvar;
-    const int max_length = snprintf(NULL, 0, "%" PRId16, val) + 1;
+    const int max_length = snprintf(NULL, 0, "%" PRId16, *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;
@@ -45,7 +45,7 @@ int convert_int32_to_cstring(const void* intvar, char** cstring) {
         return 1;
     }
     int32_t* val = (int32_t*)intvar;
-    const int max_length = snprintf(NULL, 0, "%" PRId32, val) + 1;
+    const int max_length = snprintf(NULL, 0, "%" PRId32, *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;
@@ -60,7 +60,7 @@ int convert_int64_to_cstring(const void* intvar, char** cstring) {
         return 1;
     }
     int64_t* val = (int64_t*)intvar;
-    const int max_length = snprintf(NULL, 0, "%" PRId64, val) + 1;
+    const int max_length = snprintf(NULL, 0, "%" PRId64, *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;
@@ -75,7 +75,7 @@ int convert_real32_to_cstring(const void* floatvar, char** cstring) {
         return 1;
     }
     float* val = (float*)floatvar;
-    const int max_length = snprintf(NULL, 0, "%e", val) + 1;
+    const int max_length = snprintf(NULL, 0, "%e", *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;
@@ -90,7 +90,7 @@ int convert_real64_to_cstring(const void* floatvar, char** cstring) {
         return 1;
     }
     double* val = (double*)floatvar;
-    const int max_length = snprintf(NULL, 0, "%le", val) + 1;
+    const int max_length = snprintf(NULL, 0, "%le", *val) + 1;
     *cstring = (char*)malloc(max_length * sizeof(char));
     if (*cstring == NULL) {
         return 1;

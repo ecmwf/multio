@@ -33,6 +33,8 @@ private:
     std::string windowType_;
     std::string accumulatedFieldsResetFreqency_;
 
+    long valueCountThreshold_;
+
 private:
     void parseUseDateTime(const eckit::LocalConfiguration& cfg);
     void parseCheckMissingValues(const eckit::LocalConfiguration& cfg);
@@ -51,6 +53,7 @@ private:
     void parseWindowType(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
                                            const eckit::LocalConfiguration& cfg);
+    void parseValueCountThreshold(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
 
     void dumpOptions();
     void usage();
@@ -80,6 +83,8 @@ public:
     const std::string& restartPrefix() const;
     const std::string& restartLib() const;
     const std::string& solverResetAccumulatedFields() const;
+
+    long valueCountThreshold() const;
 };
 
 }  // namespace multio::action

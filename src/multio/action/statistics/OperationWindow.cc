@@ -98,6 +98,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
     count_{0},
+    counts_{},
     type_{0} {
     load(IOmanager, opt);
     return;
@@ -115,11 +116,25 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     lastFlush_{epochPoint},
     timeStepInSeconds_{timeStepInSeconds},
     count_{0},
+    counts_{},
     type_{windowType} {}
 
 
 long OperationWindow::count() const {
     return count_;
+}
+
+std::vector<long>& OperationWindow::counts(long sz) const {
+    if (counts_.size() != sz) {
+        if (counts_.size() == 0) {
+            counts_.resize(sz, 0);
+        } else {
+            std::ostringstream os;
+            os << *this << " : counts array is already initialized with a different size" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+    }
+    return counts_;
 }
 
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
@@ -157,6 +172,7 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     prevPoint_ = startPoint;
     endPoint_ = endPoint;
     count_ = 0;
+    counts_.clear();
     return;
 }
 

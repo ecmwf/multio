@@ -24,6 +24,7 @@ public:
                     long windowType);
 
     long count() const;
+    std::vector<long>& counts(long sz) const;
 
     void updateData(const eckit::DateTime& currentPoint);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
@@ -114,6 +115,7 @@ private:
 
     long timeStepInSeconds_;
     long count_;
+    mutable std::vector<long> counts_;
     long type_;
 
     void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const;

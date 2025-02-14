@@ -26,7 +26,8 @@ public:
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
-        buf.copy(values_.data(), values_.size() * sizeof(T));
+        auto val = static_cast<T*>(buf.data());
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() > 0 ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
         return;
     }
 
@@ -34,25 +35,50 @@ public:
         checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? updateWithMissing(val, cfg) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() < 0 ? updateWithMissing(val, cfg) : updateWithMissingAndCounters(val, cfg)) : updateWithoutMissing(val, cfg);
         return;
     }
 
 private:
+    void computeWithoutThreshold(T* buf, const StatisticsConfiguration& cfg) {
+        std::copy(values_.begin(), values_.end(), buf);
+        return;
+    }
+
+    void computeWithThreshold(T* buf, const StatisticsConfiguration& cfg) {
+        const long t = cfg.options().valueCountThreshold();
+        const double m = cfg.missingValue();
+        std::vector<long>& counts = win_.counts(values_.size());
+        std::transform(values_.begin(), values_.end(), counts.begin(), buf,
+                       [t, m](T v, long c) { return static_cast<T>(c < t ? m : v); });
+        return;
+    }
+
     void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {
-        const double c2 = icntpp(), c1 = sc(c2);
+        const double c2 = icntpp(win_.count()), c1 = sc(c2, win_.count());
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [c1, c2](T v1, T v2) { return static_cast<T>(v1 * c1 + v2 * c2); });
         return;
     }
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
-        const double c2 = icntpp(), c1 = sc(c2), m = cfg.missingValue();
+        const double c2 = icntpp(win_.count()), c1 = sc(c2, win_.count()), m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [c1, c2, m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 * c1 + v2 * c2); });
         return;
     }
-    double icntpp() const { return double(1.0) / double(win_.count()); };
-    double sc(double v) const { return double(win_.count() - 1) * v; };
+    void  updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
+        const double m = cfg.missingValue();
+        std::vector<long>& counts = win_.counts(values_.size());
+        for (size_t i = 0; i < values_.size(); ++i) {
+            if (val[i] == m) { continue; }
+            const double c = ++counts[i], c2 = icntpp(c), c1 = sc(c2, c);
+            values_[i] = values_[i] * c1 + val[i] * c2;
+        }
+        return;
+    }
+
+    double icntpp(long c) const { return double(1.0) / double(c); };
+    double sc(double v, long c) const { return double(c - 1) * v; };
     void print(std::ostream& os) const override { os << logHeader_; }
 };
 

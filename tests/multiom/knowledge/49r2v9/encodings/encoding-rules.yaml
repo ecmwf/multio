@@ -323,3 +323,22 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
 #  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
 
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-ccsds-accumul-since-beginning.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
+  
+  # Gridded model level for low, medium & high cloud layer (instant)
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lowCloudLayer-gg-fc-deterministic-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lowCloudLayer-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lowCloudLayer-gg-fc-ensemble-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-lowCloudLayer-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mediumCloudLayer-gg-fc-deterministic-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mediumCloudLayer-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mediumCloudLayer-gg-fc-ensemble-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-mediumCloudLayer-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-highCloudLayer-gg-fc-deterministic-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-highCloudLayer-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-highCloudLayer-gg-fc-ensemble-ccsds-instant.yaml'
+  # - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-highCloudLayer-gg-fc-ensemble-simple-instant.yaml'
+

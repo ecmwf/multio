@@ -1,6 +1,6 @@
-name: 'modify the bits per value for wave heightAboveSea'
+name: 'map the low cloud param to new param'
 
-tag: 'change bits per value'
+tag: 'low cloud param'
 
 filter:
   type: 'param'

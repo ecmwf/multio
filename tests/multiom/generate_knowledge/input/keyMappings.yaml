@@ -1,0 +1,417 @@
+# Key mappings describe eccodes meta keys that set other low-level keys.
+# If one meta key is given low level keys are not looked up
+keyMappings:
+    # startTime
+    # end Time ?
+    paramId:
+        - parameterCategory
+        - parameterNumber
+        # Currently paramId sets more values depending on the specific param. However, in future we want to decouple these things anyway. So we ignore it here for now
+
+    # paramType: may be added recently for ERA6...
+
+    # Timing information is handled without metakeys for now
+    # startStep:
+    #     - forecastTime
+
+    # stepUnit:
+    #     - indicatorOfUnitOfTimeRange
+
+    # endStep:
+    #     - yearOfEndOfOverallTimeInterval
+    #     - monthOfEndOfOverallTimeInterval
+    #     - dayOfEndOfOverallTimeInterval
+    #     - hourOfEndOfOverallTimeInterval
+    #     - minuteOfEndOfOverallTimeInterval
+    #     - secondOfEndOfOverallTimeInterval
+    #     - lengthOfTimeRange # only for typeOfTimeIncrement != 1...
+
+    # Ignore that - enforce using startStep and endStep separately
+    # stepRange:
+    #     - extend: startStep
+    #     - extend: endStep
+
+    lowerLimit:
+        - scaleFactorOfLowerLimit
+        - scaledValueOfLowerLimit
+
+    upperLimit:
+        - scaleFactorOfUpperLimit
+        - scaledValueOfUpperLimit
+
+    firstSize:
+        - scaleFactorOfFirstSize
+        - scaledValueOfFirstSize
+
+    secondSize:
+        - scaleFactorOfSecondSize
+        - scaledValueOfSecondSize
+
+
+
+
+    typeOfLevel:
+        - typeOfFirstFixedSurface
+        # - scaleFactorOfFirstFixedSurface
+        # - scaledValueOfFirstFixedSurface        # scaledValue may be set to a custom value for some typeOfLevel
+        # - scaleFactorOfSecondFixedSurface
+        # - scaledValueOfSecondFixedSurface
+        - typeOfSecondFixedSurface
+        # - pressureUnits
+        # - genVertHeightCoords
+
+
+    combinationOfAttributesOfTile:
+        - numberOfUsedTileAttributesForTileAttributeCombination
+        - attributeOfTile
+
+
+# All key may be null
+keyTypes:
+    # parameter
+    paramId: IntType
+    parameterCategory: IntType
+    parameterNumber: IntType
+    # time
+    startStep: [IntType, StringType]
+    endStep: [IntType, StringType]
+    # forecast time
+    hoursAfterDataCutoff: IntType
+    minutesAfterDataCutoff: IntType
+    indicatorOfUnitOfTimeRange: IntType # code table lookup
+    forecastTime: IntType
+    # time range
+    indicatorOfUnitOfTimeRange: [StringType, StringArrayType] # can be array for multiple intervals
+    lengthOfTimeRange: [IntType, IntArrayType] # can be array for multiple intervals
+    # statistical
+    typeOfStatisticalProcessing: [IntType, IntArrayType] # can be array for multiple intervals
+    # interval
+    yearOfEndOfOverallTimeInterval: IntType
+    monthOfEndOfOverallTimeInterval: IntType
+    dayOfEndOfOverallTimeInterval: IntType
+    hourOfEndOfOverallTimeInterval: IntType
+    minuteOfEndOfOverallTimeInterval: IntType
+    secondOfEndOfOverallTimeInterval: IntType
+    numberOfTimeRange: IntType
+    numberOfMissingInStatisticalProcess: [IntType, IntArrayType] # can be array for multiple intervals
+    indicatorOfUnitForTimeRange: [IntType, IntArrayType] # can be array for multiple intervals
+    typeOfTimeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
+    indicatorOfUnitForTimeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
+    timeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
+
+    # horizontal
+    typeOfLevel: StringType
+    typeOfFirstFixedSurface: IntType
+    typeOfSecondFixedSurface: IntType
+    scaleFactorOfFirstFixedSurface: IntType
+    scaledValueOfFirstFixedSurface: IntType
+    scaleFactorOfSecondFixedSurface: IntType
+    scaledValueOfSecondFixedSurface: IntType
+    # pressureUnits: StringType
+    # genVertHeightCoords: IntType
+
+    # probability forecast
+    scaleFactorOfLowerLimit: IntType
+    scaledValueOfLowerLimit: IntType
+    scaleFactorOfUpperLimit: IntType
+    scaledValueOfUpperLimit: IntType
+    probabilityType: IntType
+    forecastProbabilityNumber: IntType
+    totalNumberOfForecastProbabilities: IntType
+
+    # probability meta keys
+    lowerLimit: FloatType
+    upperLimit: FloatType
+
+    # percentileForecast
+    percentileValue: IntType
+
+    # spatialStatisticalProcessing
+    statisticalProcess: IntType
+    spatialProcessing: IntType
+    numberOfPointsUsed: IntType
+
+    # generatingProcessType
+    typeOfGeneratingProcess: IntType
+
+    # generatingProcess
+    backgroundProcess: IntType
+    generatingProcessIdentifier: IntType
+
+    # radar
+    numberOfRadarSitesUsed: IntType
+    indicatorOfUnitOfTimeRange: IntType
+    siteLatitude: IntType
+    siteLongitude: IntType
+    siteElevation: IntType
+    siteId: IntType
+    siteId: IntType
+    operatingMode: IntType
+    reflectivityCalibrationConstant: IntType
+    qualityControlIndicator: IntType
+    clutterFilterIndicator: IntType
+    constantAntennaElevationAngle: IntType
+    accumulationInterval: IntType
+    referenceReflectivityForEchoTop: IntType
+    rangeBinSpacing: IntType
+    radialAngularSpacing: IntType
+
+    # observationGeneratingProcess
+    observationGeneratingProcessIdentifier: IntType
+
+    # satellite
+    numberOfContributingSpectralBands: IntType
+    satelliteSeries: IntArrayType
+    satelliteNumber: IntArrayType
+    instrumentType: IntArrayType
+    scaleFactorOfCentralWaveNumber: IntArrayType
+    scaledValueOfCentralWaveNumber: IntArrayType
+
+    # qualityValue
+    qualityValueAssociatedWithParameter: IntType
+
+    # chemical
+    constituentType: IntType
+
+    # srcsink
+    sourceSinkChemicalPhysicalProcess: IntType
+
+    # distribution
+    numberOfModeOfDistribution: IntType
+    modeNumber: IntType
+    typeOfDistributionFunction: IntType
+    numberOfDistributionFunctionParameters: IntType
+    scaleFactorOfDistributionFunctionParameter: IntArrayType
+    scaledValueOfDistributionFunctionParameter: IntArrayType
+
+    # aerosol
+    aerosolType: IntType
+    typeOfSizeInterval: IntType
+    scaleFactorOfFirstSize: IntType
+    scaledValueOfFirstSize: IntType
+    scaleFactorOfSecondSize: IntType
+    scaledValueOfSecondSize: IntType
+
+    # aerosol meta keys
+    firstSize: FloatType
+    secondSize: FloatType
+
+
+    # aerosol opticalProperties:
+    typeOfWavelengthInterval: IntType
+    scaleFactorOfFirstWavelength: IntType
+    scaledValueOfFirstWavelength: IntType
+    scaleFactorOfSecondWavelength: IntType
+    scaledValueOfSecondWavelength: IntType
+
+    # ensemble
+    numberOfForecastsInEnsemble: IntType
+
+    # perturbed
+    perturbationNumber: IntType
+
+    # individualEnsembleForecast
+    typeOfEnsembleForecast: IntType
+
+    # derivedEnsembleForecast
+    derivedForecast: IntType
+
+    # categorialForecast:
+    numberOfCategories: IntType
+    codeFigure: IntArrayType
+    categoryType: IntArrayType
+    scaleFactorOfLowerLimit: IntArrayType
+    scaledValueOfLowerLimit: IntArrayType
+    scaleFactorOfUpperLimit: IntArrayType
+    scaledValueOfUpperLimit: IntArrayType
+
+    # partitioned
+    partitionTable: IntType
+    numberOfPartitions: IntType
+    partitionItems: IntArrayType
+    partitionNumber: IntArrayType
+
+    # cluster
+    clusterIdentifier: IntType
+    NH: IntType
+    NL: IntType
+    totalNumberOfClusters: IntType
+    clusteringMethod: IntType
+
+
+    # clusterStat:
+    numberOfForecastsInTheCluster: IntType
+    scaleFactorOfStandardDeviation: IntType
+    scaledValueOfStandardDeviation: IntType
+    scaleFactorOfDistanceFromEnsembleMean: IntType
+    scaledValueOfDistanceFromEnsembleMean: IntType
+    ensembleForecastNumbers: IntType
+
+    # clusterStatRectangular
+    northernLatitudeOfClusterDomain: IntType
+    southernLatitudeOfClusterDomain: IntType
+    easternLongitudeOfClusterDomain: IntType
+    westernLongitudeOfClusterDomain: IntType
+
+
+    # clusterStatCircular
+    latitudeOfCentralPointInClusterDomain: IntType
+    longitudeOfCentralPointInClusterDomain: IntType
+    radiusOfClusterDomain: IntType
+
+    # reforecast
+    YearOfModelVersion: IntType
+    MonthOfModelVersion: IntType
+    DayOfModelVersion: IntType
+    HourOfModelVersion: IntType
+    MinuteOfModelVersion: IntType
+    SecondOfModelVersion: IntType
+
+    # postProcess
+    inputProcessIdentifier: IntType
+    inputOriginatingCentre: IntType
+    typeOfPostProcessing: IntType
+
+    # spatioTemporalTile
+    tileClassification: IntType
+    totalNumberOfTileAttributePairs: IntType
+    numberOfUsedSpatialTiles: IntType
+    tileIndex: IntType
+    numberOfUsedTileAttributes: IntType
+    attributeOfTile: IntType
+
+
+    # quantileForecast:
+    totalNumberOfQuantiles: IntType
+    quantileValue: IntType
+
+    # localTime
+    localTimeMethod: IntType
+    numberOfForecastsUsedinLocalTime: IntType
+    # The following values can be supplied once or in an array (for numberOfForecastsUsedinLocalTime)
+    yearOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    monthOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    dayOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    hourOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    minuteOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    secondOfForecastUsedInLocalTime: [IntType, IntArrayType]
+    indicatorOfUnitForForecastTime: [IntType, IntArrayType]
+    forecastTime: [IntType, IntArrayType]
+    numberOfTimeIncrementsOfForecastsUsedInLocalTime: [IntType, IntArrayType]
+    indicatorOfUnitForTimeIncrement: [IntType, IntArrayType]
+    timeIncrement: [IntType, IntArrayType]
+
+    # localTime_statistical
+    numberOfStatisticallyProcessedFieldsForLocalTime: IntType
+
+    # crossSectLatLong
+    horizontalDimensionProcessed: IntType
+    treatmentOfMissingData: IntType
+    startOfRange: IntType
+    endOfRange: IntType
+    numberOfDataValues: IntType
+
+
+    # waveSpectraCommon
+    waveDirectionNumber: IntType
+    numberOfWaveDirections: IntType
+    waveFrequencyNumber: IntType
+    numberOfWaveFrequencies: IntType
+
+    # waveSpectraList
+    scaleFactorOfWaveDirections: IntType
+    scaledValueOfWaveDirections: [IntType, IntArrayType]
+    scaleFactorOfWaveFrequencies: IntType
+    scaledValueOfWaveFrequencies: [IntType, IntArrayType]
+
+    # waveSpectraFormula
+    typeOfWaveDirectionSequence: IntType
+    numberOfWaveDirectionSequenceParameters: IntType
+    scaleFactorOfWaveDirectionSequenceParameter: [IntType, IntArrayType]
+    scaledValueOfWaveDirectionSequenceParameter: [IntType, IntArrayType]
+    typeOfWaveFrequencySequence: IntType
+    numberOfWaveFrequencySequenceParameters: IntType
+    scaleFactorOfWaveFrequencySequenceParameter: [IntType, IntArrayType]
+    scaledValueOfWaveFrequencySequenceParameter: [IntType, IntArrayType]
+
+
+    # wavePeriodRange
+    typeOfWavePeriodInterval: IntType
+    scaleFactorOfLowerWavePeriodLimit: IntType
+    scaledValueOfLowerWavePeriodLimit: IntType
+    scaleFactorOfUpperWavePeriodLimit: IntType
+    scaledValueOfUpperWavePeriodLimit: IntType
+
+    # referencePeriod
+    typeOfReferenceDataset: IntType
+    typeOfRelationToReferenceDataset: IntType
+    numberOfAdditionalParameterForReferencePeriod: IntType
+    scaleFactorOfAdditionalParameterForReferencePeriod: [IntType, IntArrayType]
+    scaledValueOfAdditionalParameterForReferencePeriod: [IntType, IntArrayType]
+    yearOfStartOfReferencePeriod: IntType
+    monthOfStartOfReferencePeriod: IntType
+    dayOfStartOfReferencePeriod: IntType
+    hourOfStartOfReferencePeriod: IntType
+    minuteOfStartOfReferencePeriod: IntType
+    secondOfStartOfReferencePeriod: IntType
+    sampleSizeOfReferencePeriod: IntType
+    numberOfReferencePeriodTimeRanges: IntType
+    typeOfStatisticalProcessingForTimeRangeForReferencePeriod: [IntType, IntArrayType]
+    indicatorOfUnitForTimeRangeForReferencePeriod: [IntType, IntArrayType]
+    lengthOfTimeRangeForReferencePeriod: [IntType, IntArrayType]
+
+    # radioNuclide:
+    transportModelUsed: IntType
+    requestedByEntity: StringType
+    scenarioOrigin: IntType
+    NWPused: IntType
+    releaseStartYear: IntType
+    releaseStartMonth: IntType
+    releaseStartDay: IntType
+    releaseStartHour: IntType
+    releaseStartMinute: IntType
+    releaseStartSecond: IntType
+    wallClockInitialTimeOfExecutionYear: IntType
+    wallClockInitialTimeOfExecutionMonth: IntType
+    wallClockInitialTimeOfExecutionDay: IntType
+    wallClockInitialTimeOfExecutionHour: IntType
+    wallClockInitialTimeOfExecutionMinute: IntType
+    wallClockInitialTimeOfExecutionSecond: IntType
+
+
+    # generalisedTile
+    tileClassification: StringType
+    typeOfTile: StringType
+    numberOfUsedSpatialTiles: IntType
+    numberOfUsedTileAttributeCombinationsForTypeOfTile: IntType
+    numberOfUsedTileAttributesForTileAttributeCombination: IntType
+    attributeOfTile: IntType
+    totalNumberOfTileAttributeCombinations: IntType
+    tileIndex: IntType
+
+    combinationOfAttributesOfTile: StringType
+
+
+    # focalStatistics
+    spatialVicinityType: IntType
+    numberOfSpatialVicinityValues: IntType
+    spatialVicinityValue: IntType
+    spatialVicinityProcessing: IntType
+    spatialVicinityProcessingArgument1: IntType
+    spatialVicinityProcessingArgument2: IntType
+    spatialVicinityMissingData: IntType
+    temporalVicinityProcessing: IntType
+    temporalVicinityUnit: IntType
+    temporalVicinityTowardsPast: IntType
+    temporalVicinityTowardsFuture: IntType
+
+
+
+
+
+    # ccittIA5
+    numberOfCharacters: IntType
+
+
+
+

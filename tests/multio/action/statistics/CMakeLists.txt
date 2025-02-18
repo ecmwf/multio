@@ -120,3 +120,7 @@ endforeach()
 #
 # add restart tests
 add_subdirectory(restart)
+
+#
+# add moving mask tests
+add_subdirectory(moving-mask)

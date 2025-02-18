@@ -1,0 +1,21 @@
+plans:
+  - name: max_1m_10d
+    actions:
+      - type: statistics
+        output-frequency: 1m
+        operations: [ maximum ]
+        options:
+          initial-condition-present: true
+          step-frequency: 24
+          time-step: 3600
+          use-current-time: true
+          value-count-threshold: 10
+      - type: encode
+        format: grib
+        template: Statistics_grib2.tmpl
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: Result_max_1m_10d.grib

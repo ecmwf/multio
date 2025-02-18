@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-hl-gg-fc-deterministic-ccsds-instant-1'
 
 #
 # Future use
@@ -15,35 +15,18 @@ filter:
   filters:
 
     # This triggers section2 36!!!!
-    - type: 'composed'
-      operation: 'any'
-      filters:
-        - type: 'stream'
-          operation: 'match'
-          values: [ 'lwda', 'lwwv', 'elda', 'ewla' ]
+    - type: 'anoffset'
+      operation: 'lacks'
 
-        - type: 'composed'
-          operation: 'all'
-          filters:
-            - type: 'stream'
-              operation: 'match'
-              values: [ 'efas', 'wfas' ]
-
-            - type: 'type'
-              operation: 'match'
-              values: [ 'sfo', 'fu', 'go' ]
-
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        10, 131, 132
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'sfc'
+      value: 'hl'
 
     - type: 'repres'
       operation: 'match'
@@ -54,10 +37,11 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -90,7 +74,7 @@ encoder:
 
   # Section 2: Local Use Section
   local-use-section:
-    template-number: 36
+    template-number: 1
 
   # Section 3: Grid Definition Section
   grid-definition-section:
@@ -98,23 +82,21 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
 
     param-configurator:
       type: 'paramId'
+      dataset-for-local: 'era6'
 
     level-configurator:
-      type: 'mediumcloudlayer'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'heightAboveGround'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

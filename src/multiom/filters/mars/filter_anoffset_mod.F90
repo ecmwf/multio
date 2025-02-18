@@ -246,7 +246,6 @@ IMPLICIT NONE
   !> Read the encoder configuration
   PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'values', HAS_VALUES, HOOKS )
 
-
   !> Read the level to be used in the filter
   IF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_GT_E .AND. HAS_TRESHOLD .AND. &
 &          .NOT.HAS_VALUE .AND. .NOT. HAS_VALUES ) THEN

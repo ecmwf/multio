@@ -245,19 +245,21 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     
     args.get("knowledge-root", knowledgeRoot_);
     if(knowledgeRoot_.empty()) {
-        knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom/49r2v9";
+        // knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom/49r2v9";
+        // knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom";
+        knowledgeRoot_ = multio::LibMultio::instance().libraryHome();
     }
     args.get("sample", sampleFile_);
     if(sampleFile_.empty()) {
-        sampleFile_ = knowledgeRoot_ + "/samples/sample.tmpl";
+        sampleFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/samples/sample.tmpl";
     }
     args.get("encodingFile_", encodingFile_);
     if(encodingFile_.empty()) {
-        encodingFile_ = knowledgeRoot_ + "/encodings/encoding-rules.yaml";
+        encodingFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/encodings/encoding-rules.yaml";
     }
     args.get("mappingFile_", mappingFile_);
     if(mappingFile_.empty()) {
-        mappingFile_ = knowledgeRoot_ + "/mappings/mapping-rules.yaml";
+        mappingFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/mappings/mapping-rules.yaml";
     }
     
     if(verbosity_ > 0) {
@@ -266,8 +268,8 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
         std::cout << "encoding-rules: " << encodingFile_ << std::endl;    
         std::cout << "mapping-rules: " << mappingFile_ << std::endl;    
     }
-    setenv("KNOWLEDGE_VERSION", "/", 0);
-    setenv("MULTIO_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
+    setenv("KNOWLEDGE_VERSION", "49r2v9", 0);
+    setenv("IFS_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
     
     std::string excludeStr ="";
     args.get("exclude", excludeStr);

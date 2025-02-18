@@ -1920,6 +1920,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Set the default sink type
+  WRITE(*,*) 'DEFAULT SINK TYPE :: ', THIS%DEFAULT_SINK_
   PAR%SINK_TYPE = THIS%DEFAULT_SINK_
 
   ! Trace end of procedure (on success)
@@ -2293,6 +2294,8 @@ IMPLICIT NONE
     PP_METADATA_SET( MD, ERRFLAG_METADATA, 'missingValue', XUNDEF )
   END IF
 
+  WRITE(*,*) 'SINK_TYPE :: ', PAR%SINK_TYPE
+
   !
   ! If needed extract the values from the metadata otherwise write binary to multio
   SELECT CASE ( PAR%SINK_TYPE )
@@ -2338,7 +2341,9 @@ IMPLICIT NONE
 
     CLASS IS (GRIB_METADATA_T)
 
-      ! GEt grib handle
+      WRITE(*,*) 'SINK_DP :: Writing to multio'
+
+      ! Get grib handle
       PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_HANDLE) GRIB_METADATA%GET_HANDLE( HANDLE, HOOKS )
 
       ! Write the encoded grib file to FDB using multIO

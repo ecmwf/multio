@@ -1,0 +1,325 @@
+encoding-rules:
+
+
+  # Gridded hl for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/hl/rule-hl-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/hl/rule-hl-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/hl/rule-hl-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/hl/rule-hl-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded heightAboveGround for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveGround-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveGround-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveGround-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveGround-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded nominalTop for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-nominalTop-gg-fc36-deterministic-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-nominalTop-gg-fc36-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-nominalTop-gg-fc36-ensemble-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-nominalTop-gg-fc36-ensemble-simple-accumul-since-beginning.yaml'
+
+  # Gridded mixingLayer for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixingLayer-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixingLayer-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixingLayer-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixingLayer-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded mostUnstableParcel for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mostUnstableParcel-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mostUnstableParcel-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mostUnstableParcel-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mostUnstableParcel-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded tropopause for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-tropopause-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-tropopause-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-tropopause-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-tropopause-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded meanSea for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixedLayerParcel-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixedLayerParcel-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixedLayerParcel-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-mixedLayerParcel-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded meanSea for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-meanSea-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-meanSea-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-meanSea-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-meanSea-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded iceOnWater for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-lakeBottom-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-lakeBottom-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-lakeBottom-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-lakeBottom-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded iceOnWater for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceTopOnWater-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceTopOnWater-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceTopOnWater-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceTopOnWater-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded surfaces for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded cloudbase for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-cloudBase-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-cloudBase-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-cloudBase-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-cloudBase-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded entireLake for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireLake-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireLake-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireLake-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireLake-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded entireLake for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveSea-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveSea-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveSea-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-heightAboveSea-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded surfaces for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-instant-chem.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-instant-chem.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-instant-chem.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-instant-chem.yaml'
+
+  # Gridded surfaces for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireAtmosphere-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireAtmosphere-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireAtmosphere-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-entireAtmosphere-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded ice layer on water for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceLayerOnWater-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceLayerOnWater-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceLayerOnWater-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-iceLayerOnWater-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded model levels for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded isobaric for forecast (pa)
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-deterministic-ccsds-instant-pa.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-deterministic-simple-instant-pa.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-ensemble-ccsds-instant-pa.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-ensemble-simple-instant-pa.yaml'
+
+  # Gridded isobaric for forecast (hpa)
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-deterministic-ccsds-instant-hpa.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-deterministic-simple-instant-hpa.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-ensemble-ccsds-instant-hpa.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-gg-fc36-ensemble-simple-instant-hpa.yaml'
+
+  # Gridded sol (snow) for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-snow-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-snow-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-snow-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-snow-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded sol (soil) for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-soil-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-soil-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-soil-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-soil-gg-fc36-ensemble-simple-instant.yaml'
+
+  # Gridded sol (seaice) for forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-seaice-gg-fc36-deterministic-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-seaice-gg-fc36-deterministic-simple-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-seaice-gg-fc36-ensemble-ccsds-instant.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sol/rule-seaice-gg-fc36-ensemble-simple-instant.yaml'
+
+
+  # Spherical harmonics for forecast on ml
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-sh-fc36-deterministic-complex-instant.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-sh-fc36-ensemble-complex-instant.yaml'
+
+  # Spherical harmonics for forecast on pl
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-sh-fc36-deterministic-complex-instant-pa.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-sh-fc36-ensemble-complex-instant-pa.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-sh-fc36-deterministic-complex-instant-hpa.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/pl/rule-pl-sh-fc36-ensemble-complex-instant-hpa.yaml'
+
+
+  # Gridded wam integral for forecast on surface
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-instant-wam-int.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-instant-wam-int.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-instant-wam-int.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-instant-wam-int.yaml'
+
+  # Gridded wam integral for forecast on surface (period)
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-instant-wam-period.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-instant-wam-period.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-instant-wam-period.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-instant-wam-period.yaml'
+
+  # Gridded wam spectral for forecast on sfc
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-instant-wam-spectra.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-instant-wam-spectra.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-instant-wam-spectra.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-instant-wam-spectra.yaml'
+
+
+
+
+
+  # Gridded surfaces for forecast max since last post processing
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-ccsds-max-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-deterministic-simple-max-since-last-pp.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-ccsds-max-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-surface-gg-fc36-ensemble-simple-max-since-last-pp.yaml'
+
+  # Gridded height above ground for forecast max since last post processing
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-ccsds-max-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-simple-max-since-last-pp.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-ccsds-max-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-simple-max-since-last-pp.yaml'
+
+  # Gridded surfaces for forecast max over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-max-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-max-over-last-3h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-max-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-max-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast max over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-max-over-last-3h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-max-over-last-3h-paramIdECMF.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-max-over-last-3h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-max-over-last-3h-paramIdECMF.yaml'
+
+  # Gridded surfaces for forecast max over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-max-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-max-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-max-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-max-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast max over last 6h (paramIdECMF)
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-ccsds-max-over-last-6h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-simple-max-over-last-6h-paramIdECMF.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-ccsds-max-over-last-6h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-simple-max-over-last-6h-paramIdECMF.yaml'
+
+  # Gridded height above ground for forecast max over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-ccsds-max-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-simple-max-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-ccsds-max-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-simple-max-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast min since last post processing
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-ccsds-min-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-simple-min-since-last-pp.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-ccsds-min-since-last-pp.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-simple-min-since-last-pp.yaml'
+
+  # Gridded surfaces for forecast min over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-min-over-last-3h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-min-over-last-3h-paramIdECMF.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-min-over-last-3h-paramIdECMF.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-min-over-last-3h-paramIdECMF.yaml'
+
+  # Gridded surfaces for forecast min over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-ccsds-min-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-deterministic-simple-min-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-ccsds-min-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-height-above-ground-gg-fc36-ensemble-simple-min-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast average over last 1h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-1h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast average over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-3h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast average over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast average over last 1h
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-1h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-1h.yaml'
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-1h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast average over last 3h
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-3h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-3h.yaml'
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-3h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast average over last 6h
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-average-over-last-6h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-average-over-last-6h.yaml'
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-average-over-last-6h.yaml'
+#  #- file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-average-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast mode over last 1h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-mode-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-mode-over-last-1h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-mode-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-mode-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast mode over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-mode-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-mode-over-last-3h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-mode-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-mode-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast mode over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-mode-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-mode-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-mode-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-mode-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast severity over last 1h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-severity-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-severity-over-last-1h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-severity-over-last-1h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-severity-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast severity over last 3h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-severity-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-severity-over-last-3h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-severity-over-last-3h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-severity-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast severity over last 6h
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-severity-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-severity-over-last-6h.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-severity-over-last-6h.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-severity-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast accumul since beginning of forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-accumul-since-beginning.yaml'
+
+  # Gridded surfaces chemical for forecast accumul since beginning of forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-ccsds-accumul-since-beginning-chem.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-deterministic-simple-accumul-since-beginning-chem.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-ccsds-accumul-since-beginning-chem.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/sfc/rule-sfc-gg-fc36-ensemble-simple-accumul-since-beginning-chem.yaml'
+
+  # Gridded model level for forecast accumul since beginning of forecast
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-deterministic-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-ensemble-ccsds-accumul-since-beginning.yaml'
+#  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/an/ml/rule-ml-gg-fc36-ensemble-simple-accumul-since-beginning.yaml'
+

@@ -137,6 +137,7 @@ include_directories( ${MULTIO_INCLUDE_DIRS} )
 
 add_subdirectory( src )
 add_subdirectory( tests )
+add_subdirectory( share )
 
 ### finalize project
 

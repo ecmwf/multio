@@ -1,0 +1,12 @@
+# This is just a debug plan used to check that the multIO is called correctly.
+plans:
+
+  - name: 'Debug-plan'
+    actions:
+
+      - type: print
+        stream: out
+        prefix: "MultIO debug plan:"
+
+      - type: sink
+        sinks: []

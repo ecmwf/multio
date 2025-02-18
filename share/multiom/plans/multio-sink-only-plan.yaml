@@ -1,0 +1,15 @@
+#
+# - This plan is meant to be used when
+#   encoded grib messages are passed to multIO
+#   and the only anction required is to put
+#   messages to fdb
+#
+plans:
+
+  - name: 'grib-sink'
+    actions:
+
+      - type: sink
+        sinks:
+          - type: fdb5
+            config: {}

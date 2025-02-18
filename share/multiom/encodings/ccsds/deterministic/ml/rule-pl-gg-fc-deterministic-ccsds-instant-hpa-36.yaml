@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-pl-gg-fc-deterministic-ccsds-instant-hpa'
 
 #
 # Future use
@@ -33,17 +33,19 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        60, '75:76', '129:135', 203, '246:248', 260290
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'sfc'
+      value: 'pl'
+
+    - type: 'levelist'
+      operation: 'greater-equal'
+      treshold: 100
 
     - type: 'repres'
       operation: 'match'
@@ -54,10 +56,11 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -98,7 +101,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
@@ -107,14 +110,11 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'isobaricinhpa'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

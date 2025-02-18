@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-meanSea-gg-fc-ensemble-ccsds-instant-1'
 
 #
 # Future use
@@ -15,30 +15,13 @@ filter:
   filters:
 
     # This triggers section2 36!!!!
-    - type: 'composed'
-      operation: 'any'
-      filters:
-        - type: 'stream'
-          operation: 'match'
-          values: [ 'lwda', 'lwwv', 'elda', 'ewla' ]
+    - type: 'anoffset'
+      operation: 'lacks'
 
-        - type: 'composed'
-          operation: 'all'
-          filters:
-            - type: 'stream'
-              operation: 'match'
-              values: [ 'efas', 'wfas' ]
-
-            - type: 'type'
-              operation: 'match'
-              values: [ 'sfo', 'fu', 'go' ]
-
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        151
       ]
 
     - type: 'levtype'
@@ -57,7 +40,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -90,7 +73,7 @@ encoder:
 
   # Section 2: Local Use Section
   local-use-section:
-    template-number: 36
+    template-number: 1
 
   # Section 3: Grid Definition Section
   grid-definition-section:
@@ -107,14 +90,14 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'meansea'
 
     ensemble-configurator:
       type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-sfc-gg-fc-deterministic-simple-accumul-since-beginning-36'
 
 #
 # Future use
@@ -33,12 +33,14 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        8, 9, 20, 44, 45, 47, 50, 57, 58, '142:147', 169, '175:177', '180:182', 189,
+        '195:197', 205, '210:211', 213, 228, 239, 240, 3062, 3099, '162100:162113',
+        '222001:222256', 228021, 228022, 228129, 228130, 228143, 228144,
+        228216, 228228, 228251, 231001, 231002, 231003, 231005, 231010, 231012, 231057, 231058,
+        '233000:233031', 260259
       ]
 
     - type: 'levtype'
@@ -54,6 +56,7 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -98,19 +101,18 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 8
 
-    point-in-time-configurator:
-      type: 'default'
+    time-statistics-configurator:
+      type: 'since-beginning-of-forecast'
+      type-of-statistical-processing: 'accumul'
+      encode-step-zero: true
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'surface'
 
   # Section 5: Data Representation Section
   data-representation-section:

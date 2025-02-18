@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-meanSea-gg-fc-deterministic-ccsds-instant-36'
 
 #
 # Future use
@@ -33,12 +33,10 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        151
       ]
 
     - type: 'levtype'
@@ -54,10 +52,11 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -98,7 +97,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
@@ -107,14 +106,11 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'meansea'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

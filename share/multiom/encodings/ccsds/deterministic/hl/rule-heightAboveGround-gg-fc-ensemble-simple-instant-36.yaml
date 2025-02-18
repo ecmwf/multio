@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-heightAboveGround-gg-fc-ensemble-simple-instant-36'
 
 #
 # Future use
@@ -33,12 +33,10 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        '165:168', 207, 174096, 228029, 228037, '228131:228132'
       ]
 
     - type: 'levtype'
@@ -107,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'heightaboveground'
 
     ensemble-configurator:
       type: 'default'

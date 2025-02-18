@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-hl-gg-fc-ensemble-simple-instant-36'
 
 #
 # Future use
@@ -33,17 +33,15 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        10, 131, 132
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'sfc'
+      value: 'hl'
 
     - type: 'repres'
       operation: 'match'
@@ -105,9 +103,10 @@ encoder:
 
     param-configurator:
       type: 'paramId'
+      dataset-for-local: 'era6'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'heightAboveGround'
 
     ensemble-configurator:
       type: 'default'

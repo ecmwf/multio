@@ -90,7 +90,7 @@ encoder:
 
   # Section 2: Local Use Section
   local-use-section:
-    template-number: 1
+    template-number: 36
 
   # Section 3: Grid Definition Section
   grid-definition-section:
@@ -98,7 +98,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 36
+    template-number: 1
 
     point-in-time-configurator:
       type: 'default'

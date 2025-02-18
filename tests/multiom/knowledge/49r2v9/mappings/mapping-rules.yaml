@@ -11,7 +11,6 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-10m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-map-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-change-123--levelist-to-10.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}/mappings/fix/fix-cloudparam-186.yaml'

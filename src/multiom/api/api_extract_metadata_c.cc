@@ -32,7 +32,7 @@ namespace {
       // Now a second resize will only shrink (never enlarge) the buffer and just adjust the size without modifying the buffer
       // ret.resize(keylen-1);
       ret.resize(strlen(ret.c_str())); // does also work and might be more reliable
-      std::cout << "Get string " << key << " (len: " << keylen << ", stringsize: " << ret.size() << ": " << std::string(ret) <<std::endl;
+      // std::cout << "Get string " << key << " (len: " << keylen << ", stringsize: " << ret.size() << ": " << std::string(ret) <<std::endl;
       return ret;
   }
 
@@ -117,7 +117,7 @@ namespace {
     }
     oss << "]";
 
-    std::cout << "Array: " << oss.str() << std::endl;
+    // std::cout << "Array: " << oss.str() << std::endl;
 
     return oss.str();
   }
@@ -216,7 +216,7 @@ namespace {
           };
 
         const auto gridTypeFunc = gridMap.find(gridType);
-        std::cout << "GridType: " << gridType << " " << (gridType == "reduced_gg") << std::endl;
+        // std::cout << "GridType: " << gridType << " " << (gridType == "reduced_gg") << std::endl;
 
         if (gridTypeFunc != gridMap.cend()) {
             return gridTypeFunc->second(h, mars_dict, par_dict);
@@ -258,7 +258,6 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     // - try to iterate mars namespace
 
     h = (codes_handle*) grib;
-    printf("extract metadat...\n");
 
     ret = multio_grib2_dict_create(mars_dict, "mars");
     if(ret != 0) return ret;
@@ -422,7 +421,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
     if(hasKey(h, "setPackingType")) {
         std::string setPackingType = getString(h, "setPackingType");
-        std::cout << "setPackingType: " << setPackingType << std::endl;
+        // std::cout << "setPackingType: " << setPackingType << std::endl;
 
         ret = handlePackingType(h, setPackingType, *mars_dict);
         if(ret != 0) return ret;
@@ -431,7 +430,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
     if(hasKey(h, "gridType")) {
         std::string gridType = getString(h, "gridType");
-        std::cout << "Grid: " << gridType << std::endl;
+        // std::cout << "Grid: " << gridType << std::endl;
         
         ret = handleGridType(h, gridType, *mars_dict, *par_dict);
         if(ret != 0) return ret;

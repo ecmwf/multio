@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-pl-gg-fc-ensemble-simple-instant-pa'
 
 #
 # Future use
@@ -33,17 +33,19 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        60, '75:76', '129:135', 203, '246:248', 260290
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'sfc'
+      value: 'pl'
+
+    - type: 'levelist'
+      operation: 'lower-than'
+      treshold: 100
 
     - type: 'repres'
       operation: 'match'
@@ -107,7 +109,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'isobaricinpa'
 
     ensemble-configurator:
       type: 'default'

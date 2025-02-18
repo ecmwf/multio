@@ -1,5 +1,6 @@
 file(GLOB mapping_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
+
 # Mapping rules used to fix wrong information coming from IFS
 add_subdirectory(fix)
 

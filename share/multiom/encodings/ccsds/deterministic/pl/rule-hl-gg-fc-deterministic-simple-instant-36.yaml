@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-hl-gg-fc-deterministic-simple-instant-36'
 
 #
 # Future use
@@ -33,17 +33,15 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        10, 131, 132
       ]
 
     - type: 'levtype'
       operation: 'match'
-      value: 'sfc'
+      value: 'hl'
 
     - type: 'repres'
       operation: 'match'
@@ -54,6 +52,7 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -98,19 +97,17 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
 
     param-configurator:
       type: 'paramId'
+      dataset-for-local: 'era6'
 
     level-configurator:
-      type: 'mediumcloudlayer'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'heightAboveGround'
 
   # Section 5: Data Representation Section
   data-representation-section:

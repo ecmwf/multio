@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-meanSea-gg-fc-ensemble-ccsds-instant-36'
 
 #
 # Future use
@@ -33,12 +33,10 @@ filter:
               operation: 'match'
               values: [ 'sfo', 'fu', 'go' ]
 
-
-    # This triggers section2 36!!!!
     - type: 'param'
       operation: 'match'
       values: [
-        3074
+        151
       ]
 
     - type: 'levtype'
@@ -57,7 +55,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'simple'
+      value: 'ccsds'
 
 
 #
@@ -107,14 +105,14 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'meansea'
 
     ensemble-configurator:
       type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:
-    template-number: 0
+    template-number: 42
 
 
 

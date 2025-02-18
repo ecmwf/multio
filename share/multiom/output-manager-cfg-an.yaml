@@ -12,7 +12,7 @@ grib-header-to-multio:
   encoding-rules-file: '{IFS_INSTALL_DIR}/share/multiom/encodings/encoding-rules-an.yaml'
   log-path: '{MULTIO_LOG_PATH}'
   default-sink: 'message-to-file'
-  verbose: true
+  verbose: false
   profile: false
   save-report: false
 

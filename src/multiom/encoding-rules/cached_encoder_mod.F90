@@ -306,9 +306,6 @@ PP_THREAD_SAFE FUNCTION  CACHED_ENCODER_GENERATING_RULE( THIS, TAG, NAME, HOOKS 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
-  USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: DESTROY_ENCODER
-  USE :: METADATA_FACTORY_MOD,     ONLY: DESTROY_METADATA
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -679,7 +676,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Error handling
-  WRITE(UNIT,'(A)', IOSTAT=WRITE_STATUS) 'CACHED_ENCODER_PRINT_RULE :: "'//TRIM(ADJUSTL(THIS%NAME_))//'"'
+  WRITE(UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + ENCODING RULE NAME :: "'//TRIM(ADJUSTL(THIS%NAME_))//'"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
 
 
@@ -841,14 +838,14 @@ IMPLICIT NONE
     ENCODING_DONE = .TRUE.
 
 !    PP_TRYCALL(ERRFLAG_CLONE_METADATA) METADATA%DUMP_SAMPLE( 'after_runtime.grib', HOOKS )
-    PP_LOG_STR( 'encoding done' )
+    PP_LOG_DEVELOP_STR( 'encoding done' )
 
   ELSE
 
     ! Set the encoding done flag
     ENCODING_DONE = .FALSE.
 
-    PP_LOG_STR( 'encoding not done' )
+    PP_LOG_DEVELOP_STR( 'encoding not done' )
 
   ENDIF
 

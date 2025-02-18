@@ -1920,7 +1920,6 @@ IMPLICIT NONE
   END SELECT
 
   ! Set the default sink type
-  WRITE(*,*) 'DEFAULT SINK TYPE :: ', THIS%DEFAULT_SINK_
   PAR%SINK_TYPE = THIS%DEFAULT_SINK_
 
   ! Trace end of procedure (on success)
@@ -2293,8 +2292,6 @@ IMPLICIT NONE
     PP_METADATA_SET( MD, ERRFLAG_METADATA, 'bitmapPresent', 1_JPIB_K )
     PP_METADATA_SET( MD, ERRFLAG_METADATA, 'missingValue', XUNDEF )
   END IF
-
-  WRITE(*,*) 'SINK_TYPE :: ', PAR%SINK_TYPE
 
   !
   ! If needed extract the values from the metadata otherwise write binary to multio
@@ -2918,6 +2915,10 @@ IMPLICIT NONE
   !> Open the configuration file
   PP_TRYCALL(ERRFLAG_LOADING_LOCAL_SAMPLE) MAKE_METADATA( THIS%METADATA_, 'grib', 'sample', HOOKS )
 
+  ! Initialize the encoder options
+  CACHE_OPTIONS%VERBOSE = THIS%VERBOSE_
+  ENCODER_OPTIONS%PRINT_DICTIONARIES = THIS%VERBOSE_
+
   ! Initialize the encoder
   PP_TRYCALL(ERRFLAG_UNABLE_INITIALIZE_ENCODER) THIS%MULTIOM_ENCODER_%INIT( &
   &   THIS%MAPPING_FILE_, THIS%ENCODER_FILE_, THIS%METADATA_, &
@@ -3134,12 +3135,18 @@ IMPLICIT NONE
 
   IF ( IS_VALID ) THEN
 
-    PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
-    IF ( ALLOCATED(JSON) ) THEN
-      WRITE(*,'(A,A)') ' * ORIGINAL - MARS to JSON: ', JSON
-      DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
-    END IF
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
+      IF ( ALLOCATED(JSON) ) THEN
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' * --------------------------------------------------------------------------------------- '
+        WRITE(*,'(A,A)') ' + ORIGINAL - MARS to JSON: ', JSON
+        DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+    ENDIF
 
 
     !> Initialize the metadata list
@@ -3397,12 +3404,18 @@ IMPLICIT NONE
 
   IF ( IS_VALID ) THEN
 
-    PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
-    IF ( ALLOCATED(JSON) ) THEN
-      WRITE(*,'(A,A)') 'MARS to JSON: ', JSON
-      DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
-    END IF
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
+      IF ( ALLOCATED(JSON) ) THEN
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' * --------------------------------------------------------------------------------------- '
+        WRITE(*,'(A,A)') ' + ORIGINAL - MARS to JSON: ', JSON
+        DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+    ENDIF
 
     !> Initialize the metadata list
     PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_METADATA_LIST) METADATA_LIST%INIT( HOOKS )
@@ -3659,12 +3672,18 @@ IMPLICIT NONE
 
   IF ( IS_VALID ) THEN
 
-    PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
-    IF ( ALLOCATED(JSON) ) THEN
-      WRITE(*,'(A,A)') 'MARS to JSON: ', JSON
-      DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
-    END IF
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
+      IF ( ALLOCATED(JSON) ) THEN
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' * --------------------------------------------------------------------------------------- '
+        WRITE(*,'(A,A)') ' + ORIGINAL - MARS to JSON: ', JSON
+        DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      END IF
+    ENDIF
 
     !> Initialize the metadata list
     PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_METADATA_LIST) METADATA_LIST%INIT( HOOKS )
@@ -3926,12 +3945,18 @@ IMPLICIT NONE
 
   IF ( IS_VALID ) THEN
 
-    PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
-    IF ( ALLOCATED(JSON) ) THEN
-      WRITE(*,'(A,A)') 'MARS to JSON: ', JSON
-      DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
-    END IF
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_TRYCALL(ERRFLAG_MARS_TO_JSON) IN_MSG%TO_JSON( JSON, HOOKS )
+      IF ( ALLOCATED(JSON) ) THEN
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' '
+        WRITE(*,'(A,A)') ' * --------------------------------------------------------------------------------------- '
+        WRITE(*,'(A,A)') ' + ORIGINAL - MARS to JSON: ', JSON
+        DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      ENDIF
+    ENDIF
 
     !> Initialize the metadata list
     PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_METADATA_LIST) METADATA_LIST%INIT( HOOKS )

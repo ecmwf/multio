@@ -1,0 +1,27 @@
+name: 'fix-change-tables-version-for-chem-accum'
+
+tag: 'ERA6'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      values: [
+        '228080:228082', '233032:233035', '235062:235064'
+      ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'parametrization-int'
+          name: 'tables-version'
+          expression:
+            type: 'constant'
+            value: 30

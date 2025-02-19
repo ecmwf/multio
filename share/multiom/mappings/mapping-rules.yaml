@@ -13,6 +13,8 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-map-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-123--levelist-to-10.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-accum.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-instant.yaml'
 
   #
   # Inject bits-per-value

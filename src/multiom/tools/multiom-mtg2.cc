@@ -113,34 +113,6 @@ namespace {
         return false;
     }
 
-    static const ValueSet filteredStatParamId{
-        "143",
-        "144",
-        // "151",
-        // "160",
-        // "163",
-        // "164",
-        // "165",
-        // "166",
-        // "167",
-        // "168",
-        "169",
-        // "170",
-        // "172",
-        "175",
-        // "186",
-        // "187",
-        // "188",
-        "205",
-        "228",
-        // "228246",
-        // "228247",
-        // "235",
-        // "39",
-    };
-    
-    
-    
     
 
 }  // namespace
@@ -385,10 +357,6 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             }
             inputMsg.write(outputFileHandle);
         } else {
-            // if (auto searchFilteredParamId = filteredStatParamId.find(paramId); searchFilteredParamId != filteredStatParamId.end()) {
-            //     std::cout << "Ignoring paramId " << paramId << std::endl;
-            //     continue;
-            // }
             
             // now inputCodesHandle is save to use
             void* marsDict=NULL; 

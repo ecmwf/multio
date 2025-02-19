@@ -48,7 +48,7 @@ encode:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 8
+    template-number: 11
     time-statistics-configurator:
       type: since-last-post-processing-step
       type-of-statistical-processing: max

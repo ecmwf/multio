@@ -48,7 +48,7 @@ encode:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 99
+    template-number: 100
     point-in-time-config:
       type: default
     param-configurator:

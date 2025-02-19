@@ -50,7 +50,7 @@ encode:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 42
+    template-number: 43
     time-statistics-configurator:
       type: since-beginning-of-forecast
       type-of-statistical-processing: accumul

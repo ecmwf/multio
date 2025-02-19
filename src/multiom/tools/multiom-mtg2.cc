@@ -199,6 +199,7 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
     // - pass down verbosity to fortran
     
     
+    options_.push_back(new eckit::option::SimpleOption<bool>("help", "Print help"));
     options_.push_back(new eckit::option::SimpleOption<bool>("all", "If specified also grib2 messages will reencoded instead of copied"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("knowledge-root", "Path to knowledege root dir containing grib2 sample, encoding and mapping rules. Default: MULTIO_HOME/share/multiom/49r2v9"));

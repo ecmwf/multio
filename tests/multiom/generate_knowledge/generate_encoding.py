@@ -40,10 +40,10 @@ from GenerateEncoding import (
 )
 
 # Helpers
-isChemical = composeAll([hasType('chem'), lacksType('wavelength'), typeLT("chem", 900)])
-isAerosol = composeAll([hasType('chem'), lacksType('wavelength'), typeGE("chem", 900)])
-isOptical = composeAll([lacksType('chem'), hasType('wavelength')])
-isChemicalOptical = composeAll([hasType('chem'), hasType('wavelength')])
+isChemical = composeAll([hasType("chem"), lacksType("wavelength"), typeLT("chem", 900)])
+isAerosol = composeAll([hasType("chem"), lacksType("wavelength"), typeGE("chem", 900)])
+isOptical = composeAll([lacksType("chem"), hasType("wavelength")])
+isChemicalOptical = composeAll([hasType("chem"), hasType("wavelength")])
 
 #
 
@@ -51,7 +51,11 @@ TYPES = [
     partialRule(
         [matchType("type", "forecast")],
         [marsType("fc"), IdentTemplateNumber(templateNumber=0)],
-    )
+    ),
+    # partialRule(
+    #     [matchType("type", "analysis")],
+    #     [marsType("an"), IdentTemplateNumber(templateNumber=0)],
+    # ),
 ]
 
 GRIDS = [
@@ -59,7 +63,9 @@ GRIDS = [
 ]
 
 GRIDS_SH = [
-    partialRule([matchType("repres", "spherical-harmonics")], [gridDefinition(50, "complex")])
+    partialRule(
+        [matchType("repres", "spherical-harmonics")], [gridDefinition(50, "complex")]
+    )
 ]
 
 LOCALSECTION = [
@@ -241,12 +247,15 @@ PARAM_LEVTYPE_SFC = [
     # nominalTop - point in time
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["178:179", "208:209", 212])],
-        [TimeRange(
+        [
+            TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
                 descriptiveName="since-beginning",
-                ), levelConfig("nominalTop")],
+            ),
+            levelConfig("nominalTop"),
+        ],
     ),
     # tropopause - point in time
     partialRule(
@@ -258,7 +267,7 @@ PARAM_LEVTYPE_SFC = [
         [
             matchType("levtype", "sfc"),
             matchParam(["228080:228082", "233032:233035", "235062:235064"]),
-            isChemical
+            isChemical,
         ],
         [
             levelConfig("surface"),
@@ -269,7 +278,7 @@ PARAM_LEVTYPE_SFC = [
                 typeOfStatisticalProcessing="accumul",
                 descriptiveName="since-beginning",
             ),
-            TablesConfig(type="custom",localTablesVersion=0,tablesVersion=30)
+            TablesConfig(type="custom", localTablesVersion=0, tablesVersion=30),
         ],
     ),
     # surface - since beginning
@@ -600,7 +609,12 @@ PARAM_LEVTYPE_SFC = [
     # surface - instant - chem
     partialRule(
         [isChemical, matchType("levtype", "sfc"), matchParam(["228083:228085"])],
-        [PointInTime(), levelConfig("surface"), paramConfig("paramId","era6"), ChemConfig()],
+        [
+            PointInTime(),
+            levelConfig("surface"),
+            paramConfig("paramId", "era6"),
+            ChemConfig(),
+        ],
     ),
     # surface - instant - wam_int
     partialRule(
@@ -666,7 +680,11 @@ PARAM_LEVTYPE_SFC = [
 PARAM_LEVTYPE_HL = [
     partialRule(
         [matchType("levtype", "hl"), matchParam([10, 131, 132])],
-        [PointInTime(), levelConfig("heightAboveGround"), paramConfig("paramId", "era6")],
+        [
+            PointInTime(),
+            levelConfig("heightAboveGround"),
+            paramConfig("paramId", "era6"),
+        ],
     ),
 ]
 
@@ -675,16 +693,20 @@ PARAM_LEVTYPE_HL = [
 
 PARAM_LEVTYPE_ML = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam(['75:76', 133, 203, '246:248'])],
+        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248"])],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
     partialRule(
-        [matchType("levtype", "ml"), matchParam(['162100:162113'])],
-        [TimeRange(
+        [matchType("levtype", "ml"), matchParam(["162100:162113"])],
+        [
+            TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
                 descriptiveName="since-beginning",
-            ), levelConfig("hybrid"), paramConfig("paramId")],
+            ),
+            levelConfig("hybrid"),
+            paramConfig("paramId"),
+        ],
     ),
 ]
 
@@ -698,34 +720,48 @@ PARAM_LEVTYPE_ML_SH = [
 
 # PL
 
-PL_LEVEL_CONFIGS=[ 
-          partialRule(
-            [typeGE("levelist", 100)],
-            [levelConfig("isobaricinhpa")],
-          ),
-          partialRule(
-            [typeLT("levelist", 100)],
-            [levelConfig("isobaricinpa")],
-          )
-        ]
+PL_LEVEL_CONFIGS = [
+    partialRule(
+        [typeGE("levelist", 100)],
+        [levelConfig("isobaricinhpa")],
+    ),
+    partialRule(
+        [typeLT("levelist", 100)],
+        [levelConfig("isobaricinpa")],
+    ),
+]
 
-PARAM_LEVTYPE_PL = combineAndMergePartialRules([
-        PL_LEVEL_CONFIGS, [
+PARAM_LEVTYPE_PL = combineAndMergePartialRules(
+    [
+        PL_LEVEL_CONFIGS,
+        [
             partialRule(
-                [matchType("levtype", "pl"), matchParam([60, '75:76', '129:135', 203, '246:248', 260290])],
+                [
+                    matchType("levtype", "pl"),
+                    matchParam([60, "75:76", "129:135", 203, "246:248", 260290]),
+                ],
                 [PointInTime(), paramConfig("paramId")],
-               ),
-        ]])
-        
-PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules([
-        PL_LEVEL_CONFIGS, [
+            ),
+        ],
+    ]
+)
+
+PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
+    [
+        PL_LEVEL_CONFIGS,
+        [
             partialRule(
-                [matchType("levtype", "pl"), matchParam([129, 130, 135, 138, 152, 155, 157])],
+                [
+                    matchType("levtype", "pl"),
+                    matchParam([129, 130, 135, 138, 152, 155, 157]),
+                ],
                 [PointInTime(), paramConfig("paramId")],
-               ),
-        ]])
-        
-        
+            ),
+        ],
+    ]
+)
+
+
 # SOIL
 
 PARAM_LEVTYPE_SOL = [
@@ -746,7 +782,13 @@ PARAM_LEVTYPE_SOL = [
 
 # Combine all param levtype configurations
 
-PARAM_LEVTYPE = PARAM_LEVTYPE_SFC + PARAM_LEVTYPE_HL + PARAM_LEVTYPE_ML + PARAM_LEVTYPE_PL + PARAM_LEVTYPE_SOL
+PARAM_LEVTYPE = (
+    PARAM_LEVTYPE_SFC
+    + PARAM_LEVTYPE_HL
+    + PARAM_LEVTYPE_ML
+    + PARAM_LEVTYPE_PL
+    + PARAM_LEVTYPE_SOL
+)
 PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH
 
 PACKING = [
@@ -764,24 +806,23 @@ PACKING = [
 PACKING_SH = [
     partialRule(
         [matchType("packing", "complex")],
-        [DataRepresentation(templateNumber=51, descriptiveName="simple")],
+        [DataRepresentation(templateNumber=51, descriptiveName="complex")],
     )
 ]
 
 
-rules = [*list(
+rules = list(
     combinePartialRules(
         [TYPES, GRIDS, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE, PACKING]
     )
-),
-*list(
+)
+rules_sh = list(
     combinePartialRules(
         [TYPES, GRIDS_SH, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE_SH, PACKING_SH]
     )
 )
-]
 
-encodedRules = [buildRule(mergePartialRules(rl)) for rl in rules]
+encodedRules = [buildRule(mergePartialRules(rl)) for rl in rules + rules_sh]
 
 encodedRulesDict = {e.name: [] for e in encodedRules}
 for rule in encodedRules:
@@ -793,26 +834,124 @@ duplicatedRules = {key: val for (key, val) in encodedRulesDict.items() if len(va
 if len(duplicatedRules) > 0:
     raise ValueError(f"Not all rule names are unique")
 
+
+def templateCMakeFile(dir, subDirs):
+    subDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
+    return f"""
+file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
+
+{subDirsStr}
+
+
+# Loop through each entry and add it as a subdirectory if it's a directory
+foreach(rule ${{encoding_rules}})
+    configure_file(${{CMAKE_CURRENT_SOURCE_DIR}}/${{rule}}
+                   ${{CMAKE_CURRENT_BINARY_DIR}}/${{rule}}
+                   COPYONLY)
+endforeach()
+
+
+install(
+    FILES       ${{encoding_rules}}
+    DESTINATION ${{MULTIOM_CONFIG_DIR}}/${{KNOWLEDGE_VERSION}}/{dir}
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+"""
+
+
+# Take list of paths and return to a dictionary
+def pathListToDict(pathList):
+    def recSplitPathList(spl):
+        tmp = {}
+        for sp in spl:
+            if len(sp) == 0:
+                continue
+
+            if sp[0] not in tmp.keys():
+                tmp[sp[0]] = []
+            tmp[sp[0]].append(sp[1:])
+
+        return {key: recSplitPathList(subSpl) for (key, subSpl) in tmp.items()}
+
+    return recSplitPathList(
+        [list(filter(lambda s: s != "", p.split("/"))) for p in set(pathList)]
+    )
+
+
+def createCMakeFiles(pathList):
+    pld = pathListToDict(pathList)
+
+    def recPld(basePath, pld):
+        for path, subPld in pld.items():
+
+            newBasePath = f"{basePath}/{path}" if basePath != "" else path
+            fileContent = templateCMakeFile(newBasePath, list(subPld.keys()))
+
+            with open(f"{newBasePath}/CMakeLists.txt", "w") as fileOut:
+                fileOut.write(fileContent)
+
+            recPld(newBasePath, subPld)
+
+    recPld("", pld)
+
+
 def pathForRule(baseDir: str, rule: EncodeRule):
-    levtype="_".join([f.filter.value for f in rule.filter.filter.filters if isinstance(f.filter, MatchType) and f.filter.type == "levtype"]) + "/" if isinstance(rule.filter.filter, ComposeAll) else ""
-    marsType=rule.encode.identification.marsType.type
+    levtype = (
+        "_".join(
+            [
+                f.filter.value
+                for f in rule.filter.filter.filters
+                if isinstance(f.filter, MatchType) and f.filter.type == "levtype"
+            ]
+        )
+        if isinstance(rule.filter.filter, ComposeAll)
+        else ""
+    )
+    marsType = rule.encode.identification.marsType.type
 
-    return (f"{baseDir}/{marsType}/{levtype}", f"{rule.name}.yaml")
+    ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
+    packing = rule.encode.dataRepres.descriptiveName
 
+    return (
+        {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
+        f"{baseDir}/{packing}/{ensemble}/{marsType}/{levtype}",
+        f"{rule.name}.yaml",
+    )
 
 
 def main():
-    BASE_DIR = "test_output"
+    BASE_DIR = "encodings"
+    BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}"
+    ENCODING_RULES_SPLIT = ["packing", "process"]
 
     if not os.path.exists(BASE_DIR):
         os.makedirs(BASE_DIR)
 
-    for rule in encodedRules:
-        (path, fname) = pathForRule(BASE_DIR, rule)
-        pathlib.Path(path).mkdir(parents=True, exist_ok=True) 
-        with open(path + fname, "w") as fileOut:
+    ruleFiles = [(pathForRule(BASE_DIR, rule), rule) for rule in encodedRules]
+
+    for (attr, path, fname), rule in ruleFiles:
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True)
+        with open("/".join([path,fname]), "w") as fileOut:
             fileOut.write(toYAML(toDictRepres(rule)))
 
+    pathList = list({r[0][1] for r in ruleFiles})
+
+    createCMakeFiles(pathList)
+
+    def keyForRuleList(sel):
+        return "-".join([sel[k] for k in ENCODING_RULES_SPLIT])
+
+    mappedRuleFiles = [
+        ({key: r[0][0][key] for key in ENCODING_RULES_SPLIT}, r[0][1], r[0][2])
+        for r in ruleFiles
+    ]
+    rulesBySplit = {k: [] for k in {keyForRuleList(mr[0]) for mr in mappedRuleFiles}}
+    for sel, path, fname in mappedRuleFiles:
+        key = keyForRuleList(sel)
+        rulesBySplit[key].append({"file": "/".join([BASE_DIR_RULE_LIST, path, fname])})
+
+    for key, files in rulesBySplit.items():
+        with open(f"{BASE_DIR}/encoding-rules-{key}.yaml", "w") as fileOut:
+            fileOut.write(toYAML({"encoding-rules": files}))
 
 
 if __name__ == "__main__":

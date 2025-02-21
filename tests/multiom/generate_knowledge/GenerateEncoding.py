@@ -110,21 +110,26 @@ class MatchType(BaseModel):
 
 def matchType(t: str, v: str) -> MatchType:
     return MatchType(type=t, value=v)
-    
+
+
 class TypeTreshold(BaseModel):
     type: str
     operation: str
     treshold: int
 
+
 def typeGE(t: str, v: int) -> TypeTreshold:
     return TypeTreshold(type=t, operation="greater-equal", treshold=v)
-    
+
+
 def typeGT(t: str, v: int) -> TypeTreshold:
     return TypeTreshold(type=t, operation="greater-than", treshold=v)
-    
+
+
 def typeLE(t: str, v: int) -> TypeTreshold:
     return TypeTreshold(type=t, operation="lower-equal", treshold=v)
-    
+
+
 def typeLT(t: str, v: int) -> TypeTreshold:
     return TypeTreshold(type=t, operation="lower-than", treshold=v)
 
@@ -389,17 +394,17 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         else f"-{encode.product.param.datasetForLocal}"
     )
     local = encode.localUse.templateNumber
-    
-    product=""
+
+    product = ""
     if encode.product.chemical is not None:
-        product+="-chem"
+        product += "-chem"
     if encode.product.directionsFrequencies is not None:
-        product+="-wave_spec"
+        product += "-wave_spec"
     if encode.product.periodRange is not None:
-        product+="-wave_period"
+        product += "-wave_period"
     # if encode.product.satelite is not None:
     #     product+="-satelite"
-    
+
     pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
     return f"rule{pref}-{levelWaveStr}-{grid}-{marsType}{product}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
@@ -436,7 +441,11 @@ def toDictRepres(val):
         case MatchType():
             return {"type": val.type, "operation": "match", "value": val.value}
         case TypeTreshold():
-            return {"type": val.type, "operation": val.operation, "treshold": val.treshold}
+            return {
+                "type": val.type,
+                "operation": val.operation,
+                "treshold": val.treshold,
+            }
         case HasType():
             return {"type": val.type, "operation": "has"}
         case LacksType():
@@ -518,7 +527,15 @@ def toDictRepres(val):
         case ReferenceTimeConfig():
             return {"type": val.type}
         case TablesConfig():
-            return {"type": val.type, **({} if val.tablesVersion is None else {"tables-version": val.tablesVersion}), "local-tables-version": val.localTablesVersion}
+            return {
+                "type": val.type,
+                **(
+                    {}
+                    if val.tablesVersion is None
+                    else {"tables-version": val.tablesVersion}
+                ),
+                "local-tables-version": val.localTablesVersion,
+            }
         case TimeConfig():
             match val.config:
                 case PointInTime():
@@ -833,6 +850,7 @@ def combinePartialRules(alternativeSets: List[AlternativeSet]):
         return (a + [r] for a in acc for r in rhs)
 
     return reduce(reducer, alternativeSets[1:], [[a] for a in alternativeSets[0]])
+
 
 def combineAndMergePartialRules(alternativeSets: List[AlternativeSet]):
     return [mergePartialRules(pr) for pr in combinePartialRules(alternativeSets)]

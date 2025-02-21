@@ -4149,7 +4149,7 @@ IMPLICIT NONE
 
     ! Set the output variable
     IF ( ITMP .EQ. 0_JPIB_K ) THEN
-      ENABLE_COMPRESSION = .TRUE.
+      ENABLE_COMPRESSION = .FALSE.
     ELSE
       ENABLE_COMPRESSION = .TRUE.
     ENDIF
@@ -4183,6 +4183,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'COMPR_FC_GP_ML env. variable name too long' )
     CASE (ERRFLAG_IO_ERROR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading COMPR_FC_GP_ML env. variable' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Value: '//TRIM(ENVVAR_VALUE) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

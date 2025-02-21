@@ -1,13 +1,19 @@
+import pathlib
 import os
 from GenerateEncoding import (
     toYAML,
     toDictRepres,
     partialRule,
     combinePartialRules,
+    combineAndMergePartialRules,
     mergePartialRules,
     buildRule,
     matchType,
     matchParam,
+    typeGE,
+    typeGT,
+    typeLE,
+    typeLT,
     PointInTime,
     TimeRange,
     levelConfig,
@@ -15,6 +21,7 @@ from GenerateEncoding import (
     ParamConfig,
     EnsembleConfig,
     TimeConfig,
+    TablesConfig,
     DirectionsFrequenciesConfig,
     hasType,
     lacksType,
@@ -26,7 +33,19 @@ from GenerateEncoding import (
     ChemConfig,
     PeriodConfig,
     DataRepresentation,
+    EncodeRule,
+    composeAll,
+    ComposeAll,
+    MatchType,
 )
+
+# Helpers
+isChemical = composeAll([hasType('chem'), lacksType('wavelength'), typeLT("chem", 900)])
+isAerosol = composeAll([hasType('chem'), lacksType('wavelength'), typeGE("chem", 900)])
+isOptical = composeAll([lacksType('chem'), hasType('wavelength')])
+isChemicalOptical = composeAll([hasType('chem'), hasType('wavelength')])
+
+#
 
 TYPES = [
     partialRule(
@@ -39,6 +58,10 @@ GRIDS = [
     partialRule([matchType("repres", "gaussian-grid")], [gridDefinition(40, "gg")])
 ]
 
+GRIDS_SH = [
+    partialRule([matchType("repres", "spherical-harmonics")], [gridDefinition(50, "complex")])
+]
+
 LOCALSECTION = [
     partialRule([lacksType("anoffset")], [localUse(1)]),
     partialRule([hasType("anoffset")], [localUse(36)]),
@@ -49,7 +72,10 @@ PROCESSTYPES = [
     partialRule([hasType("number")], [EnsembleConfig()]),
 ]
 
-PARAM_LEVTYPE = [
+
+# SFC
+
+PARAM_LEVTYPE_SFC = [
     # cloudbase
     partialRule(
         [matchType("levtype", "sfc"), matchParam([228023])],
@@ -174,7 +200,7 @@ PARAM_LEVTYPE = [
     ),
     # lowCloudLayer - point in time
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([3074])],
+        [matchType("levtype", "sfc"), matchParam([3073])],
         [PointInTime(), levelConfig("lowCloudLayer")],
     ),
     # iceLayerOnWater - point in time
@@ -215,7 +241,12 @@ PARAM_LEVTYPE = [
     # nominalTop - point in time
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["178:179", "208:209", 212])],
-        [PointInTime(), levelConfig("nominalTop")],
+        [TimeRange(
+                type="since-beginning-of-forecast",
+                typeOfStatisticalProcessing="accumul",
+                encodeStepZero=True,
+                descriptiveName="since-beginning",
+                ), levelConfig("nominalTop")],
     ),
     # tropopause - point in time
     partialRule(
@@ -227,6 +258,7 @@ PARAM_LEVTYPE = [
         [
             matchType("levtype", "sfc"),
             matchParam(["228080:228082", "233032:233035", "235062:235064"]),
+            isChemical
         ],
         [
             levelConfig("surface"),
@@ -237,6 +269,7 @@ PARAM_LEVTYPE = [
                 typeOfStatisticalProcessing="accumul",
                 descriptiveName="since-beginning",
             ),
+            TablesConfig(type="custom",localTablesVersion=0,tablesVersion=30)
         ],
     ),
     # surface - since beginning
@@ -403,19 +436,19 @@ PARAM_LEVTYPE = [
     ),
     # TODO - paramID is duplacted here ?
     # surface - min over last 3h
-    partialRule(
-        [matchType("levtype", "sfc"), matchParam([228027])],
-        [
-            levelConfig("surface"),
-            paramConfig("paramId"),
-            TimeRange(
-                type="fixed-timerange",
-                typeOfStatisticalProcessing="min",
-                overallLengthOfTimeRange="3h",
-                descriptiveName="min-over-last-3h",
-            ),
-        ],
-    ),
+    # partialRule(
+    #     [matchType("levtype", "sfc"), matchParam([228027])],
+    #     [
+    #         levelConfig("surface"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="fixed-timerange",
+    #             typeOfStatisticalProcessing="min",
+    #             overallLengthOfTimeRange="3h",
+    #             descriptiveName="min-over-last-3h",
+    #         ),
+    #     ],
+    # ),
     # surface - mode over last 1h
     partialRule(
         [matchType("levtype", "sfc"), matchParam([260320])],
@@ -566,9 +599,8 @@ PARAM_LEVTYPE = [
     ),
     # surface - instant - chem
     partialRule(
-        [matchType("levtype", "sfc"), matchParam(["228083:228085"])],
-        [PointInTime(), levelConfig("surface"), paramConfig("paramId"), ChemConfig()],
-        namePrefix="chem",
+        [isChemical, matchType("levtype", "sfc"), matchParam(["228083:228085"])],
+        [PointInTime(), levelConfig("surface"), paramConfig("paramId","era6"), ChemConfig()],
     ),
     # surface - instant - wam_int
     partialRule(
@@ -602,7 +634,6 @@ PARAM_LEVTYPE = [
         [matchType("levtype", "sfc"), matchParam([140251])],
         [
             PointInTime(),
-            levelConfig("surface"),
             paramConfig("paramId"),
             DirectionsFrequenciesConfig(),
         ],
@@ -629,6 +660,95 @@ PARAM_LEVTYPE = [
     ),
 ]
 
+
+# HL
+
+PARAM_LEVTYPE_HL = [
+    partialRule(
+        [matchType("levtype", "hl"), matchParam([10, 131, 132])],
+        [PointInTime(), levelConfig("heightAboveGround"), paramConfig("paramId", "era6")],
+    ),
+]
+
+
+# ML
+
+PARAM_LEVTYPE_ML = [
+    partialRule(
+        [matchType("levtype", "ml"), matchParam(['75:76', 133, 203, '246:248'])],
+        [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
+    ),
+    partialRule(
+        [matchType("levtype", "ml"), matchParam(['162100:162113'])],
+        [TimeRange(
+                type="since-beginning-of-forecast",
+                typeOfStatisticalProcessing="accumul",
+                descriptiveName="since-beginning",
+            ), levelConfig("hybrid"), paramConfig("paramId")],
+    ),
+]
+
+PARAM_LEVTYPE_ML_SH = [
+    partialRule(
+        [matchType("levtype", "ml"), matchParam([77, 129, 130, 135, 138, 152, 155])],
+        [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
+    ),
+]
+
+
+# PL
+
+PL_LEVEL_CONFIGS=[ 
+          partialRule(
+            [typeGE("levelist", 100)],
+            [levelConfig("isobaricinhpa")],
+          ),
+          partialRule(
+            [typeLT("levelist", 100)],
+            [levelConfig("isobaricinpa")],
+          )
+        ]
+
+PARAM_LEVTYPE_PL = combineAndMergePartialRules([
+        PL_LEVEL_CONFIGS, [
+            partialRule(
+                [matchType("levtype", "pl"), matchParam([60, '75:76', '129:135', 203, '246:248', 260290])],
+                [PointInTime(), paramConfig("paramId")],
+               ),
+        ]])
+        
+PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules([
+        PL_LEVEL_CONFIGS, [
+            partialRule(
+                [matchType("levtype", "pl"), matchParam([129, 130, 135, 138, 152, 155, 157])],
+                [PointInTime(), paramConfig("paramId")],
+               ),
+        ]])
+        
+        
+# SOIL
+
+PARAM_LEVTYPE_SOL = [
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([262024])],
+        [PointInTime(), levelConfig("seaIceLayer"), paramConfig("paramId")],
+    ),
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([33, 74, 238, 228038, 228141])],
+        [PointInTime(), levelConfig("snowLayer"), paramConfig("paramId")],
+    ),
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([260360, 260199])],
+        [PointInTime(), levelConfig("soilLayer"), paramConfig("paramId")],
+    ),
+]
+
+
+# Combine all param levtype configurations
+
+PARAM_LEVTYPE = PARAM_LEVTYPE_SFC + PARAM_LEVTYPE_HL + PARAM_LEVTYPE_ML + PARAM_LEVTYPE_PL + PARAM_LEVTYPE_SOL
+PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH
+
 PACKING = [
     partialRule(
         [matchType("packing", "simple")],
@@ -640,12 +760,26 @@ PACKING = [
     ),
 ]
 
+# TODO Usallay there is complex_simple and complex_ccsds
+PACKING_SH = [
+    partialRule(
+        [matchType("packing", "complex")],
+        [DataRepresentation(templateNumber=51, descriptiveName="simple")],
+    )
+]
 
-rules = list(
+
+rules = [*list(
     combinePartialRules(
         [TYPES, GRIDS, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE, PACKING]
     )
+),
+*list(
+    combinePartialRules(
+        [TYPES, GRIDS_SH, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE_SH, PACKING_SH]
+    )
 )
+]
 
 encodedRules = [buildRule(mergePartialRules(rl)) for rl in rules]
 
@@ -659,6 +793,12 @@ duplicatedRules = {key: val for (key, val) in encodedRulesDict.items() if len(va
 if len(duplicatedRules) > 0:
     raise ValueError(f"Not all rule names are unique")
 
+def pathForRule(baseDir: str, rule: EncodeRule):
+    levtype="_".join([f.filter.value for f in rule.filter.filter.filters if isinstance(f.filter, MatchType) and f.filter.type == "levtype"]) + "/" if isinstance(rule.filter.filter, ComposeAll) else ""
+    marsType=rule.encode.identification.marsType.type
+
+    return (f"{baseDir}/{marsType}/{levtype}", f"{rule.name}.yaml")
+
 
 
 def main():
@@ -668,8 +808,9 @@ def main():
         os.makedirs(BASE_DIR)
 
     for rule in encodedRules:
-        fname = f"{BASE_DIR}/{rule.name}.yaml"
-        with open(fname, "w") as fileOut:
+        (path, fname) = pathForRule(BASE_DIR, rule)
+        pathlib.Path(path).mkdir(parents=True, exist_ok=True) 
+        with open(path + fname, "w") as fileOut:
             fileOut.write(toYAML(toDictRepres(rule)))
 
 

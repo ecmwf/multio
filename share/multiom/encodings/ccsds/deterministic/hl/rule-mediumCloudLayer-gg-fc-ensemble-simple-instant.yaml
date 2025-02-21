@@ -107,7 +107,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mediumcloudlayer'
+      type: 'mediumCloudLayer'
 
     ensemble-configurator:
       type: 'default'

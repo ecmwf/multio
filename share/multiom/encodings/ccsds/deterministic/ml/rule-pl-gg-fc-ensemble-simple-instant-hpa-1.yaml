@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-pl-gg-fc-ensemble-simple-instant-hpa'
+name: 'rule-pl-gg-fc-ensemble-simple-instant-hpa-1'
 
 #
 # Future use
@@ -20,7 +20,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        60, '75:76', '130:135', 203, '246:248', 260290
+        60, '75:76', '129:135', 203, '246:248', 260290
       ]
 
     - type: 'levtype'

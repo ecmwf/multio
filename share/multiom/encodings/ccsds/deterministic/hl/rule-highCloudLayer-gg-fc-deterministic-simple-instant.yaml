@@ -107,7 +107,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'highcloudlayer'
+      type: 'highCloudLayer'
 
   # Section 5: Data Representation Section
   data-representation-section:

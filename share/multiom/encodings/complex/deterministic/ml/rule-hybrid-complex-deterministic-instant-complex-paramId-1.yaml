@@ -1,6 +1,10 @@
 tag: grib2
 
+<<<<<<<< HEAD:share/multiom/encodings/complex/deterministic/ml/rule-hybrid-complex-deterministic-instant-complex-paramId-1.yaml
 name: rule-hybrid-complex-deterministic-instant-complex-paramId-1
+========
+name: rule-hybrid-complex-fc-deterministic-instant-complex-paramId-1
+>>>>>>>> 87d0f621 (MUL-175: Generating rules files split by packing and process type):tests/multiom/generate_knowledge/encodings/complex/deterministic/fc/ml/rule-hybrid-complex-fc-deterministic-instant-complex-paramId-1.yaml
 
 filter:
   type: composed

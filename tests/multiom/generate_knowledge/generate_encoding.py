@@ -52,9 +52,13 @@ TYPES = [
         [matchType("type", "forecast")],
         [marsType("fc"), IdentTemplateNumber(templateNumber=0)],
     ),
+    partialRule(
+        [matchType("type", "analysis")],
+        [marsType("an"), IdentTemplateNumber(templateNumber=0)],
+    ),
     # partialRule(
-    #     [matchType("type", "analysis")],
-    #     [marsType("an"), IdentTemplateNumber(templateNumber=0)],
+    #     [],
+    #     [IdentTemplateNumber(templateNumber=0)],
     # ),
 ]
 
@@ -569,9 +573,6 @@ PARAM_LEVTYPE_SFC = [
                     238,
                     "243:245",
                     3020,
-                    3073,
-                    3074,
-                    3075,
                     160198,
                     210200,
                     210201,
@@ -906,14 +907,15 @@ def pathForRule(baseDir: str, rule: EncodeRule):
         if isinstance(rule.filter.filter, ComposeAll)
         else ""
     )
-    marsType = rule.encode.identification.marsType.type
+    
+    marsType = None if rule.encode.identification.marsType is None else rule.encode.identification.marsType.type
 
     ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
     packing = rule.encode.dataRepres.descriptiveName
 
     return (
         {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
-        f"{baseDir}/{packing}/{ensemble}/{marsType}/{levtype}",
+        "/".join(filter(lambda d: d is not None, [baseDir,packing,ensemble,marsType,levtype])),
         f"{rule.name}.yaml",
     )
 
@@ -945,13 +947,18 @@ def main():
         for r in ruleFiles
     ]
     rulesBySplit = {k: [] for k in {keyForRuleList(mr[0]) for mr in mappedRuleFiles}}
+    allFiles=[]
     for sel, path, fname in mappedRuleFiles:
         key = keyForRuleList(sel)
         rulesBySplit[key].append({"file": "/".join([BASE_DIR_RULE_LIST, path, fname])})
+        allFiles.append({"file": "/".join([BASE_DIR_RULE_LIST, path, fname])})
 
     for key, files in rulesBySplit.items():
         with open(f"{BASE_DIR}/encoding-rules-{key}.yaml", "w") as fileOut:
             fileOut.write(toYAML({"encoding-rules": files}))
+            
+    with open(f"{BASE_DIR}/encoding-rules.yaml", "w") as fileOut:
+        fileOut.write(toYAML({"encoding-rules": allFiles}))
 
 
 if __name__ == "__main__":

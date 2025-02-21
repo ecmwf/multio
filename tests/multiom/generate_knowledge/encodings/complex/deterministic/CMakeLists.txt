@@ -2,6 +2,7 @@
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 add_subdirectory("fc")
+add_subdirectory("an")
 
 
 # Loop through each entry and add it as a subdirectory if it's a directory

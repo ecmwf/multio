@@ -220,7 +220,7 @@ class IdentTemplateNumber(BaseModel):
 
 
 class IdentificationSection(BaseModel):
-    marsType: MarsType  # Used to put in name
+    marsType: Optional[MarsType] = None  # Used to put in name
     templateNumber: IdentTemplateNumber = IdentTemplateNumber()
     origin: OriginConfig = OriginConfig()
     dataType: DataTypeConfig = DataTypeConfig()
@@ -383,7 +383,6 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
     levelWaveStr = "-".join([l for l in [level, wave, periodRange] if l is not None])
 
     grid = encode.grid.shortName
-    marsType = encode.identification.marsType.type
     ensemble = "ensemble" if encode.product.ensemble else "deterministic"
     time = encode.product.timeConfig.config.descriptiveName
     packing = encode.dataRepres.descriptiveName
@@ -396,6 +395,8 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
     local = encode.localUse.templateNumber
 
     product = ""
+    if encode.identification.marsType is not None:
+        product += f"-{encode.identification.marsType.type}"
     if encode.product.chemical is not None:
         product += "-chem"
     if encode.product.directionsFrequencies is not None:
@@ -407,7 +408,7 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
 
     pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
-    return f"rule{pref}-{levelWaveStr}-{grid}-{marsType}{product}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
+    return f"rule{pref}-{levelWaveStr}-{grid}{product}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
 
 
 class EncodeRule(BaseModel):

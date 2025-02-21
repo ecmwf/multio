@@ -287,7 +287,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "anoffest");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *mars_dict, "number");
+    ret = getAndSetIfNonZero(h, *mars_dict, "number");
     if(ret != 0) return ret;
 
     ret = getAndSet(h, *mars_dict, "ident");

@@ -19,7 +19,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'filter_CHEM_mod.F90'
+#define PP_FILE_NAME 'filter_chem_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'FILTER_CHEM_MOD'
 MODULE FILTER_CHEM_MOD

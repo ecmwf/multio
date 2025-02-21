@@ -1,10 +1,6 @@
 tag: grib2
 
-<<<<<<<< HEAD:share/multiom/encodings/complex/ensemble/ml/rule-hybrid-complex-ensemble-instant-complex-paramId-1.yaml
 name: rule-hybrid-complex-ensemble-instant-complex-paramId-1
-========
-name: rule-hybrid-complex-fc-ensemble-instant-complex-paramId-1
->>>>>>>> 87d0f621 (MUL-175: Generating rules files split by packing and process type):tests/multiom/generate_knowledge/encodings/complex/ensemble/fc/ml/rule-hybrid-complex-fc-ensemble-instant-complex-paramId-1.yaml
 
 filter:
   type: composed

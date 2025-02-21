@@ -1,10 +1,6 @@
 tag: grib2
 
-<<<<<<<< HEAD:share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36.yaml
 name: rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36
-========
-name: rule-isobaricinhpa-complex-fc-deterministic-instant-complex-paramId-36
->>>>>>>> 87d0f621 (MUL-175: Generating rules files split by packing and process type):tests/multiom/generate_knowledge/encodings/complex/deterministic/fc/pl/rule-isobaricinhpa-complex-fc-deterministic-instant-complex-paramId-36.yaml
 
 filter:
   type: composed

@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        121, 123
+        121
       ]
 
     - type: 'levtype'
@@ -107,7 +107,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'heightaboveground'
+      type: 'heightAboveGround'
 
     ensemble-configurator:
       type: 'default'

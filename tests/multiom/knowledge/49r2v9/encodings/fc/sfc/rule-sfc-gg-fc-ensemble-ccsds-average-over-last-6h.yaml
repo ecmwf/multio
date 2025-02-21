@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-ccsds-min-over-last-6h'
+name: 'rule-sfc-gg-fc-ensemble-ccsds-average-over-last-6h'
 
 #
 # Future use
@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        122, 228225
+        228058, 228060
       ]
 
     - type: 'levtype'
@@ -100,7 +100,7 @@ encoder:
 
     time-statistics-configurator:
       type: 'fixed-timerange'
-      type-of-statistical-processing: 'min'
+      type-of-statistical-processing: 'average'
       overall-length-of-timerange: '6h'
 
     param-configurator:

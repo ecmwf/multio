@@ -52,6 +52,8 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+    
+    - type: 'is-chemical'
 
     - type: 'packing'
       operation: 'match'

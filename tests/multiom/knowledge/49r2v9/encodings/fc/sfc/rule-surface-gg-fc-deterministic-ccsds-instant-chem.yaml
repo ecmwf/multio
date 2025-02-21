@@ -53,6 +53,8 @@ filter:
 
     - type: 'is-ensemble'
       negate: true
+      
+    - type: 'is-chemical'
 
     - type: 'packing'
       operation: 'match'

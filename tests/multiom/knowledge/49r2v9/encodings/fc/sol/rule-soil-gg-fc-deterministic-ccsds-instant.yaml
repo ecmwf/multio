@@ -106,7 +106,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'soillayer'
+      type: 'soilLayer'
 
   # Section 5: Data Representation Section
   data-representation-section:

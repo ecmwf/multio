@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-surface-gg-fc-ensemble-ccsds-instant-wam-spectra'
+name: 'rule-surface-gg-fc-ensemble-ccsds-instant-wam-spectra-36'
 
 #
 # Future use
@@ -35,7 +35,7 @@ filter:
 
     - type: 'param'
       operation: 'match'
-      value: 140251
+      values: [140251]
 
     - type: 'levtype'
       operation: 'match'

@@ -36,7 +36,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        2280213
+        228013
       ]
 
     - type: 'levtype'
@@ -106,7 +106,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'icetoponwater'
+      type: 'iceTopOnWater'
 
   # Section 5: Data Representation Section
   data-representation-section:

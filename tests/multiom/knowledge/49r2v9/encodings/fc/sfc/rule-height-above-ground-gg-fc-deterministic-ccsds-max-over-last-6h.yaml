@@ -108,7 +108,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'heightaboveground'
+      type: 'heightAboveGround'
 
   # Section 5: Data Representation Section
   data-representation-section:

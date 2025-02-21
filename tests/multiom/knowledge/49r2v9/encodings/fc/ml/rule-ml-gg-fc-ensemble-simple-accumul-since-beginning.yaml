@@ -96,10 +96,11 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 11
 
-    point-in-time-configurator:
-      type: 'default'
+    time-statistics-configurator:
+      type: 'since-beginning-of-forecast'
+      type-of-statistical-processing: 'accumul'
 
     param-configurator:
       type: 'paramId'

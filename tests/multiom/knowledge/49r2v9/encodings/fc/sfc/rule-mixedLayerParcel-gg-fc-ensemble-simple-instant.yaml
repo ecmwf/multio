@@ -105,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mixedlayerparcel'
+      type: 'mixedLayerParcel'
 
     ensemble-configurator:
       type: 'default'

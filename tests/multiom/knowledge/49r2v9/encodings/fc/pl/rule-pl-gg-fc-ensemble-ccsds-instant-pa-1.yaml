@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-pl-gg-fc-ensemble-ccsds-instant-pa'
+name: 'rule-pl-gg-fc-ensemble-ccsds-instant-pa-1'
 
 #
 # Future use
@@ -14,13 +14,13 @@ filter:
   operation: 'all'
   filters:
 
-    # - type: 'anoffset'
-    #   operation: 'lacks'
+    - type: 'anoffset'
+      operation: 'lacks'
 
     - type: 'param'
       operation: 'match'
       values: [
-        '75:76', '129:135', 203, '246:248'
+        60, '75:76', '129:135', 203, '246:248', 260290
       ]
 
     - type: 'levtype'

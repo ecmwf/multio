@@ -35,7 +35,7 @@ filter:
 
     - type: 'param'
       operation: 'match'
-      value: 140251
+      values: [140251]
 
     - type: 'levtype'
       operation: 'match'

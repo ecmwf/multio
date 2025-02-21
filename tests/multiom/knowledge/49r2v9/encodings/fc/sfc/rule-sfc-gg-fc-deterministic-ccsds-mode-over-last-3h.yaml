@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-1h'
+name: 'rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-3h'
 
 #
 # Future use
@@ -102,7 +102,7 @@ encoder:
     time-statistics-configurator:
       type: 'fixed-timerange'
       type-of-statistical-processing: 'mode'
-      overall-length-of-timerange: '1h'
+      overall-length-of-timerange: '3h'
 
     param-configurator:
       type: 'paramId'

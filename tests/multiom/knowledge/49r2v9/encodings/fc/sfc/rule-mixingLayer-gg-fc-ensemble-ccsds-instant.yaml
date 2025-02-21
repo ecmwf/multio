@@ -105,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mixinglayer'
+      type: 'mixingLayer'
 
     ensemble-configurator:
       type: 'default'

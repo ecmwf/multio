@@ -53,6 +53,8 @@ filter:
 
     - type: 'is-ensemble'
       negate: true
+      
+    - type: 'is-chemical'
 
     - type: 'packing'
       operation: 'match'
@@ -104,13 +106,13 @@ encoder:
 
     param-configurator:
       type: 'paramId'
+      dataset-for-local: 'era6'
 
     level-configurator:
       type: 'surface'
 
     chemistry-configurator:
       type: 'chemical'
-      dataset-for-local: 'era6'
 
   # Section 5: Data Representation Section
   data-representation-section:

@@ -105,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'isobaricinhpa'
+      type: 'snowLayer'
 
     ensemble-configurator:
       type: 'default'

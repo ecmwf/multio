@@ -105,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'lakebottom'
+      type: 'lakeBottom'
 
     ensemble-configurator:
       type: 'default'

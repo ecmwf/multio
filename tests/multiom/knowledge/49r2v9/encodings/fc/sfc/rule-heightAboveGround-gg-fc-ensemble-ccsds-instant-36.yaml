@@ -105,7 +105,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'heightaboveground'
+      type: 'heightAboveGround'
 
     ensemble-configurator:
       type: 'default'

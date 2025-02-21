@@ -14,8 +14,8 @@ filter:
   operation: 'all'
   filters:
 
-    # - type: 'anoffset'
-    #   operation: 'lacks'
+    - type: 'anoffset'
+      operation: 'lacks'
 
     - type: 'param'
       operation: 'match'

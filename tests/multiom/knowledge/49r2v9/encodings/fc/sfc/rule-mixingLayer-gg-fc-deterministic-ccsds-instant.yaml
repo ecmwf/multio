@@ -106,7 +106,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'mixinglayer'
+      type: 'mixingLayer'
 
   # Section 5: Data Representation Section
   data-representation-section:

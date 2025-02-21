@@ -132,7 +132,8 @@ namespace {
 
   int getAndSetLongArray(codes_handle* h, void* dict, const char* key, const char* setName=NULL) {
     if(hasKey(h, key)) {
-        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, arrayToJSONString(getLongArray(h, key)).data());
+        auto jsonData = arrayToJSONString(getLongArray(h, key));
+        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, jsonData.data());
         if(ret != 0) return ret;
     }
     return 0;
@@ -148,10 +149,10 @@ namespace {
       ret = getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
       if(ret != 0) return ret;
 
-      ret = getAndSetIfNonZero(h, geom, "numberOfPointsALongAMeridian", "number-of-points-along-a-meridian");
+      ret = getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
       if(ret != 0) return ret;
 
-      ret = getAndSetIfNonZero(h, geom, "numberOfParallelsBetweenPoleAndEquator", "number-of-parallels-between-pole-and-equator");
+      ret = getAndSetIfNonZero(h, geom, "numberOfParallelsBetweenAPoleAndTheEquator", "number-of-parallels-between-pole-and-equator");
       if(ret != 0) return ret;
 
       ret = getAndSet(h, geom, "latitudeOfFirstGridPointInDegrees", "latitude-of-first-grid-point-in-degrees");
@@ -165,7 +166,7 @@ namespace {
 
       ret = getAndSet(h, geom, "longitudeOfLastGridPointInDegrees", "longitude-of-last-grid-point-in-degrees");
       if(ret != 0) return ret;
-
+      
       ret = getAndSetLongArray(h, geom, "pl", "pl");
       if(ret != 0) return ret;
       

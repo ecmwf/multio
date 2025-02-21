@@ -48,18 +48,18 @@ isChemicalOptical = composeAll([hasType("chem"), hasType("wavelength")])
 #
 
 TYPES = [
-    partialRule(
-        [matchType("type", "forecast")],
-        [marsType("fc"), IdentTemplateNumber(templateNumber=0)],
-    ),
-    partialRule(
-        [matchType("type", "analysis")],
-        [marsType("an"), IdentTemplateNumber(templateNumber=0)],
-    ),
     # partialRule(
-    #     [],
-    #     [IdentTemplateNumber(templateNumber=0)],
+    #     [matchType("type", "forecast")],
+    #     [marsType("fc"), IdentTemplateNumber(templateNumber=0)],
     # ),
+    # partialRule(
+    #     [matchType("type", "analysis")],
+    #     [marsType("an"), IdentTemplateNumber(templateNumber=0)],
+    # ),
+    partialRule(
+        [],
+        [IdentTemplateNumber(templateNumber=0)],
+    ),
 ]
 
 GRIDS = [

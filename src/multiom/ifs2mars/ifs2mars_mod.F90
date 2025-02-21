@@ -771,8 +771,12 @@ IMPLICIT NONE
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: IBITS
+
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_REPRES=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_COMPUTE_BITS_PER_VALUE=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -789,14 +793,17 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  PP_TRYCALL(ERRFLAG_COMPUTE_BITS_PER_VALUE) COMPUTE_BITS_PER_VALUE( IFS_PAR, &
+&            IFS_MSG%PARAM_ID_, IFS_MSG%IPREF_, IFS_MSG%IREPRES_, IBITS, HOOKS )
+
   ! Set the message type
   SELECT CASE (IFS_MSG%IREPRES_)
   CASE ( REPRES_GAUSSIANGRID_E )
     MSG%PACKING = PACKING_GRIB_CCSDS_E
-    PAR%DATA_REPRESENTATION%BITS_PER_VALUE_ = 16_JPIB_K
+    PAR%DATA_REPRESENTATION%BITS_PER_VALUE_ = IBITS
   CASE ( REPRES_SPHERICALHARMONICS_E )
     MSG%PACKING = PACKING_GRIB_COMPLEX_E
-    PAR%DATA_REPRESENTATION%BITS_PER_VALUE_ = 16_JPIB_K
+    PAR%DATA_REPRESENTATION%BITS_PER_VALUE_ = IBITS
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_REPRES )
   END SELECT
@@ -825,6 +832,8 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE(ERRFLAG_UNKNOWN_REPRES)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown representation id' )
+    CASE(ERRFLAG_COMPUTE_BITS_PER_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error computing bits per value' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -3762,6 +3771,429 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION COMPUTE_TIME_PROC
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'COMPUTE_BITS_PER_VALUE'
+FUNCTION COMPUTE_BITS_PER_VALUE( MODEL_PARAMS, KGRIBID, KPREFIX, KREPRES, IBITS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: IFS_PAR_MOD, ONLY: MODEL_PAR_T
+  USE :: ENUMERATORS_MOD, ONLY: REPRES_GAUSSIANGRID_E
+  USE :: ENUMERATORS_MOD, ONLY: REPRES_LATLONG_E
+  USE :: ENUMERATORS_MOD, ONLY: REPRES_SPHERICALHARMONICS_E
+  USE :: HOOKS_MOD,       ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),    INTENT(IN)    :: MODEL_PARAMS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: KGRIBID
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: KPREFIX
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: KREPRES
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IBITS
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function Result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL, DIMENSION(3) :: CONDITIONS
+  LOGICAL :: ENABLE_COMPRESSION
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRIDX_UNKNOWN_REPRESENTATION=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_COMPUTE_BITS_PER_VALUE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENABLE_COMPRESSION=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Read Compression options
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ENABLE_COMPRESSION) READ_ENABLE_COMPRESSION( ENABLE_COMPRESSION, HOOKS )
+
+  ! Conditions to use NBITSEXPR
+  CONDITIONS(1) = MODEL_PARAMS%SIM_%NBITSEXPR>0
+  CONDITIONS(2) = (KGRIBID .GE. 80)
+  CONDITIONS(3) = (KGRIBID .LE. 120)
+
+  ! NBITSEXPR   - Number of bits for GRIB encoding of experimental parameters (default=-1 in which case multio is deciding)
+  SELECT CASE (KREPRES)
+
+  CASE (REPRES_GAUSSIANGRID_E, REPRES_LATLONG_E)
+
+    IF ( ALL(CONDITIONS) ) THEN
+      IBITS = MODEL_PARAMS%SIM_%NBITSEXPR
+    ELSE
+      PP_TRYCALL(ERRFLAG_COMPUTE_BITS_PER_VALUE) LOOKUP_BITS_PER_VALUE_DEFAULT( MODEL_PARAMS, &
+&                   KGRIBID, KPREFIX, ENABLE_COMPRESSION, IBITS, HOOKS )
+    ENDIF
+
+  CASE (REPRES_SPHERICALHARMONICS_E)
+
+    IBITS = 16_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRIDX_UNKNOWN_REPRESENTATION )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRIDX_UNKNOWN_REPRESENTATION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown representation' )
+    CASE (ERRFLAG_COMPUTE_BITS_PER_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error computing bits per value' )
+    CASE (ERRFLAG_UNABLE_TO_READ_ENABLE_COMPRESSION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read enable compression' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COMPUTE_BITS_PER_VALUE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'LOOKUP_BITS_PER_VALUE_DEFAULT'
+FUNCTION LOOKUP_BITS_PER_VALUE_DEFAULT(  MODEL_PARAMS, KGRIBID, KPREFIX, &
+&        ENABLE_COMPRESSION, IBITS_PER_VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: IFS_PAR_MOD,       ONLY: MODEL_PAR_T
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  USE :: ENUMERATORS_MOD, ONLY: PREFIX_MODEL_LEVEL_E
+  USE :: ENUMERATORS_MOD, ONLY: PREFIX_PRESSURE_LEVEL_E
+
+  USE :: GRIB_CODES_MOD, ONLY: NGRBCC
+  USE :: GRIB_CODES_MOD, ONLY: NGRBSD
+  USE :: GRIB_CODES_MOD, ONLY: NGRBFSR
+  USE :: GRIB_CODES_MOD, ONLY: NGRBCLWC
+  USE :: GRIB_CODES_MOD, ONLY: NGRBCIWC
+  USE :: GRIB_CODES_MOD, ONLY: NGRBCLBT
+  USE :: GRIB_CODES_MOD, ONLY: NGRBCSBT
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),    INTENT(IN)    :: MODEL_PARAMS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: KGRIBID
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: KPREFIX
+  LOGICAL,              INTENT(IN)    :: ENABLE_COMPRESSION
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IBITS_PER_VALUE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! NGRBCC   - 248 Cloud cover
+  IF( KGRIBID .EQ. NGRBCC ) THEN
+    IBITS_PER_VALUE = 8
+
+  ! NGRBSD   - 228141 Snow depth
+  ! NGRBFSR  - 244 Forecast surface roughness
+  ELSEIF ( KGRIBID .EQ. 141 .OR. & ! Backward compatibilty
+  &        KGRIBID .EQ. NGRBSD .OR. &
+  &        KGRIBID .EQ. NGRBFSR ) THEN
+    IBITS_PER_VALUE = 24
+
+
+  ! NGRBCLWC - 246 Cloud liquid water content
+  ELSEIF (  KGRIBID.EQ.NGRBCLWC .AND. KPREFIX.EQ.PREFIX_PRESSURE_LEVEL_E ) THEN
+    IBITS_PER_VALUE = 12
+
+
+  ! NGRBCIWC - 247 Cloud ice water content
+  ELSEIF ( KGRIBID.EQ.NGRBCIWC  .AND. KPREFIX.EQ.PREFIX_PRESSURE_LEVEL_E ) THEN
+    IBITS_PER_VALUE = 12
+
+
+  ELSEIF ( KGRIBID .GT. 210000 .AND. &
+&          KGRIBID .LT. 228000 )  THEN
+    IBITS_PER_VALUE = 24
+
+  ! NGRBCLBT - 260510 Cloudy brightness temperature
+  ! NGRBCSBT - 260511 Clear-sky brightness temperature
+  ELSEIF ( KGRIBID .EQ. NGRBCLBT .OR. &
+&          KGRIBID .EQ. NGRBCSBT ) THEN
+    IBITS_PER_VALUE = 10
+
+  ELSEIF ( ENABLE_COMPRESSION .AND. &
+&           KPREFIX.EQ.PREFIX_MODEL_LEVEL_E ) THEN
+    IBITS_PER_VALUE = 10
+
+  ELSE
+    IBITS_PER_VALUE = 16
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'COMPR_FC_GP_ML env. variable name of zero length' )
+    CASE (2)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'COMPR_FC_GP_ML env. variable name too long' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION LOOKUP_BITS_PER_VALUE_DEFAULT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'READ_ENABLE_COMPRESSION'
+FUNCTION READ_ENABLE_COMPRESSION( ENABLE_COMPRESSION, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: GENERAL_UTILS_MOD, ONLY: ENVVAR_IS_DEFINED
+  USE :: GENERAL_UTILS_MOD, ONLY: READ_ENVVAR
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  LOGICAL,       INTENT(OUT)   :: ENABLE_COMPRESSION
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  ! Function Result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: IS_DEFINED
+  CHARACTER(LEN=128) :: ENVVAR_VALUE
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIB_K) :: NDLEN
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERFLAG_ENVVAR_IS_DEFINED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENVVAR=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IO_ERROR=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the output variable
+  ENABLE_COMPRESSION = .FALSE.
+  ENVVAR_VALUE = REPEAT( ' ', 128)
+
+  ! Check if the environment variable is defined
+  PP_TRYCALL(ERFLAG_ENVVAR_IS_DEFINED) ENVVAR_IS_DEFINED('COMPR_FC_GP_ML', IS_DEFINED, HOOKS )
+
+  ! In case it is defined, then read the environment variable
+  IF ( IS_DEFINED ) THEN
+
+  ! If the environment variable is not defined, we assume compression is enabled
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ENVVAR) READ_ENVVAR('COMPR_FC_GP_ML', ENVVAR_VALUE, NDLEN, HOOKS )
+
+    ! If the environment variable is not defined, we assume compression is enabled
+    READ(ENVVAR_VALUE, *, IOSTAT=STAT) ENABLE_COMPRESSION
+    PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_IO_ERROR )
+
+  ENDIF
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERFLAG_ENVVAR_IS_DEFINED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'COMPR_FC_GP_ML env. variable name of zero length' )
+    CASE (ERRFLAG_UNABLE_TO_READ_ENVVAR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'COMPR_FC_GP_ML env. variable name too long' )
+    CASE (ERRFLAG_IO_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error reading COMPR_FC_GP_ML env. variable' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION READ_ENABLE_COMPRESSION
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-ensemble-simple-instant'
+name: 'rule-lowCloudLayer-gg-fc-ensemble-simple-instant'
 
 #
 # Future use
@@ -106,7 +106,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'lowcloudlayer'
+      type: 'lowCloudLayer'
 
     ensemble-configurator:
       type: 'default'

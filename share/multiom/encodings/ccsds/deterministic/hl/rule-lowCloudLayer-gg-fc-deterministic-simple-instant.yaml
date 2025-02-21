@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-cloudBase-gg-fc-deterministic-simple-instant'
+name: 'rule-lowCloudLayer-gg-fc-deterministic-simple-instant'
 
 #
 # Future use
@@ -107,7 +107,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'lowcloudlayer'
+      type: 'lowCloudLayer'
 
   # Section 5: Data Representation Section
   data-representation-section:

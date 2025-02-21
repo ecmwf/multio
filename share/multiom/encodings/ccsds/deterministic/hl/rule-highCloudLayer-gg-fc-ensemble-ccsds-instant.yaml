@@ -106,7 +106,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'highcloudlayer'
+      type: 'highCloudLayer'
 
     ensemble-configurator:
       type: 'default'

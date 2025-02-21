@@ -110,6 +110,23 @@ class MatchType(BaseModel):
 
 def matchType(t: str, v: str) -> MatchType:
     return MatchType(type=t, value=v)
+    
+class TypeTreshold(BaseModel):
+    type: str
+    operation: str
+    treshold: int
+
+def typeGE(t: str, v: int) -> TypeTreshold:
+    return TypeTreshold(type=t, operation="greater-equal", treshold=v)
+    
+def typeGT(t: str, v: int) -> TypeTreshold:
+    return TypeTreshold(type=t, operation="greater-than", treshold=v)
+    
+def typeLE(t: str, v: int) -> TypeTreshold:
+    return TypeTreshold(type=t, operation="lower-equal", treshold=v)
+    
+def typeLT(t: str, v: int) -> TypeTreshold:
+    return TypeTreshold(type=t, operation="lower-than", treshold=v)
 
 
 class HasType(BaseModel):
@@ -129,7 +146,7 @@ def lacksType(t: str) -> LacksType:
 
 
 RuleFilterType: TypeAlias = Union[
-    MatchParam, HasType, LacksType, MatchType, "ComposeAll"
+    MatchParam, HasType, LacksType, MatchType, TypeTreshold, "ComposeAll"
 ]
 
 
@@ -179,6 +196,7 @@ class ReferenceTimeConfig(BaseModel):
 
 class TablesConfig(BaseModel):
     type: str = "default"
+    tablesVersion: Optional[int] = None
     localTablesVersion: int = 0
 
 
@@ -344,7 +362,7 @@ class Encode(BaseModel):
 
 
 # Final rule
-def nameFromEncode(encode: Encode):
+def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
     level = encode.product.level.type if encode.product.level is not None else None
     wave = (
         encode.product.directionsFrequencies.type
@@ -371,8 +389,20 @@ def nameFromEncode(encode: Encode):
         else f"-{encode.product.param.datasetForLocal}"
     )
     local = encode.localUse.templateNumber
+    
+    product=""
+    if encode.product.chemical is not None:
+        product+="-chem"
+    if encode.product.directionsFrequencies is not None:
+        product+="-wave_spec"
+    if encode.product.periodRange is not None:
+        product+="-wave_period"
+    # if encode.product.satelite is not None:
+    #     product+="-satelite"
+    
+    pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
-    return f"rule-{levelWaveStr}-{grid}-{marsType}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
+    return f"rule{pref}-{levelWaveStr}-{grid}-{marsType}{product}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
 
 
 class EncodeRule(BaseModel):
@@ -405,6 +435,8 @@ def toDictRepres(val):
             return val.value
         case MatchType():
             return {"type": val.type, "operation": "match", "value": val.value}
+        case TypeTreshold():
+            return {"type": val.type, "operation": val.operation, "treshold": val.treshold}
         case HasType():
             return {"type": val.type, "operation": "has"}
         case LacksType():
@@ -458,7 +490,7 @@ def toDictRepres(val):
                     else {}
                 ),
                 **(
-                    {"chemical-configurator": toDictRepres(val.chemical)}
+                    {"chemistry-configurator": toDictRepres(val.chemical)}
                     if val.chemical is not None
                     else {}
                 ),
@@ -486,11 +518,11 @@ def toDictRepres(val):
         case ReferenceTimeConfig():
             return {"type": val.type}
         case TablesConfig():
-            return {"type": val.type, "local-tables-version": val.localTablesVersion}
+            return {"type": val.type, **({} if val.tablesVersion is None else {"tables-version": val.tablesVersion}), "local-tables-version": val.localTablesVersion}
         case TimeConfig():
             match val.config:
                 case PointInTime():
-                    return {"point-in-time-config": toDictRepres(val.config)}
+                    return {"point-in-time-configurator": toDictRepres(val.config)}
                 case TimeRange():
                     return {"time-statistics-configurator": toDictRepres(val.config)}
         case PointInTime():
@@ -534,7 +566,7 @@ def toDictRepres(val):
                 "tag": val.tag,
                 "name": val.name,
                 "filter": toDictRepres(val.filter),
-                "encode": toDictRepres(val.encode),
+                "encoder": toDictRepres(val.encode),
             }
         case _:
             raise ValueError(f"toDict not specialized for {val}")
@@ -802,12 +834,15 @@ def combinePartialRules(alternativeSets: List[AlternativeSet]):
 
     return reduce(reducer, alternativeSets[1:], [[a] for a in alternativeSets[0]])
 
+def combineAndMergePartialRules(alternativeSets: List[AlternativeSet]):
+    return [mergePartialRules(pr) for pr in combinePartialRules(alternativeSets)]
+
 
 def buildRule(prule: PartialRule):
     encode = buildEncode(prule.encode)
     name = None
     if prule.namePrefix is not None and prule.namePrefix != "":
-        name = f"{prule.namePrefix}-{nameFromEncode(encode)}"
+        name = nameFromEncode(encode, additionalPrefix=prule.namePrefix)
 
     return EncodeRule(
         tag="grib2",

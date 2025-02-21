@@ -91,7 +91,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'meansea'
+      type: 'meanSea'
 
   # Section 5: Data Representation Section
   data-representation-section:

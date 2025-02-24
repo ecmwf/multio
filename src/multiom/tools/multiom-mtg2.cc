@@ -152,6 +152,7 @@ private:
     
     std::optional<FieldValueMap> excludeMap_ = {};
     std::optional<FieldValueMap> filterMap_ = {};
+    std::optional<std::string> overwritePacking_ = {};
     // bool encode32_ = false;
     // std::string configPath_ = "";
     // std::string stepRange_ = "";
@@ -189,6 +190,8 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
         new eckit::option::SimpleOption<std::string>("exclude", "Keys and values to be excluded. Multiple values are separated by ','. Multiple key-values pairs are separated by ';'. Example --exclude paramId=130,131,133;levtype=pl,sfc"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("filter", "Keys and values to be included. Multiple values are separated by ','. Multiple key-values pairs are separated by ';'. Example --filter paramId=130,131,133;levtype=pl,sfc"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("packing", "Enforce a specific packing type, e.g. `ccsds`, `simple`, `complex`. Note: Avoid the prefix `grid_` or `spectral_`"));
     // options_.push_back(
     //     new eckit::option::SimpleOption<bool>("decode",
     //                                           "Decode messages and pass raw data with metadata through the pipeline "
@@ -215,6 +218,12 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     bool all=false;
     args.get("all", all);
     copyGrib2Messages_ = !all;
+
+    std::string packing;
+    args.get("packing", packing);
+    if (!packing.empty()) {
+        overwritePacking_ = packing;
+    }
     
     args.get("knowledge-root", knowledgeRoot_);
     if(knowledgeRoot_.empty()) {
@@ -365,6 +374,13 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
             ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*) inputCodesHandle.get(), &marsDict, &parDict) == 0);
+            
+            if (overwritePacking_) {
+                if(verbosity_ > 0) {
+                    std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
+                }
+                ASSERT(multio_grib2_dict_set(marsDict, "packing", overwritePacking_->c_str()) == 0);
+            }
             
             if(verbosity_ > 0) {
                 std::cout << "Extracted MARS dict:" << std::endl;

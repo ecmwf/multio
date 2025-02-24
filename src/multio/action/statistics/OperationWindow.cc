@@ -138,17 +138,20 @@ std::vector<long>& OperationWindow::counts(long sz) const {
 }
 
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
-    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
+    const size_t writeSize = restartSize();
+    IOBuffer restartState{IOmanager->getBuffer(writeSize)};
     restartState.zero();
     serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
-    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize());
+    IOmanager->write("operationWindow", writeSize, writeSize);
     IOmanager->flush();
     return;
 }
 
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
-    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
-    IOmanager->read("operationWindow", restartSize());
+    size_t readSize;
+    IOmanager->readSize("operationWindow", readSize);
+    IOBuffer restartState{IOmanager->getBuffer(readSize)};
+    IOmanager->read("operationWindow", readSize);
     deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
     return;
@@ -463,6 +466,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
+        outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
@@ -492,6 +496,12 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[15] = static_cast<std::uint64_t>(count_);
     currState[16] = static_cast<std::uint64_t>(type_);
 
+    const size_t countsSize = counts_.size();
+    currState[17] = static_cast<std::uint64_t>(countsSize);
+    for (size_t i = 0; i < countsSize; ++i) {
+        currState[i+18] = *reinterpret_cast<std::uint64_t*>(&(counts_[i]));
+    }
+
     currState.computeChecksum();
 
     return;
@@ -511,6 +521,13 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     count_ = static_cast<long>(currState[15]);
     type_ = static_cast<long>(currState[16]);
 
+    const size_t countsSize = static_cast<size_t>(currState[17]);
+    counts_.resize(countsSize);
+    for (size_t i = 0; i < countsSize; ++i) {
+        const long* ptr = reinterpret_cast<const long*>(&currState[i+18]);
+        counts_[i] = *ptr;
+    }
+
     if (opt.debugRestart()) {
         std::ofstream outFile(fname);
         outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
@@ -522,6 +539,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
+        outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
@@ -530,7 +548,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return static_cast<size_t>(18);
+    return 18 + counts_.size() + 1;  // values + counts + checksum
 }
 
 void OperationWindow::print(std::ostream& os) const {

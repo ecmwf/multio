@@ -382,8 +382,16 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *par_dict, "methodNumber");
     if(ret != 0) return ret;
 
-    ret = getAndSet(h, *par_dict, "typeOfEnsembleForecast");
-    if(ret != 0) return ret;
+    // Set this to missing - will only be read if number is non zero 
+    if (hasKey(h, "number")) {
+        if (hasKey(h, "typeOfEnsembleForecast")) {
+            ret = getAndSet(h, *par_dict, "typeOfEnsembleForecast");
+            if(ret != 0) return ret;
+        } else if (hasKey(h, "eps")) {
+            ret = getAndSet(h, *par_dict, "eps", "typeOfEnsembleForecast");
+            if(ret != 0) return ret;
+        }
+    }
 
     ret = getAndSetIfNonZero(h, *par_dict, "numberOfForecastsInEnsemble");
     if(ret != 0) return ret;

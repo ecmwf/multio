@@ -18,4 +18,4 @@ mapping-rules:
 
   #
   # Inject bits-per-value
-  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/rules/fix-wave-bits-per-value.yaml'
+  #- file: '{IFS_INSTALL_DIR}/share/multiom/mappings/rules/fix-wave-bits-per-value.yaml'

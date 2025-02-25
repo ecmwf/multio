@@ -189,7 +189,7 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam(["165:168", 207, 174096, 228029, 228037, "228131:228132"]),
+            matchParam(["165:168", 207, 174096, 228029, 228037, "228131:228132", 228239]),
         ],
         [PointInTime(), levelConfig("heightAboveGround")],
     ),
@@ -232,6 +232,11 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [matchType("levtype", "sfc"), matchParam([151])],
         [PointInTime(), levelConfig("meanSea")],
+    ),
+    # depthBelowSurface - point in time
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([183])],
+        [PointInTime(), levelConfig("depthBelowSurface")],
     ),
     # mixedLayerParcel - point in time
     partialRule(
@@ -552,6 +557,7 @@ PARAM_LEVTYPE_SFC = [
             matchType("levtype", "sfc"),
             matchParam(
                 [
+                    "15:18",
                     "26:32",
                     33,
                     "34:43",
@@ -574,11 +580,13 @@ PARAM_LEVTYPE_SFC = [
                     "243:245",
                     3020,
                     160198,
+                    200199, 
                     210200,
                     210201,
                     210202,
                     228003,
                     228012,
+                    "210187:210191",
                     210262,
                     210263,
                     210264,
@@ -589,7 +597,7 @@ PARAM_LEVTYPE_SFC = [
                     228141,
                     "228217:228221",
                     228227,
-                    228239,
+                    # 228239,
                     228240,
                     228241,
                     "228246:228247",

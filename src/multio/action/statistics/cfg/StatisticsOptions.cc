@@ -222,7 +222,7 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
 
 void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfiguration& compConf,
                                                  const eckit::LocalConfiguration& cfg) {
-    valueCountThreshold_ = cfg.getLong("value-count-threshold", -1);
+    valueCountThreshold_ = stol(compConf.multioConfig().replaceCurly(cfg.getString("value-count-threshold", "-1")));
     if (valueCountThreshold_ == 0) {
         std::ostringstream os;
         os << "Invalid value count threshold :: 0 (must be non-zero)" << std::endl;

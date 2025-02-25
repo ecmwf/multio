@@ -1,6 +1,4 @@
 
-
-
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 add_subdirectory("ccsds")

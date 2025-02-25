@@ -189,7 +189,7 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam(["165:168", 207, 174096, 228029, 228037, "228131:228132", 228239]),
+            matchParam(["165:168", 207, 174096, 129172, 228029, 228037, "228131:228132", "228239:228241"]),
         ],
         [PointInTime(), levelConfig("heightAboveGround")],
     ),
@@ -232,11 +232,6 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [matchType("levtype", "sfc"), matchParam([151])],
         [PointInTime(), levelConfig("meanSea")],
-    ),
-    # depthBelowSurface - point in time
-    partialRule(
-        [matchType("levtype", "sfc"), matchParam([183])],
-        [PointInTime(), levelConfig("depthBelowSurface")],
     ),
     # mixedLayerParcel - point in time
     partialRule(
@@ -586,7 +581,7 @@ PARAM_LEVTYPE_SFC = [
                     210202,
                     228003,
                     228012,
-                    "210187:210191",
+                    "210186:210191",
                     210262,
                     210263,
                     210264,
@@ -783,7 +778,7 @@ PARAM_LEVTYPE_SOL = [
         [PointInTime(), levelConfig("snowLayer"), paramConfig("paramId")],
     ),
     partialRule(
-        [matchType("levtype", "sol"), matchParam([260360, 260199])],
+        [matchType("levtype", "sol"), matchParam([260360, 260199, 183])],
         [PointInTime(), levelConfig("soilLayer"), paramConfig("paramId")],
     ),
 ]

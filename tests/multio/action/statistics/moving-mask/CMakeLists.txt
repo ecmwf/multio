@@ -6,21 +6,35 @@ ecbuild_get_test_multidata(
     DIRNAME  multio/tests/actions/statistics-moving-mask
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
-        Original_6h.grib
+        Original_moving_mask.grib
         Statistics_grib2.tmpl
 )
 set_tests_properties(${PREFIX}_get_input_data PROPERTIES
     FIXTURES_SETUP ${PREFIX}_get_input_data
 )
 
-### Without restart
+
 foreach(_op avg max min)
+
+    string(REPLACE "avg" "average" OPERATION "${_op}")
+    string(REPLACE "max" "maximum" OPERATION "${OPERATION}")
+    string(REPLACE "min" "minimum" OPERATION "${OPERATION}")
+
 foreach(_th 10d all any)
 
+    string(REPLACE   "d"   "" THRESHOLD "${_th}")
+    string(REPLACE "all" "-1" THRESHOLD "${THRESHOLD}")
+    string(REPLACE "any"  "1" THRESHOLD "${THRESHOLD}")
+
+    ### Without restart
+    set(RESULT_FILE Result_${_op}_1m_${_th}.grib)
+    set(REFERENCE_FILE Reference_${_op}_1m_${_th}.grib)
+
     ecbuild_add_test(
-        TARGET ${PREFIX}_${_op}_1m_${_th}_run
-        COMMAND multio-feed
-        ARGS ${CMAKE_CURRENT_BINARY_DIR}/Original_6h.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_op}_1m_${_th}.yaml
+        TARGET      ${PREFIX}_${_op}_1m_${_th}_run
+        ENVIRONMENT OPERATION=${OPERATION} THRESHOLD=${THRESHOLD} RESULT_FILE=${RESULT_FILE} READ_RESTART=false WRITE_RESTART=false RESTART_ID=none
+        COMMAND     multio-feed
+        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_moving_mask.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-${_op}-moving-mask.yaml
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_run PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_run
@@ -40,7 +54,7 @@ foreach(_th 10d all any)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_check_metadata
         COMMAND grib_compare
-        ARGS    -H Reference_${_op}_1m_${_th}.grib Result_${_op}_1m_${_th}.grib
+        ARGS    -H ${REFERENCE_FILE} ${RESULT_FILE}
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_check_metadata PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_check_metadata
@@ -50,34 +64,30 @@ foreach(_th 10d all any)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_check_values
         COMMAND grib_compare
-        ARGS    Reference_${_op}_1m_${_th}.grib Result_${_op}_1m_${_th}.grib
+        ARGS    ${REFERENCE_FILE} ${RESULT_FILE}
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_check_values PROPERTIES
         FIXTURES_REQUIRED ${PREFIX}_${_op}_1m_${_th}_check_metadata
     )
 
-endforeach()
-endforeach()
 
-
-### With restart
-foreach(_op avg min max)
-foreach(_th 10d)
+    ### With restart
+    set(RESULT_FILE Result_${_op}_1m_${_th}_restart.grib)
 
     ecbuild_add_test(
-        TARGET  ${PREFIX}_${_op}_restart_clean_dir
+        TARGET  ${PREFIX}_${_op}_1m_${_th}_restart_clean_dir
         COMMAND ${CMAKE_COMMAND}
-        ARGS    -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${_op}MovingMaskRestart
+        ARGS    -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/Restart_${OPERATION}_${THRESHOLD}
     )
-    set_tests_properties(${PREFIX}_${_op}_restart_clean_dir PROPERTIES
-        FIXTURES_SETUP ${PREFIX}_restart_clean_dir
+    set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_clean_dir PROPERTIES
+        FIXTURES_SETUP ${PREFIX}_${_op}_1m_${_th}_restart_clean_dir
     )
 
     ecbuild_add_test(
         TARGET      ${PREFIX}_${_op}_1m_${_th}_restart_0-240_run
-        ENVIRONMENT READ_RESTART=false WRITE_RESTART=true RESTART_ID=none
+        ENVIRONMENT OPERATION=${OPERATION} THRESHOLD=${THRESHOLD} RESULT_FILE=${RESULT_FILE} READ_RESTART=false WRITE_RESTART=true RESTART_ID=none
         COMMAND     multio-feed
-        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_mm.grib --decode --stepRange=0-240 --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_op}_1m_${_th}_restart.yaml
+        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_moving_mask.grib --decode --stepRange=0-240 --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-${_op}-moving-mask.yaml
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_0-240_run PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_restart_0-240_run
@@ -86,9 +96,9 @@ foreach(_th 10d)
 
     ecbuild_add_test(
         TARGET      ${PREFIX}_${_op}_1m_${_th}_restart_240-360_run
-        ENVIRONMENT READ_RESTART=true WRITE_RESTART=true RESTART_ID=latest
+        ENVIRONMENT OPERATION=${OPERATION} THRESHOLD=${THRESHOLD} RESULT_FILE=${RESULT_FILE} READ_RESTART=true WRITE_RESTART=true RESTART_ID=latest
         COMMAND     multio-feed
-        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_mm.grib --decode --stepRange=240-360 --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_op}_1m_${_th}_restart.yaml
+        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_moving_mask.grib --decode --stepRange=240-360 --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-${_op}-moving-mask.yaml
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_240-360_run PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_restart_240-360_run
@@ -97,9 +107,9 @@ foreach(_th 10d)
 
     ecbuild_add_test(
         TARGET      ${PREFIX}_${_op}_1m_${_th}_restart_360-744_run
-        ENVIRONMENT READ_RESTART=true WRITE_RESTART=false RESTART_ID=latest
+        ENVIRONMENT OPERATION=${OPERATION} THRESHOLD=${THRESHOLD} RESULT_FILE=${RESULT_FILE} READ_RESTART=true WRITE_RESTART=false RESTART_ID=latest
         COMMAND     multio-feed
-        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_mm.grib --decode --stepRange=360-744 --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_op}_1m_${_th}_restart.yaml
+        ARGS        ${CMAKE_CURRENT_BINARY_DIR}/Original_moving_mask.grib --decode --stepRange=360-744 --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-${_op}-moving-mask.yaml
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_360-744_run PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_restart_360-744_run
@@ -109,7 +119,7 @@ foreach(_th 10d)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_restart_check_metadata
         COMMAND grib_compare
-        ARGS    -H Reference_${_op}_1m_${_th}.grib Result_${_op}_1m_${_th}_restart.grib
+        ARGS    -H ${REFERENCE_FILE} ${RESULT_FILE}
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_check_metadata PROPERTIES
         FIXTURES_SETUP    ${PREFIX}_${_op}_1m_${_th}_restart_check_metadata
@@ -119,7 +129,7 @@ foreach(_th 10d)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_restart_check_values
         COMMAND grib_compare
-        ARGS    Reference_${_op}_1m_${_th}.grib Result_${_op}_1m_${_th}_restart.grib
+        ARGS    ${REFERENCE_FILE} ${RESULT_FILE}
     )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_check_values PROPERTIES
         FIXTURES_REQUIRED ${PREFIX}_${_op}_1m_${_th}_restart_check_metadata

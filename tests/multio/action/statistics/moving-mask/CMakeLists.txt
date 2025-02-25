@@ -1,6 +1,63 @@
 
 set(PREFIX multio_tests_action_statistics_moving_mask)
 
+
+### Without moving masks
+
+ecbuild_get_test_multidata(
+    TARGET   ${PREFIX}_static_get_input_data
+    DIRNAME  multio/tests/actions/new-statistics
+    DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
+    NAMES
+        reduced_gg_pl_80_avg_grib2.tmpl
+        standard_0_statistics_test_data.grib
+        Reference_standard_average_1d_grib2.grib
+)
+set_tests_properties(${PREFIX}_static_get_input_data PROPERTIES
+    FIXTURES_SETUP ${PREFIX}_static_get_input_data
+)
+
+ecbuild_add_test(
+    TARGET      ${PREFIX}_static_avg_1d_all_run
+    ENVIRONMENT THRESHOLD=-1 RESULT_FILE=Result_avg_1d_all_static.grib
+    COMMAND     multio-feed
+    ARGS        ${CMAKE_CURRENT_BINARY_DIR}/standard_0_statistics_test_data.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-avg-static.yaml
+)
+set_tests_properties(${PREFIX}_static_avg_1d_all_run PROPERTIES
+    FIXTURES_SETUP    ${PREFIX}_static_avg_1d_all_run
+    FIXTURES_REQUIRED ${PREFIX}_static_get_input_data
+)
+
+ecbuild_add_test(
+    TARGET  ${PREFIX}_static_avg_1d_all_check
+    COMMAND grib_compare
+    ARGS    Reference_standard_average_1d_grib2.grib Result_avg_1d_all_static.grib
+)
+set_tests_properties(${PREFIX}_static_avg_1d_all_check PROPERTIES
+    FIXTURES_REQUIRED ${PREFIX}_static_avg_1d_all_run
+)
+
+ecbuild_add_test(
+    TARGET      ${PREFIX}_static_avg_1d_any_run
+    ENVIRONMENT THRESHOLD=1 RESULT_FILE=Result_avg_1d_any_static.grib
+    COMMAND     multio-feed
+    ARGS        ${CMAKE_CURRENT_BINARY_DIR}/standard_0_statistics_test_data.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-avg-static.yaml
+)
+set_tests_properties(${PREFIX}_static_avg_1d_any_run PROPERTIES
+    FIXTURES_SETUP    ${PREFIX}_static_avg_1d_any_run
+    FIXTURES_REQUIRED ${PREFIX}_static_get_input_data
+)
+
+ecbuild_add_test(
+    TARGET  ${PREFIX}_static_avg_1d_any_check
+    COMMAND grib_compare
+    ARGS    Reference_standard_average_1d_grib2.grib Result_avg_1d_any_static.grib
+)
+set_tests_properties(${PREFIX}_static_avg_1d_any_check PROPERTIES
+    FIXTURES_REQUIRED ${PREFIX}_static_avg_1d_any_run
+)
+
+
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_input_data
     DIRNAME  multio/tests/actions/statistics-moving-mask

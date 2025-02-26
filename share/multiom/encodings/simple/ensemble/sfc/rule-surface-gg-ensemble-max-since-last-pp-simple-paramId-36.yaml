@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-wam_spectra-default-gg-wave_spec-ensemble-instant-simple-paramId-1
+name: rule-surface-gg-ensemble-max-since-last-pp-simple-paramId-36
 
 filter:
   type: composed
@@ -10,7 +10,7 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
+      operation: has
     - type: number
       operation: has
     - type: levtype
@@ -19,7 +19,7 @@ filter:
     - type: param
       operation: match
       values:
-        - 140251
+        - 228226
     - type: packing
       operation: match
       value: simple
@@ -41,18 +41,19 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 100
-    point-in-time-configurator:
-      type: default
+    template-number: 11
+    time-statistics-configurator:
+      type: since-last-post-processing-step
+      type-of-statistical-processing: max
     param-configurator:
       type: paramId
+    level-configurator:
+      type: surface
     ensemble-configurator:
-      type: default
-    directions-frequencies-configurator:
       type: default
   data-representation-section:
     template-number: 0

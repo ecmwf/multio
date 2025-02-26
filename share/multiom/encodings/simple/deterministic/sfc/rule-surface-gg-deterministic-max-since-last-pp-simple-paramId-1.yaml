@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-max_since_last_pp-surface-gg-ensemble-max-since-last-pp-ccsds-paramId-36
+name: rule-surface-gg-deterministic-max-since-last-pp-simple-paramId-1
 
 filter:
   type: composed
@@ -10,9 +10,9 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
@@ -22,7 +22,7 @@ filter:
         - 228226
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -41,11 +41,11 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 11
+    template-number: 8
     time-statistics-configurator:
       type: since-last-post-processing-step
       type-of-statistical-processing: max
@@ -53,7 +53,5 @@ encoder:
       type: paramId
     level-configurator:
       type: surface
-    ensemble-configurator:
-      type: default
   data-representation-section:
-    template-number: 42
+    template-number: 0

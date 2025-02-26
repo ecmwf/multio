@@ -14,5 +14,5 @@ endforeach()
 
 install(
     FILES       ${encoding_rules}
-    DESTINATION ${MULTIOM_CONFIG_DIR}/${KNOWLEDGE_VERSION}/encodings/ccsds/ensemble/ml
+    DESTINATION ${MULTIOM_CONFIG_DIR}/encodings/ccsds/ensemble/ml
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)

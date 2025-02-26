@@ -15,5 +15,5 @@ endforeach()
 
 install(
     FILES       ${encoding_rules}
-    DESTINATION ${MULTIOM_CONFIG_DIR}/${KNOWLEDGE_VERSION}/encodings/complex/deterministic
+    DESTINATION ${MULTIOM_CONFIG_DIR}/encodings/complex/deterministic
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)

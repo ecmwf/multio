@@ -14,5 +14,5 @@ endforeach()
 
 install(
     FILES       ${encoding_rules}
-    DESTINATION ${MULTIOM_CONFIG_DIR}/${KNOWLEDGE_VERSION}/encodings/simple/ensemble/hl
+    DESTINATION ${MULTIOM_CONFIG_DIR}/encodings/simple/ensemble/hl
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)

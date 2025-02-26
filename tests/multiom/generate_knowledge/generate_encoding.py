@@ -1,5 +1,6 @@
 import pathlib
 import os
+import shutil
 from GenerateEncoding import (
     toYAML,
     toDictRepres,
@@ -647,16 +648,6 @@ PARAM_LEVTYPE_SFC = [
         [PointInTime(), levelConfig("surface"), paramConfig("paramId"), PeriodConfig()],
         namePrefix="wam_period",
     ),
-    # surface - instant - wam_spectra
-    partialRule(
-        [matchType("levtype", "sfc"), matchParam([140251])],
-        [
-            PointInTime(),
-            paramConfig("paramId"),
-            DirectionsFrequenciesConfig(),
-        ],
-        namePrefix="wam_spectra",
-    ),
     # surface - max since last pp
     partialRule(
         [matchType("levtype", "sfc"), matchParam([228226])],
@@ -669,7 +660,7 @@ PARAM_LEVTYPE_SFC = [
                 descriptiveName="max-since-last-pp",
             ),
         ],
-        namePrefix="max_since_last_pp",
+        # namePrefix="max_since_last_pp",
     ),
     # sfc wam spec instant
     partialRule(
@@ -928,8 +919,10 @@ def main():
     BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom/{KNOWLEDGE_VERSION}"
     ENCODING_RULES_SPLIT = ["packing", "process"]
 
-    if not os.path.exists(BASE_DIR):
-        os.makedirs(BASE_DIR)
+    # Remove dir if already exists to avoid duplications or different directory structures
+    if os.path.exists(BASE_DIR):
+        shutil.rmtree(BASE_DIR)
+    os.makedirs(BASE_DIR)
 
     ruleFiles = [(pathForRule(BASE_DIR, rule), rule) for rule in encodedRules]
 

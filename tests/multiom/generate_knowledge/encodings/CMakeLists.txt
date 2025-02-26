@@ -1,9 +1,9 @@
 
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
-add_subdirectory("ccsds")
 add_subdirectory("simple")
 add_subdirectory("complex")
+add_subdirectory("ccsds")
 
 
 # Loop through each entry and add it as a subdirectory if it's a directory

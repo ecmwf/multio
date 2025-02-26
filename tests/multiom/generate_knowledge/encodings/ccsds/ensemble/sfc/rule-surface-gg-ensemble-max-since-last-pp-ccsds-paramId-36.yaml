@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-wam_spectra-default-gg-wave_spec-ensemble-instant-ccsds-paramId-36
+name: rule-surface-gg-ensemble-max-since-last-pp-ccsds-paramId-36
 
 filter:
   type: composed
@@ -19,7 +19,7 @@ filter:
     - type: param
       operation: match
       values:
-        - 140251
+        - 228226
     - type: packing
       operation: match
       value: ccsds
@@ -45,14 +45,15 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 100
-    point-in-time-configurator:
-      type: default
+    template-number: 11
+    time-statistics-configurator:
+      type: since-last-post-processing-step
+      type-of-statistical-processing: max
     param-configurator:
       type: paramId
+    level-configurator:
+      type: surface
     ensemble-configurator:
-      type: default
-    directions-frequencies-configurator:
       type: default
   data-representation-section:
     template-number: 42

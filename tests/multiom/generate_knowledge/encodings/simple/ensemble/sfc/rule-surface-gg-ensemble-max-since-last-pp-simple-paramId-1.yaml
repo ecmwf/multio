@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-max_since_last_pp-surface-gg-ensemble-max-since-last-pp-ccsds-paramId-1
+name: rule-surface-gg-ensemble-max-since-last-pp-simple-paramId-1
 
 filter:
   type: composed
@@ -22,7 +22,7 @@ filter:
         - 228226
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -56,4 +56,4 @@ encoder:
     ensemble-configurator:
       type: default
   data-representation-section:
-    template-number: 42
+    template-number: 0

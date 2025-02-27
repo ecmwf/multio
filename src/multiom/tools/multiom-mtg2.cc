@@ -145,7 +145,7 @@ private:
 
     bool copyGrib2Messages_ = true;
     std::string knowledgeRoot_ = "";
-    std::string sampleFile_ = "";
+    std::string samplePath_ = "";
     std::string encodingFile_ = "";
     std::string mappingFile_ = "";
     long verbosity_ = 0;
@@ -181,7 +181,7 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) :
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("mapping-rules", "Path to mapping-rules.yaml. Default: KNOWLEDGE_ROOT/mappings/mapping-rules.yaml"));
     options_.push_back(
-        new eckit::option::SimpleOption<std::string>("sample", "Path to sample grib2 file. Default: KNOWLEDGE_ROOT/samples/sample.tmpl"));
+        new eckit::option::SimpleOption<std::string>("samples-path", "Path to grib2 samples directory. Default: KNOWLEDGE_ROOT/samples"));
     options_.push_back(
         new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 1"));
     options_.push_back(
@@ -227,30 +227,27 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     
     args.get("knowledge-root", knowledgeRoot_);
     if(knowledgeRoot_.empty()) {
-        // knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom/49r2v9";
-        // knowledgeRoot_ = multio::LibMultio::instance().libraryHome() + "/share/multiom";
         knowledgeRoot_ = multio::LibMultio::instance().libraryHome();
     }
-    args.get("sample", sampleFile_);
-    if(sampleFile_.empty()) {
-        sampleFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/samples/sample.tmpl";
+    args.get("samples-path", samplePath_);
+    if(samplePath_.empty()) {
+        samplePath_ = knowledgeRoot_ + "/share/multiom/samples";
     }
     args.get("encodingFile_", encodingFile_);
     if(encodingFile_.empty()) {
-        encodingFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/encodings/encoding-rules.yaml";
+        encodingFile_ = knowledgeRoot_ + "/share/multiom/encodings/encoding-rules.yaml";
     }
     args.get("mappingFile_", mappingFile_);
     if(mappingFile_.empty()) {
-        mappingFile_ = knowledgeRoot_ + "/share/multiom/49r2v9/mappings/mapping-rules.yaml";
+        mappingFile_ = knowledgeRoot_ + "/share/multiom/mappings/mapping-rules.yaml";
     }
     
     if(verbosity_ > 0) {
         std::cout << "knowledge-root: " << knowledgeRoot_ << std::endl;    
-        std::cout << "sample: " << sampleFile_ << std::endl;    
+        std::cout << "samples-path: " << samplePath_ << std::endl;    
         std::cout << "encoding-rules: " << encodingFile_ << std::endl;    
         std::cout << "mapping-rules: " << mappingFile_ << std::endl;    
     }
-    setenv("KNOWLEDGE_VERSION", "49r2v9", 0);
     setenv("IFS_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
     
     std::string excludeStr ="";
@@ -313,7 +310,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     ASSERT(multio_grib2_init_options(&optDict) == 0);
     
     
-    ASSERT(multio_grib2_dict_set(optDict, "sample", sampleFile_.c_str()) == 0);
+    ASSERT(multio_grib2_dict_set(optDict, "samples-path", samplePath_.c_str()) == 0);
     ASSERT(multio_grib2_dict_set(optDict, "encoding-rules", encodingFile_.c_str()) == 0);
     ASSERT(multio_grib2_dict_set(optDict, "mapping-rules", mappingFile_.c_str()) == 0);
     // ASSERT(multio_grib2_dict_set(optDict, "sample", "{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/samples/sample.tmpl") == 0);

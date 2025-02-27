@@ -232,7 +232,7 @@ namespace {
             { "grid_simple", "simple" },
             { "grid_complex", "complex" },
             { "spectral_complex", "complex" },
-            { "ccsds", "ccsds" },
+            { "grid_ccsds", "ccsds" },
           };
 
         const auto packingTypeVal = packingMap.find(packingType);

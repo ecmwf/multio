@@ -6,7 +6,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'cached_encoder_mod.F90'
+#define PP_FILE_NAME 'metadata_factory_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'METADATA_FACTORY_MOD'
 MODULE METADATA_FACTORY_MOD

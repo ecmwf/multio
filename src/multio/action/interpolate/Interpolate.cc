@@ -456,7 +456,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     fill_input(config, inputPar, size, msg.metadata().getOpt<std::string>(glossary().domain).value_or(""), inp);
     auto searchMissingValue = msg.metadata().find("missingValue");
     auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
-    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end()) {
+    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end() && searchBitmapPresent->second.get<bool>()) {
         inputPar.set("missing_value", searchMissingValue->second.get<double>());
     }
     else if (config.getSubConfiguration("options").has("missing_value")) {

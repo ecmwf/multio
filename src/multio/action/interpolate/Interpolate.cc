@@ -357,7 +357,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             });
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
-            static const std::regex H("([h|H])([1-9][0-9]*)");
+            static const std::regex H("([h|H])([1-9][0-9]*)(_nested)?");
 #undef fp
             std::smatch matchll;
             std::smatch matchH;
@@ -368,7 +368,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 grid[1] = std::stod(matchll[4].str());
             }
             if (std::regex_match(input, matchH, H)) {
-                gridKind = "HEALPix";
+                gridKind = matchH[3].str() == "_nested" ? "HEALPix_nested" : "HEALPix";
                 grid[0] = std::stod(matchH[2].str());
             }
         }
@@ -401,12 +401,11 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 throw eckit::SeriousBug(os.str(), Here());
             }
         }
-        else if (gridKind == "HEALPix") {
-            //
+        else if (gridKind == "HEALPix" || gridKind == "HEALPix_nested") {
             md.set("gridded", true);
             md.set("gridType", "HEALPix");
             md.set("Nside", (std::int64_t)grid[0]);
-            md.set("orderingConvention", "ring");
+            md.set("orderingConvention", gridKind == "HEALPix_nested" ? "nested" : "ring");
 
             // If no interpolation matrix name is provided, generate one
             if (interpolationMatrix) {
@@ -427,7 +426,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                     char* env = ::getenv(lookUpKey.c_str());
                     return env ? std::optional<std::string>{env} : std::optional<std::string>{};
                 });
-                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], "ring");
+                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
         }

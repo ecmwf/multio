@@ -22,6 +22,8 @@
 #include "mir/method/WeightMatrix.h"
 #include "multio/tools/MultioTool.h"
 
+#include "HEALPix.h"
+
 namespace multio::action::interpolateFESOM2MIR {
 
 namespace {
@@ -96,7 +98,7 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
         eckit::Log::info() << "EXAMPLE: " << std::endl
-                           << "fesom-cache-generator --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv "
+                           << tool << " --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv --outputPath=. --nCols=126858 --inputOrdering=ring --outputOrdering=nested"
                            << std::endl
                            << std::endl;
     }
@@ -122,30 +124,30 @@ private:
     size_t level_;
     size_t Nrow_;
     size_t Ncol_;
-    orderingConvention_e orderingConvention_;
+    orderingConvention_e inputOrdering_;
+    orderingConvention_e outputOrdering_;
+
 
     void loadTriplets(std::vector<eckit::linalg::Triplet>& triplets) const;
 };
 
 
 Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
-    multio::MultioTool{argc, argv},
-    inputPath_{"."},
-    outputPath_{"."},
-    inputFile_{"CORE2_ngrid_NSIDE32_0_ring.csv"},
-    fesomName_{"CORE2"},
-    domain_{"ngrid"},
-    NSide_{0},
-    level_{0},
-    orderingConvention_{orderingConvention_e::RING} {
+    multio::MultioTool{argc, argv}
+    {
 
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "inputPath", "Path of the input files with the triplets. Default( \".\" )"));
+        "inputPath", "Path of the input files with the triplets. Default( \".\" )", "."));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "outputPath", "Path of the output files with the triplets. Default( \".\" )"));
+        "outputPath", "Path of the output files with the triplets. Default( \".\" )", "."));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
-    options_.push_back(new eckit::option::SimpleOption<size_t>("nCols", "Size of the fesom grid."));
+        "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )", "CORE2_ngrid_NSIDE32_0_ring.csv"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>(
+        "nCols", "Size of the fesom grid.", 126858));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "inputOrdering", "Ordering of the input files. Options( \"ring\", \"nested\") Default( \"ring\" )", "ring"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "outputOrdering", "Ordering of the output files. Options( \"ring\", \"nested\", \"input\") Default( \"input\" )", "input"));
 
     return;
 }
@@ -167,7 +169,20 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             "([0-9][0-9]*)\\s+([0-9][0-9]*)\\s*([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)");
         std::smatch matchLine;
         if (std::regex_match(line, matchLine, lineGrammar)) {
-            iHEALPix = std::stoi(matchLine[1].str());
+            if ( inputOrdering_ ==  outputOrdering_ ){
+              iHEALPix = std::stoi(matchLine[1].str());
+            }
+            else if (inputOrdering_ == orderingConvention_e::RING && outputOrdering_ == orderingConvention_e::NESTED) {
+              HEALPix Idx(static_cast<int>(NSide_));
+              iHEALPix = Idx.ring_to_nest(static_cast<int>(std::stoi(matchLine[1].str())));
+            }
+            else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING){
+              HEALPix Idx(static_cast<int>(NSide_));
+              iHEALPix = Idx.nest_to_ring(static_cast<int>(std::stoi(matchLine[1].str())));
+            }
+            else {
+              throw eckit::SeriousBug("Ordering not supported: " + line, Here());
+            }
             iFESOM = std::stoi(matchLine[2].str());
             weight = std::stod(matchLine[3].str());
         }
@@ -185,13 +200,27 @@ void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
     args.get("outputPath", outputPath_);
     args.get("inputFile", inputFile_);
 
+    std::string inputOrderingType;
+    std::string outputOrderingType;
+    args.get("inputOrdering", inputOrderingType);
+    args.get("outputOrdering", outputOrderingType);
+
     eckit::PathName inputPath_tmp{inputPath_};
     ASSERT(inputPath_tmp.exists());
     eckit::PathName inputFile_tmp{inputPath_ + "/" + inputFile_};
     ASSERT(inputFile_tmp.exists());
     eckit::PathName outputPath_tmp{outputPath_};
     outputPath_tmp.mkdir();
-    parseInputFileName(inputFile_, fesomName_, domain_, NSide_, level_, orderingConvention_);
+    parseInputFileName(inputFile_, fesomName_, domain_, NSide_, level_, inputOrdering_);
+
+    if (inputOrderingType == "ring") { inputOrdering_ = orderingConvention_e::RING; }
+    else if (inputOrderingType == "nested") { inputOrdering_ = orderingConvention_e::NESTED; }
+    else { throw eckit::SeriousBug("Unsupported input ordering convention", Here()); }
+
+    if (outputOrderingType == "input") { outputOrdering_ = inputOrdering_; }
+    else if (outputOrderingType == "ring") { outputOrdering_ = orderingConvention_e::RING; }
+    else if (outputOrderingType == "nested") { outputOrdering_ = orderingConvention_e::NESTED; }
+    else { throw eckit::SeriousBug("Unsupported output ordering convention", Here()); }
 
     args.get("nCols", Ncol_);
     Nrow_ = NSide_ * NSide_ * 12;
@@ -203,7 +232,7 @@ void Fesom2mirCacheGenerator::execute(const eckit::option::CmdArgs& args) {
 
     std::sort(begin(triplets), end(triplets), [](const auto& a, const auto& b) { return a.row() < b.row(); });
 
-    const auto orderingConvention = orderingConvention_enum2string(orderingConvention_);
+    const auto orderingConvention = orderingConvention_enum2string(outputOrdering_);
     const auto cacheFileName = fesomCacheName(fesomName_, domain_, "double", NSide_, orderingConvention, level_);
 
     mir::method::WeightMatrix W(Nrow_, Ncol_);

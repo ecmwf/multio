@@ -519,6 +519,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             std::optional<double> east;
             std::optional<double> westEastInc;
             std::optional<double> southNorthInc;
+            std::optional<double> latitudeOfFirstGridPointInDegrees;
+            std::optional<double> longitudeOfFirstGridPointInDegrees;
+            std::optional<double> latitudeOfLastGridPointInDegrees;
+            std::optional<double> longitudeOfLastGridPointInDegrees;
+            std::optional<double> iDirectionIncrementInDegrees;
+            std::optional<double> jDirectionIncrementInDegrees;
             if ((ni = lookUp<std::int64_t>(md, glossary().ni)()) && (nj = lookUp<std::int64_t>(md, glossary().nj)())
                 && (north = lookUp<double>(md, glossary().north)()) && (south = lookUp<double>(md, glossary().south)())
                 && (west = lookUp<double>(md, glossary().west)()) && (east = lookUp<double>(md, glossary().east)())
@@ -539,6 +545,28 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                 g.setValue("longitudeOfLastGridPoint", scale * (*east - *westEastInc));
                 g.setValue("iDirectionIncrement", scale * *westEastInc);
                 g.setValue("jDirectionIncrement", scale * *southNorthInc);
+            }
+            else if ((ni = lookUp<std::int64_t>(md, glossary().ni)())
+                     && (nj = lookUp<std::int64_t>(md, glossary().nj)())
+                     && (latitudeOfFirstGridPointInDegrees
+                         = lookUp<double>(md, glossary().latitudeOfFirstGridPointInDegrees)())
+                     && (latitudeOfLastGridPointInDegrees
+                         = lookUp<double>(md, glossary().latitudeOfLastGridPointInDegrees)())
+                     && (longitudeOfFirstGridPointInDegrees
+                         = lookUp<double>(md, glossary().longitudeOfFirstGridPointInDegrees)())
+                     && (longitudeOfLastGridPointInDegrees
+                         = lookUp<double>(md, glossary().longitudeOfLastGridPointInDegrees)())
+                     && (iDirectionIncrementInDegrees = lookUp<double>(md, glossary().iDirectionIncrementInDegrees)())
+                     && (jDirectionIncrementInDegrees
+                         = lookUp<double>(md, glossary().jDirectionIncrementInDegrees)())) {
+                g.setValue("Ni", *ni);
+                g.setValue("Nj", *nj);
+                g.setValue(glossary().latitudeOfFirstGridPointInDegrees, *latitudeOfFirstGridPointInDegrees);
+                g.setValue(glossary().longitudeOfFirstGridPointInDegrees, *longitudeOfFirstGridPointInDegrees);
+                g.setValue(glossary().latitudeOfLastGridPointInDegrees, *latitudeOfLastGridPointInDegrees);
+                g.setValue(glossary().longitudeOfLastGridPointInDegrees, *longitudeOfLastGridPointInDegrees);
+                g.setValue(glossary().iDirectionIncrementInDegrees, *iDirectionIncrementInDegrees);
+                g.setValue(glossary().jDirectionIncrementInDegrees, *jDirectionIncrementInDegrees);
             }
         }
         else if (eckit::StringTools::lower(*gridType) == "healpix") {

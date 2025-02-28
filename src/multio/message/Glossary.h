@@ -247,12 +247,12 @@ struct Glossary {
     const KeyType southNorthIncrement{"south_north_increment"};
 
     // Regular ll - direct
-    const KeyType latitudeOfFirstGridPoint{"latitudeOfFirstGridPoint"};
-    const KeyType latitudeOfLastGridPoint{"latitudeOfLastGridPoint"};
-    const KeyType longitudeOfFirstGridPoint{"longitudeOfFirstGridPoint"};
-    const KeyType longitudeOfLastGridPoint{"longitudeOfLastGridPoint"};
-    const KeyType jDirectionIncrement{"jDirectionIncrement"};
-    const KeyType iDirectionIncrement{"iDirectionIncrement"};
+    const KeyType latitudeOfFirstGridPointInDegrees{"latitudeOfFirstGridPointInDegrees"};
+    const KeyType latitudeOfLastGridPointInDegrees{"latitudeOfLastGridPointInDegrees"};
+    const KeyType longitudeOfFirstGridPointInDegrees{"longitudeOfFirstGridPointInDegrees"};
+    const KeyType longitudeOfLastGridPointInDegrees{"longitudeOfLastGridPointInDegrees"};
+    const KeyType jDirectionIncrementInDegrees{"jDirectionIncrementInDegrees"};
+    const KeyType iDirectionIncrementInDegrees{"iDirectionIncrementInDegrees"};
 
 
     static const Glossary& instance() {

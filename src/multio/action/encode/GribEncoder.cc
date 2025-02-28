@@ -519,12 +519,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             std::optional<double> east;
             std::optional<double> westEastInc;
             std::optional<double> southNorthInc;
-            std::optional<double> latitudeOfFirstGridPoint;
-            std::optional<double> longitudeOfFirstGridPoint;
-            std::optional<double> latitudeOfLastGridPoint;
-            std::optional<double> longitudeOfLastGridPoint;
-            std::optional<double> iDirectionIncrement;
-            std::optional<double> jDirectionIncrement;
+            std::optional<double> latitudeOfFirstGridPointInDegrees;
+            std::optional<double> longitudeOfFirstGridPointInDegrees;
+            std::optional<double> latitudeOfLastGridPointInDegrees;
+            std::optional<double> longitudeOfLastGridPointInDegrees;
+            std::optional<double> iDirectionIncrementInDegrees;
+            std::optional<double> jDirectionIncrementInDegrees;
             if ((ni = lookUp<std::int64_t>(md, glossary().ni)()) && (nj = lookUp<std::int64_t>(md, glossary().nj)())
                 && (north = lookUp<double>(md, glossary().north)()) && (south = lookUp<double>(md, glossary().south)())
                 && (west = lookUp<double>(md, glossary().west)()) && (east = lookUp<double>(md, glossary().east)())
@@ -548,20 +548,25 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             }
             else if ((ni = lookUp<std::int64_t>(md, glossary().ni)())
                      && (nj = lookUp<std::int64_t>(md, glossary().nj)())
-                     && (latitudeOfFirstGridPoint = lookUp<double>(md, glossary().latitudeOfFirstGridPoint)())
-                     && (latitudeOfLastGridPoint = lookUp<double>(md, glossary().latitudeOfLastGridPoint)())
-                     && (longitudeOfFirstGridPoint = lookUp<double>(md, glossary().longitudeOfFirstGridPoint)())
-                     && (longitudeOfLastGridPoint = lookUp<double>(md, glossary().longitudeOfLastGridPoint)())
-                     && (iDirectionIncrement = lookUp<double>(md, glossary().iDirectionIncrement)())
-                     && (jDirectionIncrement = lookUp<double>(md, glossary().jDirectionIncrement)())) {
+                     && (latitudeOfFirstGridPointInDegrees
+                         = lookUp<double>(md, glossary().latitudeOfFirstGridPointInDegrees)())
+                     && (latitudeOfLastGridPointInDegrees
+                         = lookUp<double>(md, glossary().latitudeOfLastGridPointInDegrees)())
+                     && (longitudeOfFirstGridPointInDegrees
+                         = lookUp<double>(md, glossary().longitudeOfFirstGridPointInDegrees)())
+                     && (longitudeOfLastGridPointInDegrees
+                         = lookUp<double>(md, glossary().longitudeOfLastGridPointInDegrees)())
+                     && (iDirectionIncrementInDegrees = lookUp<double>(md, glossary().iDirectionIncrementInDegrees)())
+                     && (jDirectionIncrementInDegrees
+                         = lookUp<double>(md, glossary().jDirectionIncrementInDegrees)())) {
                 g.setValue("Ni", *ni);
                 g.setValue("Nj", *nj);
-                g.setValue("latitudeOfFirstGridPoint", *latitudeOfFirstGridPoint);
-                g.setValue("longitudeOfFirstGridPoint", *longitudeOfFirstGridPoint);
-                g.setValue("latitudeOfLastGridPoint", *latitudeOfLastGridPoint);
-                g.setValue("longitudeOfLastGridPoint", *longitudeOfLastGridPoint);
-                g.setValue("iDirectionIncrement", *iDirectionIncrement);
-                g.setValue("jDirectionIncrement", *jDirectionIncrement);
+                g.setValue(glossary().latitudeOfFirstGridPointInDegrees, *latitudeOfFirstGridPointInDegrees);
+                g.setValue(glossary().longitudeOfFirstGridPointInDegrees, *longitudeOfFirstGridPointInDegrees);
+                g.setValue(glossary().latitudeOfLastGridPointInDegrees, *latitudeOfLastGridPointInDegrees);
+                g.setValue(glossary().longitudeOfLastGridPointInDegrees, *longitudeOfLastGridPointInDegrees);
+                g.setValue(glossary().iDirectionIncrementInDegrees, *iDirectionIncrementInDegrees);
+                g.setValue(glossary().jDirectionIncrementInDegrees, *jDirectionIncrementInDegrees);
             }
         }
         else if (eckit::StringTools::lower(*gridType) == "healpix") {

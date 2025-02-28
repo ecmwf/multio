@@ -281,6 +281,7 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
+                encodeStepZero=True,
                 descriptiveName="since-beginning",
             ),
             TablesConfig(type="custom", localTablesVersion=0, tablesVersion=30),
@@ -697,6 +698,7 @@ PARAM_LEVTYPE_ML = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
+                encodeStepZero=True,
                 descriptiveName="since-beginning",
             ),
             levelConfig("hybrid"),

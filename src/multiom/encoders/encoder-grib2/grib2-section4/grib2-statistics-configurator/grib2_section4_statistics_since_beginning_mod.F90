@@ -1154,14 +1154,14 @@ IMPLICIT NONE
 
   IF ( FORECAST_TIME .LE. 0_JPIB_K ) THEN
     IF ( ENCODE_STEP_ZERO .AND. FORECAST_TIME .EQ. 0 ) THEN
-      PP_LOG_STR( 'To be encoded: 0' )
+      ! PP_LOG_STR( 'To be encoded: 0' )
       TO_BE_ENCODED = .TRUE.
     ELSE
-      PP_LOG_STR( 'To be encoded: 1' )
+      ! PP_LOG_STR( 'To be encoded: 1' )
       TO_BE_ENCODED = .FALSE.
     ENDIF
   ELSE
-    PP_LOG_STR( 'To be encoded: 2' )
+    ! PP_LOG_STR( 'To be encoded: 2' )
     TO_BE_ENCODED = .TRUE.
   END IF
 

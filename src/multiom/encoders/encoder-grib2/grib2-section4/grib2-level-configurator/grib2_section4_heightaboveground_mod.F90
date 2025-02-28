@@ -901,10 +901,10 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', MSG%LEVELIST )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
 
-  ! TODO
-  ! In case of 2t (paramId 167) a grib1 message can contain level 0... in grib2 this will change back from 167 to 130... hence we set it again
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'paramId', MSG%PARAM)
-  ! ENDDO
+  ! ! TODO
+  ! ! In case of 2t (paramId 167) a grib1 message can contain level 0... in grib2 this will change back from 167 to 130... hence we set it again
+  ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'paramId', MSG%PARAM)
+  ! ! ENDDO
 
 
 #if 0
@@ -923,25 +923,6 @@ IMPLICIT NONE
 
     CALL GRIB_GET( HANDLE, 'level', TMP1, STATUS=KRET )
     PP_DEBUG_DEVELOP_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_GET_FAILED )
-
-
-    ! IF (TMP1 .NE. MSG%LEVELIST ) THEN
-    !   PP_TRYCALL(ERRFLAG_MARS_TO_JSON) MSG%TO_JSON( JSON, HOOKS )
-    !   IF ( ALLOCATED(JSON) ) THEN
-    !     WRITE(*,*)     ' LEVEL1 :: ERROR LEVELIST DOES NOT MATCH :: ', TMP1, MSG%LEVELIST
-    !     WRITE(*,'(A)') ' LEVEL1 :: ERROR LEVELIST DOES NOT MATCH :: '//TRIM(ADJUSTL(JSON))
-    !     DEALLOCATE(JSON, STAT=TMP)
-    !   ENDIF
-    ! END IF
-
-    ! IF (TMP .NE. MSG%PARAM .OR. TMP .LE. 0 ) THEN
-    !   PP_TRYCALL(ERRFLAG_MARS_TO_JSON) MSG%TO_JSON( JSON, HOOKS )
-    !   IF ( ALLOCATED(JSON) ) THEN
-    !     WRITE(*,*)     ' LEVEL2 :: ERROR PARAMAID DOES NOT MATCH :: ', TMP, MSG%PARAM
-    !     WRITE(*,'(A)') ' LEVEL2 :: ERROR PARAMAID DOES NOT MATCH :: '//TRIM(ADJUSTL(JSON))
-    !     DEALLOCATE(JSON, STAT=TMP)
-    !   ENDIF
-    ! END IF
 
   CLASS DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERFLAG_METADATA_NOT_SUPPORTED )

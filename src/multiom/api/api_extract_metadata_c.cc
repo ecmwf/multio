@@ -42,6 +42,12 @@ namespace {
       return ret;
   }
 
+  double getDouble(codes_handle* handle, const char* key) {
+      double ret;
+      CODES_CHECK(codes_get_double(handle, key, &ret), nullptr);
+      return ret;
+  }
+
   std::size_t getSize(codes_handle* handle, const char* key) {
       std::size_t ret;
       CODES_CHECK(codes_get_size(handle, key, &ret), nullptr);
@@ -101,6 +107,24 @@ namespace {
     }
     return 0;
   }
+  
+  using OptVal = std::optional<std::string>;
+  int getAndSetDouble(codes_handle* h, void* dict, const char* key, const char* setName=NULL, OptVal defaultVal = {}, SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if(hasKey(h, key)) {
+        std::string val = std::to_string(getDouble(h, key));
+        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, val.data());
+        if(ret != 0) return ret;
+    } else {
+        if(defaultVal && (defPolicy == SetDefault::Always)) {
+            int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, defaultVal->data());
+            if(ret != 0) return ret;
+        }
+    }
+    return 0;
+  }
+  int getAndSetDouble(codes_handle* h, void* dict, const char* key, OptVal defaultVal, SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    return getAndSetDouble(h, dict, key, NULL, defaultVal, defPolicy);
+  }
 
   template<typename T>
   std::string arrayToJSONString(const std::vector<T>& arr) {
@@ -155,16 +179,16 @@ namespace {
       ret = getAndSetIfNonZero(h, geom, "numberOfParallelsBetweenAPoleAndTheEquator", "number-of-parallels-between-pole-and-equator");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "latitudeOfFirstGridPointInDegrees", "latitude-of-first-grid-point-in-degrees");
+      ret = getAndSetDouble(h, geom, "latitudeOfFirstGridPointInDegrees", "latitude-of-first-grid-point-in-degrees");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "longitudeOfFirstGridPointInDegrees", "longitude-of-first-grid-point-in-degrees");
+      ret = getAndSetDouble(h, geom, "longitudeOfFirstGridPointInDegrees", "longitude-of-first-grid-point-in-degrees");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "latitudeOfLastGridPointInDegrees", "latitude-of-last-grid-point-in-degrees");
+      ret = getAndSetDouble(h, geom, "latitudeOfLastGridPointInDegrees", "latitude-of-last-grid-point-in-degrees");
       if(ret != 0) return ret;
 
-      ret = getAndSet(h, geom, "longitudeOfLastGridPointInDegrees", "longitude-of-last-grid-point-in-degrees");
+      ret = getAndSetDouble(h, geom, "longitudeOfLastGridPointInDegrees", "longitude-of-last-grid-point-in-degrees");
       if(ret != 0) return ret;
       
       ret = getAndSetLongArray(h, geom, "pl", "pl");
@@ -244,6 +268,7 @@ namespace {
         std::cerr << "Unhandled packingType '" << packingType  << "'" << std::endl;
         return -1;
   };
+
 
 }
 
@@ -327,8 +352,16 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "date");
     if(ret != 0) return ret;
     
-    ret = getAndSet(h, *mars_dict, "time");
-    if(ret != 0) return ret;
+    // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
+    {
+        long hh = getLong(h, "hour");
+        long mm = getLong(h, "minute");
+        long ss = getLong(h, "second");
+        std::string timeStr{std::to_string(hh * 10000 + mm * 100 + ss)};
+        ret = multio_grib2_dict_set(*mars_dict, "time", timeStr.c_str());
+        if(ret != 0) return ret;
+    }
+
 
     // For some reason mars returns an empty string for step
     ret = getAndSet(h, *mars_dict, "step", "step", {"0"});

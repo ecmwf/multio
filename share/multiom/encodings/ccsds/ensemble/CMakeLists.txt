@@ -2,9 +2,9 @@
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 add_subdirectory("hl")
-add_subdirectory("sol")
-add_subdirectory("ml")
 add_subdirectory("pl")
+add_subdirectory("ml")
+add_subdirectory("sol")
 add_subdirectory("sfc")
 
 

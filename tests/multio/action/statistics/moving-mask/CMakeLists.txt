@@ -35,7 +35,7 @@ endif()
 ecbuild_add_test(
     TARGET  ${PREFIX}_static_avg_1d_all_check
     COMMAND grib_compare
-    ARGS    Reference_standard_average_1d_grib2.grib Result_avg_1d_all_static.grib
+    ARGS    -P -T10 Reference_standard_average_1d_grib2.grib Result_avg_1d_all_static.grib
 )
 if ( TEST ${PREFIX}_static_avg_1d_all_check )
 set_tests_properties(${PREFIX}_static_avg_1d_all_check PROPERTIES
@@ -59,7 +59,7 @@ endif()
 ecbuild_add_test(
     TARGET  ${PREFIX}_static_avg_1d_any_check
     COMMAND grib_compare
-    ARGS    Reference_standard_average_1d_grib2.grib Result_avg_1d_any_static.grib
+    ARGS    -P -T10 Reference_standard_average_1d_grib2.grib Result_avg_1d_any_static.grib
 )
 if ( TEST ${PREFIX}_static_avg_1d_any_check )
 set_tests_properties(${PREFIX}_static_avg_1d_any_check PROPERTIES
@@ -139,7 +139,7 @@ foreach(_th 10d all any)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_check_values
         COMMAND grib_compare
-        ARGS    ${REFERENCE_FILE} ${RESULT_FILE}
+        ARGS    -P -T10 ${REFERENCE_FILE} ${RESULT_FILE}
     )
     if ( TEST ${PREFIX}_${_op}_1m_${_th}_check_values )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_check_values PROPERTIES
@@ -216,7 +216,7 @@ foreach(_th 10d all any)
     ecbuild_add_test(
         TARGET  ${PREFIX}_${_op}_1m_${_th}_restart_check_values
         COMMAND grib_compare
-        ARGS    ${REFERENCE_FILE} ${RESULT_FILE}
+        ARGS    -P -T10 ${REFERENCE_FILE} ${RESULT_FILE}
     )
     if ( TEST ${PREFIX}_${_op}_1m_${_th}_restart_check_values )
     set_tests_properties(${PREFIX}_${_op}_1m_${_th}_restart_check_values PROPERTIES

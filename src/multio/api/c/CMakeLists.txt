@@ -20,13 +20,18 @@ list( APPEND multio_action_plugins
     multio-action-statistics
     multio-action-transport
     multio-action-renumber-healpix
-    multio-action-interpolate-fesom
     multio-action-scale
 )
 
 if( HAVE_MIR )
     list( APPEND multio_action_plugins
         multio-action-interpolate
+    )
+endif()
+
+if ( HAVE_ATLAS_IO )
+    list( APPEND multio_action_plugins
+        multio-action-interpolate-fesom
     )
 endif()
 

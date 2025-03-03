@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
-#include <iomanip>
 #include <string.h>
+#include <iomanip>
+#include <iostream>
 #include "eccodes.h"
 
 extern "C" {
@@ -503,10 +503,10 @@ int set_codes_handle_c(const void* values, int len, void** location) {
 };
 
 int copy_f_buf_to_c_buf_c(const char* val, int len, void** location) {
-    *location=malloc(len*sizeof(char));
-    if (*location == NULL) return -1;
+    *location = malloc(len * sizeof(char));
+    if (*location == NULL)
+        return -1;
     memcpy(*location, val, len);
     return 0;
 }
-
 }

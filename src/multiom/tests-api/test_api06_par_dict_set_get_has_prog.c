@@ -113,7 +113,7 @@ int main() {
     free(readVal);
     readVal = NULL;
 
-// is mars key?
+    // is mars key?
     ret = multio_grib2_dict_has(dictionary_01, "methodnumber", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "methodnumber", "98");
     ret = multio_grib2_dict_has(dictionary_01, "methodnumber", &has2);

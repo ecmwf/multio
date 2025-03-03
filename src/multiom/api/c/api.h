@@ -15,7 +15,7 @@ int multio_grib2_dict_iterate(void* dict, void** iterator, char** key, char** va
 int multio_grib2_dict_destroy_iterator(void* dict, void** iterator);
 int multio_grib2_dict_destroy(void** dict);
 
-int multio_grib2_dict_to_yaml( void* dict, const char* fname);
+int multio_grib2_dict_to_yaml(void* dict, const char* fname);
 
 int multio_grib2_dict_set_geometry(void* dict, const void* geom_dict);
 

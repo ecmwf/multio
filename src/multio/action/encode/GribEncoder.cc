@@ -284,7 +284,6 @@ void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long
     g.setMissing(glossary().scaledValueOfFirstFixedSurface);
     g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
     g.setMissing(glossary().scaledValueOfSecondFixedSurface);
-
 }
 
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;

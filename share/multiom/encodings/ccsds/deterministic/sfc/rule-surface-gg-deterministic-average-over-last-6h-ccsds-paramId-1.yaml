@@ -53,6 +53,8 @@ encoder:
       overall-length-of-timerange: 6h
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     level-configurator:
       type: surface
   data-representation-section:

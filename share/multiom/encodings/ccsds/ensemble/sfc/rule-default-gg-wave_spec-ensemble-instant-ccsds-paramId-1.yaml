@@ -50,6 +50,8 @@ encoder:
       type: default
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     ensemble-configurator:
       type: default
     directions-frequencies-configurator:

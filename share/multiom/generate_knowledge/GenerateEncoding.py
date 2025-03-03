@@ -248,6 +248,12 @@ def gridDefinition(tn: int, n: str) -> GridDefinition:
 
 
 # Section 4
+class ModelConfig(BaseModel):
+    type: str = "default"
+def modelConfig(t: str) -> ModelConfig:
+    return ModelConfig(type=t)
+    
+    
 class PointInTime(BaseModel):
     type: str = "default"
     descriptiveName: str = "instant"
@@ -338,6 +344,7 @@ def pdtCategoryPairsToDict(pairs: List[PDTCategoryPair]) -> PDTCategoryDict:
 
 class ProductDefinition(BaseModel):
     pdt: PDT = PDT()
+    modelConfig: ModelConfig = ModelConfig()
     timeConfig: TimeConfig = timeConfig(PointInTime())
     param: ParamConfig = ParamConfig()
     level: Optional[LevelConfig] = None
@@ -489,6 +496,7 @@ def toDictRepres(val):
                 "template-number": val.pdt.templateNumber,
                 **toDictRepres(val.timeConfig),
                 "param-configurator": toDictRepres(val.param),
+                "model-configurator": toDictRepres(val.modelConfig),
                 **(
                     {"level-configurator": toDictRepres(val.level)}
                     if val.level is not None
@@ -569,6 +577,8 @@ def toDictRepres(val):
                     else {"dataset-for-local": val.datasetForLocal}
                 ),
             }
+        case ModelConfig():
+            return {"type": val.type}
         case LevelConfig():
             return {"type": val.type}
         case EnsembleConfig():

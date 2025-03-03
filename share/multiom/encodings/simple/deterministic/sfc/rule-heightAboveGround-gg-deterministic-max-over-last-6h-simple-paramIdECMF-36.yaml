@@ -52,6 +52,8 @@ encoder:
       overall-length-of-timerange: 6h
     param-configurator:
       type: paramIdECMF
+    model-configurator:
+      type: default
     level-configurator:
       type: heightAboveGround
   data-representation-section:

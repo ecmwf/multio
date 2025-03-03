@@ -54,6 +54,8 @@ encoder:
       encode-step-zero: true
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     level-configurator:
       type: nominalTop
     ensemble-configurator:

@@ -61,6 +61,8 @@ encoder:
     param-configurator:
       type: paramId
       dataset-for-local: era6
+    model-configurator:
+      type: default
     level-configurator:
       type: surface
     ensemble-configurator:

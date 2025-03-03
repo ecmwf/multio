@@ -114,6 +114,9 @@ CONTAINS
 
   !> @brief Get the size in bytes of the sample
   PROCEDURE(SAMPLE_SIZE_IF), DEFERRED, PUBLIC, PASS :: SAMPLE_SIZE
+  
+  !> @brief Get the size in bytes of the sample
+  PROCEDURE(SAFE_LOAD_IF), DEFERRED, PUBLIC, PASS :: SAFE_LOAD
 
   !> @brief Generic set procedure that can handle all supported data types.
   GENERIC, PUBLIC :: SET => SET_STRING
@@ -675,6 +678,29 @@ IMPLICIT NONE
   TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
   INTEGER(KIND=JPIB_K) :: RET
 END FUNCTION SAMPLE_SIZE_IF
+
+
+
+!> @brief Sanity call which should have no side effects
+!>
+!> Sometimes it is not possible to set specific eccodes keys because eccodes 
+!> is not preparing an handle properly.
+!>
+!> This calls avoids these problems by dumping to binary and reloading a sample.
+!>
+!> @param [inout] this   The object where metadata is to be set.
+!> @param [inout] HOOKS  Utilities to be used for logging, debugging, tracing and option handling
+!>
+PP_THREAD_SAFE FUNCTION SAFE_LOAD_IF( THIS, HOOKS ) RESULT(RET)
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+  IMPORT :: METADATA_BASE_A
+IMPLICIT NONE
+  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K) :: RET
+END FUNCTION SAFE_LOAD_IF
 
 END INTERFACE
 

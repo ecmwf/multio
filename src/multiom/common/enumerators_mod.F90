@@ -9251,14 +9251,14 @@ IMPLICIT NONE
 
   !> Initialization of the output variable
   ITIME = UNDEF_PARAM_E
-  
+
   ! Time can begin with multiple 0, i.e. 0000
   STEMP = TRIM(CTIME)
   L=LEN(STEMP)
   DO I=1,L
     IF (STEMP(I:I).EQ.'0') THEN
       if (I.NE.L) THEN
-        STEMP(I:I) = ' ' 
+        STEMP(I:I) = ' '
       END IF
     ELSE
       EXIT
@@ -9267,7 +9267,7 @@ IMPLICIT NONE
 
 
   PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(STEMP, ITIME, HOOKS)
-    
+
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 

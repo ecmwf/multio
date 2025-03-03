@@ -577,7 +577,7 @@ PARAM_LEVTYPE_SFC = [
                     "243:245",
                     3020,
                     160198,
-                    200199, 
+                    200199,
                     210200,
                     210201,
                     210202,
@@ -881,7 +881,7 @@ def createCMakeFiles(relDir, pathList):
         for path, subPld in pld.items():
 
             newBasePath = f"{basePath}/{path}" if basePath != "" else path
-            
+
             fileContent = templateCMakeFile(newBasePath, list(subPld.keys()))
 
             with open("/".join([relDir, newBasePath, "CMakeLists.txt"]), "w") as fileOut:
@@ -904,7 +904,7 @@ def pathForRule(baseDir: str, rule: EncodeRule):
         if isinstance(rule.filter.filter, ComposeAll)
         else ""
     )
-    
+
     marsType = None if rule.encode.identification.marsType is None else rule.encode.identification.marsType.type
 
     ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
@@ -922,7 +922,7 @@ def main():
     BASE_DIR = "encodings"
     BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
     ENCODING_RULES_SPLIT = ["packing", "process"]
-    
+
     REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
 
     # Remove dir if already exists to avoid duplications or different directory structures
@@ -958,7 +958,7 @@ def main():
     for key, files in rulesBySplit.items():
         with open(f"{REL_BASE_DIR}/encoding-rules-{key}.yaml", "w") as fileOut:
             fileOut.write(toYAML({"encoding-rules": files}))
-            
+
     with open(f"{REL_BASE_DIR}/encoding-rules.yaml", "w") as fileOut:
         fileOut.write(toYAML({"encoding-rules": allFiles}))
 

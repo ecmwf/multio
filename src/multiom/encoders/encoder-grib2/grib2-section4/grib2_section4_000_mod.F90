@@ -168,7 +168,7 @@ CONTAINS
   !> This procedure allocates the proper time configurator
   !>
   PROCEDURE, PRIVATE, PASS :: BUILD_MODEL_CONFIGURATOR => GRIB2_SECTION4_000_BUILD_MODEL_HANDLER
-  
+
   !>
   !> @brief Build the time configurator object
   !>

@@ -171,7 +171,7 @@ CONTAINS
   !> This procedure allocates the proper param configurator
   !>
   PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR => GRIB2_SECTION4_033_BUILD_PARAM_HANDLER
-  
+
   !>
   !> @brief Build the model configurator object
   !>

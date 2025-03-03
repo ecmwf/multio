@@ -252,8 +252,8 @@ class ModelConfig(BaseModel):
     type: str = "default"
 def modelConfig(t: str) -> ModelConfig:
     return ModelConfig(type=t)
-    
-    
+
+
 class PointInTime(BaseModel):
     type: str = "default"
     descriptiveName: str = "instant"

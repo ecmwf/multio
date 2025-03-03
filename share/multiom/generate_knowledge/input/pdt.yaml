@@ -319,7 +319,7 @@ groups:
 
     ensemble:
         - numberOfForecastsInEnsemble
-        
+
     largeEnsemble:
         - numberOfForecastsInEnsemble
 
@@ -330,12 +330,12 @@ groups:
         - typeOfEnsembleForecast
         - extend: perturbed
         - append: nested
-        
+
     individualEnsembleForecast:
         - extend: baseIndividualEnsembleForecast
           nested:
             - extend: ensemble
-            
+
     largeIndividualEnsembleForecast:
         - extend: baseIndividualEnsembleForecast
           nested:

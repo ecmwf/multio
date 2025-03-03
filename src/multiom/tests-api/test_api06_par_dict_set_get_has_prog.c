@@ -37,8 +37,8 @@ int main() {
     assert(strcmp(readVal, "52") == 0);
     free(readVal);
     readVal = NULL;
-    
-    
+
+
     ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "encodestepzero", "1");
     ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has2);

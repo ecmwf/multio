@@ -535,12 +535,12 @@ IMPLICIT NONE
 
   ! Enable section 3
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridDefinitionTemplateNumber', 40 )
-  
+
   ! Configure the representation
   SELECT TYPE ( R => PAR%GEOMETRY%REPRES )
 
   CLASS IS (REGULAR_GG_T)
-  
+
 
     ! Set the specific metadata for a regular_gg grid
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType','regular_gg' )
@@ -558,7 +558,7 @@ IMPLICIT NONE
 
     ! Error handling
     PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(R%PL), ERRFLAG_GEOMETRY_PL_ARRAY_NOT_ASSOCIATED )
-    
+
     PP_DEBUG_CRITICAL_COND_THROW( R%NUMBER_OF_PARALLELS_BETWEEN_POLE_AND_EQUATOR.NE.(SIZE(R%PL)/2), ERRFLAG_GEOMETRY_PL_ARRAY_WRONG_SIZE )
 
     ! Set the specific metadata for a reduced_gg grid

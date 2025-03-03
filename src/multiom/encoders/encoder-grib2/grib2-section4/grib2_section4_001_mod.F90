@@ -181,8 +181,8 @@ CONTAINS
   !> This procedure allocates the proper time configurator
   !>
   PROCEDURE, PRIVATE, PASS :: BUILD_MODEL_CONFIGURATOR_CFG => G2S4_001_BUILD_MODEL_HANDLER_CFG
-  
-  
+
+
   !>
   !> @brief Build the time configurator object from yaml configuration
   !>
@@ -231,7 +231,7 @@ CONTAINS
   !> This procedure allocates the proper time configurator
   !>
   PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_LAZY => G2S4_001_BUILD_TIME_HANDLER_LAZY
-  
+
   !>
   !> @brief Build the model configurator object from rules
   !>

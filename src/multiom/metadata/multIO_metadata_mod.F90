@@ -148,6 +148,8 @@ CONTAINS
   !> @brief Get the size in bytes of the sample
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SAMPLE_SIZE  => MULTIO_METADATA_SAMPLE_SIZE
 
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SAFE_LOAD  => MULTIO_METADATA_SAFE_LOAD
+
 END TYPE
 
 
@@ -4121,6 +4123,104 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION MULTIO_METADATA_SAMPLE_SIZE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SAFE_LOAD'
+PP_THREAD_SAFE FUNCTION MULTIO_METADATA_SAFE_LOAD( THIS, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Open the grib file
+  PP_LOG_DEVELOP_STR( 'SAFE_LOAD not applicable to multIO metadata' )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MULTIO_METADATA_SAFE_LOAD
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

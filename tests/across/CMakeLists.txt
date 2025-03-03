@@ -37,6 +37,7 @@ ecbuild_add_test(
 
 set(_feed multio_tests_across_dissemination_data.grib )
 
+if(HAVE_MULTIO_BUILD_TOOLS)
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_single_request_run
@@ -103,5 +104,6 @@ ecbuild_add_test(
     COMMAND      grib_compare
 )
 
+endif()
 
 endif()

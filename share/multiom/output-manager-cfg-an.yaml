@@ -15,4 +15,3 @@ grib-header-to-multio:
   verbose: false
   profile: false
   save-report: false
-

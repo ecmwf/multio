@@ -19,7 +19,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'filter_WAVELENGTH_mod.F90'
+#define PP_FILE_NAME 'filter_wavelength_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'FILTER_WAVELENGTH_MOD'
 MODULE FILTER_WAVELENGTH_MOD
@@ -475,6 +475,7 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
 
   !> Evaluate the operation
   SELECT CASE( THIS%FILTER_TYPE_ )

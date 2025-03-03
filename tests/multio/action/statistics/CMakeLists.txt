@@ -1,3 +1,4 @@
+if(HAVE_MULTIO_BUILD_TOOLS)
 
 set(PREFIX multio_tests_action_statistics)
 
@@ -120,3 +121,5 @@ endforeach()
 #
 # add restart tests
 add_subdirectory(restart)
+
+endif()

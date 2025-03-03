@@ -51,6 +51,8 @@ encoder:
       type-of-statistical-processing: max
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     level-configurator:
       type: surface
     ensemble-configurator:

@@ -10,6 +10,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 # Collect source files in module2
 set( MULTIOM_FILTERS_MARS_SOURCES
   ${MULTIOM_FILTERS_MARS_DIR}/filter_class_mod.F90
+  ${MULTIOM_FILTERS_MARS_DIR}/filter_anoffset_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_direction_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_expver_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_frequency_mod.F90
@@ -22,6 +23,8 @@ set( MULTIOM_FILTERS_MARS_SOURCES
   ${MULTIOM_FILTERS_MARS_DIR}/filter_levtype_mod.F90
   # ${MULTIOM_FILTERS_MARS_DIR}/filter_origin_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_param_mod.F90
+  ${MULTIOM_FILTERS_MARS_DIR}/filter_chem_mod.F90
+  ${MULTIOM_FILTERS_MARS_DIR}/filter_wavelength_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_repres_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_packing_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_stream_mod.F90

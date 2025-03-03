@@ -1,5 +1,5 @@
 !>
-!> @file filter_level_mod.F90
+!> @file filter_anoffset_mod.F90
 !>
 !> @brief Module containing definitions and procedures for level filters.
 !>
@@ -19,7 +19,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'filter_ANOFFSET_mod.F90'
+#define PP_FILE_NAME 'filter_anoffset_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'FILTER_ANOFFSET_MOD'
 MODULE FILTER_ANOFFSET_MOD
@@ -245,7 +245,6 @@ IMPLICIT NONE
 
   !> Read the encoder configuration
   PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'values', HAS_VALUES, HOOKS )
-
 
   !> Read the level to be used in the filter
   IF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_GT_E .AND. HAS_TRESHOLD .AND. &

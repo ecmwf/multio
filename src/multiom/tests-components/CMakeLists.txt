@@ -1,4 +1,4 @@
-if ( HAVE_OUTPUT_MANAGER_TESTS )
+if ( HAVE_OUTPUT_MANAGER_TESTS AND HAVE_MULTIO_BUILD_TOOLS)
 
 # Define the directory containing the test files
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -30,7 +30,6 @@ foreach(TEST_FILE ${TEST_FILES})
 
     SOURCES
       ${TEST_FILE}
-
 
     DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 

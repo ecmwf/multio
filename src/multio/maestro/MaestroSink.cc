@@ -44,12 +44,12 @@ static void setInt64Value(multio::MaestroCdo& cdo, const std::string& key, const
 using MaestroKeySetter = std::add_pointer<void(multio::MaestroCdo&, const std::string&, const std::string&)>::type;
 
 static const std::map<std::string, MaestroKeySetter> cdoValueSetters{
-    {"class", &setStringValue},      {"expver", &setStringValue},   {"stream", &setStringValue},
-    {"date", &setStringValue},       {"time", &setStringValue},     {"domain", &setStringValue},
-    {"type", &setStringValue},       {"levtype", &setStringValue},  {"step", &setInt64Value},
-    {"anoffset", &setInt64Value},    {"levelist", &setInt64Value},  {"param", &setInt64Value},
-    {"experiment", &setStringValue}, {"activity", &setStringValue}, {"generation", &setInt64Value},
-    {"realization", &setInt64Value}, {"model", &setStringValue},    {"resolution", &setStringValue},
+    {"class", &setStringValue},      {"expver", &setStringValue},    {"stream", &setStringValue},
+    {"date", &setStringValue},       {"time", &setStringValue},      {"domain", &setStringValue},
+    {"type", &setStringValue},       {"levtype", &setStringValue},   {"step", &setInt64Value},
+    {"anoffset", &setInt64Value},    {"levelist", &setInt64Value},   {"param", &setInt64Value},
+    {"experiment", &setStringValue}, {"activity", &setStringValue},  {"generation", &setInt64Value},
+    {"realization", &setInt64Value}, {"model", &setStringValue},     {"resolution", &setStringValue},
     {"frequency", &setStringValue},  {"direction", &setStringValue},
 };
 }  // namespace

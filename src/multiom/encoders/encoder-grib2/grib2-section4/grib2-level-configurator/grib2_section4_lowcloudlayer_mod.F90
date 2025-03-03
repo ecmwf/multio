@@ -1165,7 +1165,6 @@ END FUNCTION G2S4_LOWCLOUDLAYER_FREE
 #undef PP_PROCEDURE_TYPE
 
 
-
 !>
 !> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
 !>

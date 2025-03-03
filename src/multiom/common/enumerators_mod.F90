@@ -371,10 +371,13 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: N_REPRES=3_JPIB_K
 
   ! Enumerators for models
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_ATMOSPHERE_E=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_OCEAN_E=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_WAVE_E=3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: N_MODELS=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_IFS_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_SINGLE_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_SINGLE_MSE_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_CRPS_E=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_DIFF_E=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_MODELS=7_JPIB_K
 
   ! Enumerators for precision
   INTEGER(KIND=JPIB_K), PARAMETER :: PRECISION_SP_E=1_JPIB_K
@@ -916,9 +919,12 @@ IMPLICIT NONE
   PUBLIC :: N_REPRES
 
   ! Enumerators for models
-  PUBLIC :: MODEL_ATMOSPHERE_E
-  PUBLIC :: MODEL_OCEAN_E
-  PUBLIC :: MODEL_WAVE_E
+  PUBLIC :: MODEL_IFS_E
+  PUBLIC :: MODEL_AIFS_SINGLE_E
+  PUBLIC :: MODEL_AIFS_ENS_E
+  PUBLIC :: MODEL_AIFS_SINGLE_MSE_E
+  PUBLIC :: MODEL_AIFS_ENS_CRPS_E
+  PUBLIC :: MODEL_AIFS_ENS_DIFF_E
   PUBLIC :: N_MODELS
 
   ! Enumerators for precision
@@ -1138,6 +1144,7 @@ IMPLICIT NONE
   PUBLIC :: IFLOAT2CFLOAT
   PUBLIC :: CSINK2ISINK
   PUBLIC :: ISINK2CSINK
+  PUBLIC :: CTIME2ITIME
 
   ! Sinks
   PUBLIC :: SINK_NONE_E
@@ -2632,7 +2639,7 @@ IMPLICIT NONE
 
   !> Dummy arguments
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMODEL
-  CHARACTER(LEN=16),    INTENT(OUT)   :: CMODEL
+  CHARACTER(LEN=32),    INTENT(OUT)   :: CMODEL
   TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -2662,12 +2669,18 @@ IMPLICIT NONE
   !> Select the repres
   SELECT CASE ( IMODEL )
 
-  CASE ( MODEL_ATMOSPHERE_E )
-    CMODEL = 'atmosphere'
-  CASE ( MODEL_OCEAN_E )
-    CMODEL = 'ocean'
-  CASE ( MODEL_WAVE_E )
-    CMODEL = 'wave'
+  CASE ( MODEL_IFS_E )
+    CMODEL = 'ifs'
+  CASE ( MODEL_AIFS_SINGLE_E )
+    CMODEL = 'aifs-single'
+  CASE ( MODEL_AIFS_ENS_E )
+    CMODEL = 'aifs-ens'
+  CASE ( MODEL_AIFS_SINGLE_MSE_E )
+    CMODEL = 'aifs-single-mse'
+  CASE ( MODEL_AIFS_ENS_CRPS_E )
+    CMODEL = 'aifs-ens-crps'
+  CASE ( MODEL_AIFS_ENS_DIFF_E )
+    CMODEL = 'aifs-ens-diff'
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MODEL )
   END SELECT
@@ -2781,12 +2794,18 @@ IMPLICIT NONE
   !> Select the repres
   SELECT CASE ( TRIM(ADJUSTL(LOC_CMODEL)) )
 
-  CASE ( 'atmosphere' )
-    IMODEL = MODEL_ATMOSPHERE_E
-  CASE ( 'ocean' )
-    IMODEL = MODEL_OCEAN_E
-  CASE ( 'wave' )
-    IMODEL = MODEL_WAVE_E
+  CASE ( 'ifs' )
+    IMODEL = MODEL_IFS_E
+  CASE ( 'aifs-single' )
+    IMODEL = MODEL_AIFS_SINGLE_E
+  CASE ( 'aifs-ens' )
+    IMODEL = MODEL_AIFS_ENS_E
+  CASE ( 'aifs-single-mse' )
+    IMODEL = MODEL_AIFS_SINGLE_MSE_E
+  CASE ( 'aifs-ens-crps' )
+    IMODEL = MODEL_AIFS_ENS_CRPS_E
+  CASE ( 'aifs-ens-diff' )
+    IMODEL = MODEL_AIFS_ENS_DIFF_E
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MODEL )
   END SELECT
@@ -9135,6 +9154,128 @@ PP_ERROR_HANDLER
 END FUNCTION CFLOAT2IFLOAT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CTIME2ITIME'
+PP_THREAD_SAFE FUNCTION CTIME2ITIME( CTIME, ITIME, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_INTEGER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CTIME
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ITIME
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CTIME)) :: STEMP
+  INTEGER(KIND=JPIB_K)           :: I
+  INTEGER(KIND=JPIB_K)           :: L
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  ITIME = UNDEF_PARAM_E
+
+  ! Time can begin with multiple 0, i.e. 0000
+  STEMP = TRIM(CTIME)
+  L=LEN(STEMP)
+  DO I=1,L
+    IF (STEMP(I:I).EQ.'0') THEN
+      if (I.NE.L) THEN
+        STEMP(I:I) = ' '
+      END IF
+    ELSE
+      EXIT
+    END IF
+  END DO
+
+
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(STEMP, ITIME, HOOKS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ctime: '//TRIM(ADJUSTL(CTIME)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CTIME2ITIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 
 

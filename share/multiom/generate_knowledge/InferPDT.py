@@ -27,12 +27,12 @@ def inferPDT(catValuePairs: Dict[str, str], matcher: MatchPDTType) -> int:
                     return inferPDT(catValuePairs, matcher.default)
                 raise ValueError(f"Category {cat} is not available in dict {catValuePairs}")
             catVal = catValuePairs[cat]
-            
+
             if catVal not in matcher.subMatch.keys():
                 if matcher.default:
                     return inferPDT(catValuePairs, matcher.default)
                 raise ValueError(f"Category with value {{{cat}: {catVal}}} has no entry in sub matcher and no default is given. Possible values {list(matcher.subMatch.keys())}")
-                    
+
             subMatch = matcher.subMatch[catVal]
             return inferPDT(catValuePairs, subMatch)
 
@@ -72,10 +72,10 @@ def buildDecisionMap(subCatList, selector, mappedSelectorList) -> MatchPDTType:
             # Recursion on a proper selection
             selectorsForVal = [s for s in mappedSelectorList if filterSelector(s[0])]
             sub = buildDecisionMap(subCatList[1:], {cat: val, **selector}, selectorsForVal)
-            
-            
+
+
             if val is None:
-                # If there is only 1 val and it is default, we can skip checking the whole category 
+                # If there is only 1 val and it is default, we can skip checking the whole category
                 if len(valsInSelectors) == 1:
                     return sub
                 else:
@@ -84,7 +84,7 @@ def buildDecisionMap(subCatList, selector, mappedSelectorList) -> MatchPDTType:
                 subMatch[val] = sub
 
         return MatchPDTCategory(category=cat, subMatch=subMatch, default=default)
-           
+
 
 pdtCategoriesHandleOrder = listAllCategoriesInOrder(categories)
 pdtMatcher=buildDecisionMap(pdtCategoriesHandleOrder, {}, categorySelectorsWithMappedPdt)

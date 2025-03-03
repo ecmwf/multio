@@ -46,9 +46,11 @@ ecbuild_add_executable(
 
   TARGET multiom-feed
 
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
+
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_feed_prog.F90
-
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 
@@ -93,3 +95,9 @@ ecbuild_add_executable(
   LINKER_LANGUAGE Fortran
 
 )
+
+ecbuild_add_executable( TARGET    grib1-to-grib2
+                        CONDITION HAVE_GRIB1_TO_GRIB2
+                        SOURCES   multiom-mtg2.cc ../../multio/tools/MultioTool.cc
+                        NO_AS_NEEDED
+                        LIBS      multio multiom eckit fckit metkit eccodes eccodes_f90 )

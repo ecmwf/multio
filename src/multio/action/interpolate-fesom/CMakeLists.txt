@@ -38,7 +38,7 @@ ecbuild_add_executable(
         InterpolateFesom.h
 
     CONDITION
-        HAVE_ATLAS_IO
+        HAVE_ATLAS_IO AND HAVE_MULTIO_BUILD_TOOLS
 
     LIBS
         multio
@@ -59,7 +59,7 @@ ecbuild_add_executable(
         InterpolateFesom.h
 
     CONDITION
-        HAVE_ATLAS_IO
+        HAVE_ATLAS_IO AND HAVE_MULTIO_BUILD_TOOLS
 
     LIBS
         multio
@@ -80,7 +80,7 @@ ecbuild_add_executable(
         InterpolateFesom.h
 
     CONDITION
-        HAVE_ATLAS_IO
+        HAVE_ATLAS_IO AND HAVE_MULTIO_BUILD_TOOLS
 
     LIBS
         multio

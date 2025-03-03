@@ -53,6 +53,8 @@ encoder:
       type: default
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     level-configurator:
       type: hybrid
   data-representation-section:

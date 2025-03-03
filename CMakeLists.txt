@@ -90,6 +90,25 @@ ecbuild_add_option( FEATURE SANDBOX
                     DEFAULT OFF
                     DESCRIPTION "Sanbox for exploring io server design" )
 
+ecbuild_add_option( FEATURE BUILD_TOOLS
+                    DEFAULT ON
+                    DESCRIPTION "Build the command line tools" )
+
+if(HAVE_BUILD_TOOLS)
+    set(_default_multio_tools ON)
+else()
+    set(_default_multio_tools OFF)
+endif()
+
+ecbuild_add_option( FEATURE MULTIO_BUILD_TOOLS
+                    DEFAULT ${_default_multio_tools}
+                    DESCRIPTION "Build the command line MULTIO tools" )
+
+ecbuild_add_option( FEATURE GRIB1_TO_GRIB2
+                    DEFAULT ${_default_multio_tools}
+                    DESCRIPTION "Build the command line GRIB1-to-GRIB2 converter tool" )
+
+
 ### HEALPix tests
 
 ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
@@ -104,7 +123,7 @@ ecbuild_add_option( FEATURE MULTIO_OUTPUT_MANAGER
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
                     CONDITION HAVE_MULTIO_OUTPUT_MANAGER
-		                DEFAULT OFF
+                    DEFAULT OFF
                     DESCRIPTION "Enable generation of the encoding report" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL

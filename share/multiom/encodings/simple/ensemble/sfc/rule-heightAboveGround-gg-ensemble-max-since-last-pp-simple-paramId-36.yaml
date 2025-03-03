@@ -52,6 +52,8 @@ encoder:
       type-of-statistical-processing: max
     param-configurator:
       type: paramId
+    model-configurator:
+      type: default
     level-configurator:
       type: heightAboveGround
     ensemble-configurator:

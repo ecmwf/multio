@@ -99,7 +99,7 @@ CASE("Test mapping tol (action)") {
                       "mapping" : "{~}/metadata-mapping/test-mapping-tol.yaml",
                       "enforce-matching": false,
                       "overwrite-existing": true
-                    }, 
+                    },
                     {
                         "type": "print",
                         "stream": "cout",

@@ -225,7 +225,7 @@ int main() {
     readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has1);     // TODO find valid timeproc
-    ret = multio_grib2_dict_set(dictionary_01, "timeproc", "4");      // TODO find valid timeproc
+    ret = multio_grib2_dict_set(dictionary_01, "timeproc", "4");       // TODO find valid timeproc
     ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has2);     // TODO find valid timeproc
     ret = multio_grib2_dict_get(dictionary_01, "timeproc", &readVal);  // TODO find valid timeproc
     // printf("timeproc: %s, %d, %d, %d\n", readVal, has1, has2, ret );

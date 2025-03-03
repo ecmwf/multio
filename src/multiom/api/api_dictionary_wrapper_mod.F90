@@ -2479,10 +2479,10 @@ IMPLICIT NONE
     UNIT = OUTPUT_UNIT
   CASE default
     OPEN(NEWUNIT=UNIT, FILE=FNAME_F, ACTION="WRITE", IOSTAT=WRITE_STAT)
-    
+
     PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_OPEN_UNIT )
   END SELECT
-  
+
 
   !> Get th fortran handle from the c handle
   F_DICT => NULL()
@@ -2514,15 +2514,15 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_WRONG_HANDLE )
 
   END SELECT
-  
-  
+
+
   SELECT CASE( TRIM(FNAME_F) )
   CASE ('stderr')
   CASE ('stdout')
   CASE default
     CLOSE(UNIT=UNIT)
   END SELECT
-    
+
 
   !> Be sure we don't have any memory leaks
   CALL HOOKS%DEBUG_HOOK_%FREE( )

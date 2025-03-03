@@ -114,7 +114,7 @@ CONTAINS
 
   !> @brief Get the size in bytes of the sample
   PROCEDURE(SAMPLE_SIZE_IF), DEFERRED, PUBLIC, PASS :: SAMPLE_SIZE
-  
+
   !> @brief Get the size in bytes of the sample
   PROCEDURE(SAFE_LOAD_IF), DEFERRED, PUBLIC, PASS :: SAFE_LOAD
 
@@ -683,7 +683,7 @@ END FUNCTION SAMPLE_SIZE_IF
 
 !> @brief Sanity call which should have no side effects
 !>
-!> Sometimes it is not possible to set specific eccodes keys because eccodes 
+!> Sometimes it is not possible to set specific eccodes keys because eccodes
 !> is not preparing an handle properly.
 !>
 !> This calls avoids these problems by dumping to binary and reloading a sample.

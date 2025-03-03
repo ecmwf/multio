@@ -8,7 +8,7 @@ ecbuild_add_library(
         Scale.cc
         Scale.h
         Mapping.cc
-        Mapping.h 
+        Mapping.h
         Scaling.cc
         Scaling.h
         MetadataUtils.cc

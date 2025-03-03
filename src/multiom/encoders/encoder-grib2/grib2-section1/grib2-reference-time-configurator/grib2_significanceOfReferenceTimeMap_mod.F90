@@ -75,7 +75,7 @@ PP_THREAD_SAFE FUNCTION SIGNIFICANCEOFREFERENCETIME_MAP( &
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  
+
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_FG_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_AN_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_IA_E
@@ -101,69 +101,69 @@ PP_THREAD_SAFE FUNCTION SIGNIFICANCEOFREFERENCETIME_MAP( &
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_ED_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_TU_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_FF_E
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EFI_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EFIC_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EP_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_BF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CD_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_4I_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GO_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_ME_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PD_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CI_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SOT_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EME_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_IM_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SIM_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_WEM_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_WES_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CR_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SES_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TAEM_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TAES_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SG_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PA_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_ICP_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SV_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AS_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SVAR_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CV_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OR_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FX_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FU_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SFO_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TPA_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_IF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMEAN_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMAX_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMIN_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCSTDEV_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_HCMEAN_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SSD_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GSD_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GA_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GAI_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GBF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PFC_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PPM_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GWT_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EST_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_MPP_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AI_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TF_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_MFB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OFB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OAI_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SFB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FSOIFB_E 
-  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCDFB_E 
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EFI_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EFIC_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EP_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_BF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CD_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_4I_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GO_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_ME_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PD_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CI_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SOT_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EME_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_IM_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SIM_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_WEM_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_WES_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CR_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SES_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TAEM_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TAES_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SG_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PA_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_ICP_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SV_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AS_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SVAR_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_CV_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OR_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FX_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FU_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SFO_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TPA_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_IF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMEAN_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMAX_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCMIN_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCSTDEV_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_HCMEAN_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SSD_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GSD_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GA_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GAI_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GBF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PFC_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_PPM_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_GWT_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_EST_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_MPP_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AI_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_AB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_TF_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_MFB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OFB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_OAI_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_SFB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FSOIFB_E
+  USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCDFB_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -202,7 +202,7 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
-  
+
   SELECT CASE ( MSG%TYPE )
 
   ! CASE( TYPE_FG_E )
@@ -278,202 +278,202 @@ IMPLICIT NONE
   !   ! Tubes
   !   SORT = 1_JPIB_K
   ! CASE( TYPE_FF_E )
-  !   ! Flux forcing realtime 
+  !   ! Flux forcing realtime
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_OF_E ) 
+  ! CASE( TYPE_OF_E )
   !   ! Ocean forward
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EFI_E ) 
+  ! CASE( TYPE_EFI_E )
   !   ! Extreme forecast index
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EFIC_E ) 
+  ! CASE( TYPE_EFIC_E )
   !   ! Extreme forecast index control
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_PB_E ) 
+  ! CASE( TYPE_PB_E )
   !   ! Probability boundaries
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EP_E ) 
+  ! CASE( TYPE_EP_E )
   !   ! Event probability
   !   SORT = 1_JPIB_K
-  CASE( TYPE_BF_E ) 
+  CASE( TYPE_BF_E )
     ! Bias-corrected forecast
     SORT = 1_JPIB_K
-  ! CASE( TYPE_CD_E ) 
+  ! CASE( TYPE_CD_E )
   !   ! Climate distribution
   !   SORT = 1_JPIB_K
-  CASE( TYPE_4I_E ) 
+  CASE( TYPE_4I_E )
     ! 4D analysis increments
     SORT = 0_JPIB_K
-  ! CASE( TYPE_GO_E ) 
+  ! CASE( TYPE_GO_E )
   !   ! Gridded observations
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_ME_E ) 
+  ! CASE( TYPE_ME_E )
   !   ! Model errors
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_PD_E ) 
+  ! CASE( TYPE_PD_E )
   !   ! Probability distribution
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_CI_E ) 
+  ! CASE( TYPE_CI_E )
   !   ! Cluster information
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SOT_E ) 
+  ! CASE( TYPE_SOT_E )
   !   ! Shift of Tail
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EME_E ) 
+  ! CASE( TYPE_EME_E )
   !   ! Ensemble data assimilation model errors
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_IM_E ) 
+  ! CASE( TYPE_IM_E )
   !   ! Images
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SIM_E ) 
+  ! CASE( TYPE_SIM_E )
   !   ! Simulated images
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_WEM_E ) 
+  ! CASE( TYPE_WEM_E )
   !   ! Weighted ensemble mean
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_WES_E ) 
+  ! CASE( TYPE_WES_E )
   !   ! Weighted ensemble standard deviation
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_CR_E ) 
+  ! CASE( TYPE_CR_E )
   !   ! Cluster representative
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SES_E ) 
+  ! CASE( TYPE_SES_E )
   !   ! Scaled ensemble standard deviation
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TAEM_E ) 
+  ! CASE( TYPE_TAEM_E )
   !   ! Time average ensemble mean
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TAES_E ) 
+  ! CASE( TYPE_TAES_E )
   !   ! Time average ensemble standard deviation
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SG_E ) 
+  ! CASE( TYPE_SG_E )
   !   ! Sensitivity gradient
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SF_E ) 
+  ! CASE( TYPE_SF_E )
   !   ! Sensitivity forecast
   !   SORT = 1_JPIB_K
-  CASE( TYPE_PA_E ) 
+  CASE( TYPE_PA_E )
     ! Perturbed analysis
     SORT = 0_JPIB_K
-  ! CASE( TYPE_ICP_E ) 
+  ! CASE( TYPE_ICP_E )
   !   ! Initial condition perturbation
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SV_E ) 
+  ! CASE( TYPE_SV_E )
   !   ! Singular vector
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AS_E ) 
+  ! CASE( TYPE_AS_E )
   !   ! Adjoint singular vector
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SVAR_E ) 
+  ! CASE( TYPE_SVAR_E )
   !   ! Signal variance
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_CV_E ) 
+  ! CASE( TYPE_CV_E )
   !   ! Calibration/Validation forecast
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_OR_E ) 
+  ! CASE( TYPE_OR_E )
   !   ! Ocean reanalysis
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FX_E ) 
+  ! CASE( TYPE_FX_E )
   !   ! Flux forcing
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FU_E ) 
+  ! CASE( TYPE_FU_E )
   !   ! Fill-up
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SFO_E ) 
+  ! CASE( TYPE_SFO_E )
   !   ! Simulations with forcing
   !   SORT = 1_JPIB_K
-  CASE( TYPE_TPA_E ) 
+  CASE( TYPE_TPA_E )
     ! Time processed analysis
     SORT = 0_JPIB_K
-  ! CASE( TYPE_IF_E ) 
+  ! CASE( TYPE_IF_E )
   !   ! Interim forecast
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMEAN_E ) 
+  ! CASE( TYPE_FCMEAN_E )
   !   ! Forecast mean
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMAX_E ) 
+  ! CASE( TYPE_FCMAX_E )
   !   ! Forecast maximum
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMIN_E ) 
+  ! CASE( TYPE_FCMIN_E )
   !   ! Forecast minimum
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCSTDEV_E ) 
+  ! CASE( TYPE_FCSTDEV_E )
   !   ! Forecast standard deviation
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_HCMEAN_E ) 
+  ! CASE( TYPE_HCMEAN_E )
   !   ! Hindcast climate mean
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SSD_E ) 
+  ! CASE( TYPE_SSD_E )
   !   ! Simulated satellite data
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_GSD_E ) 
+  ! CASE( TYPE_GSD_E )
   !   ! Gridded satellite data
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_GA_E ) 
+  ! CASE( TYPE_GA_E )
   !   ! GFAS analysis
   !   SORT = 1_JPIB_K
-  CASE( TYPE_GAI_E ) 
+  CASE( TYPE_GAI_E )
     ! Gridded analysis input
     SORT = 0_JPIB_K
-  ! CASE( TYPE_GBF_E ) 
+  ! CASE( TYPE_GBF_E )
   !   ! Bias-corrected gridbox
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_PFC_E ) 
+  ! CASE( TYPE_PFC_E )
   !   ! Point values
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_PPM_E ) 
+  ! CASE( TYPE_PPM_E )
   !   ! Point value metrics
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_GWT_E ) 
+  ! CASE( TYPE_GWT_E )
   !   ! Weather types
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EST_E ) 
+  ! CASE( TYPE_EST_E )
   !   ! Ensemble statistics
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_MPP_E ) 
+  ! CASE( TYPE_MPP_E )
   !   ! Model physics perturbations
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_OB_E ) 
+  ! CASE( TYPE_OB_E )
   !   ! Observations
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FB_E ) 
+  ! CASE( TYPE_FB_E )
   !   ! Feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AI_E ) 
+  ! CASE( TYPE_AI_E )
   !   ! Analysis input
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AF_E ) 
+  ! CASE( TYPE_AF_E )
   !   ! Analysis feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AB_E ) 
+  ! CASE( TYPE_AB_E )
   !   ! Analysis bias
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TF_E ) 
+  ! CASE( TYPE_TF_E )
   !   ! Trajectory forecast
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_MFB_E ) 
+  ! CASE( TYPE_MFB_E )
   !   ! MonDB feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_OFB_E ) 
+  ! CASE( TYPE_OFB_E )
   !   ! ODB feedback
   !   SORT = 1_JPIB_K
-  CASE( TYPE_OAI_E ) 
+  CASE( TYPE_OAI_E )
     ! ODB analysis input
     SORT = 0_JPIB_K
-  ! CASE( TYPE_SFB_E ) 
+  ! CASE( TYPE_SFB_E )
   !   ! Summary feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FSOIFB_E ) 
+  ! CASE( TYPE_FSOIFB_E )
   !   ! Forecast sensitivity to observations impact feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCDFB_E ) 
-  !   ! Forecast departures feedback 
+  ! CASE( TYPE_FCDFB_E )
+  !   ! Forecast departures feedback
   !   SORT = 1_JPIB_K
 
-    
+
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNHANDLED_CASE )
-  
+
   END SELECT
 
 

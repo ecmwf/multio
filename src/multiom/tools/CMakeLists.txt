@@ -74,6 +74,7 @@ ecbuild_add_executable(
 
   SOURCES
     ${MULTIOM_TOOLS_DIR}/cmd_arg_prog.F90
+    ${MULTIOM_TOOLS_DIR}/multiom_list_cfg_mod.F90
 
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}

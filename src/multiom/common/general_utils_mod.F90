@@ -1832,7 +1832,7 @@ IMPLICIT NONE
   ELSE
 
     ! Default value for output manager type when environment variable is not defined
-    OMTYPE = 'NOOP'
+    OMTYPE = 'NO-IO-INFO-LOG'
 
   ENDIF
 

@@ -33,8 +33,240 @@ IMPLICIT NONE
   PUBLIC :: OUTPUT_MANAGER_BASE_A
   PUBLIC :: MAKE_OUTPUT_MANAGER
   PUBLIC :: DESTROY_OUTPUT_MANAGER
+  PUBLIC :: IS_VALID_OUTPUT_MANAGER
 
 CONTAINS
+
+
+!>
+!> @brief Check if the output manager kind is valid.
+!>
+!> This function creates a new instance of an output manager, initializing it
+!> with the provided IO server instance. After allocation, the 'setup' procedure
+!> is automatically invoked with the IO server instance as an argument.
+!>
+!> @param [in]    OMTYPE         TYpe of the output manager to be created
+!> @param [in]    PROCESSOR_TOPO Processor topology to be used in a multiprocessor run
+!> @param [in]    MODEL_PARAMS   Model parameters that are frozen during the simulation
+!> @param [in]    YAML_CFG_FNAME Name of the YAML main configuration file
+!> @param [out]   OM             The newly created output manager.
+!>
+!> @note Ensure to call the setup procedure after instantiation for proper initialization.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IS_VALID_OUTPUT_MANAGER'
+PP_THREAD_SAFE FUNCTION IS_VALID_OUTPUT_MANAGER( OMTYPE, IS_VALID, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OUTUPUT_MANAGER_BASE_MOD, ONLY: OUTPUT_MANAGER_BASE_A
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: IFS_PAR_MOD,              ONLY: PROC_TOPO_T
+  USE :: IFS_PAR_MOD,              ONLY: MODEL_PAR_T
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+
+  USE :: NOOP_MOD,                 ONLY: NOOP_OUTPUT_MANAGER_T
+  USE :: NOOP_MOD,                 ONLY: NOOP_OMNAME
+
+  USE :: DUMP_MOD,                 ONLY: DUMP_OUTPUT_MANAGER_T
+  USE :: DUMP_MOD,                 ONLY: DUMP_OMNAME
+
+  USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T
+  USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OMNAME
+
+#if 0
+  USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OUTPUT_MANAGER_T
+  USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T
+  USE :: GRIBX2MULTIO_RAW_MOD,     ONLY: GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T
+  USE :: MULTIO_RAW_MOD,           ONLY: MULTIO_RAW_OUTPUT_MANAGER_T
+  USE :: MULTIO_NO_ENC_MOD,        ONLY: MULTIO_NO_ENC_OUTPUT_MANAGER_T
+
+  USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OMNAME
+  USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OMNAME
+  USE :: GRIBX2MULTIO_RAW_MOD,     ONLY: GRIBX2MULTIO_RAW_OMNAME
+  USE :: MULTIO_RAW_MOD,           ONLY: MULTIO_RAW_OMNAME
+  USE :: MULTIO_NO_ENC_MOD,        ONLY: MULTIO_NO_ENC_OMNAME
+#endif
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: OMTYPE
+  LOGICAL,          INTENT(OUT)   :: IS_VALID
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SETUP = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_OUTPUT_MANAGER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE = 3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization
+  STAT = 0_JPIB_K
+  ERRMSG = ''
+
+
+  !
+  ! Allocate the requested IOmanager
+  SELECT CASE(TRIM(ADJUSTL(OMTYPE)))
+
+  ! ------------------------------------------------------------------------------------------------
+  ! A no-op output manager. Used to demonstrate behavior without I/O
+  ! when addressing complaints or testing scenarios.
+  CASE ( NOOP_OMNAME )
+    IS_VALID = .TRUE.
+
+
+
+  ! ------------------------------------------------------------------------------------------------
+  ! A dump output manager. Used to dump all the data arrived to the IOserver
+  CASE ( DUMP_OMNAME )
+    IS_VALID = .TRUE.
+
+
+#if 0
+  ! ------------------------------------------------------------------------------------------------
+  ! Grib[1|2] output manager utilizing grib functionalities as a sink,
+  ! designed to operate independently of multIO.
+  CASE ( 'GRIB-MESSAGE-TO-FILE', GRIBX_BINARY_OMNAME )
+    ALLOCATE( GRIBX_BINARY_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+
+
+  ! ------------------------------------------------------------------------------------------------
+  ! Grib[1|2] output manager leveraging multIO as a sink,
+  ! designed for saving binary-encoded grib files through the multIO API.
+  CASE ( 'GRIB-MSG-TO-MULTIO', GRIBX2MULTIO_BIN_OMNAME )
+    ALLOCATE( GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+#endif
+
+  ! ------------------------------------------------------------------------------------------------
+  ! Grib[1|2] output manager utilizing multIO as a sink. Binary-encoded
+  ! grib files are transformed into multIO metadata and a raw data array.
+  ! The metadata and data are subsequently handed to the multIO API for
+  ! on-the-fly post-processing and storage to disk.
+  CASE ( GRIB_HEADER2MULTIO_OMNAME )
+    IS_VALID = .TRUE.
+
+
+#if 0
+  ! ------------------------------------------------------------------------------------------------
+  ! Pure multIO output manager constructing MultIO metadata directly in the encoders, bypassing
+  ! grib eccodes api. The encoding logic is still used. Metadata and data are then passed to the
+  ! multIO API for on-the-fly post-processing and storage to disk.
+  CASE ( 'FULL-GRIB-HEADER-TO-MULTIO', MULTIO_RAW_OMNAME )
+    ALLOCATE( MULTIO_RAW_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+
+
+  ! ------------------------------------------------------------------------------------------------
+  ! Pure multIO output manager constructing metadata directly from io_server requests,
+  ! bypassing the grib/eccodes API. The metadata are directly the raw information arriving from the
+  ! model. No encoding logic at all in this output manager. Metadata and data are then passed to the
+  ! multIO API for on-the-fly post-processing and storage to disk.
+  ! The idea is to use this to test funtionalities of the new MultIO IOserver
+  CASE ( 'FORTRAN-METADATA-TO-MULTIO', MULTIO_NO_ENC_OMNAME )
+    ALLOCATE( MULTIO_NO_ENC_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+#endif
+
+  ! ------------------------------------------------------------------------------------------------
+  CASE DEFAULT
+    PP_DEBUG_DEVELOP_THROW( ERRFLAG_UNKNOWN_OUTPUT_MANAGER )
+  END SELECT
+
+  ! Deallocate the error message if allocated
+  IF ( ALLOCATED(ERRMSG) ) THEN
+    DEALLOCATE(ERRMSG, STAT=STAT)
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_UNABLE_TO_ALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating ('//TRIM(ADJUSTL(OMTYPE))//')' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=STAT)
+      ENDIF
+
+    CASE (ERRFLAG_UNKNOWN_OUTPUT_MANAGER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown output manager: "'//TRIM(ADJUSTL(OMTYPE))//'"' )
+
+    CASE (ERRFLAG_UNABLE_TO_SETUP)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting up ('//TRIM(ADJUSTL(OMTYPE))//')' )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IS_VALID_OUTPUT_MANAGER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 !>
@@ -89,6 +321,9 @@ PP_THREAD_SAFE FUNCTION MAKE_OUTPUT_MANAGER( OMTYPE, PROCESSOR_TOPO, &
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
 
   ! Symbols imported by the preprocessor for tracing purposes
   PP_TRACE_USE_VARS
@@ -298,6 +533,9 @@ PP_THREAD_SAFE FUNCTION DESTROY_OUTPUT_MANAGER( OM, HOOKS ) RESULT(RET)
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
 
   ! Symbols imported by the preprocessor for tracing purposes
   PP_TRACE_USE_VARS

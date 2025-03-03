@@ -355,6 +355,152 @@ END FUNCTION READ_ATM_MESSAGE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PRINT_ATM_MESSAGE'
+PP_THREAD_SAFE FUNCTION PRINT_ATM_MESSAGE( OUTPUT_UNIT, PARAM, LEVEL, PROC, REPRES, PREFIX, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIOM_API, ONLY: JPIB_K
+  USE :: MULTIOM_API, ONLY: HOOKS_T
+  USE :: MULTIOM_API, ONLY: IPREFIX2ILEVTYPE
+  USE :: MULTIOM_API, ONLY: ILEVTYPE2CLEVTYPE
+  USE :: MULTIOM_API, ONLY: IREPRES2CREPRES
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: OUTPUT_UNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: PARAM
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: LEVEL
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: PROC
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: REPRES
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: PREFIX
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: WRITE_STATUS
+  INTEGER(KIND=JPIB_K) :: ILEVTYPE
+  CHARACTER(LEN=16) :: CLEVTYPE
+  CHARACTER(LEN=16) :: CREPRES
+  CHARACTER(LEN=32) :: CLEVEL
+  CHARACTER(LEN=32) :: CPROC
+  CHARACTER(LEN=32) :: CPARAM
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_REPRES = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_ILEVTYPE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_CLEVTYPE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE_LOG = 4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract strings from the integer values (enumerators)
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_REPRES) IREPRES2CREPRES(REPRES, CREPRES, HOOKS)
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_ILEVTYPE) IPREFIX2ILEVTYPE( PREFIX, PARAM, LEVEL, REPRES, ILEVTYPE, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_CLEVTYPE) ILEVTYPE2CLEVTYPE( ILEVTYPE, CLEVTYPE, HOOKS )
+
+  ! Convert the integer values to strings
+  CLEVEL = REPEAT( ' ', 32 )
+  WRITE(CLEVEL,'(I32)',IOSTAT=WRITE_STATUS) LEVEL
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_UNABLE_TO_WRITE_LOG )
+
+  CLEVEL = REPEAT( ' ', 32 )
+  WRITE(CPROC,'(I32)',IOSTAT=WRITE_STATUS) PROC
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_UNABLE_TO_WRITE_LOG )
+
+  CLEVEL = REPEAT( ' ', 32 )
+  WRITE(CPARAM,'(I32)',IOSTAT=WRITE_STATUS) PARAM
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_UNABLE_TO_WRITE_LOG )
+
+  ! Print the message
+  WRITE(OUTPUT_UNIT,'(A8,A8,A12,A5,A8,A12)',IOSTAT=WRITE_STATUS) &
+&             TRIM(ADJUSTL(CPROC)), &
+&             'Atm', &
+&             TRIM(ADJUSTL(CPARAM)), &
+&             TRIM(ADJUSTL(CREPRES)), &
+&             TRIM(ADJUSTL(CLEVTYPE)), &
+&             TRIM(ADJUSTL(CLEVEL))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_UNABLE_TO_WRITE_LOG )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_REPRES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert representation' )
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_ILEVTYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert ilevtype' )
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_CLEVTYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert clevtype' )
+    CASE(ERRFLAG_UNABLE_TO_WRITE_LOG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to write log' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PRINT_ATM_MESSAGE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'READ_WAM_MESSAGE'
 PP_THREAD_SAFE FUNCTION READ_WAM_MESSAGE( DIRECTORY, PROC_ID, MSG_ID, ADDR, YDMSG, &
 & BIG_ENDIAN_READ, VERBOSE, HOOKS ) RESULT(RET)

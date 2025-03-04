@@ -20,6 +20,8 @@
 
 #include "multio/action/statistics/operations/Accumulate.h"
 #include "multio/action/statistics/operations/Average.h"
+#include "multio/action/statistics/operations/Difference.h"
+#include "multio/action/statistics/operations/InverseDifference.h"
 #include "multio/action/statistics/operations/FluxAverage.h"
 #include "multio/action/statistics/operations/Instant.h"
 #include "multio/action/statistics/operations/Maximum.h"
@@ -39,6 +41,12 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
     }
     if (opname == "average") {
         return std::make_unique<Average<Precision>>(opname, sz, win, cfg);
+    }
+    if (opname == "difference") {
+        return std::make_unique<Difference<Precision>>(opname, sz, win, cfg);
+    }
+    if (opname == "inverse-difference") {
+        return std::make_unique<InverseDifference<Precision>>(opname, sz, win, cfg);
     }
     if (opname == "flux-average") {
         return std::make_unique<FluxAverage<Precision>>(opname, sz, win, cfg);
@@ -79,6 +87,14 @@ std::unique_ptr<Operation> load_operation(const std::string& opname, std::shared
     if (opname == "average") {
         found = true;
         ret = std::make_unique<Average<Precision>>(opname, win, IOmanager, opt);
+    }
+    if (opname == "difference") {
+        found = true;
+        ret = std::make_unique<Difference<Precision>>(opname, win, IOmanager, opt);
+    }
+    if (opname == "inverse-difference") {
+        found = true;
+        ret = std::make_unique<InverseDifference<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "flux-average") {
         found = true;

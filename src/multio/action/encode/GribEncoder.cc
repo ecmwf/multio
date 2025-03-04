@@ -57,7 +57,7 @@ const std::map<const std::string, const std::int64_t> ops_to_code{
     {"instant", 0000}, {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
 const std::map<const std::string, const std::int64_t> type_of_statistical_processing{
-    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
+    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"difference", 4}, {"stddev", 6}, {"inverse-difference", 8}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -751,18 +751,14 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         }
 
         if (operation && (*operation != "instant")) {
-            static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
-                {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
-            if (auto searchStat = TYPE_OF_STATISTICAL_PROCESSING.find(*operation);
-                searchStat != TYPE_OF_STATISTICAL_PROCESSING.end()) {
-                g.setValue("typeOfStatisticalProcessing", searchStat->second);
-            }
-            else {
+            const auto searchStat = type_of_statistical_processing.find(*operation);
+            if (searchStat == std::end(type_of_statistical_processing)) {
                 std::ostringstream oss;
                 oss << "setDateAndStatisticalFields - Cannot map value \"" << *operation
                     << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical processing.";
                 throw eckit::UserError(oss.str(), Here());
             }
+            g.setValue("typeOfStatisticalProcessing", searchStat->second);
         }
 
 

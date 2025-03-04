@@ -384,14 +384,31 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "model");
     if (ret != 0)
         return ret;
-
-    ret = getAndSet(h, *mars_dict, "levtype");
-    if (ret != 0)
-        return ret;
-
-    ret = getAndSet(h, *mars_dict, "level", "levelist");
-    if (ret != 0)
-        return ret;
+        
+    if (hasKey(h, "levtype")) {
+        std::string levtype = getString(h, "levtype");
+        int ret = multio_grib2_dict_set(*mars_dict, "levtype", levtype.c_str());
+        if (ret != 0) return ret;
+        
+        // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
+        if (hasKey(h, "level")) {
+            std::optional<std::string> levelist;
+            if (levtype == "pl") {
+                std::string pressureUnits = getString(h, "pressureUnits");
+                if (pressureUnits == "hPa") {
+                    long levelistVal = getLong(h, "level");
+                    levelist = std::to_string(levelistVal*100);
+                } 
+            }
+            
+            if (!levelist) {
+                levelist = getString(h, "level");
+            }
+            
+            int ret = multio_grib2_dict_set(*mars_dict, "levelist", levelist->c_str());
+            if (ret != 0) return ret;
+        }
+    }
 
     ret = getAndSet(h, *mars_dict, "direction");
     if (ret != 0)

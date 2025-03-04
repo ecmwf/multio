@@ -126,4 +126,20 @@ add_subdirectory(restart)
 # add moving mask tests
 add_subdirectory(moving-mask)
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_difference
+    SOURCES test_difference.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics
+    ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
+)
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_inverse_difference
+    SOURCES test_inverse_difference.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics
+    ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
+)
+
 endif()

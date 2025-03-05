@@ -24,6 +24,7 @@ TYPE :: INT_CONTAINER_T
 END TYPE
 
 TYPE :: COMMAND_LINE_ARGS_T
+  LOGICAL :: SKIP_VAL
   LOGICAL :: DRYRUN
   LOGICAL :: VERBOSE
   LOGICAL :: BIG_ENDIAN_READ
@@ -241,6 +242,8 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -n || --n-procs             :: use data from a specific io-server (number of processors of the io-server to use)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
   WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -q || --level-type          :: [1=model_level, 2=pressure_level, 3=vorticity_level, 4=theta_level, 5=surface_level, 6=wave_int, 7=wave_spec]'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -x || --skip-values         :: skip reading values from the binary reproducers'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
   WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -h || --help || ?           :: print this message'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
@@ -485,6 +488,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Default initialisation of command line options
+  CFG%SKIP_VAL = .FALSE.
   CFG%DRYRUN = .FALSE.
   CFG%VERBOSE = .FALSE.
   CFG%BIG_ENDIAN_READ = .FALSE.
@@ -632,6 +636,8 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STAT) ' ECOM :: Command line options'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
   WRITE(OUTPUT_UNIT,'(A150)', IOSTAT=WRITE_STAT) REPEAT('-',150)
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STAT) '+ SkipValues              :: ', CFG%SKIP_VAL
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
   WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STAT) '+ DryRun                  :: ', CFG%DRYRUN
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
@@ -886,6 +892,10 @@ IMPLICIT NONE
       CFG%YAML_CONFIGURATION = REPEAT(' ',4096)
       CALL GET_COMMAND_ARGUMENT( I, CFG%YAML_CONFIGURATION, STATUS=STATUS )
       PP_DEBUG_CRITICAL_COND_THROW( STATUS .NE. 0, ERRFLAG_UNABLE_TO_READ_COMMAND_LINE_ARG )
+
+    ! ----------------------------------------------------------------------------------------------
+    CASE ( '-x', '--skip-values' )
+      CFG%SKIP_VAL = .TRUE.
 
     ! ----------------------------------------------------------------------------------------------
     CASE ( '-d', '--dry-run' )

@@ -124,18 +124,19 @@ long OperationWindow::count() const {
     return count_;
 }
 
-std::vector<long>& OperationWindow::counts(long sz) const {
-    if (counts_.size() != sz) {
-        if (counts_.size() == 0) {
-            counts_.resize(sz, 0);
-        } else {
-            std::ostringstream os;
-            os << *this << " : counts array is already initialized with a different size" << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
-        }
-    }
+const std::vector<long>& OperationWindow::counts() const {
     return counts_;
 }
+
+template <typename T>
+void OperationWindow::updateCounts(const T* values, size_t size, double missingValue) const {
+    initCountsLazy(size);
+    std::transform(counts_.begin(), counts_.end(), values, counts_.begin(),
+                   [missingValue](long c, T v) { return v == missingValue ? c : c + 1; });
+    return;
+}
+template void OperationWindow::updateCounts(const float* values, size_t size, double missingValue) const;
+template void OperationWindow::updateCounts(const double* values, size_t size, double missingValue) const;
 
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     const size_t writeSize = restartSize();
@@ -451,6 +452,20 @@ void OperationWindow::updateFlush() {
 
 long OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
+}
+
+void OperationWindow::initCountsLazy(size_t size) const {
+    if (counts_.size() != size) {
+        if (counts_.size() == 0) {
+            counts_.resize(size, 0);
+        }
+        else {
+            std::ostringstream os;
+            os << *this << " : counts array is already initialized with a different size" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+    }
+    return;
 }
 
 void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {

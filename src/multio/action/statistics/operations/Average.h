@@ -48,7 +48,7 @@ private:
     void computeWithThreshold(T* buf, const StatisticsConfiguration& cfg) {
         const long t = cfg.options().valueCountThreshold();
         const double m = cfg.missingValue();
-        std::vector<long>& counts = win_.counts(values_.size());
+        const std::vector<long>& counts = win_.counts();
         std::transform(values_.begin(), values_.end(), counts.begin(), buf,
                        [t, m](T v, long c) { return static_cast<T>(c < t ? m : v); });
         return;
@@ -68,10 +68,12 @@ private:
     }
     void  updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
         const double m = cfg.missingValue();
-        std::vector<long>& counts = win_.counts(values_.size());
+        win_.updateCounts(val, values_.size(), m);
+        const std::vector<long>& counts = win_.counts();
+
         for (size_t i = 0; i < values_.size(); ++i) {
             if (val[i] == m) { continue; }
-            const double c = ++counts[i], c2 = icntpp(c), c1 = sc(c2, c);
+            const double c = counts[i], c2 = icntpp(c), c1 = sc(c2, c);
             values_[i] = values_[i] * c1 + val[i] * c2;
         }
         return;

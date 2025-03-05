@@ -191,7 +191,7 @@ void MultioClient::dispatch(message::Message msg) {
                 message::Message msg2{msg};
                 msg2.acquireMetadata();
                 msg2.modifyMetadata().set("clientPlanName", plan->name());
-
+                //std::cout<<"STEBA DEBUG dispatch message MULTIOCLIENT::dispatch"<<std::endl;
                 plan->process(std::move(msg2));
             }
         }

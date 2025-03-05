@@ -502,11 +502,11 @@ int multio_close_connections(multio_handle_t* mio) {
         [mio]() {
             ASSERT(mio);
 
-            multio::message::Metadata md;
-            md.set("flushKind", "close-connection");
-            md.set("toAllServers",true);
-            md.set("domain","global");
-            mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+            // multio::message::Metadata md;
+            // md.set("flushKind", "close-connection");
+            // md.set("toAllServers",true);
+            // md.set("domain","global");
+            // mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
 
             mio->closeConnections();
         },

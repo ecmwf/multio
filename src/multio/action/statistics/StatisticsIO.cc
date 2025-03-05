@@ -6,6 +6,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
+#include "eckit/mpi/Comm.h"
 
 #include "multio/LibMultio.h"
 
@@ -59,7 +60,7 @@ uint64_t& IOBuffer::operator[](const size_t idx) {
     if (idx >= size_) {
         std::ostringstream os;
         os << "ERROR : idx too large";
-        std::cout << os.str() << std::endl;
+        // std::cout << os.str() << std::endl;
         throw eckit::SeriousBug{os.str(), Here()};
     };
     return buffer_[idx];
@@ -69,7 +70,7 @@ const uint64_t& IOBuffer::operator[](const size_t idx) const {
     if (idx >= size_) {
         std::ostringstream os;
         os << "ERROR : idx too large";
-        std::cout << os.str() << std::endl;
+        // std::cout << os.str() << std::endl;
         throw eckit::SeriousBug{os.str(), Here()};
     };
     return buffer_[idx];
@@ -129,6 +130,7 @@ std::string StatisticsIO::pushDir(const std::string& directory) {
         os << "ERROR : no valid datetime found";
         throw eckit::SeriousBug{os.str(), Here()};
     }
+    std::cout<<"STEBA PUSHDIR directory to push ="<<directory<< " eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank()<<std::endl;
     path_.push_back(directory);
     return getCurrentDir();
 };
@@ -202,6 +204,7 @@ std::string StatisticsIO::getCurrentDir() const {
     for (const auto& dir : path_) {
         os << "/" << dir;
     }
+    std::cout<<"STEBA DEBUG GET CURRENT DIR "<<os.str()<< " eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank()<<std::endl;
     return os.str();
 };
 
@@ -212,6 +215,7 @@ std::string StatisticsIO::getRestartSymLink() const {
 }
 
 bool StatisticsIO::currentDirExists() const {
+   // std::cout<<"STEBA currDirExists " << getCurrentDir() <<std::endl;
     return eckit::PathName{getCurrentDir()}.exists();
 };
 

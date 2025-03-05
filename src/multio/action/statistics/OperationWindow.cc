@@ -82,6 +82,7 @@ OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const Stat
     // std::ostringstream logos;
     // logos << "     - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
     // LOG_DEBUG_LIB(LibMultio) << logos.str() << std::endl;
+    //std::cout<<"STEBA DEBUG: Loading operationWindow from :"<< IOmanager->getCurrentDir() <<std::endl;
     OperationWindow opwin{IOmanager, opt};
     IOmanager->popDir();
     return opwin;
@@ -126,7 +127,7 @@ void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     restartState.zero();
     serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
-    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize());
+    IOmanager->write("operationWindow", restartSize(), restartSize());
     IOmanager->flush();
     return;
 }
@@ -146,6 +147,7 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     currPoint_ = currentPoint;
     count_++;
     LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
+    //std::cout<<"STEBA DEBUG: Upadate Window "<< count_<<std::endl;
     return;
 }
 

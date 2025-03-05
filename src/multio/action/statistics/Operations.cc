@@ -6,7 +6,7 @@
 namespace multio::action {
 
 void parse_file_name(const std::string& file, std::string& opname, std::string& precision) {
-    static const std::regex operation_grammar("([a-z]+)_([a-z]+)");
+    static const std::regex operation_grammar("([a-z-]+)_([a-z]+)");
     std::smatch match;
     if (std::regex_match(file, match, operation_grammar)) {
         precision = match[2].str();

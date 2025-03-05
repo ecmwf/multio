@@ -288,7 +288,23 @@ const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
 
 
 void StatisticsOptions::dumpOptions() {
-    // TODO: Implement this function
+    std::ostringstream os;
+
+    os << " restart-path: " << restartPath() <<"\n" << 
+            " restart-prefix: " << restartPrefix() <<"\n" << 
+            " restart-lib: " << restartLib() <<"\n" << 
+            " log-prefix: " << logPrefix() <<"\n" << 
+            " window-type: " << windowType() <<"\n" << 
+            " solver-reset-accumulate-fields-every: " << solverResetAccumulatedFields() <<"\n" << 
+            " restart-time: " << restartTime() <<"\n" << 
+            " use-current-time: " << useDateTime() <<"\n" << 
+            " write-restart: " << writeRestart() <<"\n" << 
+            " read-restart: " << readRestart() <<"\n" << 
+            " initial-condition-present: " << solver_send_initial_condition() <<"\n" << 
+            " time-step: " << timeStep() <<"\n" << 
+            " step-frequency: " << stepFreq() <<"\n" << 
+            "is-client-side: " << clientSideStatistics() <<"\n" <<std::endl;
+    std::cout << " LOG_DEBUG_LIB(LibMultio) " << os.str();
     return;
 }
 

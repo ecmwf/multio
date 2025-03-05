@@ -61,6 +61,7 @@ public:
 private:
     MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
 
+//modified to shared pointer
     std::unique_ptr<transport::Transport> transport_;
     Listener listener_;
 };

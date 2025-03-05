@@ -8,6 +8,8 @@
 
 #include "TimeUtils.h"
 
+#include "eckit/mpi/Comm.h"
+
 namespace multio::action {
 
 
@@ -27,7 +29,7 @@ TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager,
 
 
 void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
-    LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Dump restart files" << std::endl;
+    std::cout<<"STEBA DEBUG DUMP LOG_DEBUG_LIB(LibMultio) "<< opt.logPrefix() << " *** Dump restart files" <<"getCurrentDir: "<<IOmanager->getCurrentDir()<<" eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() << std::endl;
     IOmanager->pushDir("periodUpdater");
     IOmanager->createCurrentDir();
     periodUpdater_->dump(IOmanager, opt);

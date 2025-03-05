@@ -18,6 +18,7 @@
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
+#include "eckit/mpi/Comm.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
@@ -89,6 +90,7 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
         tmp << std::setw(8) << std::setfill('0') << dt.date().yyyymmdd() << "-" << std::setw(6) << std::setfill('0')
             << dt.time().hhmmss();
         folderName = tmp.str();
+       // std::cout<<"STEBA FOLDERNAME = "<< folderName<< std::endl;
     }
 
     // Restart flush does not provide anything (Fallback)
@@ -107,85 +109,104 @@ void Statistics::CreateMainRestartDirectory(const std::string& restartFolderName
     // processor that is creating the directory and all following login should
     // be skipped since every processor will create its own directory.
     IOmanager_->setDateTime(restartFolderName);
-
     // Only master create the directory
-    if (!IOmanager_->currentDirExists()) {
-        if (is_master) {
+    // if (!IOmanager_->currentDirExists()) {
+        // if (is_master && ( eckit::mpi::comm().rank() == 120)) {
             IOmanager_->createCurrentDir();
-        }
-        else {
-            long cnt = 0;
-            while (!IOmanager_->currentDirExists() && cnt < 100) {
-                cnt++;
-                usleep(1000);
-                LOG_DEBUG_LIB(LibMultio) << "Waiting for Dump directory to be created by master: " << restartFolderName
-                                         << std::endl;
-            }
-            if (cnt >= 100) {
-                std::ostringstream os;
-                os << "Unable to create the restart directory: " << restartFolderName << std::endl;
-                throw eckit::SeriousBug(os.str(), Here());
-            }
-        }
-    }
+            std::cout<<"STEBA DEBUG : RestartfolderName " <<restartFolderName << "getCurrentDir: "<<IOmanager_->getCurrentDir()<<std::endl;
+        // }
+        // else {
+        //     long cnt = 0;
+        //     while (!IOmanager_->currentDirExists() && cnt < 100) {
+        //         cnt++;
+        //         usleep(1000);
+        //         std::cout<<"LOG_DEBUG_LIB(LibMultio)" << "Waiting for Dump directory to be created by master: " << restartFolderName
+        //                                  << std::endl;
+        //     }
+            // if (cnt >= 100) {
+            //     std::ostringstream os;
+            //     os << "Unable to create the restart directory: " << restartFolderName << std::endl;
+            //     throw eckit::SeriousBug(os.str(), Here());
+            // }
+        // }
+    // }
 
     return;
 }
 
 void Statistics::DumpTemporalStatistics() {
     for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
-        LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
-                                 << it->second->cwin().currPointInSteps() << std::endl;
+        // std::cout<<"LOG_DEBUG_LIB(LibMultio) "<< "   - Restart for field with key :: " << it->first << ", "
+                                //  << it->second->cwin().currPointInSteps() << std::endl;
         IOmanager_->pushDir(it->first);
         if (IOmanager_->currentDirExists()) {
             std::ostringstream os;
-            os << "Current restart already exists (this means that two mpi tasks has the same field): "
+            LOG_DEBUG_LIB(LibMultio) << "Current restart already exists (this could be caused by 2 IO ranks having the same field or by the restart trigger arriving twice because of message duplication in the client side plans): "
                << IOmanager_->getCurrentDir() << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
+            return;
         }
+        std::cout << "STEBA DUMPTEMPORAL 1"<< " Directory is created "
+              << IOmanager_->getCurrentDir() <<" eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() <<std::endl;
         IOmanager_->createCurrentDir();
+        std::cout << "STEBA DUMPTEMPORAL 2"<< " Directory is created "
+              << IOmanager_->getCurrentDir() <<" eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() <<std::endl;
         it->second->dump(IOmanager_, opt_);
         IOmanager_->popDir();
+        std::cout << "STEBA DUMPTEMPORAL 3"<< " Directory is created "
+              << IOmanager_->getCurrentDir() <<" eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() <<std::endl;
     }
     return;
 }
 
 void Statistics::TryDumpRestart(const message::Message& msg) {
     auto flushKind = msg.metadata().getOpt<std::string>("flushKind");
+    auto clientPlanName = msg.metadata().getOpt<std::string>("clientPlanName");
+    std::ostringstream os;
+    // std::string flushKindout = *flushKind;
+    // std::cout<<"STEBA DEBUG flushKind"<<flushKindout<<std::endl;
+    // std::cout<<"STEBA DEBUG needRestart" << needRestart_<<std::endl;
+    //if (clientPlanName == "fesom-output-nodes") return;
+    //std::cout<<" STEBA message - arriving in TryDumpRestart"<<msg<<" writeRestart = "<<opt_.writeRestart() << " need restart " << needRestart_<< std::endl;
     if (flushKind && opt_.writeRestart() && needRestart_) {
+        os <<"||||||||||||||||||||||||||||||||||||||||||||| STEBA DEBUG Flush arrived a Dump has been triggered||||||||||||||||||||||||||||||||||||||||||||| eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() << " Plan Name: " << *clientPlanName <<"\n";
 
         // Check the kind of flush
         // NOTE: This is a bit of a hack, in case no serverRank is provided, we
         // assume that all processors are "master" and rely on atomicity of
         // filesystem operation to avoid race conditions
+        // Here: use can send server rank, which is master between multio servers. if message is flush and on rank 0 look at rank in IO server split MPI communicator. 
         auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
         if (*flushKind == "step-and-restart" || *flushKind == "last-step" || *flushKind == "end-of-simulation"
             || *flushKind == "close-connection") {
-
+            
             // Generate name of the main restart directory
             std::string restartFolderName = generateRestartNameFromFlush(msg);
-
             // Log for Dump operation
-            LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " << *flushKind
-                                     << "Last DateTime :: " << restartFolderName << std::endl;
+            // std::cout<< "STEBA DEBUG LOG_DEBUG_LIB(LibMultio)" << "Performing a Dump :: Flush kind :: " << *flushKind
+                                    //  << "Last DateTime :: " << restartFolderName << std::endl;
 
             // Delete the latest symlink as soon as possible
-            if (is_master) {
+            if (is_master ) {
+                os<<"STEBA - DELETE LATEST SYMLINK **********************************"<< eckit::mpi::comm().rank()<<"\n";
                 DeleteLatestSymLink();
             }
 
             // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
-            CreateMainRestartDirectory(restartFolderName, is_master);
-
+            CreateMainRestartDirectory(restartFolderName, is_master );
+            os<<" STEBA message "<<msg<< " eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() <<" RestartFolderName = "<<restartFolderName<< " IO manager current dir " << IOmanager_->getCurrentDir()<<"\n";
+           
             // Dump the temporal statistics restart directories
             DumpTemporalStatistics();
 
             // Create the latest symlink to the latest restart directory
             if (is_master) {
+                
+                os<<"STEBA - CREATE LATEST SYMLINK +++++++++++++++++++++++++++++++++++"<< eckit::mpi::comm().rank()<<"\n";
                 CreateLatestSymLink();
             }
         }
     }
+    std::cout<<os.str()<<std::endl;
     return;
 }
 
@@ -197,7 +218,7 @@ void Statistics::DeleteLatestSymLink() {
     // works for symlinks and hence the eckit calls can be used here
     if (eckit::PathName{latestPath}.exists() && eckit::PathName{latestPath}.isLink()) {
         eckit::PathName{latestPath}.unlink();
-        LOG_DEBUG_LIB(LibMultio) << "Deleted old Symlink from " << currentDateTime << " to " << latestPath << std::endl;
+        std::cout<<" LOG_DEBUG_LIB(LibMultio)" << "Deleted old Symlink from " << currentDateTime << " to " << latestPath << std::endl;
     }
 }
 
@@ -208,10 +229,11 @@ void Statistics::CreateLatestSymLink() {
     // TODO If eckit allows symlinks for directories instead of hard links it would be good to use eckit
     // //eckit::PathName::link(eckit::PathName{latestPath},eckit::PathName{IOmanager_->getCurrentDir()});
     symlink(currentDateTime.c_str(), latestPath.c_str());
-    LOG_DEBUG_LIB(LibMultio) << "Created Symlink from " << currentDateTime << " to " << latestPath << std::endl;
+    std::cout<< "LOG_DEBUG_LIB(LibMultio) "<< "Created Symlink from " << currentDateTime << " to " << latestPath << std::endl;
 }
 
 std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey(const std::string& key) {
+    std::cout<<"STEBA DEBUG: LoadTemporalStatsfromKey key="<<key<<" eckit::mpi::comm().rank() = " << eckit::mpi::comm().rank() <<std::endl;
     IOmanager_->setDateTime(opt_.restartTime());
     IOmanager_->pushDir(key);
     if (!IOmanager_->currentDirExists()) {
@@ -227,6 +249,7 @@ std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey(co
 bool Statistics::HasMainRestartDir() {
     IOmanager_->setDateTime(opt_.restartTime());
     bool has_restart = IOmanager_->currentDirExists() ? true : false;
+    std::cout<<"HASMAINRESTARTDIR() "<< IOmanager_->getCurrentDir() << "restart Time: " << opt_.restartTime()<<std::endl;
     return has_restart;
 }
 
@@ -289,6 +312,8 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
+        // std::cout<<"STEBA DEBUG "<< msg << std::endl;
+
         TryDumpRestart(msg);
         executeNext(msg);
         return;
@@ -302,21 +327,30 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Handle fields
     // -------------
-
+    std::cout<<"STEBA STATISTICS EXECUTE 1 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     // Initialize local variables
     StatisticsConfiguration cfg{msg, opt_};
     std::string key = cfg.key();
     updateLatestDateTime(cfg);
 
+    std::cout<<"STEBA STATISTICS EXECUTE 2 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
+
     // Check if the main restart directory exists
     if (opt_.readRestart() && !HasMainRestartDir()) {
         std::ostringstream os;
-        os << "Main restart directory does not exist :: " << opt_.restartPath() << std::endl;
+        os << "Main restart directory does not exist :: " << opt_.restartPath() <<  "rank: " <<  eckit::mpi::comm().rank()<< " msg " << msg<<std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
 
+    std::cout<<"STEBA STATISTICS EXECUTE 3 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     util::ScopedTiming timing{statistics_.actionTiming_};
 
+    std::ostringstream os;
+    os<<"Looking for key "<<key<<'\n';
+    for (const auto& [keym, value] : fieldStats_) {
+        os << "Key: " << keym << ", Address: " << value.get() <<" rank: "<<  eckit::mpi::comm().rank()<<'\n';
+    }
+    std::cout<<os.str()<<std::endl;
     // Access or create the temporal statistics object
     auto stat = fieldStats_.find(key);
     if (stat == fieldStats_.end()) {
@@ -331,7 +365,7 @@ void Statistics::executeImpl(message::Message msg) {
         // which is not efficient
         stat = fieldStats_.find(key);
     }
-
+    std::cout<<"STEBA STATISTICS EXECUTE 4 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     // Exit if the current time is the same as the current point in the
     // window and the solver does not send the initial condition.
     // This can happen when the solver is sending the initial condition
@@ -341,6 +375,7 @@ void Statistics::executeImpl(message::Message msg) {
         return;
     }
 
+    std::cout<<"STEBA STATISTICS EXECUTE 5 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     // std::ostringstream os;
     // os << "Current time vs current point in the  window :: "
     //    << cfg.curr() << " " << ts.cwin().currPoint()
@@ -356,9 +391,11 @@ void Statistics::executeImpl(message::Message msg) {
         throw eckit::SeriousBug(os.str(), Here());
     }
 
+    std::cout<<"STEBA STATISTICS EXECUTE 6 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     // Update data
     ts.updateData(msg, cfg);
 
+    std::cout<<"STEBA STATISTICS EXECUTE 7 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     // Decide to emit statistics
     if (ts.isEndOfWindow(msg, cfg)) {
         auto md = outputMetadata(msg.metadata(), cfg, key);
@@ -380,6 +417,7 @@ void Statistics::executeImpl(message::Message msg) {
         ts.updateWindow(msg, cfg);
     }
 
+    std::cout<<"STEBA STATISTICS EXECUTE 8 rank: " <<  eckit::mpi::comm().rank()<<std::endl;
     return;
 }
 

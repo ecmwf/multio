@@ -396,7 +396,6 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             }
 
             codes_handle* rawOutputCodesHandle = NULL;
-            std::unique_ptr<codes_handle> outputCodesHandle = NULL;
 
             std::vector<double> values;
             inputMsg.getDoubleArray("values", values);

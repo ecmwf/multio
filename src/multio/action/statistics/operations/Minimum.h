@@ -28,7 +28,7 @@ public:
         checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() && cfg.options().valueCountThreshold() > 0 ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
         return;
     }
 
@@ -36,7 +36,7 @@ public:
         checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() < 0 ? updateWithMissing(val, cfg) : updateWithMissingAndCounters(val, cfg)) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() ? updateWithMissingAndCounters(val, cfg) : updateWithMissing(val, cfg)) : updateWithoutMissing(val, cfg);
         return;
     }
 
@@ -48,7 +48,7 @@ private:
     }
 
     void computeWithThreshold(T* buf, const StatisticsConfiguration& cfg) {
-        const long t = cfg.options().valueCountThreshold();
+        const long t = cfg.options().valueCountThreshold().value();
         const double m = cfg.missingValue();
         const std::vector<long>& counts = win_.counts();
         std::transform(values_.begin(), values_.end(), counts.begin(), buf,

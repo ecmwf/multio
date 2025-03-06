@@ -33,7 +33,7 @@ private:
     std::string windowType_;
     std::string accumulatedFieldsResetFreqency_;
 
-    long valueCountThreshold_;
+    std::optional<long> valueCountThreshold_;
 
 private:
     void parseUseDateTime(const eckit::LocalConfiguration& cfg);
@@ -84,7 +84,7 @@ public:
     const std::string& restartLib() const;
     const std::string& solverResetAccumulatedFields() const;
 
-    long valueCountThreshold() const;
+    std::optional<long> valueCountThreshold() const;
 };
 
 }  // namespace multio::action

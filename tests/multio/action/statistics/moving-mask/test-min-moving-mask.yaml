@@ -1,6 +1,7 @@
 plans:
   - name: test-moving-mask
     actions:
+
       - type: statistics
         output-frequency: 1m
         operations: [ minimum ]
@@ -17,9 +18,11 @@ plans:
           time-step: 3600
           use-current-time: true
           value-count-threshold: '{THRESHOLD}'
+
       - type: encode
         format: grib
         template: Statistics_grib2.tmpl
+
       - type: sink
         sinks:
           - type: file

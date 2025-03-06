@@ -1,6 +1,7 @@
 plans:
   - name: test_avg_static
     actions:
+
       - type: statistics
         output-frequency: 1d
         operations: [ average ]
@@ -10,9 +11,11 @@ plans:
           time-step: 3600
           use-current-time: true
           value-count-threshold: '{THRESHOLD}'
+
       - type: encode
         format: grib
         template: reduced_gg_pl_80_avg_grib2.tmpl
+
       - type: sink
         sinks:
           - type: file

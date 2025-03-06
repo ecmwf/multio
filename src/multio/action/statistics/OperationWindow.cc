@@ -455,17 +455,17 @@ long OperationWindow::lastFlushInSteps() const {
 }
 
 void OperationWindow::initCountsLazy(size_t size) const {
-    if (counts_.size() != size) {
-        if (counts_.size() == 0) {
-            counts_.resize(size, 0);
-        }
-        else {
-            std::ostringstream os;
-            os << *this << " : counts array is already initialized with a different size" << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
-        }
+    if (counts_.size() == size) {
+        return;
     }
-    return;
+    if (counts_.size() == 0) {
+        counts_.resize(size, 0);
+        return;
+    }
+
+    std::ostringstream os;
+    os << *this << " : counts array is already initialized with a different size" << std::endl;
+    throw eckit::SeriousBug(os.str(), Here());
 }
 
 void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
@@ -514,7 +514,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     const size_t countsSize = counts_.size();
     currState[17] = static_cast<std::uint64_t>(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        currState[i+18] = *reinterpret_cast<std::uint64_t*>(&(counts_[i]));
+        currState[i+18] = static_cast<std::uint64_t>(counts_[i]);
     }
 
     currState.computeChecksum();
@@ -536,11 +536,10 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     count_ = static_cast<long>(currState[15]);
     type_ = static_cast<long>(currState[16]);
 
-    const size_t countsSize = static_cast<size_t>(currState[17]);
+    const auto countsSize = static_cast<size_t>(currState[17]);
     counts_.resize(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        const long* ptr = reinterpret_cast<const long*>(&currState[i+18]);
-        counts_[i] = *ptr;
+        counts_[i] = static_cast<long>(currState[i+18]);
     }
 
     if (opt.debugRestart()) {

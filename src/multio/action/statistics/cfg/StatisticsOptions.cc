@@ -20,7 +20,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     logPrefix_{"Plan"},
     windowType_{"forward-offset"},
     accumulatedFieldsResetFreqency_{"month"},
-    valueCountThreshold_{-1} {
+    valueCountThreshold_{} {
     // Dump usage
     if (compConf.parsedConfig().has("help")) {
         usage();
@@ -222,13 +222,20 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
 
 void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfiguration& compConf,
                                                  const eckit::LocalConfiguration& cfg) {
-    valueCountThreshold_ = stol(compConf.multioConfig().replaceCurly(cfg.getString("value-count-threshold", "-1")));
-    if (valueCountThreshold_ == 0) {
-        std::ostringstream os;
-        os << "Invalid value count threshold :: 0 (must be non-zero)" << std::endl;
-        throw eckit::UserError(os.str(), Here());
+    long threshold = stol(compConf.multioConfig().replaceCurly(cfg.getString("value-count-threshold", "-1")));
+
+    if (threshold == -1) {
+        valueCountThreshold_ = std::nullopt;
+        return;
     }
-    return;
+    if (threshold > 0) {
+        valueCountThreshold_ = threshold;
+        return;
+    }
+
+    std::ostringstream os;
+    os << "Invalid value count threshold :: " << threshold << " (must be unset, -1 or positive value)" << std::endl;
+    throw eckit::UserError(os.str(), Here());
 }
 
 
@@ -300,7 +307,7 @@ const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
 };
 
 
-long StatisticsOptions::valueCountThreshold() const {
+std::optional<long> StatisticsOptions::valueCountThreshold() const {
     return valueCountThreshold_;
 }
 

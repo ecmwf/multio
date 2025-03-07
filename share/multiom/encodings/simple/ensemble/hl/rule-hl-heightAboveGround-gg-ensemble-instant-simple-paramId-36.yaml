@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-era6-36
+name: rule-hl-heightAboveGround-gg-ensemble-instant-simple-paramId-36
 
 filter:
   type: composed
@@ -15,26 +15,16 @@ filter:
       operation: has
     - type: levtype
       operation: match
-      value: sfc
+      value: hl
     - type: param
       operation: match
       values:
-        - "228080:228082"
-        - "233032:233035"
-        - "235062:235064"
-    - type: composed
-      operation: all
-      filters:
-        - type: chem
-          operation: has
-        - type: wavelength
-          operation: lacks
-        - type: chem
-          operation: lower-than
-          treshold: 900
+        - 10
+        - 131
+        - 132
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -50,29 +40,23 @@ encoder:
     reference-time-configurator:
       type: default
     tables-configurator:
-      type: custom
-      tables-version: 30
+      type: default
       local-tables-version: 0
   local-use-section:
     template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 43
-    time-statistics-configurator:
-      type: since-beginning-of-forecast
-      type-of-statistical-processing: accumul
-      encode-step-zero: true
+    template-number: 1
+    point-in-time-configurator:
+      type: default
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:
-      type: surface
+      type: heightAboveGround
     ensemble-configurator:
       type: default
-    chemistry-configurator:
-      type: chemical
   data-representation-section:
-    template-number: 42
+    template-number: 0

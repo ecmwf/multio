@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-ensemble-instant-simple-paramId-era6-36
+name: rule-surface-gg-chem-ensemble-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -10,7 +10,7 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
       operation: has
     - type: composed
@@ -51,7 +51,7 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
@@ -60,7 +60,6 @@ encoder:
       type: default
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:

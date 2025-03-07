@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-era6-36
+name: rule-surface-gg-chem-deterministic-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -10,18 +10,9 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
       operation: lacks
-    - type: levtype
-      operation: match
-      value: sfc
-    - type: param
-      operation: match
-      values:
-        - "228080:228082"
-        - "233032:233035"
-        - "235062:235064"
     - type: composed
       operation: all
       filters:
@@ -32,6 +23,13 @@ filter:
         - type: chem
           operation: lower-than
           treshold: 900
+    - type: levtype
+      operation: match
+      value: sfc
+    - type: param
+      operation: match
+      values:
+        - "228083:228085"
     - type: packing
       operation: match
       value: simple
@@ -50,22 +48,18 @@ encoder:
     reference-time-configurator:
       type: default
     tables-configurator:
-      type: custom
-      tables-version: 30
+      type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 42
-    time-statistics-configurator:
-      type: since-beginning-of-forecast
-      type-of-statistical-processing: accumul
-      encode-step-zero: true
+    template-number: 40
+    point-in-time-configurator:
+      type: default
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:

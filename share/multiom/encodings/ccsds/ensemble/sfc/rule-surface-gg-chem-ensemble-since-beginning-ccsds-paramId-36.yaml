@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-deterministic-instant-simple-paramId-era6-36
+name: rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-36
 
 filter:
   type: composed
@@ -12,7 +12,16 @@ filter:
     - type: anoffset
       operation: has
     - type: number
-      operation: lacks
+      operation: has
+    - type: levtype
+      operation: match
+      value: sfc
+    - type: param
+      operation: match
+      values:
+        - "228080:228082"
+        - "233032:233035"
+        - "235062:235064"
     - type: composed
       operation: all
       filters:
@@ -23,16 +32,9 @@ filter:
         - type: chem
           operation: lower-than
           treshold: 900
-    - type: levtype
-      operation: match
-      value: sfc
-    - type: param
-      operation: match
-      values:
-        - "228083:228085"
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -48,24 +50,28 @@ encoder:
     reference-time-configurator:
       type: default
     tables-configurator:
-      type: default
+      type: custom
+      tables-version: 30
       local-tables-version: 0
   local-use-section:
     template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 40
-    point-in-time-configurator:
-      type: default
+    template-number: 43
+    time-statistics-configurator:
+      type: since-beginning-of-forecast
+      type-of-statistical-processing: accumul
+      encode-step-zero: true
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:
       type: surface
+    ensemble-configurator:
+      type: default
     chemistry-configurator:
       type: chemical
   data-representation-section:
-    template-number: 0
+    template-number: 42

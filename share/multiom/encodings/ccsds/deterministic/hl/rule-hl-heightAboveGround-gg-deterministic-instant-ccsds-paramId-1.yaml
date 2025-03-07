@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-ensemble-instant-ccsds-paramId-era6-1
+name: rule-hl-heightAboveGround-gg-deterministic-instant-ccsds-paramId-1
 
 filter:
   type: composed
@@ -12,24 +12,16 @@ filter:
     - type: anoffset
       operation: lacks
     - type: number
-      operation: has
-    - type: composed
-      operation: all
-      filters:
-        - type: chem
-          operation: has
-        - type: wavelength
-          operation: lacks
-        - type: chem
-          operation: lower-than
-          treshold: 900
+      operation: lacks
     - type: levtype
       operation: match
-      value: sfc
+      value: hl
     - type: param
       operation: match
       values:
-        - "228083:228085"
+        - 10
+        - 131
+        - 132
     - type: packing
       operation: match
       value: ccsds
@@ -55,19 +47,14 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 41
+    template-number: 0
     point-in-time-configurator:
       type: default
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:
-      type: surface
-    ensemble-configurator:
-      type: default
-    chemistry-configurator:
-      type: chemical
+      type: heightAboveGround
   data-representation-section:
     template-number: 42

@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-era6-36
+name: rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-36
 
 filter:
   type: composed
@@ -12,7 +12,7 @@ filter:
     - type: anoffset
       operation: has
     - type: number
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
@@ -58,20 +58,17 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 43
+    template-number: 42
     time-statistics-configurator:
       type: since-beginning-of-forecast
       type-of-statistical-processing: accumul
       encode-step-zero: true
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:
       type: surface
-    ensemble-configurator:
-      type: default
     chemistry-configurator:
       type: chemical
   data-representation-section:

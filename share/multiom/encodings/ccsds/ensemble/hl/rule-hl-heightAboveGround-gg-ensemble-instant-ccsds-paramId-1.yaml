@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveGround-gg-deterministic-instant-ccsds-paramId-era6-36
+name: rule-hl-heightAboveGround-gg-ensemble-instant-ccsds-paramId-1
 
 filter:
   type: composed
@@ -10,9 +10,9 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
-    - type: number
       operation: lacks
+    - type: number
+      operation: has
     - type: levtype
       operation: match
       value: hl
@@ -43,19 +43,20 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 0
+    template-number: 1
     point-in-time-configurator:
       type: default
     param-configurator:
       type: paramId
-      dataset-for-local: era6
     model-configurator:
       type: default
     level-configurator:
       type: heightAboveGround
+    ensemble-configurator:
+      type: default
   data-representation-section:
     template-number: 42

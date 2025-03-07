@@ -267,7 +267,7 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam([228045])],
         [PointInTime(), levelConfig("tropopause")],
     ),
-    # surface - since beginning - chem - era6
+    # surface - since beginning - chem 
     partialRule(
         [
             matchType("levtype", "sfc"),
@@ -276,7 +276,7 @@ PARAM_LEVTYPE_SFC = [
         ],
         [
             levelConfig("surface"),
-            paramConfig("paramId", "era6"),
+            paramConfig("paramId"),
             ChemConfig(),
             TimeRange(
                 type="since-beginning-of-forecast",
@@ -618,7 +618,7 @@ PARAM_LEVTYPE_SFC = [
         [
             PointInTime(),
             levelConfig("surface"),
-            paramConfig("paramId", "era6"),
+            paramConfig("paramId"),
             ChemConfig(),
         ],
     ),
@@ -679,8 +679,9 @@ PARAM_LEVTYPE_HL = [
         [
             PointInTime(),
             levelConfig("heightAboveGround"),
-            paramConfig("paramId", "era6"),
+            paramConfig("paramId"),
         ],
+        namePrefix="hl",
     ),
 ]
 

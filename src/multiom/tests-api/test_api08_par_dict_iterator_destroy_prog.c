@@ -36,6 +36,15 @@ int main() {
     assert(strcmp(readVal, "52") == 0);
     free(readVal);
     readVal = NULL;
+    
+    ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "typeofprocesseddata", "10");
+    ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "typeofprocesseddata", &readVal);
+    // printf("typeofprocesseddata: %s, %d, %d, %d\n", readVal, has1, has2, ret );
+    assert(strcmp(readVal, "10") == 0);
+    free(readVal);
+    readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "initialstep", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "initialstep", "2");

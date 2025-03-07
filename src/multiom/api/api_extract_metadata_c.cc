@@ -138,6 +138,29 @@ int getAndSetDouble(codes_handle* h, void* dict, const char* key, OptVal default
     return getAndSetDouble(h, dict, key, NULL, defaultVal, defPolicy);
 }
 
+using OptVal = std::optional<std::string>;
+int getAndSetLong(codes_handle* h, void* dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
+                    SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if (hasKey(h, key)) {
+        std::string val = std::to_string(getLong(h, key));
+        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, val.data());
+        if (ret != 0)
+            return ret;
+    }
+    else {
+        if (defaultVal && (defPolicy == SetDefault::Always)) {
+            int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, defaultVal->data());
+            if (ret != 0)
+                return ret;
+        }
+    }
+    return 0;
+}
+int getAndSetLong(codes_handle* h, void* dict, const char* key, OptVal defaultVal,
+                    SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    return getAndSetLong(h, dict, key, NULL, defaultVal, defPolicy);
+}
+
 template <typename T>
 std::string arrayToJSONString(const std::vector<T>& arr) {
     std::ostringstream oss;
@@ -462,6 +485,10 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
 
     ret = getAndSet(h, *par_dict, "generatingProcessIdentifier");
+    if (ret != 0)
+        return ret;
+        
+    ret = getAndSetLong(h, *par_dict, "typeOfProcessedData");
     if (ret != 0)
         return ret;
 

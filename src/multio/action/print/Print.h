@@ -32,7 +32,9 @@ private:
     void print(std::ostream& os) const override;
 
     bool onlyFields_;
+    bool includeValues_;
     std::string stream_;
+    int numberOfValues_;
 
     std::ostream* os_;
     std::string prefix_;

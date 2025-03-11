@@ -21,6 +21,8 @@ namespace multio::action {
 Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
     stream_ = compConf.parsedConfig().getString("stream", "info");
     onlyFields_ = compConf.parsedConfig().getBool("only-fields", false);
+    includeValues_ = compConf.parsedConfig().getBool("include-data-values",false);
+    numberOfValues_ = compConf.parsedConfig().getInt("value-count",0);
 
     if (stream_ == "info") {
         os_ = &eckit::Log::info();
@@ -45,7 +47,24 @@ void Print::executeImpl(message::Message msg) {
         if (!prefix_.empty()) {
             (*os_) << prefix_ << ": ";
         }
-        (*os_) << msg << std::endl;
+        (*os_) << msg << "\n";
+        if(includeValues_) {
+            const auto* data = static_cast<const double*>(msg.payload().data());
+            const auto* end = data + (msg.payload().size() / sizeof(double));
+
+            if (!data || data == end) {
+                throw eckit::SeriousBug{
+                    "Payload is empty: Cannot print data: " + msg.metadata().toString(), Here()};
+            }
+            
+            // Print the payload data
+            int count = 0;
+            for (auto it = data; (it != end) && count<numberOfValues_; ++it) {
+                (*os_) << *it << " ";
+                ++count;
+            }
+            (*os_) << std::endl;
+        }
     }
     executeNext(std::move(msg));
 }

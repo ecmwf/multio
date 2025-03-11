@@ -556,9 +556,42 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: SINK_MESSAGE_TO_FDB_E=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: SINK_GRIB_HEADER_TO_MULTIO_E=4_JPIB_K
 
+!>
+!> Interface for the function converting a characters to an integer
+!> To be used for example when reading anumerators by name
+INTERFACE
+  PP_THREAD_SAFE FUNCTION FUN_I2C_IF( I, CHAR, HOOKS ) RESULT( RET )
+
+    ! Symbols imported from other modules within the project.
+    USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+    USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+    ! Symbols imported by the preprocessor for debugging purposes
+    PP_DEBUG_USE_VARS
+
+    ! Symbols imported by the preprocessor for logging purposes
+    PP_LOG_USE_VARS
+
+    ! Symbols imported by the preprocessor for tracing purposes
+    PP_TRACE_USE_VARS
+
+  IMPLICIT NONE
+
+    ! Dummy arguments
+    INTEGER(KIND=JPIB_K), INTENT(IN)    :: I
+    CHARACTER(LEN=*),     INTENT(OUT)   :: CHAR
+    TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+    INTEGER(KIND=JPIB_K) :: RET
+  END FUNCTION FUN_I2C_IF
+END INTERFACE
+
   !>
   !>
   !>  Whitelist of public symbols (parameters)
+
+  ! Interface of the function converting a characters to an integer
+  PUBLIC :: FUN_I2C_IF
+
 
   ! Precision enumerators
   PUBLIC :: VALUES_SP_E
@@ -4875,7 +4908,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
     CASE (ERRFLAG_UNKNOWN_CLASS)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: '//TRIM(ADJUSTL(CCLASS)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: "'//TRIM(ADJUSTL(CCLASS))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -5423,7 +5456,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
     CASE (ERRFLAG_UNKNOWN_TYPE)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: '//TRIM(ADJUSTL(CTYPE)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown ctype: "'//TRIM(ADJUSTL(CTYPE))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

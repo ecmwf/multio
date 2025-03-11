@@ -29,6 +29,7 @@ IMPLICIT NONE
   ! Local variables
   TYPE(HOOKS_T) :: HOOKS
   TYPE(COMMAND_LINE_ARGS_T) :: CMDARGS
+  INTEGER(KIND=JPIB_K) :: OUTPUT_UNIT64
   LOGICAL :: VERBOSE
   LOGICAL :: BIG_ENDIAN_READ
 
@@ -54,6 +55,9 @@ IMPLICIT NONE
   ! Initialize the hooks
   CALL HOOKS%DEBUG_HOOK_%INIT( )
 
+  ! Initialize the local output unit (64bits to make NVidia compiler happy)
+  OUTPUT_UNIT64 = INT(OUTPUT_UNIT, KIND=JPIB_K)
+
   ! Set the default values for the command line options
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_CMD_LINE) CMDARGS%INIT( HOOKS )
 
@@ -62,7 +66,7 @@ IMPLICIT NONE
 
   ! Log the configuration of the tool (main configuration, filters and options)
   IF ( VERBOSE ) THEN
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE_CMD_LINE) CMDARGS%PRINT( OUTPUT_UNIT, HOOKS )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE_CMD_LINE) CMDARGS%PRINT( OUTPUT_UNIT64, HOOKS )
   ENDIF
 
   ! Try to get the endianness of the data

@@ -115,18 +115,21 @@ TYPE :: KEYSET_@TEMPLATE_KEY_NAME@_T
 CONTAINS
 
   !> Public methods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT            => KEYSET_INIT
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MATCH           => KEYSET_MATCH
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_SORTED_KEYS => KEYSET_GET_SORTED_KEYS
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INSERT          => KEYSET_INSERT
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: REMOVE          => KEYSET_REMOVE
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT           => KEYSET_PRINT
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: LIST            => KEYSET_LIST
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MINIMUM         => KEYSET_MINIMUM
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MAXIMUM         => KEYSET_MAXIMUM
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE            => KEYSET_FREE
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: APPLY_FUNCTION  => KEYSET_FUNCTION
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: APPLY_FUNCTOR   => KEYSET_FUNCTOR
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT             => KEYSET_INIT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_SIZE         => KEYSET_SIZE
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INITIALIZED      => KEYSET_INITIALIZED
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MATCH            => KEYSET_MATCH
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_SORTED_KEYS  => KEYSET_GET_SORTED_KEYS
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INSERT           => KEYSET_INSERT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: REMOVE           => KEYSET_REMOVE
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT            => KEYSET_PRINT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: LIST             => KEYSET_LIST
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: LIST_WITH_FILTER => KEYSET_LIST_WITH_FILTER
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MINIMUM          => KEYSET_MINIMUM
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MAXIMUM          => KEYSET_MAXIMUM
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE             => KEYSET_FREE
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: APPLY_FUNCTION   => KEYSET_FUNCTION
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: APPLY_FUNCTOR    => KEYSET_FUNCTOR
 
 END TYPE
 
@@ -2889,6 +2892,160 @@ END FUNCTION KEYSET_LIST_NODE
 !>
 !> This subroutine recursively prints all keys in the subtree pointed to by the current node.
 !>
+!> @param [in] ROOT    Pointer to the root node of the subtree.
+!> @param [in] CURRENT Pointer to the current node in the subtree.
+!> @param [in] UNIT    Unit number of the output file where keys will be printed.
+!>
+!> @note This subroutine assumes that the subtree pointed to by the current node is properly initialized.
+!>
+#define PP_PROCEDURE_TYPE 'RECURSIVE FUNCTION'
+#define PP_PROCEDURE_NAME 'KEYSET_LIST_NODE_WITH_FILTER'
+RECURSIVE FUNCTION KEYSET_LIST_NODE_WITH_FILTER( ROOT, CURRENT, CNT, UNIT, PREFIX, FILTER, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,   ONLY: FUN_I2C_IF
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(KEYSET_@TEMPLATE_KEY_NAME@_NODE_T), POINTER, INTENT(IN)    :: ROOT
+  TYPE(KEYSET_@TEMPLATE_KEY_NAME@_NODE_T), POINTER, INTENT(IN)    :: CURRENT
+  INTEGER(KIND=JPIB_K),                             INTENT(INOUT) :: CNT
+  INTEGER(KIND=JPIB_K),                             INTENT(IN)    :: UNIT
+  CHARACTER(LEN=*),                                 INTENT(IN)    :: PREFIX
+  PROCEDURE(FUN_I2C_IF), POINTER,                   INTENT(IN)    :: FILTER
+  TYPE(HOOKS_T),                                    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=128) :: CKEY
+  CHARACTER(LEN=128) :: CCNT
+  LOGICAL :: IS_LEAF
+  INTEGER(KIND=JPIB_K) :: WRITE_STATUS
+  INTEGER(KIND=JPIB_K) :: IKEY
+  CLASS(*), POINTER :: ABSTRACT_KEY
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_ISLEAF=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_LEFT_SUBTREE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_RIGHT_SUBTREE=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_ERROR=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_CALL_FILTER=5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! First node in the list.
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_ISLEAF) NODE_ISLEAF( CURRENT, IS_LEAF, HOOKS )
+  IF ( .NOT.IS_LEAF ) THEN
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_LEFT_SUBTREE) KEYSET_LIST_NODE_WITH_FILTER( ROOT, CURRENT%LEFT, CNT, UNIT, PREFIX, FILTER, HOOKS )
+
+    CNT = CNT + 1
+    CKEY = REPEAT(' ', 128)
+    ABSTRACT_KEY => CURRENT%KEY
+    SELECT TYPE( K => ABSTRACT_KEY )
+    TYPE IS ( INTEGER(KIND=JPIB_K) )
+      IKEY = INT(K, KIND=JPIB_K)
+      PP_TRYCALL(ERRFLAG_UNABLE_CALL_FILTER) FILTER( IKEY, CKEY, HOOKS )
+    CLASS DEFAULT
+      WRITE(CKEY,*,IOSTAT=WRITE_STATUS) CURRENT%KEY
+    END SELECT
+    WRITE(CCNT,*,IOSTAT=WRITE_STATUS) CNT
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_WRITE_ERROR )
+
+    WRITE(UNIT,'(A,A,A,A,A)',IOSTAT=WRITE_STATUS) TRIM(ADJUSTL(PREFIX)), '(', TRIM(ADJUSTL(CCNT)), ') = ', TRIM(ADJUSTL(CKEY))
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS.NE.0, ERRFLAG_WRITE_ERROR )
+
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_RIGHT_SUBTREE) KEYSET_LIST_NODE_WITH_FILTER( ROOT, CURRENT%RIGHT, CNT, UNIT, PREFIX, FILTER, HOOKS )
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CALL_ISLEAF)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call isleaf' )
+    CASE (ERRFLAG_UNABLE_TO_CALL_LEFT_SUBTREE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call left subtree' )
+    CASE (ERRFLAG_UNABLE_TO_CALL_RIGHT_SUBTREE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call right subtree' )
+    CASE (ERRFLAG_WRITE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'write error' )
+    CASE (ERRFLAG_UNABLE_CALL_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call filter' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION KEYSET_LIST_NODE_WITH_FILTER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!> @brief Prints all keys in the subtree pointed to by the current node.
+!>
+!> This subroutine recursively prints all keys in the subtree pointed to by the current node.
+!>
 !> @param [in] ROOT     Pointer to the root node of the subtree.
 !> @param [in] CURRENT  Pointer to the current node in the subtree.
 !> @param [in] FUNCTION Function to be called for each node
@@ -3608,6 +3765,135 @@ END FUNCTION KEYSET_INIT
 #undef PP_PROCEDURE_TYPE
 
 
+
+!>
+!> @brief Initializes a map structure.
+!>
+!> This subroutine initializes the given map structure.
+!> It sets up the necessary components to prepare the map for use.
+!>
+!> @param [inout] KEYSET The map structure to be initialized.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'KEYSET_SIZE'
+PP_THREAD_SAFE FUNCTION KEYSET_SIZE( KEYSET, SZ, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T), INTENT(IN)    :: KEYSET
+  INTEGER(KIND=JPIB_K),                INTENT(OUT)   :: SZ
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Map initialization.
+  SZ = KEYSET%SIZE
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END FUNCTION KEYSET_SIZE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Initializes a map structure.
+!>
+!> This subroutine initializes the given map structure.
+!> It sets up the necessary components to prepare the map for use.
+!>
+!> @param [inout] KEYSET The map structure to be initialized.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'KEYSET_INITIALIZED'
+PP_THREAD_SAFE FUNCTION KEYSET_INITIALIZED( KEYSET, INITIALIZED, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T), INTENT(IN)    :: KEYSET
+  LOGICAL,                             INTENT(OUT)   :: INITIALIZED
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Map initialization.
+  INITIALIZED = ASSOCIATED( KEYSET%ROOT )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END FUNCTION KEYSET_INITIALIZED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 !>
 !> @brief Finalisation of a map structure.
 !>
@@ -3665,6 +3951,8 @@ IMPLICIT NONE
 
     ! Recursive deletion of the tree.
     PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_FREE) KEYSET_FREE_NODE( KEYSET%ROOT, HOOKS )
+
+    KEYSET%ROOT => NULL()
 
   ENDIF
 
@@ -3974,7 +4262,7 @@ RECURSIVE FUNCTION KEYSET_GET_SORTED_KEYS_NODE( NODE, SORTED_KEYS, CNT, HOOKS ) 
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(KEYSET_@TEMPLATE_KEY_NAME@_NODE_T), POINTER, INTENT(INOUT) :: NODE
+  TYPE(KEYSET_@TEMPLATE_KEY_NAME@_NODE_T), POINTER, INTENT(IN)    :: NODE
   @TEMPLATE_KEY_DUMMY_TYPE@, DIMENSION(:),          INTENT(INOUT) :: SORTED_KEYS
   INTEGER(KIND=JPIB_K),                             INTENT(INOUT) :: CNT
   TYPE(HOOKS_T),                                    INTENT(INOUT) :: HOOKS
@@ -4101,7 +4389,7 @@ PP_THREAD_SAFE FUNCTION KEYSET_GET_SORTED_KEYS( KEYSET, SORTED_KEYS, HOOKS ) RES
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T),     INTENT(INOUT) :: KEYSET
+  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T),     INTENT(IN)    :: KEYSET
   @TEMPLATE_KEY_DUMMY_TYPE@, DIMENSION(:), INTENT(INOUT) :: SORTED_KEYS
   TYPE(HOOKS_T),                           INTENT(INOUT) :: HOOKS
 
@@ -4345,7 +4633,7 @@ PP_THREAD_SAFE FUNCTION KEYSET_MATCH( THIS, KEY, MATCH, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T), INTENT(INOUT) :: THIS
+  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T), INTENT(IN)    :: THIS
   @TEMPLATE_KEY_DUMMY_TYPE@,           INTENT(IN)    :: KEY
   LOGICAL,                             INTENT(OUT)   :: MATCH
   TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
@@ -4667,6 +4955,121 @@ END FUNCTION KEYSET_LIST
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+
+
+
+!>
+!> @brief Lists all keys in the map.
+!>
+!> This subroutine lists all keys stored in the map structure.
+!>
+!> @param [inout] THIS The map structure to list the key-value pairs from.
+!> @param [in]    UNIT Unit number of the output file where keys will be printed.
+!>
+!> @note This subroutine assumes that the map structure is properly initialized.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'KEYSET_LIST_WITH_FILTER'
+PP_THREAD_SAFE FUNCTION KEYSET_LIST_WITH_FILTER( THIS, UNIT, PREFIX, FILTER, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,   ONLY: FUN_I2C_IF
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(KEYSET_@TEMPLATE_KEY_NAME@_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),                INTENT(IN)    :: UNIT
+  CHARACTER(LEN=*),                    INTENT(IN)    :: PREFIX
+  PROCEDURE(FUN_I2C_IF), POINTER,      INTENT(IN)    :: FILTER
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: CNT
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_KEYSET_LIST_NODE=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Call the recursive writing
+  CNT = 0_JPIB_K
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_LIST_NODE) KEYSET_LIST_NODE_WITH_FILTER( &
+&            THIS%ROOT, THIS%ROOT, CNT, UNIT, PREFIX, FILTER, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CALL_KEYSET_LIST_NODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call map list node' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION KEYSET_LIST_WITH_FILTER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 !>

@@ -24,6 +24,10 @@ public:
                     long windowType);
 
     long count() const;
+    const std::vector<long>& counts() const;
+
+    template <typename T>
+    void updateCounts(const T* values, size_t size, double missingValue) const;
 
     void updateData(const eckit::DateTime& currentPoint);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
@@ -114,7 +118,10 @@ private:
 
     long timeStepInSeconds_;
     long count_;
+    mutable std::vector<long> counts_;
     long type_;
+
+    void initCountsLazy(size_t sz) const;
 
     void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const;
     void deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt);

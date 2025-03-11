@@ -1,0 +1,31 @@
+plans:
+  - name: test-moving-mask
+    actions:
+
+      - type: statistics
+        output-frequency: 1m
+        operations: [ maximum ]
+        options:
+          initial-condition-present: true
+          restart-path: "."
+          restart-prefix: 'Restart_{OPERATION}_{THRESHOLD}'
+          read-restart: '{READ_RESTART}'
+          write-restart: '{WRITE_RESTART}'
+          debug-restart: true
+          restart-lib: "atlas_io"
+          restart-time: '{RESTART_ID}'
+          step-frequency: 24
+          time-step: 3600
+          use-current-time: true
+          value-count-threshold: '{THRESHOLD}'
+
+      - type: encode
+        format: grib
+        template: Statistics_grib2.tmpl
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: '{RESULT_FILE}'

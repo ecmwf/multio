@@ -98,6 +98,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
     count_{0},
+    counts_{},
     type_{0} {
     load(IOmanager, opt);
     return;
@@ -115,6 +116,7 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     lastFlush_{epochPoint},
     timeStepInSeconds_{timeStepInSeconds},
     count_{0},
+    counts_{},
     type_{windowType} {}
 
 
@@ -122,18 +124,35 @@ long OperationWindow::count() const {
     return count_;
 }
 
+const std::vector<long>& OperationWindow::counts() const {
+    return counts_;
+}
+
+template <typename T>
+void OperationWindow::updateCounts(const T* values, size_t size, double missingValue) const {
+    initCountsLazy(size);
+    std::transform(counts_.begin(), counts_.end(), values, counts_.begin(),
+                   [missingValue](long c, T v) { return v == missingValue ? c : c + 1; });
+    return;
+}
+template void OperationWindow::updateCounts(const float* values, size_t size, double missingValue) const;
+template void OperationWindow::updateCounts(const double* values, size_t size, double missingValue) const;
+
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
-    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
+    const size_t writeSize = restartSize();
+    IOBuffer restartState{IOmanager->getBuffer(writeSize)};
     restartState.zero();
     serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
-    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize());
+    IOmanager->write("operationWindow", writeSize, writeSize);
     IOmanager->flush();
     return;
 }
 
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
-    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
-    IOmanager->read("operationWindow", restartSize());
+    size_t readSize;
+    IOmanager->readSize("operationWindow", readSize);
+    IOBuffer restartState{IOmanager->getBuffer(readSize)};
+    IOmanager->read("operationWindow", readSize);
     deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
     return;
@@ -157,6 +176,7 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     prevPoint_ = startPoint;
     endPoint_ = endPoint;
     count_ = 0;
+    counts_.clear();
     return;
 }
 
@@ -434,6 +454,20 @@ long OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
 }
 
+void OperationWindow::initCountsLazy(size_t size) const {
+    if (counts_.size() == size) {
+        return;
+    }
+    if (counts_.size() == 0) {
+        counts_.resize(size, 0);
+        return;
+    }
+
+    std::ostringstream os;
+    os << *this << " : counts array is already initialized with a different size" << std::endl;
+    throw eckit::SeriousBug(os.str(), Here());
+}
+
 void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
 
     if (opt.debugRestart()) {
@@ -447,6 +481,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
+        outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
@@ -476,6 +511,12 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[15] = static_cast<std::uint64_t>(count_);
     currState[16] = static_cast<std::uint64_t>(type_);
 
+    const size_t countsSize = counts_.size();
+    currState[17] = static_cast<std::uint64_t>(countsSize);
+    for (size_t i = 0; i < countsSize; ++i) {
+        currState[i+18] = static_cast<std::uint64_t>(counts_[i]);
+    }
+
     currState.computeChecksum();
 
     return;
@@ -495,6 +536,12 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     count_ = static_cast<long>(currState[15]);
     type_ = static_cast<long>(currState[16]);
 
+    const auto countsSize = static_cast<size_t>(currState[17]);
+    counts_.resize(countsSize);
+    for (size_t i = 0; i < countsSize; ++i) {
+        counts_[i] = static_cast<long>(currState[i+18]);
+    }
+
     if (opt.debugRestart()) {
         std::ofstream outFile(fname);
         outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
@@ -506,6 +553,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
+        outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
@@ -514,7 +562,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return static_cast<size_t>(18);
+    return 18 + counts_.size() + 1;  // values + counts + checksum
 }
 
 void OperationWindow::print(std::ostream& os) const {

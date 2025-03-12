@@ -1,6 +1,10 @@
 import pathlib
 import os
 import shutil
+from typing import List, Dict, Tuple
+from pydantic import (
+    BaseModel,
+)
 from GenerateEncoding import (
     toYAML,
     toDictRepres,
@@ -16,6 +20,10 @@ from GenerateEncoding import (
     typeLE,
     typeLT,
     PointInTime,
+    RuleFilter,
+    HasType,
+    LacksType,
+    ComposeAll,
     TimeRange,
     levelConfig,
     paramConfig,
@@ -883,7 +891,7 @@ def createCMakeFiles(relDir, pathList):
 
             newBasePath = f"{basePath}/{path}" if basePath != "" else path
 
-            fileContent = templateCMakeFile(newBasePath, list(subPld.keys()))
+            fileContent = templateCMakeFile(newBasePath, list(sorted(subPld.keys())))
 
             with open("/".join([relDir, newBasePath, "CMakeLists.txt"]), "w") as fileOut:
                 fileOut.write(fileContent)
@@ -893,7 +901,13 @@ def createCMakeFiles(relDir, pathList):
     recPld("", pld)
 
 
-def pathForRule(baseDir: str, rule: EncodeRule):
+class RuleContext(BaseModel):
+    attr: Dict
+    path: str
+    fname: str
+    rule: EncodeRule
+
+def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
     levtype = (
         "_".join(
             [
@@ -911,34 +925,98 @@ def pathForRule(baseDir: str, rule: EncodeRule):
     ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
     packing = rule.encode.dataRepres.descriptiveName
 
-    return (
-        {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
-        "/".join(filter(lambda d: d is not None, [baseDir,packing,ensemble,marsType,levtype])),
-        f"{rule.name}.yaml",
+    return RuleContext(
+        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
+        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,ensemble,marsType,levtype])),
+        fname = f"{rule.name}.yaml",
+        rule = rule,
     )
 
 
+def findMatchTypeFilter(rule: EncodeRule, type: str):
+    if not isinstance(rule.filter, RuleFilter):
+        return None
+    if not isinstance(rule.filter.filter, ComposeAll):
+        return None
+    for r in rule.filter.filter.filters:
+        if isinstance(r.filter, MatchType) and r.filter.type == type:
+            return r.filter.value
+    return None
+    
+def findHasOrLacksFilter(rule: EncodeRule, type: str):
+    if not isinstance(rule.filter, RuleFilter):
+        return None
+    if not isinstance(rule.filter.filter, ComposeAll):
+        return None
+    for r in rule.filter.filter.filters:
+        if isinstance(r.filter, HasType) and r.filter.type == type:
+            return "has"
+        if isinstance(r.filter, LacksType) and r.filter.type == type:
+            return "lacks"
+    return None
+
+
+def fileDictEntry(baseDir, path, fname):
+    return {"file": "/".join([baseDir, path, fname])}
+
+
+def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], baseDir):
+    if len(filters) == 0:
+        return [fileDictEntry(baseDir, rc.path, rc.fname) for rc in rules]
+    
+    (filterName, filterType) = filters[0]
+    fs = filters[1:]
+    match filterType:
+        case "has/lacks":
+             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "has"]
+             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "lacks"]
+             return { 
+                "key": filterName,
+                "has": applyNestedFilters(fs, has, baseDir),
+                "lacks": applyNestedFilters(fs, lacks, baseDir)
+             }
+            
+        case "match":
+             matchPairs = [(findMatchTypeFilter(rc.rule, filterName), rc) for rc in rules]
+             valuesDict = {}
+             for (val, rc) in matchPairs:
+                if val not in valuesDict.keys():
+                    valuesDict[val] = []
+                valuesDict[val].append(rc)
+            
+             return {
+                "key": filterName,
+                "match": {val: applyNestedFilters(fs, rs, baseDir) for (val, rs) in valuesDict.items()}
+             }
+             
+    
+    
+    
+RELATIVE_DIR = ".."
+BASE_DIR = "encodings"
+BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
+ENCODING_RULES_SPLIT = ["packing", "process"]
+
+# Filters are has/lacks 
+NESTED_FILTERS = [("number", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
+
+REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
+
+ruleFiles = [pathForRule(BASE_DIR, rule) for rule in encodedRules]
+
 def main():
-    RELATIVE_DIR = ".."
-    BASE_DIR = "encodings"
-    BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
-    ENCODING_RULES_SPLIT = ["packing", "process"]
-
-    REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
-
     # Remove dir if already exists to avoid duplications or different directory structures
     if os.path.exists(REL_BASE_DIR):
         shutil.rmtree(REL_BASE_DIR)
     os.makedirs(REL_BASE_DIR)
 
-    ruleFiles = [(pathForRule(BASE_DIR, rule), rule) for rule in encodedRules]
 
-    for (attr, path, fname), rule in ruleFiles:
-        pathlib.Path("/".join([RELATIVE_DIR, path])).mkdir(parents=True, exist_ok=True)
-        with open("/".join([RELATIVE_DIR,path,fname]), "w") as fileOut:
-            fileOut.write(toYAML(toDictRepres(rule)))
+    for rc in ruleFiles:
+        pathlib.Path("/".join([RELATIVE_DIR, rc.path])).mkdir(parents=True, exist_ok=True)
+        with open("/".join([RELATIVE_DIR,rc.path,rc.fname]), "w") as fileOut:
+            fileOut.write(toYAML(toDictRepres(rc.rule)))
 
-    pathList = list({r[0][1] for r in ruleFiles})
+    pathList = list({rc.path for rc in ruleFiles})
 
     createCMakeFiles(RELATIVE_DIR, pathList)
 
@@ -946,15 +1024,16 @@ def main():
         return "-".join([sel[k] for k in ENCODING_RULES_SPLIT])
 
     mappedRuleFiles = [
-        ({key: r[0][0][key] for key in ENCODING_RULES_SPLIT}, r[0][1], r[0][2])
-        for r in ruleFiles
+        ({key: rc.attr[key] for key in ENCODING_RULES_SPLIT}, rc.path, rc.fname)
+        for rc in ruleFiles
     ]
     rulesBySplit = {k: [] for k in {keyForRuleList(mr[0]) for mr in mappedRuleFiles}}
     allFiles=[]
     for sel, path, fname in mappedRuleFiles:
         key = keyForRuleList(sel)
-        rulesBySplit[key].append({"file": "/".join([BASE_DIR_RULE_LIST, path, fname])})
-        allFiles.append({"file": "/".join([BASE_DIR_RULE_LIST, path, fname])})
+        f = fileDictEntry(BASE_DIR_RULE_LIST, path, fname)
+        rulesBySplit[key].append(f)
+        allFiles.append(f)
 
     for key, files in rulesBySplit.items():
         with open(f"{REL_BASE_DIR}/encoding-rules-{key}.yaml", "w") as fileOut:
@@ -962,6 +1041,10 @@ def main():
 
     with open(f"{REL_BASE_DIR}/encoding-rules.yaml", "w") as fileOut:
         fileOut.write(toYAML({"encoding-rules": allFiles}))
+        
+    nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
+    with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
+        fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
 
 
 if __name__ == "__main__":

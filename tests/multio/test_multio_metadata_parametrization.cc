@@ -38,19 +38,19 @@ CASE("Test parse parametrization element type") {
     EXPECT(decodeElementType("int64") == ElementType::Int64);
     EXPECT(decodeElementType("real32") == ElementType::Real32);
     EXPECT(decodeElementType("real64") == ElementType::Real64);
-    
+
     EXPECT(toString(ElementType::Byte) == "byte");
     EXPECT(toString(ElementType::Int32) == "int32");
     EXPECT(toString(ElementType::Int64) == "int64");
     EXPECT(toString(ElementType::Real32) == "real32");
     EXPECT(toString(ElementType::Real64) == "real64");
-    
+
     EXPECT(toString(decodeElementType("byte")) == "byte");
     EXPECT(toString(decodeElementType("int32")) == "int32");
     EXPECT(toString(decodeElementType("int64")) == "int64");
     EXPECT(toString(decodeElementType("real32")) == "real32");
     EXPECT(toString(decodeElementType("real64")) == "real64");
-    
+
     EXPECT(decodeElementType(toString(ElementType::Byte)) == ElementType::Byte);
     EXPECT(decodeElementType(toString(ElementType::Int32)) == ElementType::Int32);
     EXPECT(decodeElementType(toString(ElementType::Int64)) == ElementType::Int64);
@@ -82,7 +82,7 @@ CASE("Test update parametrization") {
     unsigned char data2[5] = {0x1, 0x0, 0x0, 0x0, 0x5};
     EXPECT_NO_THROW(Parametrization::instance().update("domain", "byte", data, 5));
     EXPECT_THROWS_AS(Parametrization::instance().update("domain", "byte", data2, 5), MetadataException);
-    
+
     // Expect throw because payloadElementType is not given
     EXPECT_THROWS_AS(Parametrization::instance().update(message::Message({
                          {
@@ -94,7 +94,7 @@ CASE("Test update parametrization") {
                          message::SharedPayload{message::PayloadReference{data, 5}},
                      })),
                      MetadataException);
-                     
+
     // Expect throw because of empty payload although payloadKey is given
     EXPECT_THROWS_AS(Parametrization::instance().update(message::Message({
                          {
@@ -125,10 +125,10 @@ CASE("Test update parametrization") {
                              message::Peer{},
                              Metadata{{"payloadKey", "domain"}, {"payloadElementType", "byte"}},
                          },
-                         message::SharedPayload{message::PayloadReference{data2, 5*sizeof(unsigned char)}},
+                         message::SharedPayload{message::PayloadReference{data2, 5 * sizeof(unsigned char)}},
                      })),
                      MetadataException);
-                     
+
     EXPECT(par.find("payloadKey") == par.end());
     EXPECT(par.find("payloadElementType") == par.end());
     EXPECT(par.find("domain") != par.end());
@@ -140,9 +140,9 @@ CASE("Test update parametrization") {
     EXPECT(domain[2] == 0x3);
     EXPECT(domain[3] == 0x4);
     EXPECT(domain[4] == 0x5);
-    
-    
-    std::int32_t plIn[5] = {1,2,3,4,5};
+
+
+    std::int32_t plIn[5] = {1, 2, 3, 4, 5};
     EXPECT_NO_THROW(Parametrization::instance().update(message::Message({
         {
             message::Message::Tag::Parametrization,
@@ -150,7 +150,7 @@ CASE("Test update parametrization") {
             message::Peer{},
             Metadata{{"payloadKey", "pl"}, {"payloadElementType", "int32"}},
         },
-        message::SharedPayload{message::PayloadReference{plIn, 5*sizeof(std::int32_t)}},
+        message::SharedPayload{message::PayloadReference{plIn, 5 * sizeof(std::int32_t)}},
     })));
     EXPECT(par.find("pl") != par.end());
     // Metadata only supports int64...
@@ -162,8 +162,7 @@ CASE("Test update parametrization") {
     EXPECT(pl[4] == 5);
 
 
-
-    float pvIn[5] = {0.1,0.2,0.3,0.4,0.5};
+    float pvIn[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
     EXPECT_NO_THROW(Parametrization::instance().update(message::Message({
         {
             message::Message::Tag::Parametrization,
@@ -171,7 +170,7 @@ CASE("Test update parametrization") {
             message::Peer{},
             Metadata{{"payloadKey", "pv"}, {"payloadElementType", "real32"}},
         },
-        message::SharedPayload{message::PayloadReference{pvIn, 5*sizeof(float)}},
+        message::SharedPayload{message::PayloadReference{pvIn, 5 * sizeof(float)}},
     })));
     EXPECT(par.find("pv") != par.end());
     const auto& pv = par.get<std::vector<float>>("pv");
@@ -180,9 +179,9 @@ CASE("Test update parametrization") {
     EXPECT(pv[2] == 0.3f);
     EXPECT(pv[3] == 0.4f);
     EXPECT(pv[4] == 0.5f);
-    
-    
-    double pv2In[5] = {0.1,0.2,0.3,0.4,0.5};
+
+
+    double pv2In[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
     EXPECT_NO_THROW(Parametrization::instance().update(message::Message({
         {
             message::Message::Tag::Parametrization,
@@ -190,7 +189,7 @@ CASE("Test update parametrization") {
             message::Peer{},
             Metadata{{"payloadKey", "pv2"}, {"payloadElementType", "real64"}},
         },
-        message::SharedPayload{message::PayloadReference{pv2In, 5*sizeof(double)}},
+        message::SharedPayload{message::PayloadReference{pv2In, 5 * sizeof(double)}},
     })));
     EXPECT(par.find("pv2") != par.end());
     const auto& pv2 = par.get<std::vector<double>>("pv2");

@@ -140,7 +140,7 @@ int getAndSetDouble(codes_handle* h, void* dict, const char* key, OptVal default
 
 using OptVal = std::optional<std::string>;
 int getAndSetLong(codes_handle* h, void* dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
-                    SetDefault defPolicy = SetDefault::IfKeyGiven) {
+                  SetDefault defPolicy = SetDefault::IfKeyGiven) {
     if (hasKey(h, key)) {
         std::string val = std::to_string(getLong(h, key));
         int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName, val.data());
@@ -157,7 +157,7 @@ int getAndSetLong(codes_handle* h, void* dict, const char* key, const char* setN
     return 0;
 }
 int getAndSetLong(codes_handle* h, void* dict, const char* key, OptVal defaultVal,
-                    SetDefault defPolicy = SetDefault::IfKeyGiven) {
+                  SetDefault defPolicy = SetDefault::IfKeyGiven) {
     return getAndSetLong(h, dict, key, NULL, defaultVal, defPolicy);
 }
 
@@ -407,12 +407,13 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "model");
     if (ret != 0)
         return ret;
-        
+
     if (hasKey(h, "levtype")) {
         std::string levtype = getString(h, "levtype");
         int ret = multio_grib2_dict_set(*mars_dict, "levtype", levtype.c_str());
-        if (ret != 0) return ret;
-        
+        if (ret != 0)
+            return ret;
+
         // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
         if (hasKey(h, "level")) {
             std::optional<std::string> levelist;
@@ -420,16 +421,17 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
                 std::string pressureUnits = getString(h, "pressureUnits");
                 if (pressureUnits == "hPa") {
                     long levelistVal = getLong(h, "level");
-                    levelist = std::to_string(levelistVal*100);
-                } 
+                    levelist = std::to_string(levelistVal * 100);
+                }
             }
-            
+
             if (!levelist) {
                 levelist = getString(h, "level");
             }
-            
+
             int ret = multio_grib2_dict_set(*mars_dict, "levelist", levelist->c_str());
-            if (ret != 0) return ret;
+            if (ret != 0)
+                return ret;
         }
     }
 
@@ -487,7 +489,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *par_dict, "generatingProcessIdentifier");
     if (ret != 0)
         return ret;
-        
+
     ret = getAndSetLong(h, *par_dict, "typeOfProcessedData");
     if (ret != 0)
         return ret;

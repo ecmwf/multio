@@ -17,9 +17,10 @@ static std::string PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE = "payloadElementType";
 namespace parametrization {
 
 /** Enum class describing supported types when sending arrays
-  *
-  */
-enum class ElementType: unsigned long {
+ *
+ */
+enum class ElementType : unsigned long
+{
     Byte,
     Int32,
     Int64,
@@ -31,19 +32,34 @@ ElementType decodeElementType(std::string_view sv);
 std::string toString(ElementType);
 
 
-template<ElementType>
+template <ElementType>
 struct GetElementType;
 
-template<ElementType t>
+template <ElementType t>
 using GetElementType_t = typename GetElementType<t>::type;
 
-template<> struct GetElementType<ElementType::Byte> { using type = unsigned char; };
-template<> struct GetElementType<ElementType::Int32> { using type = std::int32_t; };
-template<> struct GetElementType<ElementType::Int64> { using type = std::int64_t; };
-template<> struct GetElementType<ElementType::Real32> { using type = float; };
-template<> struct GetElementType<ElementType::Real64> { using type = double; };
+template <>
+struct GetElementType<ElementType::Byte> {
+    using type = unsigned char;
+};
+template <>
+struct GetElementType<ElementType::Int32> {
+    using type = std::int32_t;
+};
+template <>
+struct GetElementType<ElementType::Int64> {
+    using type = std::int64_t;
+};
+template <>
+struct GetElementType<ElementType::Real32> {
+    using type = float;
+};
+template <>
+struct GetElementType<ElementType::Real64> {
+    using type = double;
+};
 
-}
+}  // namespace parametrization
 
 
 /** Global singleton metadata object that contains information that may be send once at the beginning of a run

@@ -30,18 +30,20 @@ using multio::util::TypeTag;
 
 // TODO - may move the dispatch functions to header
 
-template<typename T>
+template <typename T>
 struct MapTypeRepres {
-    using type = T; // Default - identity
+    using type = T;  // Default - identity
 };
 
-template<typename T>
+template <typename T>
 using MapTypeRepres_t = typename MapTypeRepres<T>::type;
 
 
 // Specialization - int32_t is not supported in metadata, hence store as int64_t
-template<>
-struct MapTypeRepres<std::int32_t> { using type = std::int64_t; };
+template <>
+struct MapTypeRepres<std::int32_t> {
+    using type = std::int64_t;
+};
 
 
 template <typename Func>
@@ -79,14 +81,10 @@ decltype(auto) dispatchElementType(ElementType t, Func&& f) {
 }
 
 
-
 ElementType decodeElementType(std::string_view typeKey) {
     static const std::unordered_map<std::string_view, ElementType> map{
-        {"byte", ElementType::Byte},
-        {"int64", ElementType::Int64},
-        {"int32", ElementType::Int32},
-        {"real64", ElementType::Real64},
-        {"real32", ElementType::Real32},
+        {"byte", ElementType::Byte},     {"int64", ElementType::Int64},   {"int32", ElementType::Int32},
+        {"real64", ElementType::Real64}, {"real32", ElementType::Real32},
     };
 
     if (auto search = map.find(typeKey); search != map.end()) {
@@ -116,7 +114,7 @@ std::string toString(ElementType et) {
     }
 }
 
-}
+}  // namespace parametrization
 
 
 Parametrization& Parametrization::instance() {
@@ -134,9 +132,10 @@ void Parametrization::clear() {
 
 
 void Parametrization::update(const BaseMetadata& other) {
-    const static std::unordered_set<std::string> ignoreKeys{{PARAMETRIZATION_PAYLOAD_KEY, PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE}};
+    const static std::unordered_set<std::string> ignoreKeys{
+        {PARAMETRIZATION_PAYLOAD_KEY, PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE}};
     std::lock_guard<std::mutex> lock{mutex_};
-    
+
 
     for (const auto& kv : other) {
         if (ignoreKeys.find(kv.first.value()) == ignoreKeys.end()) {
@@ -146,17 +145,18 @@ void Parametrization::update(const BaseMetadata& other) {
 }
 
 
-void Parametrization::update(std::string_view key, parametrization::ElementType et, const void* data, std::size_t size) {
+void Parametrization::update(std::string_view key, parametrization::ElementType et, const void* data,
+                             std::size_t size) {
     std::lock_guard<std::mutex> lock{mutex_};
-    
+
     parametrization::dispatchElementType(et, [&](auto tt) {
         using Type = typename std::decay_t<decltype(tt)>::type;
         using parametrization::MapTypeRepres_t;
-        
-        // Copy data into a vector - may convert type if `MapTypeRepres_t` is specialized
-        update(key, MetadataValue{std::vector<MapTypeRepres_t<Type>>(static_cast<const Type*>(data), static_cast<const Type*>(data) + (size/sizeof(Type)))});
-    });
 
+        // Copy data into a vector - may convert type if `MapTypeRepres_t` is specialized
+        update(key, MetadataValue{std::vector<MapTypeRepres_t<Type>>(
+                        static_cast<const Type*>(data), static_cast<const Type*>(data) + (size / sizeof(Type)))});
+    });
 }
 
 void Parametrization::update(std::string_view key, std::string_view kt, const void* data, std::size_t size) {
@@ -177,14 +177,16 @@ void Parametrization::update(const Message& msg) {
             throw MetadataException(oss.str(), Here());
         }
         auto searchType = md.find(PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE);
-        if ( searchType == md.end()) {
+        if (searchType == md.end()) {
             std::ostringstream oss;
             oss << "Parametrization error. Key " << PARAMETRIZATION_PAYLOAD_KEY << " given with value \""
-                << searchKey->second << "\" but no key type \"" << PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE << "\" is given.";
+                << searchKey->second << "\" but no key type \"" << PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE
+                << "\" is given.";
             throw MetadataException(oss.str(), Here());
         }
-        
-        update(searchKey->second.get<std::string>(), searchType->second.get<std::string>(), payload.data(), payload.size());
+
+        update(searchKey->second.get<std::string>(), searchType->second.get<std::string>(), payload.data(),
+               payload.size());
     }
 
     update(md);
@@ -211,7 +213,6 @@ void Parametrization::update(std::string_view key, const MetadataValue& val) {
 void Parametrization::print(std::ostream& out) const {
     out << "Parametrization :: " << data_;
 }
-
 
 
 }  // namespace multio::message

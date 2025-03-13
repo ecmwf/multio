@@ -36,7 +36,7 @@ int main() {
     assert(strcmp(readVal, "52") == 0);
     free(readVal);
     readVal = NULL;
-    
+
     ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "typeofprocesseddata", "10");
     ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has2);

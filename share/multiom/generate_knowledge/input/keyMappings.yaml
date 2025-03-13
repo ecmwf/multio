@@ -411,5 +411,3 @@ keyTypes:
 
     # ccittIA5
     numberOfCharacters: IntType
-
-

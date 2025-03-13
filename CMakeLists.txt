@@ -145,7 +145,7 @@ set( MULTIOM_CONFIG_DIR    share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )
 
-if (NOT CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+if (HAVE_FORTRAN AND (NOT (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")))
     message(STATUS "Building multiom")
     set( BUILD_MULTIOM 1)
 else ()

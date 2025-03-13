@@ -133,7 +133,7 @@ CASE("Test update parametrization") {
     EXPECT(par.find("payloadElementType") == par.end());
     EXPECT(par.find("domain") != par.end());
     EXPECT(par.find("c") != par.end());
-    EXPECT(par.get<long>("c") == 3);
+    EXPECT(par.get<std::int64_t>("c") == 3);
     const auto& domain = par.get<std::vector<unsigned char>>("domain");
     EXPECT(domain[0] == 0x1);
     EXPECT(domain[1] == 0x2);

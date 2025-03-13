@@ -233,7 +233,7 @@ ecbuild_add_library(
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(action)
-add_subdirectory(api)
+# add_subdirectory(api)
 add_subdirectory(tools)
 
 if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )

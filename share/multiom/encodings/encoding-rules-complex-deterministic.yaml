@@ -1,0 +1,7 @@
+encoding-rules:
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/ml/rule-hybrid-complex-deterministic-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/ml/rule-hybrid-complex-deterministic-instant-complex-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-36.yaml'

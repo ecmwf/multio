@@ -1,9 +1,0 @@
-mapping-rules:
-
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-heightAboveSea.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-U-200m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-200m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-U-100m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-V-100m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/fix/fix-WindSpeed-200m.yaml'

@@ -430,7 +430,7 @@ CASE("Test  match + ignore combination with reduce-and") {
                   {
                       "match": {
                           "name": [ "a", "b" ]
-                      } 
+                      }
                   },
                   {
                       "ignore": {

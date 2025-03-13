@@ -12,6 +12,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION1_REFERENCE_TIME_MAIN_SOURCES
   ${MULTIOM_ENCODERS_GRIB2_SECTION1_REFERENCE_TIME_DIR}/grib2_section1_reference_time_default_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION1_REFERENCE_TIME_DIR}/grib2_section1_reference_time_custom_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION1_REFERENCE_TIME_DIR}/grib2_section1_reference_time_factory_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION1_REFERENCE_TIME_DIR}/grib2_significanceOfReferenceTimeMap_mod.F90
 )
 
 # Collect source files in module2

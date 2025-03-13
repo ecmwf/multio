@@ -28,12 +28,33 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // Put in a default value in the upcoming tool
     ret = multio_grib2_dict_has(dictionary_01, "generatingprocessidentifier", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "generatingprocessidentifier", "52");
     ret = multio_grib2_dict_has(dictionary_01, "generatingprocessidentifier", &has2);
     ret = multio_grib2_dict_get(dictionary_01, "generatingprocessidentifier", &readVal);
     printf("generatingprocessidentifier: %s, %d, %d, %d\n", readVal, has1, has2, ret);
     assert(strcmp(readVal, "52") == 0);
+    free(readVal);
+    readVal = NULL;
+
+
+    ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "typeofprocesseddata", "10");
+    ret = multio_grib2_dict_has(dictionary_01, "typeofprocesseddata", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "typeofprocesseddata", &readVal);
+    printf("typeofprocesseddata: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    assert(strcmp(readVal, "10") == 0);
+    free(readVal);
+    readVal = NULL;
+
+
+    ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "encodestepzero", "1");
+    ret = multio_grib2_dict_has(dictionary_01, "encodestepzero", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "encodestepzero", &readVal);
+    printf("encodestepzero: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    assert(strcmp(readVal, "1") == 0);
     free(readVal);
     readVal = NULL;
 
@@ -73,6 +94,7 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // provide option to set boolean or let eecodes compute this value and compare/assert
     ret = multio_grib2_dict_has(dictionary_01, "numberofmissingvalues", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "numberofmissingvalues", "1002");
     ret = multio_grib2_dict_has(dictionary_01, "numberofmissingvalues", &has2);
@@ -91,6 +113,7 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // is mars key?
     ret = multio_grib2_dict_has(dictionary_01, "systemnumber", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "systemnumber", "99");
     ret = multio_grib2_dict_has(dictionary_01, "systemnumber", &has2);
@@ -100,6 +123,7 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // is mars key?
     ret = multio_grib2_dict_has(dictionary_01, "methodnumber", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "methodnumber", "98");
     ret = multio_grib2_dict_has(dictionary_01, "methodnumber", &has2);
@@ -118,6 +142,7 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // Set to a default
     ret = multio_grib2_dict_has(dictionary_01, "lengthoftimewindow", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "lengthoftimewindow", "5");
     ret = multio_grib2_dict_has(dictionary_01, "lengthoftimewindow", &has2);

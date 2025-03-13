@@ -825,6 +825,7 @@ PP_THREAD_SAFE FUNCTION G2S4_POINT_IN_TIME_DEFAULT_RUNTIME( THIS, &
   USE :: TIME_UTILS_MOD,           ONLY: CURR_TIME_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: DATETIME_UTILS_MOD,       ONLY: HOURS2SECONDS
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -838,20 +839,24 @@ PP_THREAD_SAFE FUNCTION G2S4_POINT_IN_TIME_DEFAULT_RUNTIME( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_POINT_IN_TIME_DEFAULT_T),     INTENT(INOUT) :: THIS
-  TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
-  TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
-  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
-  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
-  TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
-  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
-  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+  CLASS(GRIB2_SECTION4_POINT_IN_TIME_DEFAULT_T), INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),                       INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),                       INTENT(IN)    :: PAR
+  TYPE(TIME_HISTORY_T),                          INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),                             INTENT(IN)    :: CURR_TIME
+  TYPE(GRIB_ENCODER_OPTIONS_T),                  INTENT(IN)    :: OPT
+  CLASS(METADATA_BASE_A), POINTER,               INTENT(INOUT) :: METADATA
+  TYPE(HOOKS_T),                                 INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ISEC
+
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_TIME=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -872,8 +877,14 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
 
+  ! Compute current time (Part of effort to move away from time history since now in mars there is the timeproc keyword)
+  !! ISEC =  MSG%STEP*PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ + MSG%STEP*PAR%TIME%INITIAL_STEP_ * HOURS2SECONDS
+
+  ! Error handling
+  !! PP_DEBUG_CRITICAL_COND_THROW( MOD(ISEC,HOURS2SECONDS) .NE. 0, ERRFLAG_WRONG_TIME )
+
   ! Set the forecast time
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'forecastTime',  CURR_TIME%ISEC_/3600 )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'step',  MSG%STEP )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -893,6 +904,11 @@ PP_ERROR_HANDLER
 
   BLOCK
 
+    INTEGER(KIND=JPIB_K) :: WSTAT
+    CHARACTER(LEN=32) :: CSTEP
+    CHARACTER(LEN=32) :: CLENGTH_OF_TIMESTEP
+    CHARACTER(LEN=32) :: CINITIAL_STEP
+
     ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
@@ -900,6 +916,17 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+    CASE ( ERRFLAG_WRONG_TIME )
+      CSTEP = REPEAT( ' ', 32 )
+      CLENGTH_OF_TIMESTEP = REPEAT( ' ', 32 )
+      CINITIAL_STEP = REPEAT( ' ', 32 )
+      WRITE(CSTEP, '(I32)', IOSTAT=WSTAT) MSG%STEP
+      WRITE(CLENGTH_OF_TIMESTEP, '(I32)', IOSTAT=WSTAT) PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_
+      WRITE(CINITIAL_STEP, '(I32)', IOSTAT=WSTAT) PAR%TIME%INITIAL_STEP_
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'time is expected to be multiple of hours' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'current step: '//TRIM(CSTEP) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'length of time step: '//TRIM(CLENGTH_OF_TIMESTEP) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'initial step: '//TRIM(CINITIAL_STEP) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -1021,11 +1048,11 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Not condition applicable for section 4 time configuration to avoid encoding the field
-  IF ( THIS%ENCODE_STEP_ZERO_ .AND. MSG%STEP .EQ. 0_JPIB_K ) THEN
-    TO_BE_ENCODED = .FALSE.
-  ELSE
+  !IF ( .NOT.THIS%ENCODE_STEP_ZERO_ .AND. MSG%STEP .EQ. 0_JPIB_K ) THEN
+  !  TO_BE_ENCODED = .FALSE.
+  !ELSE
     TO_BE_ENCODED = .TRUE.
-  ENDIF
+  ! ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

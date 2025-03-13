@@ -111,6 +111,7 @@ PUBLIC :: TOC_CONTAINER_T
 !  Whitelist of public symbols (procedures)
 PUBLIC :: TOC_CREATE_NAME
 PUBLIC :: TOC_WOPEN
+PUBLIC :: TOC_CLOSE
 PUBLIC :: TOC_WRITE_FLUSH_BEGIN_OF_SIMULATION
 PUBLIC :: TOC_WRITE_ATM
 PUBLIC :: TOC_WRITE_WAM
@@ -119,6 +120,7 @@ PUBLIC :: TOC_WRITE_FLUSH_STEP_AND_RESTART
 PUBLIC :: TOC_WRITE_FLUSH_LAST_STEP
 PUBLIC :: TOC_WRITE_FLUSH_END_OF_SIMULATION
 PUBLIC :: TOC_READ
+PUBLIC :: TOC_READ_LIST
 PUBLIC :: TOC_READ_ALL
 PUBLIC :: TOC_FREE
 
@@ -895,11 +897,13 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), DIMENSION(NPROCS) :: NENTRIES
   INTEGER(KIND=JPIB_K) :: TOTNENTRIES
   INTEGER(KIND=JPIB_K) :: PROCID
+  INTEGER(KIND=JPIB_K) :: I
   INTEGER(KIND=JPIB_K) :: CNT
   INTEGER(KIND=JPIB_K) :: STAT
   INTEGER(KIND=JPIB_K) :: ENTRY_TYPE
   CLASS(TOC_ENTRY_BASE_T), POINTER :: TMP_ENTRY => NULL()
   CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  TYPE(TOC_CONTAINER_T), DIMENSION(:), ALLOCATABLE :: TMPTOC
 
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_FILE_NAME = 1_JPIB_K
@@ -907,9 +911,10 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TOC_ALREADY_ALLOCATED = 3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NENTRIES_LOWER_OR_EQUAL_TO_ZERO = 4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_TOC = 5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY = 6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ENTRY = 7_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CLOSE_TOC = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_TOC = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ENTRY = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CLOSE_TOC = 9_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -942,7 +947,7 @@ IMPLICIT NONE
   ENDDO
 
   ! Allocate the table of contents
-  ALLOCATE( TOC(TOTNENTRIES), STAT=STAT, ERRMSG=ERRMSG )
+  ALLOCATE( TMPTOC(TOTNENTRIES), STAT=STAT, ERRMSG=ERRMSG )
   PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
 
   ! Read all the entries
@@ -959,7 +964,7 @@ IMPLICIT NONE
 
           IF ( PROCID .EQ. NPROCS ) THEN
             CNT = CNT + 1
-            TOC(CNT)%ENTRY_ => TMP_ENTRY
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
             NULLIFY(TMP_ENTRY)
           ELSE
             IF ( ASSOCIATED(TMP_ENTRY) ) THEN
@@ -972,14 +977,14 @@ IMPLICIT NONE
         CASE ( ATM_FIELD_E, WAM_FIELD_E )
 
           CNT = CNT + 1
-          TOC(CNT)%ENTRY_ => TMP_ENTRY
+          TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
           NULLIFY(TMP_ENTRY)
 
         CASE ( SIM_END_E )
 
           IF ( PROCID .EQ. NPROCS ) THEN
             CNT = CNT + 1
-            TOC(CNT)%ENTRY_ => TMP_ENTRY
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
             NULLIFY(TMP_ENTRY)
           ELSE
             IF ( ASSOCIATED(TMP_ENTRY) ) THEN
@@ -1002,6 +1007,21 @@ IMPLICIT NONE
       ENDDO InnerLoop
     ENDDO ProcLoop
   ENDDO OuterLoop
+
+
+  ! Allocate the table of contents
+  ALLOCATE( TOC(CNT), STAT=STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
+
+  ! Copy the table of contents
+  DO I = 1, CNT
+    TOC(I)%ENTRY_ => TMPTOC(I)%ENTRY_
+    NULLIFY(TMPTOC(I)%ENTRY_)
+  ENDDO
+
+  ! DEallocate temporary table of contents
+  DEALLOCATE(TMPTOC, STAT=STAT, ERRMSG=ERRMSG)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_TOC)
 
   ! Close the toc file
   DO PROCID = 1, NPROCS
@@ -1046,6 +1066,16 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Nentries in toc lower of equal to 0' )
     CASE (ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate toc' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE(ERRMSG,STAT=STAT)
+      ENDIF
+    CASE (ERRFLAG_UNABLE_TO_DEALLOCATE_TOC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate toc' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE(ERRMSG,STAT=STAT)
+      ENDIF
     CASE (ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get next entry in toc' )
     CASE (ERRFLAG_UNKNOWN_ENTRY)
@@ -1071,6 +1101,311 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION TOC_READ_ALL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'TOC_READ_LIST'
+PP_THREAD_SAFE FUNCTION TOC_READ_LIST( DIRECTORY, TOC, PROC_LIST, BIG_ENDIAN_READ, VERBOSE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                                 INTENT(IN)    :: DIRECTORY
+  TYPE(TOC_CONTAINER_T), DIMENSION(:), ALLOCATABLE, INTENT(OUT)   :: TOC
+  INTEGER(KIND=JPIB_K), DIMENSION(:),               INTENT(IN)    :: PROC_LIST
+  LOGICAL,                                          INTENT(IN)    :: BIG_ENDIAN_READ
+  LOGICAL,                                          INTENT(IN)    :: VERBOSE
+  TYPE(HOOKS_T),                                    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=1024) :: FULLDIR
+  CHARACTER(LEN=1024) :: TOCFNAME
+  INTEGER(KIND=JPIB_K), DIMENSION(SIZE(PROC_LIST)) :: TOCUNIT
+  INTEGER(KIND=JPIB_K), DIMENSION(SIZE(PROC_LIST)) :: NENTRIES
+  INTEGER(KIND=JPIB_K) :: TOTNENTRIES
+  INTEGER(KIND=JPIB_K) :: PROCID
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: CNT1
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIB_K) :: ENTRY_TYPE
+  CLASS(TOC_ENTRY_BASE_T), POINTER :: TMP_ENTRY => NULL()
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  TYPE(TOC_CONTAINER_T), DIMENSION(:), ALLOCATABLE :: TMPTOC
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_FILE_NAME = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_OPEN_TOC_FILE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TOC_ALREADY_ALLOCATED = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NENTRIES_LOWER_OR_EQUAL_TO_ZERO = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_TOC = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_TOC = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ENTRY = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CLOSE_TOC = 9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOCATED(TOC), ERRFLAG_TOC_ALREADY_ALLOCATED)
+
+  ! Open the toc file
+  TOTNENTRIES = 0
+  DO PROCID = 1, SIZE(PROC_LIST)
+    FULLDIR = REPEAT(' ',1024)
+    WRITE(FULLDIR,'(A,A,I6.6,A)',IOSTAT=STAT) TRIM(ADJUSTL(DIRECTORY)), '/io_serv.', PROC_LIST(PROCID), '.d'
+    PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_CREATE_FILE_NAME)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CREATE_FILE_NAME) TOC_CREATE_NAME( TRIM(FULLDIR), PROC_LIST(PROCID), TOCFNAME, HOOKS )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_OPEN_TOC_FILE) TOC_ROPEN( TOCFNAME, TOCUNIT(PROCID), BIG_ENDIAN_READ, NENTRIES(PROCID), HOOKS )
+    PP_DEBUG_CRITICAL_COND_THROW( NENTRIES(PROCID).LE.0, ERRFLAG_NENTRIES_LOWER_OR_EQUAL_TO_ZERO)
+    TOTNENTRIES = TOTNENTRIES + NENTRIES(PROCID)
+  ENDDO
+
+  ! Allocate the table of contents
+  ALLOCATE( TMPTOC(TOTNENTRIES), STAT=STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
+
+  ! Read all the entries
+  CNT = 0
+  CNT1 = 0
+  OuterLoop: DO
+    ProcLoop: DO PROCID = 1, SIZE(PROC_LIST)
+      InnerLoop: DO
+
+        PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY) TOC_READ_NEXT_ENTRY_TOC( TOCUNIT(PROCID), ENTRY_TYPE, TMP_ENTRY, HOOKS )
+
+        SELECT CASE ( ENTRY_TYPE )
+
+        CASE ( SIM_INIT_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
+            ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') SIM_INIT'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          EXIT InnerLoop
+
+        CASE ( FLUSH_STEP_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
+            ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') FLUSH_STEP'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          EXIT InnerLoop
+
+        CASE ( FLUSH_STEP_RST_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
+            ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') FUSH_STEP_RST'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          EXIT InnerLoop
+
+        CASE ( FLUSH_STEP_LAST_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
+            ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') FLUSH_LAST_STEP'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          EXIT InnerLoop
+
+        CASE ( ATM_FIELD_E )
+
+          CNT = CNT + 1
+          TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+          NULLIFY(TMP_ENTRY)
+
+        CASE ( WAM_FIELD_E )
+
+          CNT = CNT + 1
+          TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+          NULLIFY(TMP_ENTRY)
+
+        CASE ( SIM_END_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
+            ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') SIM_END'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            EXIT OuterLoop
+          ELSE
+            EXIT InnerLoop
+          ENDIF
+
+        CASE DEFAULT
+
+          PP_DEBUG_CRITICAL_THROW(ERRFLAG_UNKNOWN_ENTRY)
+
+        END SELECT
+
+      ENDDO InnerLoop
+    ENDDO ProcLoop
+  ENDDO OuterLoop
+
+  ! Allocate the table of contents
+  ALLOCATE( TOC(CNT), STAT=STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
+
+  ! Copy the table of contents
+  DO I = 1, CNT
+    TOC(I)%ENTRY_ => TMPTOC(I)%ENTRY_
+    NULLIFY(TMPTOC(I)%ENTRY_)
+  ENDDO
+
+  ! DEallocate temporary table of contents
+  DEALLOCATE(TMPTOC, STAT=STAT, ERRMSG=ERRMSG)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_TOC)
+
+  ! Close the toc file
+  DO PROCID = 1, SIZE(PROC_LIST)
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CLOSE_TOC) TOC_CLOSE( TOCUNIT(PROCID), HOOKS )
+  ENDDO
+
+  ! Deallocate the error message if allocated
+  IF ( ALLOCATED(ERRMSG) ) THEN
+    DEALLOCATE(ERRMSG,STAT=STAT)
+  ENDIF
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CREATE_FILE_NAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to create the file name' )
+    CASE (ERRFLAG_UNABLE_TO_OPEN_TOC_FILE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to open the toc file' )
+    CASE (ERRFLAG_TOC_ALREADY_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Toc already allocated' )
+    CASE (ERRFLAG_NENTRIES_LOWER_OR_EQUAL_TO_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Nentries in toc lower of equal to 0' )
+    CASE (ERRFLAG_UNABLE_TO_ALLOCATE_TOC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate toc' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE(ERRMSG,STAT=STAT)
+      ENDIF
+    CASE (ERRFLAG_UNABLE_TO_DEALLOCATE_TOC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate toc' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE(ERRMSG,STAT=STAT)
+      ENDIF
+    CASE (ERRFLAG_UNABLE_TO_GET_NEXT_ENTRY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get next entry in toc' )
+    CASE (ERRFLAG_UNKNOWN_ENTRY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown entry' )
+    CASE (ERRFLAG_UNABLE_TO_CLOSE_TOC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to close the toc file' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION TOC_READ_LIST
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

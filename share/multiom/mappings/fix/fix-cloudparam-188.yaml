@@ -1,0 +1,27 @@
+name: 'map the high cloud param to new param'
+
+tag: 'high cloud param'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 188 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'parametrization-float'
+          name: 'scale-factor'
+          expression:
+            type: 'constant'
+            value: 100.0
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 3075

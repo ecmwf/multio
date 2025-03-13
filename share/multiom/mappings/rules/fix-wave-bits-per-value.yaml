@@ -1,0 +1,29 @@
+name: 'modify the bits per value for wave surface at step <= 0'
+
+tag: 'change bits per value wave surface at step <= 0'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      values: [
+        '140098:140105', '140112:140129', '140207:140209',
+        '140211:140212', '140214:140232', '140234:140239',
+        140244, '140251:140254'
+      ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'parametrization-int'
+          name: 'bits-per-value'
+          expression:
+            type: 'constant'
+            value: 24

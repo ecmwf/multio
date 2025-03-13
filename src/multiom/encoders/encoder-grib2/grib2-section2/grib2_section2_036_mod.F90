@@ -676,6 +676,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'type',   MSG%TYPE )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'class',  MSG%CLASS )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'expver', MSG%EXPVER )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'anoffset', MSG%ANOFFSET )
 
   ! Eventually other metadata needs to be set according to the specific section 2 type
 

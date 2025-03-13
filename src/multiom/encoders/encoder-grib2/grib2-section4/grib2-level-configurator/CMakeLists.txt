@@ -9,6 +9,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 # Collect source files in module2
 set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/levels_utils_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_surface_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_snowlayer_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_soillayer_mod.F90
@@ -42,7 +43,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovegroundlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovesealayer_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovesea_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_highcloudlayer_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_highcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_hybridheight_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_hybridlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_hybridpressure_mod.F90
@@ -57,10 +58,10 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_isothermal_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_isothermzero_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lakebottom_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lowcloudlayer_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_lowcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_maxwind_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meansea_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mediumcloudlayer_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mediumcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meltpondbottom_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_meltpondtop_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_mixedlayerdepthbydensity_mod.F90

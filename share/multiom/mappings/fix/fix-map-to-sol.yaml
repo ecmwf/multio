@@ -1,0 +1,40 @@
+name: 'map-to-sol'
+
+tag: 'map-to-sol'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      values: [ 33, 183, 238, 228038, 228141, 260360, 262024, 260199 ]
+
+    - type: 'levtype'
+      operation: 'match'
+      value: 'sfc'
+
+    - type: 'composed'
+      operation: 'all'
+      filters:
+        - type: 'levelist'
+          operation: 'has'
+
+        - type: 'levelist'
+          operation: 'not-equal'
+          value: 0
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'levtype'
+          expression:
+            type: 'enum'
+            name: 'levtype'
+            value: 'sol'

@@ -35,6 +35,12 @@ if ( HAVE_ATLAS_IO )
     )
 endif()
 
+if( HAVE_MULTIOM )
+    list( APPEND multio_action_plugins
+        multio-action-encode-grib2
+    )
+endif()
+
 # Source files
 list( APPEND multio_capi_srcs
     multio_capi_types.h

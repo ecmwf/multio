@@ -23,7 +23,10 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
   ! Variables used to control the cache dump functionality
   LOGICAL :: ALLOW_MULTIPLE_ENCODING_RULES = .FALSE.
   LOGICAL :: DUMP_SAMPLES_TO_ONE_FILE = .TRUE.
-  CHARACTER(LEN=256) :: DUMP_PATH = './dump'
+  LOGICAL :: PRINT_DICTIONARIES = .FALSE.
+  LOGICAL :: DUMP_DICTIONARIES = .FALSE.
+  LOGICAL :: WRITE_DEBUG_FIELDS = .FALSE.
+  CHARACTER(LEN=256) :: DUMP_PATH = '.'
 
   ! Variables used to control the size of the cache
   LOGICAL :: CACHE_LOCAL_USE_INFO          = .TRUE. ! Should always be true
@@ -39,13 +42,13 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
 
   ! Variables used to control the cache usage
   LOGICAL :: ENABLE_CACHE = .FALSE.
-
-
-
-
-
-  LOGICAL :: USE_TYPE_OF_LEVEL = .FALSE.
   INTEGER(KIND=JPIB_K) :: CACHE_STRATEGY = OPT_CACHE_FULL_E
+
+  ! Checks
+  LOGICAL :: USE_TYPE_OF_LEVEL = .TRUE.
+  LOGICAL :: CHECK_TYPE_OF_LEVEL = .FALSE.
+  LOGICAL :: CHECK_TYPE_OF_LEVEL_RT = .FALSE.
+  LOGICAL :: BAD_INIT_TYPE_OF_LEVEL = .FALSE.
 
   ! Dimension of the time history buffer
   INTEGER(KIND=JPIB_K) :: TIME_HISTORY_CAPACITY = 100_JPIB_K

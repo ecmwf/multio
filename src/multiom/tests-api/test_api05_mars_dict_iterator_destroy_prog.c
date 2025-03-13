@@ -225,11 +225,11 @@ int main() {
     readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has1);
-    ret = multio_grib2_dict_set(dictionary_01, "timeproc", "3h");
+    ret = multio_grib2_dict_set(dictionary_01, "timeproc", "5");
     ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has2);
     ret = multio_grib2_dict_get(dictionary_01, "timeproc", &readVal);
     // printf("timeproc: %s, %d, %d, %d\n", readVal, has1, has2, ret );
-    assert(strcmp(readVal, "3h") == 0);
+    assert(strcmp(readVal, "5") == 0);
     free(readVal);
     readVal = NULL;
 

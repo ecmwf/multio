@@ -582,7 +582,8 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
-int multio_write_parametrization_array(multio_handle_t* mio, const char* key, const int* data, int size) {
+int multio_write_parametrization_array_byte(multio_handle_t* mio, const char* key, const unsigned char* data,
+                                            int size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
@@ -590,10 +591,105 @@ int multio_write_parametrization_array(multio_handle_t* mio, const char* key, co
             ASSERT(key);
 
 
-            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int)};
+            using namespace multio::message::parametrization;
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(unsigned char)};
 
-            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}},
-                          std::move(payload), Message::Tag::Parametrization);
+            mio->dispatch(
+                Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)},
+                         {multio::message::PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE, toString(ElementType::Byte)}},
+                std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_array_int32(multio_handle_t* mio, const char* key, const int32_t* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            using namespace multio::message::parametrization;
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int32_t)};
+
+            mio->dispatch(
+                Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)},
+                         {multio::message::PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE, toString(ElementType::Int32)}},
+                std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_array_int64(multio_handle_t* mio, const char* key, const int64_t* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            using namespace multio::message::parametrization;
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int64_t)};
+
+            mio->dispatch(
+                Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)},
+                         {multio::message::PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE, toString(ElementType::Int64)}},
+                std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_array_real32(multio_handle_t* mio, const char* key, const float* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            using namespace multio::message::parametrization;
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(float)};
+
+            mio->dispatch(
+                Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)},
+                         {multio::message::PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE, toString(ElementType::Real32)}},
+                std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_array_real64(multio_handle_t* mio, const char* key, const double* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            using namespace multio::message::parametrization;
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(double)};
+
+            mio->dispatch(
+                Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)},
+                         {multio::message::PARAMETRIZATION_PAYLOAD_ELEMENT_TYPE, toString(ElementType::Real64)}},
+                std::move(payload), Message::Tag::Parametrization);
         },
         mio);
 #else

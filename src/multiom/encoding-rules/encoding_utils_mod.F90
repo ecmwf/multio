@@ -211,7 +211,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_ENCODERS_NOT_ASSOCIATED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to match rule' )
     CASE (ERRFLAG_MULTIPLE_ENCODERS_FOR_SAME_FIELD)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'multiple encodeing rules for the same field:' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'multiple encoding rules for the same field:' )
       IF ( ALLOCATED(JSON_MSG) ) THEN
         PP_DEBUG_PUSH_MSG_TO_FRAME( TRIM(JSON_MSG) )
         DEALLOCATE(JSON_MSG, STAT=ALLOC_STAT)

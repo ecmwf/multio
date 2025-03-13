@@ -1,21 +1,22 @@
 set(MULTIOM_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Enter in the module
-message("${OFFSET} + ifs-iface sources: ${MULTIOM_MAPPING_RULES_DIR}")
+message("${OFFSET} + tools sources: ${MULTIOM_TOOLS_DIR}")
 
 # Recursive print
 set(OFFSET ${OFFSET}${DOFFSET})
 
 
 set( MULTIOM_TOOLS_MAIN_SOURCES
+  ${MULTIOM_TOOLS_DIR}/command_arguments_parser_mod.F90
+  ${MULTIOM_TOOLS_DIR}/command_arguments_tokenizer_mod.F90
   ${MULTIOM_TOOLS_DIR}/multiom_tools_utils_mod.F90
-  ${MULTIOM_TOOLS_DIR}/multiom_tools_cfg_mod.F90
 )
 
 # Collect source files in module2
 set( MULTIOM_TOOLS_SOURCES
   ${MULTIOM_TOOLS_MAIN_SOURCES}
-  CACHE INTERNAL "List of all sources in ifs-interface directory"
+  CACHE INTERNAL "List of all sources in tools directory"
 )
 
 # ======================================================================
@@ -46,8 +47,36 @@ ecbuild_add_executable(
 
   TARGET multiom-feed
 
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
+
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_feed_prog.F90
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+ecbuild_add_executable(
+
+  TARGET multiom-cmd-args
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_cmd_args_prog.F90
 
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -65,4 +94,82 @@ ecbuild_add_executable(
 
   LINKER_LANGUAGE Fortran
 
+)
+
+
+
+
+ecbuild_add_executable(
+
+  TARGET multiom-list
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_list_prog.F90
+
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+
+ecbuild_add_executable(
+
+  TARGET multiom-params
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_par_prog.F90
+
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+
+ecbuild_add_executable(
+
+  TARGET
+      grib1-to-grib2
+
+  SOURCES
+      multiom-mtg2.cc
+      ../../multio/tools/MultioTool.cc
+
+  NO_AS_NEEDED
+
+  LIBS
+      multio
+      multiom
+      eckit
+      fckit
+      metkit
+      eccodes
+      eccodes_f90
 )

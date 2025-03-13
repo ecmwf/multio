@@ -8,6 +8,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 # Main operations
 set( MULTIOM_METADATA_MAIN_SOURCES
+  ${MULTIOM_METADATA_DIR}/encoder_tracer_mod.F90
   ${MULTIOM_METADATA_DIR}/metadata_base_mod.F90
   ${MULTIOM_METADATA_DIR}/metadata_list_mod.F90
   ${MULTIOM_METADATA_DIR}/metadata_factory_mod.F90

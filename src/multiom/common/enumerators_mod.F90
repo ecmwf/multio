@@ -43,7 +43,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_WAVE_INT_E=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_WAVE_SPEC_E=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_HEIGHT_ABOVE_GROUND_E=8_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: N_PREFIXES=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_AL_E=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_PREFIXES=9_JPIB_K
 
   ! Enumerators for levType
   INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_HHL_E=1_JPIB_K
@@ -57,9 +58,10 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_PV_E=9_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_SFC_E=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_SOL_E=11_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_WAM_INT_E=12_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_WAM_SPEC_E=13_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: N_LEVTYPES=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_AL_E=12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_WAM_INT_E=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_WAM_SPEC_E=14_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_LEVTYPES=14_JPIB_K
 
   ! Enumerators for class
   INTEGER(KIND=JPIB_K), PARAMETER :: CLASS_0_E=0_JPIB_K
@@ -369,10 +371,13 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: N_REPRES=3_JPIB_K
 
   ! Enumerators for models
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_ATMOSPHERE_E=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_OCEAN_E=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_WAVE_E=3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: N_MODELS=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_IFS_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_SINGLE_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_SINGLE_MSE_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_CRPS_E=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: MODEL_AIFS_ENS_DIFF_E=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_MODELS=7_JPIB_K
 
   ! Enumerators for precision
   INTEGER(KIND=JPIB_K), PARAMETER :: PRECISION_SP_E=1_JPIB_K
@@ -478,6 +483,7 @@ IMPLICIT NONE
   INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_CONSENSUS=255_JPIB_K  ! Consensus
   INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_ANSO=291_JPIB_K       ! Alliance of International Science Organizations (Beijing, China)
   INTEGER(kind=JPIB_K), PARAMETER :: ORIGIN_UFZ=292_JPIB_K        ! Helmholtz Centre for Environmental Research
+  INTEGER(kind=JPIB_K), PARAMETER :: N_ORIGIN=292_JPIB_K
 
 
 
@@ -504,7 +510,17 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: INTOP_FUNCTION_CALL_STEPR_E=4001_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_INTOP_FUNCTION_CALL=3_JPIB_K
 
-
+  ! Type of processed data
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_AN_E=0_JPIB_K !	Forecast products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_FC_E=1_JPIB_K !	Analysis products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_AN_AND_FC_E=2_JPIB_K !	Analysis and forecast products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_CF_E=3_JPIB_K !	Control forecast products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_PF_E=4_JPIB_K !	Perturbed forecast products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_CF_AND_PF_E=5_JPIB_K !	Control and perturbed forecast products
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_SO_E=6_JPIB_K !	Processed satellite observations
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_PR_E=7_JPIB_K !	Processed radar observations
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PROCESSED_DATA_EP_E=8_JPIB_K !	Event probability
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_TYPE_OF_PROCESSED_DATA=9_JPIB_K
 
 
 
@@ -547,9 +563,49 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_SP_E=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_DP_E=2_JPIB_K
 
+  ! Sink types
+  INTEGER(KIND=JPIB_K), PARAMETER :: SINK_NONE_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: SINK_HEADER_TO_FILE_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: SINK_MESSAGE_TO_FILE_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: SINK_MESSAGE_TO_FDB_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: SINK_GRIB_HEADER_TO_MULTIO_E=4_JPIB_K
+
+!>
+!> Interface for the function converting a characters to an integer
+!> To be used for example when reading anumerators by name
+INTERFACE
+  PP_THREAD_SAFE FUNCTION FUN_I2C_IF( I, CHAR, HOOKS ) RESULT( RET )
+
+    ! Symbols imported from other modules within the project.
+    USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+    USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+    ! Symbols imported by the preprocessor for debugging purposes
+    PP_DEBUG_USE_VARS
+
+    ! Symbols imported by the preprocessor for logging purposes
+    PP_LOG_USE_VARS
+
+    ! Symbols imported by the preprocessor for tracing purposes
+    PP_TRACE_USE_VARS
+
+  IMPLICIT NONE
+
+    ! Dummy arguments
+    INTEGER(KIND=JPIB_K), INTENT(IN)    :: I
+    CHARACTER(LEN=*),     INTENT(OUT)   :: CHAR
+    TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+    INTEGER(KIND=JPIB_K) :: RET
+  END FUNCTION FUN_I2C_IF
+END INTERFACE
+
   !>
   !>
   !>  Whitelist of public symbols (parameters)
+
+  ! Interface of the function converting a characters to an integer
+  PUBLIC :: FUN_I2C_IF
+
 
   ! Precision enumerators
   PUBLIC :: VALUES_SP_E
@@ -581,6 +637,7 @@ IMPLICIT NONE
   PUBLIC :: PREFIX_WAVE_INT_E
   PUBLIC :: PREFIX_WAVE_SPEC_E
   PUBLIC :: PREFIX_HEIGHT_ABOVE_GROUND_E
+  PUBLIC :: PREFIX_AL_E
   PUBLIC :: N_PREFIXES
 
   ! Enumerators for levType
@@ -595,6 +652,7 @@ IMPLICIT NONE
   PUBLIC :: LEVTYPE_PV_E
   PUBLIC :: LEVTYPE_SFC_E
   PUBLIC :: LEVTYPE_SOL_E
+  PUBLIC :: LEVTYPE_AL_E
   PUBLIC :: LEVTYPE_WAM_INT_E
   PUBLIC :: LEVTYPE_WAM_SPEC_E
   PUBLIC :: N_LEVTYPES
@@ -906,9 +964,12 @@ IMPLICIT NONE
   PUBLIC :: N_REPRES
 
   ! Enumerators for models
-  PUBLIC :: MODEL_ATMOSPHERE_E
-  PUBLIC :: MODEL_OCEAN_E
-  PUBLIC :: MODEL_WAVE_E
+  PUBLIC :: MODEL_IFS_E
+  PUBLIC :: MODEL_AIFS_SINGLE_E
+  PUBLIC :: MODEL_AIFS_ENS_E
+  PUBLIC :: MODEL_AIFS_SINGLE_MSE_E
+  PUBLIC :: MODEL_AIFS_ENS_CRPS_E
+  PUBLIC :: MODEL_AIFS_ENS_DIFF_E
   PUBLIC :: N_MODELS
 
   ! Enumerators for precision
@@ -1071,7 +1132,22 @@ IMPLICIT NONE
   PUBLIC :: WAM_MSG_E
   PUBLIC :: N_INTERFACES
 
+
+  ! Type of processed data
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_AN_E !	Forecast products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_FC_E !	Analysis products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_AN_AND_FC_E !	Analysis and forecast products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_CF_E !	Control forecast products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_PF_E !	Perturbed forecast products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_CF_AND_PF_E !	Control and perturbed forecast products
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_SO_E !	Processed satellite observations
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_PR_E !	Processed radar observations
+  PUBLIC :: TYPE_OF_PROCESSED_DATA_EP_E !	Event probability
+  PUBLIC :: N_TYPE_OF_PROCESSED_DATA
+
   !>  Whitelist of public symbols (procedures)
+  PUBLIC :: ITYPE_OF_PROCESSED_DATA2CTYPE_OF_PROCESSED_DATA
+  PUBLIC :: CTYPE_OF_PROCESSED_DATA2ITYPE_OF_PROCESSED_DATA
   PUBLIC :: IPREFIX2CPREFIX
   PUBLIC :: CPREFIX2IPREFIX
   PUBLIC :: ILEVTYPE2CLEVTYPE
@@ -1126,6 +1202,16 @@ IMPLICIT NONE
   PUBLIC :: IINT2CINT
   PUBLIC :: CFLOAT2IFLOAT
   PUBLIC :: IFLOAT2CFLOAT
+  PUBLIC :: CSINK2ISINK
+  PUBLIC :: ISINK2CSINK
+  PUBLIC :: CTIME2ITIME
+
+  ! Sinks
+  PUBLIC :: SINK_NONE_E
+  PUBLIC :: SINK_HEADER_TO_FILE_E
+  PUBLIC :: SINK_MESSAGE_TO_FILE_E
+  PUBLIC :: SINK_MESSAGE_TO_FDB_E
+  PUBLIC :: SINK_GRIB_HEADER_TO_MULTIO_E
 
 CONTAINS
 
@@ -1176,7 +1262,9 @@ IMPLICIT NONE
 
   ! Extract the enum for message type from prefix
   SELECT CASE( KPREF )
-  CASE ( PREFIX_MODEL_LEVEL_E, PREFIX_PRESSURE_LEVEL_E, PREFIX_VORTICITY_LEVEL_E, PREFIX_THETA_LEVEL_E, PREFIX_SURFACE_E  )
+  CASE ( PREFIX_MODEL_LEVEL_E, PREFIX_PRESSURE_LEVEL_E, &
+&        PREFIX_VORTICITY_LEVEL_E, PREFIX_THETA_LEVEL_E, &
+&        PREFIX_SURFACE_E, PREFIX_AL_E, PREFIX_HEIGHT_ABOVE_GROUND_E  )
     MSGTYPE = ATM_MSG_E
   CASE ( PREFIX_WAVE_INT_E, PREFIX_WAVE_SPEC_E )
     MSGTYPE = WAM_MSG_E
@@ -1307,15 +1395,17 @@ IMPLICIT NONE
     ! SELECT CASE (PARAM_ID)
     ! TODO: This logic is very weak and should be improved
     ! CASE ( NGRBSD, NGRBTSN, NGRBRSN, NGRBWSN, NGRBSOT, NGRBVSW, NGRBSIT )
-    IF ( LEVEL .NE. 0 ) THEN
+    ! IF ( LEVEL .NE. 0 ) THEN
       ! Multilevel surfaces at level 0 are considered as surface
-      ILEVTYPE = LEVTYPE_SOL_E
-    ELSE
+    !  ILEVTYPE = LEVTYPE_SOL_E
+    ! ELSE
       ILEVTYPE = LEVTYPE_SFC_E
-    END IF
+    ! END IF
     ! CASE DEFAULT
     !   ILEVTYPE = LEVTYPE_SFC_E
     ! END SELECT
+  CASE (PREFIX_AL_E)
+    ILEVTYPE = LEVTYPE_AL_E
   CASE ( PREFIX_WAVE_INT_E )
     ILEVTYPE = LEVTYPE_SFC_E
   CASE ( PREFIX_WAVE_SPEC_E )
@@ -1596,6 +1686,245 @@ END FUNCTION CIFACES2IIFACES
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ISINK2CSINK'
+PP_THREAD_SAFE FUNCTION ISINK2CSINK( ISINK, CSINK, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ISINK
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CSINK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_PREFIX=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CSINK = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( ISINK )
+
+  CASE ( SINK_NONE_E )
+    CSINK = 'none'
+  CASE ( SINK_HEADER_TO_FILE_E )
+    CSINK = 'header-to-file'
+  CASE ( SINK_MESSAGE_TO_FILE_E )
+    CSINK = 'message-to-file'
+  CASE ( SINK_MESSAGE_TO_FDB_E )
+    CSINK = 'message-to-fdb'
+  CASE ( SINK_GRIB_HEADER_TO_MULTIO_E )
+    CSINK = 'header-to-multio'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_PREFIX )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_PREFIX)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) ISINK
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown isink: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ISINK2CSINK
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CSINK2ISINK'
+PP_THREAD_SAFE FUNCTION CSINK2ISINK( CSINK, ISINK, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CSINK
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ISINK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CSINK)) :: LOC_CSINK
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_PREFIX=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  ISINK = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CSINK, LOC_CSINK, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CSINK)) )
+
+  CASE ( 'none' )
+    ISINK = SINK_NONE_E
+  CASE ( 'header-to-file' )
+    ISINK = SINK_HEADER_TO_FILE_E
+  CASE ( 'message-to-file' )
+    ISINK = SINK_MESSAGE_TO_FILE_E
+  CASE ( 'message-to-fdb' )
+    ISINK = SINK_MESSAGE_TO_FDB_E
+  CASE ( 'header-to-multio' )
+    ISINK = SINK_GRIB_HEADER_TO_MULTIO_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_PREFIX )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_PREFIX)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown csink: '//TRIM(ADJUSTL(CSINK)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CSINK2ISINK
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IPREFIX2CPREFIX'
 PP_THREAD_SAFE FUNCTION IPREFIX2CPREFIX( IPREFIX, CPREFIX, HOOKS ) RESULT(RET)
 
@@ -1656,6 +1985,8 @@ IMPLICIT NONE
     CPREFIX = 't'
   CASE ( PREFIX_SURFACE_E )
     CPREFIX = 's'
+  CASE ( PREFIX_AL_E )
+    CPREFIX = 'a'
   CASE ( PREFIX_WAVE_INT_E )
     CPREFIX = 'wv_int'
   CASE ( PREFIX_WAVE_SPEC_E )
@@ -1785,11 +2116,13 @@ IMPLICIT NONE
     IPREFIX = PREFIX_THETA_LEVEL_E
   CASE ( 'sf', 's', 'sfc' )
     IPREFIX = PREFIX_SURFACE_E
+  CASE ( 'al', 'a' )
+    IPREFIX = PREFIX_AL_E
   CASE ( 'wv_int' )
     IPREFIX = PREFIX_WAVE_INT_E
   CASE ( 'wv_spec' )
     IPREFIX = PREFIX_WAVE_SPEC_E
-  CASE ( 'HL', 'h' )
+  CASE ( 'hl', 'h' )
     IPREFIX = PREFIX_HEIGHT_ABOVE_GROUND_E
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_PREFIX )
@@ -1919,6 +2252,8 @@ IMPLICIT NONE
     CLEVTYPE = 'sfc'
   CASE ( LEVTYPE_SOL_E )
     CLEVTYPE = 'sol'
+  CASE ( LEVTYPE_AL_E )
+    CLEVTYPE = 'al'
   CASE ( LEVTYPE_WAM_INT_E )
     CLEVTYPE = 'wam_int'
   CASE ( LEVTYPE_WAM_SPEC_E )
@@ -2057,6 +2392,8 @@ IMPLICIT NONE
     ILEVTYPE = LEVTYPE_SFC_E
   CASE ( 'sol' )
     ILEVTYPE = LEVTYPE_SOL_E
+  CASE ( 'al' )
+    ILEVTYPE = LEVTYPE_AL_E
   CASE ( 'wam_int' )
     ILEVTYPE = LEVTYPE_WAM_INT_E
   CASE ( 'wam_spec' )
@@ -2367,7 +2704,7 @@ IMPLICIT NONE
 
   !> Dummy arguments
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMODEL
-  CHARACTER(LEN=16),    INTENT(OUT)   :: CMODEL
+  CHARACTER(LEN=32),    INTENT(OUT)   :: CMODEL
   TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -2397,12 +2734,18 @@ IMPLICIT NONE
   !> Select the repres
   SELECT CASE ( IMODEL )
 
-  CASE ( MODEL_ATMOSPHERE_E )
-    CMODEL = 'atmosphere'
-  CASE ( MODEL_OCEAN_E )
-    CMODEL = 'ocean'
-  CASE ( MODEL_WAVE_E )
-    CMODEL = 'wave'
+  CASE ( MODEL_IFS_E )
+    CMODEL = 'ifs'
+  CASE ( MODEL_AIFS_SINGLE_E )
+    CMODEL = 'aifs-single'
+  CASE ( MODEL_AIFS_ENS_E )
+    CMODEL = 'aifs-ens'
+  CASE ( MODEL_AIFS_SINGLE_MSE_E )
+    CMODEL = 'aifs-single-mse'
+  CASE ( MODEL_AIFS_ENS_CRPS_E )
+    CMODEL = 'aifs-ens-crps'
+  CASE ( MODEL_AIFS_ENS_DIFF_E )
+    CMODEL = 'aifs-ens-diff'
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MODEL )
   END SELECT
@@ -2516,12 +2859,18 @@ IMPLICIT NONE
   !> Select the repres
   SELECT CASE ( TRIM(ADJUSTL(LOC_CMODEL)) )
 
-  CASE ( 'atmosphere' )
-    IMODEL = MODEL_ATMOSPHERE_E
-  CASE ( 'ocean' )
-    IMODEL = MODEL_OCEAN_E
-  CASE ( 'wave' )
-    IMODEL = MODEL_WAVE_E
+  CASE ( 'ifs' )
+    IMODEL = MODEL_IFS_E
+  CASE ( 'aifs-single' )
+    IMODEL = MODEL_AIFS_SINGLE_E
+  CASE ( 'aifs-ens' )
+    IMODEL = MODEL_AIFS_ENS_E
+  CASE ( 'aifs-single-mse' )
+    IMODEL = MODEL_AIFS_SINGLE_MSE_E
+  CASE ( 'aifs-ens-crps' )
+    IMODEL = MODEL_AIFS_ENS_CRPS_E
+  CASE ( 'aifs-ens-diff' )
+    IMODEL = MODEL_AIFS_ENS_DIFF_E
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MODEL )
   END SELECT
@@ -3854,11 +4203,11 @@ IMPLICIT NONE
   ! Apply operation
   SELECT CASE( TRIM(ADJUSTL(LOC_COP)) )
 
-  CASE( 'match', 'eq' )
+  CASE( 'match', 'eq', 'equal' )
 
     IOP = FLT_INT_MATCH_E
 
-  CASE( 'ignore', 'ne' )
+  CASE( 'ignore', 'ne', 'not-equal' )
 
     IOP = FLT_INT_IGNORE_E
 
@@ -4604,7 +4953,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
     CASE (ERRFLAG_UNKNOWN_CLASS)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: '//TRIM(ADJUSTL(CCLASS)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: "'//TRIM(ADJUSTL(CCLASS))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -5152,7 +5501,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
     CASE (ERRFLAG_UNKNOWN_TYPE)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cclass: '//TRIM(ADJUSTL(CTYPE)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown ctype: "'//TRIM(ADJUSTL(CTYPE))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -6159,7 +6508,6 @@ END FUNCTION ISTREAM2CSTREAM
 #undef PP_PROCEDURE_TYPE
 
 
-
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IDATASTRUCT2CDATASTRUCT'
 PP_THREAD_SAFE FUNCTION IDATASTRUCT2CDATASTRUCT( IDATASTRUCT, CDATASTRUCT, HOOKS ) RESULT(RET)
@@ -6384,9 +6732,257 @@ END FUNCTION CDATASTRUCT2IDATASTRUCT
 
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ITYPE_OF_PROCESSED_DATA2CTYPE_OF_PROCESSED_DATA'
+PP_THREAD_SAFE FUNCTION ITYPE_OF_PROCESSED_DATA2CTYPE_OF_PROCESSED_DATA( ITYPE_OF_PROCESSED_DATA, CTYPE_OF_PROCESSED_DATA, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITYPE_OF_PROCESSED_DATA
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CTYPE_OF_PROCESSED_DATA
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_MSGINTFLD_UNARY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CTYPE_OF_PROCESSED_DATA = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( ITYPE_OF_PROCESSED_DATA )
+  CASE ( TYPE_OF_PROCESSED_DATA_AN_E )
+    CTYPE_OF_PROCESSED_DATA = 'an' !	Forecast products
+  CASE ( TYPE_OF_PROCESSED_DATA_FC_E )
+    CTYPE_OF_PROCESSED_DATA = 'fc' !	Analysis products
+  CASE ( TYPE_OF_PROCESSED_DATA_AN_AND_FC_E )
+    CTYPE_OF_PROCESSED_DATA = 'anfc' !	Analysis and forecast products
+  CASE ( TYPE_OF_PROCESSED_DATA_CF_E )
+    CTYPE_OF_PROCESSED_DATA = 'cf' !	Control forecast products
+  CASE ( TYPE_OF_PROCESSED_DATA_PF_E )
+    CTYPE_OF_PROCESSED_DATA = 'pf' !	Perturbed forecast products
+  CASE ( TYPE_OF_PROCESSED_DATA_CF_AND_PF_E )
+    CTYPE_OF_PROCESSED_DATA = 'cfpf' !	Control and perturbed forecast products
+  CASE ( TYPE_OF_PROCESSED_DATA_SO_E )
+    CTYPE_OF_PROCESSED_DATA = 'so' !	Processed satellite observations
+  CASE ( TYPE_OF_PROCESSED_DATA_PR_E )
+    CTYPE_OF_PROCESSED_DATA = 'pr' !	Processed radar observations
+  CASE ( TYPE_OF_PROCESSED_DATA_EP_E )
+    CTYPE_OF_PROCESSED_DATA = 'ep' !	Event probability
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MSGINTFLD_UNARY )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=1024) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_MSGINTFLD_UNARY)
+      TMPSTR = REPEAT(' ', 1024)
+      WRITE(TMPSTR,*) ITYPE_OF_PROCESSED_DATA
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown "type of processed data": '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ITYPE_OF_PROCESSED_DATA2CTYPE_OF_PROCESSED_DATA
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CTYPE_OF_PROCESSED_DATA2ITYPE_OF_PROCESSED_DATA'
+PP_THREAD_SAFE FUNCTION CTYPE_OF_PROCESSED_DATA2ITYPE_OF_PROCESSED_DATA( CTYPE_OF_PROCESSED_DATA, ITYPE_OF_PROCESSED_DATA, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CTYPE_OF_PROCESSED_DATA
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ITYPE_OF_PROCESSED_DATA
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CTYPE_OF_PROCESSED_DATA)) :: LOC_CTYPE_OF_PROCESSED_DATA
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_MSGINTFLD_UNARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  ITYPE_OF_PROCESSED_DATA = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CTYPE_OF_PROCESSED_DATA, LOC_CTYPE_OF_PROCESSED_DATA, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CTYPE_OF_PROCESSED_DATA)) )
+  CASE ( 'an' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_AN_E !	Forecast products
+  CASE ( 'fc' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_FC_E !	Analysis products
+  CASE ( 'anfc' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_AN_AND_FC_E !	Analysis and forecast products
+  CASE ( 'cf' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_CF_E !	Control forecast products
+  CASE ( 'pf' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_PF_E !	Perturbed forecast products
+  CASE ( 'cfpf' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_CF_AND_PF_E !	Control and perturbed forecast products
+  CASE ( 'so' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_SO_E !	Processed satellite observations
+  CASE ( 'pr' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_PR_E !	Processed radar observations
+  CASE ( 'ep' )
+    ITYPE_OF_PROCESSED_DATA = TYPE_OF_PROCESSED_DATA_EP_E !	Event probability
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MSGINTFLD_UNARY )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_MSGINTFLD_UNARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown "type of processed data": '//TRIM(ADJUSTL(CTYPE_OF_PROCESSED_DATA)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CTYPE_OF_PROCESSED_DATA2ITYPE_OF_PROCESSED_DATA
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 
@@ -8870,6 +9466,128 @@ PP_ERROR_HANDLER
 END FUNCTION CFLOAT2IFLOAT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CTIME2ITIME'
+PP_THREAD_SAFE FUNCTION CTIME2ITIME( CTIME, ITIME, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: CONFIGURATION_UTILS_MOD, ONLY: STRING_TO_INTEGER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CTIME
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ITIME
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CTIME)) :: STEMP
+  INTEGER(KIND=JPIB_K)           :: I
+  INTEGER(KIND=JPIB_K)           :: L
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_STR=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  ITIME = UNDEF_PARAM_E
+
+  ! Time can begin with multiple 0, i.e. 0000
+  STEMP = TRIM(CTIME)
+  L=LEN(STEMP)
+  DO I=1,L
+    IF (STEMP(I:I).EQ.'0') THEN
+      if (I.NE.L) THEN
+        STEMP(I:I) = ' '
+      END IF
+    ELSE
+      EXIT
+    END IF
+  END DO
+
+
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_CONVERT_STR ) STRING_TO_INTEGER(STEMP, ITIME, HOOKS)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_STR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to integer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ctime: '//TRIM(ADJUSTL(CTIME)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CTIME2ITIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 
 

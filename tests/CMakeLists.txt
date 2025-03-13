@@ -2,4 +2,8 @@
 add_subdirectory(across)
 add_subdirectory(multio)
 add_subdirectory(ecom)
-add_subdirectory(multiom)
+
+
+if ( BUILD_MULTIOM )
+    add_subdirectory(multiom)
+endif()

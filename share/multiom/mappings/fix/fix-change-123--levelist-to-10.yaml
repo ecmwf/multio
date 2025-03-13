@@ -1,0 +1,28 @@
+name: 'modify levelist for parameter 123'
+
+tag: 'fix-change-123--levelist-to-10'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      value: 123
+    - type: 'levtype'
+      operation: 'match'
+      value: 'sfc'
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'levelist'
+          expression:
+            type: 'constant'
+            value: 10

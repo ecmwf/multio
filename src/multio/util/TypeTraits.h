@@ -167,7 +167,8 @@ struct SaneOverloadResolution<From, TI, TS...>
                          IgnoredOverloadForResolution<TI>> {
     using SaneOverloadResolution<From, TS...>::operator();
     using std::conditional_t<NotNarrowConstructible_v<From, TI>, BaseOverloadForResolution<TI>,
-                             IgnoredOverloadForResolution<TI>>::operator();
+                             IgnoredOverloadForResolution<TI>>::
+    operator();
 };
 
 

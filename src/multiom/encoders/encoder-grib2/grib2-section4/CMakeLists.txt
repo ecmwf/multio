@@ -13,6 +13,7 @@ add_subdirectory(grib2-point-in-time-configurator)
 add_subdirectory(grib2-statistics-configurator)
 add_subdirectory(grib2-param-configurator)
 add_subdirectory(grib2-level-configurator)
+add_subdirectory(grib2-model-configurator)
 add_subdirectory(grib2-ensemble-configurator)
 add_subdirectory(grib2-dirfreq-configurator)
 add_subdirectory(grib2-period-configurator)
@@ -58,6 +59,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_SOURCES
   ${MULTIOM_ENCODER_GRIB2_SECTION4_STATISTICS_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_PARAM_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_SOURCES}
+  ${MULTIOM_ENCODER_GRIB2_SECTION4_MODEL_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_ENSEMBLE_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_DIRFREQ_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_PERIOD_SOURCES}

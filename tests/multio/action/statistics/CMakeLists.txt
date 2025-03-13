@@ -1,3 +1,4 @@
+if(HAVE_MULTIO_BUILD_TOOLS)
 
 set(PREFIX multio_tests_action_statistics)
 
@@ -124,3 +125,5 @@ add_subdirectory(restart)
 #
 # add moving mask tests
 add_subdirectory(moving-mask)
+
+endif()

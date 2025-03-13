@@ -47,11 +47,47 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md);
 /** Writes static metadata information to clients and all servers
  * \param mio Handle to the multio (client) instance
  * \param key Key/Name for the data array
- * \param data Pointer to the data containing the index mapping
+ * \param data pointer to the data (unsigned char -- byte)
  * \param size Size of the data containing the index mapping
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_parametrization_array(multio_handle_t* mio, const char* key, const int* data, int size);
+int multio_write_parametrization_array_byte(multio_handle_t* mio, const char* key, const unsigned char* data, int size);
+
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param key Key/Name for the data array
+ * \param data pointer to the data (int32_t)
+ * \param size Size of the data containing the index mapping
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization_array_int32(multio_handle_t* mio, const char* key, const int32_t* data, int size);
+
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param key Key/Name for the data array
+ * \param data pointer to the data (int64_t)
+ * \param size Size of the data containing the index mapping
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization_array_int64(multio_handle_t* mio, const char* key, const int64_t* data, int size);
+
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param key Key/Name for the data array
+ * \param data pointer to the data (float)
+ * \param size Size of the data containing the index mapping
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization_array_real32(multio_handle_t* mio, const char* key, const float* data, int size);
+
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param key Key/Name for the data array
+ * \param data pointer to the data (double)
+ * \param size Size of the data containing the index mapping
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization_array_real64(multio_handle_t* mio, const char* key, const double* data, int size);
 
 
 /** Writes domain information (e.g. local-to-global index mapping) to the server

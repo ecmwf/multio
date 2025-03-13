@@ -1,9 +1,0 @@
-grib-header-to-multio:
-  samples-path: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/samples'
-  multio-plans-file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/plans/multio-plans.yaml'
-  mapping-rules-file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/mappings/mapping-rules.yaml'
-  encoding-rules-file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/encoding-rules.yaml'
-  log-path: '{MULTIO_LOG_PATH}'
-  verbose: true
-  profile: false
-  save-report: false

@@ -404,25 +404,25 @@ IMPLICIT NONE
   ! Get the iterator from the key name
   SELECT CASE ( KEY_LOW )
 
-  CASE ( 'truncate-degrees' )
+  CASE ( 'truncatedegrees', 'truncate-degrees' )
     ITERATOR = REDUCED_GG_ITERATOR_TRUNCATE_DEGREES
 
-  CASE ( 'number-of-points-along-a-meridian' )
+  CASE ( 'numberofpointsalongameridian', 'number-of-points-along-a-meridian' )
     ITERATOR = REDUCED_GG_ITERATOR_NPTS_ALONG_MERIDIAN
 
-  CASE ( 'number-of-parallels-between-pole-and-equator' )
+  CASE ( 'numberofparallelsbetweenapoleandtheequator', 'number-of-parallels-between-a-pole-and-the-equator', 'number-of-parallels-between-pole-and-equator' )
     ITERATOR = REDUCED_GG_ITERATOR_NPARALLELS
 
-  CASE ( 'latitude-of-first-grid-point-in-degrees' )
+  CASE ( 'latitudeoffirstgridpointindegrees', 'latitude-of-first-grid-point-in-degrees' )
     ITERATOR = REDUCED_GG_ITERATOR_LAT_FIRST_GP_DEG
 
-  CASE ( 'longitude-of-first-grid-point-in-degrees' )
+  CASE ( 'longitudeoffirstgridpointindegrees', 'longitude-of-first-grid-point-in-degrees' )
     ITERATOR = REDUCED_GG_ITERATOR_LON_FIRST_GP_DEG
 
-  CASE ( 'latitude-of-last-grid-point-in-degrees' )
+  CASE ( 'latitudeoflastgridpointindegrees', 'latitude-of-last-grid-point-in-degrees' )
     ITERATOR = REDUCED_GG_ITERATOR_LAT_LAST_GP_DEG
 
-  CASE ( 'longitude-of-last-grid-point-in-degrees' )
+  CASE ( 'longitudeoflastgridpointindegrees', 'longitude-of-last-grid-point-in-degrees' )
     ITERATOR = REDUCED_GG_ITERATOR_LON_LAST_GP_DEG
 
   CASE ( 'pl' )

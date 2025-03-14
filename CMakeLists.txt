@@ -10,7 +10,7 @@
 
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-find_package( ecbuild 3.8 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
+find_package( ecbuild 3.9.1 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
 
 project( multio LANGUAGES CXX )
 

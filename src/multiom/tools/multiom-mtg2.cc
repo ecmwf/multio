@@ -195,8 +195,7 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) : multio::MultioTool{argc, argv}
         "by ';'. Example --filter paramId=130,131,133;levtype=pl,sfc"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("packing",
-                                                     "Enforce a specific packing type, e.g. `ccsds`, `simple`, "
-                                                     "`complex`. Note: Avoid the prefix `grid_` or `spectral_`"));
+                                                     "Enforce a specific packing type. Valid values are `ccsds` and `simple`."));
     // options_.push_back(
     //     new eckit::option::SimpleOption<bool>("decode",
     //                                           "Decode messages and pass raw data with metadata through the pipeline "
@@ -228,7 +227,11 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     std::string packing;
     args.get("packing", packing);
     if (!packing.empty()) {
-        overwritePacking_ = packing;
+        if (packing == "ccsds" || packing == "simple") {
+            overwritePacking_ = packing;
+        } else {
+            throw eckit::UserError(std::string("Unsupported packing: ") + packing);
+        }
     }
 
     args.get("knowledge-root", knowledgeRoot_);

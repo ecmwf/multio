@@ -403,7 +403,6 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the encoders' )
     CASE(ERRFLAG_NOT_IMPLEMENTED_YET)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'No matching rule found' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Lazy encoder not implemented yet' )
       IF ( ALLOCATED(JSON) ) THEN
         PP_DEBUG_PUSH_MSG_TO_FRAME( TRIM(ADJUSTL(JSON)) )
         DEALLOCATE(JSON, STAT=DEALLOC_STATUS)

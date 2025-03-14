@@ -964,6 +964,12 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     if len(filters) == 0:
         return [fileDictEntry(baseDir, rc.path, rc.fname) for rc in rules]
 
+    def recurse(fs, rls, baseDir):
+        ret = applyNestedFilters(fs, rls, baseDir)
+        if isinstance(ret, list):
+            return {"rules": ret}
+        return {"nested-rules": ret}
+
     (filterName, filterType) = filters[0]
     fs = filters[1:]
     match filterType:
@@ -972,8 +978,10 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
              lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "lacks"]
              return {
                 "key": filterName,
-                "has": applyNestedFilters(fs, has, baseDir),
-                "lacks": applyNestedFilters(fs, lacks, baseDir)
+                "operations": [
+                    { "operation": "has", **recurse(fs, has, baseDir)},
+                    { "operation": "lacks", **recurse(fs, lacks, baseDir)},
+                ]
              }
 
         case "match":
@@ -986,7 +994,9 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
 
              return {
                 "key": filterName,
-                "match": {val: applyNestedFilters(fs, rs, baseDir) for (val, rs) in valuesDict.items()}
+                "operations": [
+                    {"operation": "match", "value": val, **recurse(fs, rs, baseDir)} for (val, rs) in valuesDict.items()
+                ]
              }
 
 

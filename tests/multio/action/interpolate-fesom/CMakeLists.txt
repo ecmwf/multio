@@ -150,25 +150,25 @@ foreach(_gridType   CORE2 )
 
 
                         ecbuild_add_test(
-                            ENABLED      OFF
-                            TARGET       ${PREFIX}_${_test}_run
-                            TEST_DEPENDS ${PREFIX}_get_data ${PREFIX}_get_cache
-                            COMMAND      multio-feed
-                            ARGS         --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_test}.yaml ${_feed})
+                            ENABLED       OFF
+                            TARGET        ${PREFIX}_${_test}_run
+                            TEST_REQUIRES ${PREFIX}_get_data ${PREFIX}_get_cache
+                            COMMAND       multio-feed
+                            ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_test}.yaml ${_feed})
 
                         ecbuild_add_test(
-                            ENABLED      OFF
-                            TARGET       ${PREFIX}_${_test}_check_metadata
-                            TEST_DEPENDS ${PREFIX}_${_test}_run
-                            COMMAND      grib_compare
-                            ARGS         -H ${_reference} ${_result})
+                            ENABLED       OFF
+                            TARGET        ${PREFIX}_${_test}_check_metadata
+                            TEST_REQUIRES ${PREFIX}_${_test}_run
+                            COMMAND       grib_compare
+                            ARGS          -H ${_reference} ${_result})
 
                         ecbuild_add_test(
-                            ENABLED      OFF
-                            TARGET       ${PREFIX}_${_test}_check_values
-                            TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
-                            COMMAND      grib_compare
-                            ARGS         -P -T10 ${_reference} ${_result})
+                            ENABLED       OFF
+                            TARGET        ${PREFIX}_${_test}_check_values
+                            TEST_REQUIRES ${PREFIX}_${_test}_check_metadata
+                            COMMAND       grib_compare
+                            ARGS          -P -T10 ${_reference} ${_result})
 
                     endforeach()
                 endforeach()

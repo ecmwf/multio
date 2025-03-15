@@ -2,6 +2,8 @@
 
 #include <cinttypes>
 #include <vector>
+#include <deque>
+#include <optional>
 
 #include "eckit/types/DateTime.h"
 
@@ -14,6 +16,28 @@
 #include "multio/util/DateTime.h"
 
 namespace multio::action {
+
+class windowTrace_{
+public:
+
+    windowTrace_(const eckit::DateTime& windowStart, const eckit::DateTime& windowEnd, const eckit::DateTime& currentPoint,
+                 long timeStepInSeconds, long step, long stepFrequency, const std::string& param) :
+        windowStart_{windowStart},
+        windowEnd_{windowEnd},
+        currentPoint_{currentPoint},
+        timeStepInSeconds_{timeStepInSeconds},
+        step_{step},
+        stepFrequency_{stepFrequency},
+        param_{param} {}
+
+    eckit::DateTime windowStart_;
+    eckit::DateTime windowEnd_;
+    eckit::DateTime currentPoint_;
+    long timeStepInSeconds_;
+    long step_;
+    long stepFrequency_;
+    std::string param_;
+};
 
 class OperationWindow {
 public:
@@ -29,8 +53,8 @@ public:
     template <typename T>
     void updateCounts(const T* values, size_t size, double missingValue) const;
 
-    void updateData(const eckit::DateTime& currentPoint);
-    void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
+    void updateData(const eckit::DateTime& currentPoint, const StatisticsConfiguration& cfg );
+    void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint, const StatisticsConfiguration& cfg);
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
@@ -108,6 +132,10 @@ public:
     size_t restartSize() const;
 
 private:
+    void printTrace() const;
+
+    std::deque<windowTrace_> windowTrace_;
+
     eckit::DateTime epochPoint_;
     eckit::DateTime startPoint_;
     eckit::DateTime creationPoint_;

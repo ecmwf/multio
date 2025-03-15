@@ -47,7 +47,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Data" << std::endl;
-    window_.updateData(currentDateTime(msg, cfg));
+    window_.updateData(currentDateTime(msg, cfg), cfg );
     for (auto& stat : statistics_) {
         stat->updateData(msg.payload().data(), msg.size(), cfg);
     }
@@ -56,7 +56,7 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
-    window_.updateWindow(window_.endPoint(), periodUpdater_->updateWinEndTime(window_.endPoint()));
+    window_.updateWindow(window_.endPoint(), periodUpdater_->updateWinEndTime(window_.endPoint()), cfg );
     for (auto& stat : statistics_) {
         stat->updateWindow(msg.payload().data(), msg.size(), msg, cfg);
     }

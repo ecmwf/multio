@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <iostream>
+#include <iomanip>
 
 #include "multio/LibMultio.h"
 #include "multio/action/statistics/StatisticsIO.h"
@@ -158,18 +159,20 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     return;
 }
 
-void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
+void OperationWindow::updateData(const eckit::DateTime& currentPoint, const StatisticsConfiguration& cfg ) {
     gtLowerBound(currentPoint, true);
     leUpperBound(currentPoint, true);
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
+    windowTrace_.emplace_back( startPoint_, endPoint_, currPoint_, cfg.timeStep(), cfg.step(), cfg.stepFreq(), cfg.param() );
     LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
     return;
 }
 
-void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint) {
+void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint, const StatisticsConfiguration& cfg) {
     // TODO: probably we want to add some checks here to avoid overlapping windows?
+    windowTrace_.clear();
     startPoint_ = startPoint;
     creationPoint_ = startPoint;
     currPoint_ = startPoint;
@@ -177,6 +180,7 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     endPoint_ = endPoint;
     count_ = 0;
     counts_.clear();
+    windowTrace_.emplace_back( startPoint_, endPoint_, currPoint_, cfg.timeStep(), cfg.step(), cfg.stepFreq(), cfg.param() );
     return;
 }
 
@@ -215,6 +219,7 @@ bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
 
 bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
     if (throw_error && creationPoint_ >= dt) {
+        printTrace();
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -224,6 +229,7 @@ bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) 
 
 bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
     if (throw_error && creationPoint_ > dt) {
+        printTrace();
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -234,6 +240,7 @@ bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint()) {
+        printTrace();
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -244,11 +251,44 @@ bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) 
 bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
     if (throw_error && dt >= endPoint()) {
+        printTrace();
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
     return dt < endPoint();
+};
+
+void OperationWindow::printTrace() const {
+// Set column width (adjust as needed)
+    const int colWidth = 15;
+
+    // Print header
+    std::cout << std::left
+              << std::setw(colWidth) << "WinStart"
+              << std::setw(colWidth) << "WinEnd"
+              << std::setw(colWidth) << "CurrentPt"
+              << std::setw(colWidth) << "TimeStep"
+              << std::setw(colWidth) << "Step"
+              << std::setw(colWidth) << "StepFreq"
+              << std::setw(colWidth) << "Param"
+              << std::endl;
+
+    // Print separator line
+    std::cout << std::string(colWidth * 7, '-') << std::endl;
+
+    // Print each record
+    for (const auto& record : windowTrace_) {
+        std::cout << std::left
+                  << std::setw(colWidth) << record.windowStart_
+                  << std::setw(colWidth) << record.windowEnd_
+                  << std::setw(colWidth) << record.currentPoint_
+                  << std::setw(colWidth) << record.timeStepInSeconds_
+                  << std::setw(colWidth) << record.step_
+                  << std::setw(colWidth) << record.stepFrequency_
+                  << std::setw(colWidth) << record.param_
+                  << std::endl;
+    }
 };
 
 long OperationWindow::timeSpanInHours() const {

@@ -20,8 +20,13 @@ filter:
       operation: match
       values:
         - 10
+        - 54
+        - 130
         - 131
         - 132
+        - 157
+        - 246
+        - 247
         - 3031
     - type: packing
       operation: match

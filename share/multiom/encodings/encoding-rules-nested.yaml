@@ -1,4 +1,4 @@
-encoding-rules:
+nested-rules:
   key: number
   operations:
     - operation: has
@@ -21,7 +21,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-36.yaml'
@@ -69,21 +69,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
@@ -114,7 +114,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-36.yaml'
@@ -162,21 +162,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
@@ -212,11 +212,11 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/ml/rule-hybrid-complex-ensemble-instant-complex-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-36.yaml'
           - operation: lacks
@@ -235,7 +235,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-1.yaml'
@@ -283,21 +283,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
@@ -328,7 +328,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-1.yaml'
@@ -376,21 +376,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
@@ -426,11 +426,11 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/ml/rule-hybrid-complex-ensemble-instant-complex-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-1.yaml'
     - operation: lacks
@@ -453,7 +453,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-36.yaml'
@@ -501,21 +501,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
@@ -542,7 +542,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-36.yaml'
@@ -590,21 +590,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
@@ -636,11 +636,11 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/ml/rule-hybrid-complex-deterministic-instant-complex-paramId-36.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-36.yaml'
           - operation: lacks
@@ -659,7 +659,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-1.yaml'
@@ -707,21 +707,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
@@ -748,7 +748,7 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: sfc
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-1.yaml'
@@ -796,21 +796,21 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: hl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: sol
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
@@ -842,10 +842,10 @@ encoding-rules:
                           operations:
                             - operation: match
                               value: ml
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/ml/rule-hybrid-complex-deterministic-instant-complex-paramId-1.yaml'
                             - operation: match
                               value: pl
-                              rules:
+                              encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1.yaml'

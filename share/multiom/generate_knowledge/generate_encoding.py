@@ -1081,7 +1081,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     def recurse(fs, rls, baseDir):
         ret = applyNestedFilters(fs, rls, baseDir)
         if isinstance(ret, list):
-            return {"rules": ret}
+            return {"encoding-rules": ret}
         return {"nested-rules": ret}
 
     (filterName, filterType) = filters[0]
@@ -1167,8 +1167,12 @@ def main():
         fileOut.write(toYAML({"encoding-rules": allFiles}))
 
     nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
-    with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
-        fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
+    if len(filters) == 0:
+        with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
+            fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
+    else:
+        with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
+            fileOut.write(toYAML({"nested-rules": nestedFilterFiles}))
 
 
 if __name__ == "__main__":

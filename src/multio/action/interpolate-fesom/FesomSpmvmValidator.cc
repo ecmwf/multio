@@ -174,8 +174,6 @@ FesomCacheValidator::FesomCacheValidator(int argc, char** argv) :
         "outputPath", "Path of the output file with the interpolated fields. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "outputFile", "Name of the output file Default(\"interpolated_fields.csv\")"));
-
-    return;
 }
 
 

@@ -17,7 +17,6 @@ public:
     void fillMetadata(size_t idx, message::Metadata& metadata) const {
         // long startStep = metadata.getLong( "startStep" );
         // metadata.setLong( startStep+idx );
-        return;
     };
 
 

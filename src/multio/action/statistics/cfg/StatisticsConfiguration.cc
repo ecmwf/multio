@@ -62,8 +62,6 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
 
     // Generate Key
     generateKey(md, std::to_string(std::hash<std::string>{}(msg.source())));
-
-    return;
 };
 
 
@@ -78,7 +76,6 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
     else {
         throw eckit::SeriousBug{"precision metadata not present", Here()};
     }
-    return;
 };
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
@@ -88,7 +85,6 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
     else {
         throw eckit::SeriousBug{"gridType metadata not present", Here()};
     }
-    return;
 };
 
 void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {
@@ -101,7 +97,6 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
     else {
         throw eckit::SeriousBug{"LevType metadata not present", Here()};
     }
-    return;
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
@@ -114,7 +109,6 @@ void StatisticsConfiguration::readParam(const message::Metadata& md, const Stati
     else {
         throw eckit::SeriousBug{"Param metadata not present", Here()};
     }
-    return;
 };
 
 
@@ -128,7 +122,6 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
     else {
         throw eckit::SeriousBug{"Level metadata not present", Here()};
     }
-    return;
 };
 
 void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
@@ -142,7 +135,6 @@ void StatisticsConfiguration::readStartTime(const message::Metadata& md, const S
     else {
         throw eckit::SeriousBug{"Unable to find start time", Here()};
     }
-    return;
 };
 
 void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
@@ -156,7 +148,6 @@ void StatisticsConfiguration::readStartDate(const message::Metadata& md, const S
     else {
         throw eckit::SeriousBug{"Unable to find start date", Here()};
     }
-    return;
 };
 
 
@@ -174,12 +165,10 @@ void StatisticsConfiguration::readStep(const message::Metadata& md, const Statis
 
 void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const StatisticsOptions& opt) {
     timeStep_ = md.getOpt<std::int64_t>(glossary().timeStep).value_or(timeStep_);
-    return;
 };
 
 void StatisticsConfiguration::readStepFrequency(const message::Metadata& md, const StatisticsOptions& opt) {
     stepFreq_ = md.getOpt<std::int64_t>(glossary().stepFrequency).value_or(stepFreq_);
-    return;
 };
 
 
@@ -194,13 +183,9 @@ void StatisticsConfiguration::readMissingValue(const message::Metadata& md, cons
 
 
 void StatisticsConfiguration::generateKey(const message::Metadata& md, const std::string& src) {
-
     std::ostringstream os;
     os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src;
     key_ = os.str();
-
-    // Exit point
-    return;
 };
 
 

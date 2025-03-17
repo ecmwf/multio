@@ -492,8 +492,14 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
+    ret = getAndSet(h, *mars_dict, "hdate");
+    if (ret != 0) {
+        return ret;
+    }
+
     // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
     {
+        // TODO - this will cause problems with referenceDate/time in grib2....
         long hh = getLong(h, "hour");
         long mm = getLong(h, "minute");
         long ss = getLong(h, "second");

@@ -45,8 +45,14 @@ CONTAINS
   !> Match the rule
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: MATCH => RULE_MATCH
 
+  !> Caount the number of matching rules
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: COUNT_MATCHES => RULE_COUNT_MATCHES
+
   !> Free all the memory allocated by the rule
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: PRINT => RULE_PRINT
+
+  !> Get he size of the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: SIZE => RULE_SIZE
 
   !> Free all the memory allocated by the rule
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: FREE => RULE_FREE
@@ -222,6 +228,123 @@ END FUNCTION RULE_INIT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_COUNT_MATCHES'
+PP_THREAD_SAFE FUNCTION RULE_COUNT_MATCHES( THIS, MSG, PAR, NUM_MATCHES, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_COLLECTION_T), INTENT(IN)    :: THIS
+  TYPE(PARAMETRIZATION_T),           INTENT(IN)    :: PAR
+  TYPE(FORTRAN_MESSAGE_T),           INTENT(IN)    :: MSG
+  INTEGER(KIND=JPIB_K),              INTENT(OUT)   :: NUM_MATCHES
+  TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  LOGICAL :: MATCH
+  INTEGER(KIND=JPIB_K) :: I
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCH_FILTERS=2_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%RULES_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+
+  !> Match the filter
+  NUM_MATCHES = 0_JPIB_K
+  DO I = 1, SIZE(THIS%RULES_)
+    PP_TRYCALL(ERRFLAG_MATCH_FILTERS) THIS%RULES_(I)%RULE_%MATCH( MSG, PAR, MATCH, HOOKS )
+    IF ( MATCH ) THEN
+      NUM_MATCHES = NUM_MATCHES + 1
+      THIS%MATCHES_(NUM_MATCHES) = I
+    ENDIF
+  ENDDO
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE(ERRFLAG_MATCH_FILTERS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to match the filters' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_COUNT_MATCHES
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 
@@ -656,6 +779,104 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION RULE_FREE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_SIZE'
+PP_THREAD_SAFE FUNCTION RULE_SIZE( THIS, SZ, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,          ONLY: JPIB_K
+  USE :: HOOKS_MOD,                  ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_COLLECTION_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),              INTENT(OUT)   :: SZ
+  TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULES_NOT_ASSOCIATED=1_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(THIS%RULES_), ERRFLAG_RULES_NOT_ASSOCIATED )
+
+  ! Get teh size of the rules
+  SZ = SIZE(THIS%RULES_)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_RULES_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoding rules not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RULE_SIZE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

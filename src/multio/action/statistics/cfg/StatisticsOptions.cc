@@ -52,27 +52,22 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
 
     // dump all the options
     dumpOptions();
-
-    return;
 };
 
 
 void StatisticsOptions::parseUseDateTime(const eckit::LocalConfiguration& cfg) {
     // Distance in steps between two messages
     useDateTime_ = cfg.getLong("use-current-time", false);
-    return;
 };
 
 void StatisticsOptions::parseStepFrequency(const eckit::LocalConfiguration& cfg) {
     // Distance in steps between two messages
     stepFreq_ = cfg.getLong("step-frequency", 1L);
-    return;
 };
 
 void StatisticsOptions::parseTimeStep(const eckit::LocalConfiguration& cfg) {
     // How many seconds in a timestep
     timeStep_ = cfg.getLong("time-step", 3600L);
-    return;
 };
 
 void StatisticsOptions::parseInitialConditionPresent(const eckit::LocalConfiguration& cfg) {
@@ -81,7 +76,6 @@ void StatisticsOptions::parseInitialConditionPresent(const eckit::LocalConfigura
     // At the moment ifs emit the initial condition and nemo not.
     // Default value is false so that nemo can work without options.
     solverSendInitStep_ = cfg.getBool("initial-condition-present", false);
-    return;
 };
 
 void StatisticsOptions::parseWriteRestart(const eckit::LocalConfiguration& cfg) {
@@ -96,7 +90,6 @@ void StatisticsOptions::parseWriteRestart(const eckit::LocalConfiguration& cfg) 
         usage();
         throw eckit::SeriousBug{"Unable to read restart", Here()};
     }
-    return;
 };
 
 void StatisticsOptions::parseDebugRestart(const eckit::LocalConfiguration& cfg) {
@@ -111,7 +104,6 @@ void StatisticsOptions::parseDebugRestart(const eckit::LocalConfiguration& cfg) 
         usage();
         throw eckit::SeriousBug{"Unable to read restart", Here()};
     }
-    return;
 };
 
 
@@ -127,7 +119,6 @@ void StatisticsOptions::parseClientSideStatistics(const eckit::LocalConfiguratio
         usage();
         throw eckit::SeriousBug{"Unable to read client-side", Here()};
     }
-    return;
 };
 
 void StatisticsOptions::parseReadRestart(const eckit::LocalConfiguration& cfg) {
@@ -142,7 +133,6 @@ void StatisticsOptions::parseReadRestart(const eckit::LocalConfiguration& cfg) {
         usage();
         throw eckit::SeriousBug{"Unable to read restart", Here()};
     }
-    return;
 };
 
 
@@ -159,7 +149,6 @@ void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& c
             throw eckit::UserError{os.str(), Here()};
         }
     }
-    return;
 };
 
 
@@ -170,7 +159,6 @@ void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& c
     if (cfg.has("restart-time")) {
         restartTime_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-time", "latest"));
     }
-    return;
 };
 
 
@@ -179,19 +167,16 @@ void StatisticsOptions::parseRestartPrefix(const config::ComponentConfiguration&
     // Prefix used for the restart file names in order
     // to make the file name unique across different plans
     restartPrefix_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-prefix", "StatisticsDump"));
-    return;
 };
 
 void StatisticsOptions::parseRestartLib(const eckit::LocalConfiguration& cfg) {
     restartLib_ = cfg.getString("restart-lib", "fstream_io");
-    return;
 };
 
 
 void StatisticsOptions::parseLogPrefix(const config::ComponentConfiguration& compConf,
                                        const eckit::LocalConfiguration& cfg) {
     logPrefix_ = cfg.getString("log-prefix", "Plan");
-    return;
 };
 
 void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& compConf,
@@ -202,7 +187,6 @@ void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& co
         os << "Invalid window type :: " << windowType_ << std::endl;
         throw eckit::UserError(os.str(), Here());
     }
-    return;
 };
 
 void StatisticsOptions::parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
@@ -217,7 +201,6 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
         os << "Invalid reset period of accumulated fields :: " << accumulatedFieldsResetFreqency_ << std::endl;
         throw eckit::UserError(os.str(), Here());
     }
-    return;
 };
 
 void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfiguration& compConf,
@@ -314,13 +297,11 @@ std::optional<long> StatisticsOptions::valueCountThreshold() const {
 
 void StatisticsOptions::dumpOptions() {
     // TODO: Implement this function
-    return;
 }
 
 
 void StatisticsOptions::usage() {
     // TODO: Implement this function
-    return;
 }
 
 }  // namespace multio::action

@@ -156,7 +156,6 @@ void SynopticCollection::resetWindow(const message::Message& msg, const Statisti
         // TODO: update data must have control over
         statistics_[key]->updateWindow(msg, cfg);
     }
-    return;
 };
 
 
@@ -168,7 +167,6 @@ void SynopticCollection::updateData(const message::Message& msg, const Statistic
         // TODO: handling the time for a better metadata control
         statistics_[key]->updateData(msg.Payload(), msg.size(), cfg);
     }
-    return;
 };
 
 
@@ -176,7 +174,6 @@ void SynopticCollection::fillMetadata(size_t idx, message::Metadata& metadata) c
     LOG_DEBUG_LIB(::multio::LibMultio) << " *** SynopticCollection::fillMetadata " << std::endl;
     filter_->fillMetadata(idx, metadata);
     metadata.set("operation", statistics_[idx]->operation());
-    return;
 };
 
 
@@ -195,7 +192,6 @@ void SynopticCollection::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
         // IOmanager->setOperationID(folder);
         // stat->dump(IOmanager, cfg);
     }
-    return;
 };
 
 

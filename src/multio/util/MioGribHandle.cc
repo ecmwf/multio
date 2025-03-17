@@ -182,17 +182,14 @@ void MioGribHandle::setValue(const char* key, const std::vector<std::int8_t>& va
 // Set values
 void MioGribHandle::setDataValues(const float* data, size_t count) {
     setDataValues(std::vector<double>{data, data + count});
-    return;
 }
 
 void MioGribHandle::setDataValues(const std::vector<float>& data) {
     setDataValues(std::vector<double>{data.begin(), data.end()});
-    return;
 }
 
 void MioGribHandle::setDataValues(const std::vector<double>& data) {
     setDataValues(data.data(), data.size());
-    return;
 }
 
 

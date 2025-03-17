@@ -77,8 +77,6 @@ FesomCacheValidator::FesomCacheValidator(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "sortOption",
         "Type of sort to be applied to the triplets [\"columMajor\"|\"rowMajor\"|\"raw\"]. Default(\"raw\")"));
-
-    return;
 }
 
 

@@ -120,7 +120,6 @@ private:
         //     throw eckit::SeriousBug(os.str(), Here());
         // }
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit readCache" << std::endl;
-        return;
     }
 
 public:
@@ -147,8 +146,6 @@ public:
         readCache(file);
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from message)" << std::endl;
-        // Exit point
-        return;
     }
 
 
@@ -158,8 +155,6 @@ public:
         readCache(file);
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from filename)" << std::endl;
-        // Exit point
-        return;
     }
 
 
@@ -196,8 +191,6 @@ public:
             }
         }
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit intrpolate" << std::endl;
-        // Exit point
-        return;
     }
 
 
@@ -230,8 +223,6 @@ public:
         file.close();
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit dumpCOO" << std::endl;
-        // Exit point
-        return;
     }
 
 
@@ -251,8 +242,6 @@ public:
         }
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit getTriplets" << std::endl;
-        // Exit point
-        return;
     }
 };
 

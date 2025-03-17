@@ -40,7 +40,6 @@ void replaceCurly(const ComponentConfiguration& compConf, eckit::LocalConfigurat
             cfg.set(key, tmp);
         }
     }
-    return;
 }
 
 fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {

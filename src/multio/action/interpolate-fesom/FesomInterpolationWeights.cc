@@ -36,7 +36,6 @@ std::size_t Tri::reverse_idx(std::size_t scale) const {
 void Tri::print() const {
     std::cout << std::setw(15) << i_ << "   " << std::setw(15) << j_ << "   " << std::setw(35) << std::setprecision(25)
               << v_ << std::endl;
-    return;
 }
 
 // -------------------------------------------------------------------------------------------------

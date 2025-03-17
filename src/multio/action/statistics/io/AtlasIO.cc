@@ -62,7 +62,6 @@ void AtlasIO::write(const std::string& name, std::size_t fieldSize, std::size_t 
     record.set("size", fieldSize, no_compression);
     record.set(name, atlas::io::ref(dat), no_compression);
     record.write(fname);
-    return;
 };
 
 void AtlasIO::readSize(const std::string& name, std::size_t& readSize) {
@@ -74,7 +73,6 @@ void AtlasIO::readSize(const std::string& name, std::size_t& readSize) {
     atlas::io::RecordReader record(fname);
     record.read("size", sz).wait();
     readSize = static_cast<std::size_t>(sz);
-    return;
 };
 
 void AtlasIO::read(const std::string& name, std::size_t readSize) {
@@ -90,13 +88,11 @@ void AtlasIO::read(const std::string& name, std::size_t readSize) {
         os << "ERROR : wrong file size for restart : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 void AtlasIO::flush() {
     // TODO: Decide what to do when flush is called. Flush partial statistics when the Tag::Flush is received is
     // probably okay
-    return;
 };
 
 void AtlasIO::checkFileExist(const std::string& name) const {
@@ -106,7 +102,6 @@ void AtlasIO::checkFileExist(const std::string& name) const {
         os << "ERROR : wrong file not exist : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 StatisticsIOBuilder<AtlasIO> AtalsIOBuilder("atlas_io");

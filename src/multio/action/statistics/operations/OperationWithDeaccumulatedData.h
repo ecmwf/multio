@@ -24,7 +24,6 @@ public:
                                    const StatisticsOptions& opt) :
         Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart} {
         load(IOmanager, opt);
-        return;
     }
 
     void updateWindow(const void* data, long sz, const message::Message& msg,
@@ -41,14 +40,12 @@ public:
                            [](const T& v1, const T& v2) { return static_cast<T>(v2); });
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         }
-        return;
     };
 
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                        [](const T& v1) { return static_cast<T>(0.0); });
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
-        return;
     };
 
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
@@ -64,14 +61,12 @@ public:
                            [](const T& v1, const T& v2) { return static_cast<T>(v2); });
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         }
-        return;
     };
 
     void init(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                        [](const T& v1) { return static_cast<T>(0.0); });
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
-        return;
     };
 
     bool needStepZero() const override { return true; };
@@ -87,7 +82,6 @@ public:
             IOmanager->write(fname, values_.size(), restartSize());
             IOmanager->flush();
         }
-        return;
     };
 
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) override {
@@ -102,7 +96,6 @@ public:
             deserialize(restartState, IOmanager->getCurrentDir() + "/" + fname + "_load.txt", opt);
             restartState.zero();
         }
-        return;
     };
 
 protected:
@@ -136,7 +129,6 @@ protected:
             }
             outFile.close();
         }
-        return;
     };
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
@@ -169,7 +161,6 @@ protected:
             }
             outFile.close();
         }
-        return;
     };
 
     void checkSize(long sz, const StatisticsConfiguration& cfg) {
@@ -184,7 +175,6 @@ protected:
         if (sec == 0) {
             throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
         }
-        return;
     };
 
     size_t restartSize() const { return 2 * values_.size() + 1; }

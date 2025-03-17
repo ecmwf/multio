@@ -47,7 +47,6 @@ void om_is_little_endian(int8_t* isLittle) {
     else {
         *isLittle = 0;
     }
-    return;
 }
 #endif
 
@@ -100,7 +99,6 @@ void om_is_little_endian(int8_t* isLittle) {
     else {
         *isLittle = 0;
     }
-    return;
 }
 
 #endif

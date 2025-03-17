@@ -29,7 +29,6 @@ void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
     if (d < 1 || d > lastDayOfTheMonth(y, m)) {
         throw eckit::SeriousBug("invalid day range", Here());
     }
-    return;
 }
 
 void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
@@ -45,7 +44,6 @@ void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
     if (h < 0 || h > 23) {
         throw eckit::SeriousBug("invalid hour range", Here());
     }
-    return;
 }
 
 eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
@@ -101,7 +99,6 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     counts_{},
     type_{0} {
     load(IOmanager, opt);
-    return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
@@ -133,7 +130,6 @@ void OperationWindow::updateCounts(const T* values, size_t size, double missingV
     initCountsLazy(size);
     std::transform(counts_.begin(), counts_.end(), values, counts_.begin(),
                    [missingValue](long c, T v) { return v == missingValue ? c : c + 1; });
-    return;
 }
 template void OperationWindow::updateCounts(const float* values, size_t size, double missingValue) const;
 template void OperationWindow::updateCounts(const double* values, size_t size, double missingValue) const;
@@ -145,7 +141,6 @@ void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
     IOmanager->write("operationWindow", writeSize, writeSize);
     IOmanager->flush();
-    return;
 }
 
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -155,7 +150,6 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     IOmanager->read("operationWindow", readSize);
     deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
-    return;
 }
 
 void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
@@ -165,7 +159,6 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     currPoint_ = currentPoint;
     count_++;
     LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
-    return;
 }
 
 void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint) {
@@ -177,7 +170,6 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     endPoint_ = endPoint;
     count_ = 0;
     counts_.clear();
-    return;
 }
 
 std::string OperationWindow::windowType() const {
@@ -447,7 +439,6 @@ std::string OperationWindow::stepRangeInHours(const eckit::DateTime& refPoint) c
 
 void OperationWindow::updateFlush() {
     lastFlush_ = currPoint_;
-    return;
 }
 
 long OperationWindow::lastFlushInSteps() const {
@@ -518,8 +509,6 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     }
 
     currState.computeChecksum();
-
-    return;
 }
 
 void OperationWindow::deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
@@ -557,8 +546,6 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
-
-    return;
 }
 
 size_t OperationWindow::restartSize() const {

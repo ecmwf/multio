@@ -42,7 +42,6 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
         stat->dump(IOmanager, opt);
     }
     IOmanager->popDir();
-    return;
 }
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
@@ -51,7 +50,6 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
     for (auto& stat : statistics_) {
         stat->updateData(msg.payload().data(), msg.size(), cfg);
     }
-    return;
 }
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
@@ -60,8 +58,6 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
     for (auto& stat : statistics_) {
         stat->updateWindow(msg.payload().data(), msg.size(), msg, cfg);
     }
-
-    return;
 }
 
 bool TemporalStatistics::isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg) {

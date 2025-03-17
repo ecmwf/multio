@@ -148,7 +148,6 @@ MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) :
             singlePrecision_ = true;
         }
     }
-    return;
 }
 
 void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {

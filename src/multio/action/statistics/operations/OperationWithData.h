@@ -36,12 +36,10 @@ public:
 
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the first field of the window
-        return;
     };
 
     void init(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the initialization time of the window
-        return;
     };
 
     bool needStepZero() const override { return false; };
@@ -57,7 +55,6 @@ public:
             IOmanager->write(fname, values_.size(), restartSize());
             IOmanager->flush();
         }
-        return;
     };
 
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) override {
@@ -71,7 +68,6 @@ public:
             deserialize(restartState, IOmanager->getCurrentDir() + "/" + fname + "_load.txt", opt);
             restartState.zero();
         }
-        return;
     };
 
 protected:
@@ -96,7 +92,6 @@ protected:
             }
             outFile.close();
         }
-        return;
     };
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
@@ -117,7 +112,6 @@ protected:
             }
             outFile.close();
         }
-        return;
     };
 
     void checkSize(long sz, const StatisticsConfiguration& cfg) {
@@ -132,7 +126,6 @@ protected:
         if (sec == 0) {
             throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
         }
-        return;
     };
 
     size_t restartSize() const { return values_.size() + 1; }

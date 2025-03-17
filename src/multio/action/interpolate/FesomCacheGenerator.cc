@@ -71,7 +71,6 @@ void parseInputFileName(const std::string& fname, std::string& fesomName, std::s
     else {
         throw eckit::SeriousBug("Unable to parse filename: " + fname, Here());
     }
-    return;
 }
 
 std::string fesomCacheName(const std::string& fesomName, const std::string& domain, const std::string& precision,
@@ -148,8 +147,6 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
         "inputOrdering", "Ordering of the input files. Options( \"ring\", \"nested\") Default( \"ring\" )", "ring"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "outputOrdering", "Ordering of the output files. Options( \"ring\", \"nested\", \"input\") Default( \"input\" )", "input"));
-
-    return;
 }
 
 

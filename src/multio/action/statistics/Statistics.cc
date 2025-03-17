@@ -128,8 +128,6 @@ void Statistics::CreateMainRestartDirectory(const std::string& restartFolderName
             }
         }
     }
-
-    return;
 }
 
 void Statistics::DumpTemporalStatistics() {
@@ -147,7 +145,6 @@ void Statistics::DumpTemporalStatistics() {
         it->second->dump(IOmanager_, opt_);
         IOmanager_->popDir();
     }
-    return;
 }
 
 void Statistics::TryDumpRestart(const message::Message& msg) {
@@ -186,7 +183,6 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
             }
         }
     }
-    return;
 }
 
 void Statistics::DeleteLatestSymLink() {
@@ -280,8 +276,6 @@ void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
         << cfg.curr().time().hhmmss();
     lastDateTime_ = tmp.str();
     needRestart_ = true;
-
-    return;
 }
 
 
@@ -379,8 +373,6 @@ void Statistics::executeImpl(message::Message msg) {
 
         ts.updateWindow(msg, cfg);
     }
-
-    return;
 }
 
 

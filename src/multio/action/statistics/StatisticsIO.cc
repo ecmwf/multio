@@ -32,7 +32,6 @@ IOBuffer::IOBuffer(std::vector<uint64_t>& buffer, size_t size) : buffer_{buffer}
         os << "ERROR : size too large for buffer";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 size_t IOBuffer::size() const {
@@ -82,7 +81,6 @@ void IOBuffer::zero() {
 
 void IOBuffer::computeChecksum() {
     buffer_[size_ - 1] = checksum();
-    return;
 };
 
 void IOBuffer::checkChecksum() const {
@@ -91,7 +89,6 @@ void IOBuffer::checkChecksum() const {
         os << "ERROR : wrong Checksum";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -105,18 +102,15 @@ StatisticsIO::StatisticsIO(const std::string& basePath, const std::string& uniqu
     }
     // Create the unique restart directory
     // eckit::PathName{getUniqueRestartDir()}.mkdir();
-    return;
 };
 
 StatisticsIO::~StatisticsIO() {
     buffer_.clear();
-    return;
 };
 
 void StatisticsIO::setDateTime(const std::string& dateTime) {
     dateTime_ = dateTime;
     hasValidDateTime_ = true;
-    return;
 };
 
 std::string StatisticsIO::getDateTime() {
@@ -217,7 +211,6 @@ bool StatisticsIO::currentDirExists() const {
 
 void StatisticsIO::createCurrentDir() const {
     eckit::PathName{getCurrentDir()}.mkdir();
-    return;
 };
 
 void StatisticsIO::createDateTimeDir() const {
@@ -229,7 +222,6 @@ void StatisticsIO::createDateTimeDir() const {
     std::ostringstream dir;
     dir << basePath_ << "/" << uniqueID_ << "/" << dateTime_;
     eckit::PathName{dir.str()}.mkdir();
-    return;
 };
 
 std::string StatisticsIO::generateCurrFileName(const std::string& name) const {

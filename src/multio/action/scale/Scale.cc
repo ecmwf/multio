@@ -64,7 +64,6 @@ void Scale::executeImpl(message::Message msg) {
     });
     // pass on the modified message
     executeNext(std::move(msg));
-    return;
 }
 
 template <typename Precision>
@@ -78,8 +77,6 @@ void Scale::ScaleMessage(message::Message& msg) const {
     scaling_.applyScaling<Precision>(msg);
 
     mapping_.applyMapping(msg.modifyMetadata());
-
-    return;
 }
 
 void Scale::print(std::ostream& os) const {

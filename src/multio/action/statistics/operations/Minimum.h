@@ -29,7 +29,6 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
-        return;
     }
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
@@ -37,14 +36,12 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
         cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() ? updateWithMissingAndCounters(val, cfg) : updateWithMissing(val, cfg)) : updateWithoutMissing(val, cfg);
-        return;
     }
 
 
 private:
     void computeWithoutThreshold(T* buf, const StatisticsConfiguration& cfg) {
         std::copy(values_.begin(), values_.end(), buf);
-        return;
     }
 
     void computeWithThreshold(T* buf, const StatisticsConfiguration& cfg) {
@@ -53,20 +50,17 @@ private:
         const std::vector<long>& counts = win_.counts();
         std::transform(values_.begin(), values_.end(), counts.begin(), buf,
                     [t, m](T v, long c) { return static_cast<T>(c < t ? m : v); });
-        return;
     }
 
     void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
             [](T v1, T v2) { return static_cast<T>(v1 < v2 ? v1 : v2); });
-        return;
     }
 
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
         const double m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
             [m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 < v2 ? v1 : v2); });
-        return;
     }
 
     void updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
@@ -74,7 +68,6 @@ private:
         win_.updateCounts(val, values_.size(), m);
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
             [m](T v1, T v2) { return static_cast<T>(m == v2 ? v1 : v1 < v2 ? v1 : v2); });
-        return;
     }
 
     void print(std::ostream& os) const override { os << logHeader_; }

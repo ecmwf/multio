@@ -39,7 +39,6 @@ void parseInputFileName(const std::string& fname, std::string& fesomName, std::s
     else {
         throw eckit::SeriousBug("Unable to parse filename: " + fname, Here());
     }
-    return;
 }
 
 
@@ -128,8 +127,6 @@ FesomCacheGenerator::FesomCacheGenerator(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
     options_.push_back(new eckit::option::SimpleOption<bool>("dumpTriplets", "Dump all the triplets to screen"));
-
-    return;
 }
 
 

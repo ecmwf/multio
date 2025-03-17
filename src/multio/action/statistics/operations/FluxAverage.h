@@ -28,7 +28,6 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);
-        return;
     }
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
@@ -36,7 +35,6 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
         std::copy(val, val + (sz / sizeof(T)), values_.begin());
-        return;
     }
 
 private:
@@ -44,13 +42,11 @@ private:
         const double m = cfg.missingValue();
         const double c = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg.stepFreq() * cfg.timeStep());
         std::transform(values_.begin(), values_.end(), buf, [c, m](T v) { return static_cast<T>(m == v ? m : v * c); });
-        return;
     }
 
     void computeWithoutMissing(T* buf, const StatisticsConfiguration& cfg) {
         const double c = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg.stepFreq() * cfg.timeStep());
         std::transform(values_.begin(), values_.end(), buf, [c](T v) { return static_cast<T>(v * c); });
-        return;
     }
 
     void print(std::ostream& os) const override { os << logHeader_; }

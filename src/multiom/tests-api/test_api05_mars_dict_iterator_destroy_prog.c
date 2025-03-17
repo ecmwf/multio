@@ -135,11 +135,11 @@ int main() {
     readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "model", &has1);
-    ret = multio_grib2_dict_set(dictionary_01, "model", "atmosphere");
+    ret = multio_grib2_dict_set(dictionary_01, "model", "IFS");
     ret = multio_grib2_dict_has(dictionary_01, "model", &has2);
     ret = multio_grib2_dict_get(dictionary_01, "model", &readVal);
     // printf("model: %s, %d, %d, %d\n", readVal, has1, has2, ret );
-    assert(strcmp(readVal, "atmosphere") == 0);
+    assert(strcmp(readVal, "IFS") == 0);
     free(readVal);
     readVal = NULL;
 
@@ -185,6 +185,15 @@ int main() {
     ret = multio_grib2_dict_get(dictionary_01, "date", &readVal);
     // printf("date: %s, %d, %d, %d\n", readVal, has1, has2, ret );
     assert(strcmp(readVal, "20220812") == 0);
+    free(readVal);
+    readVal = NULL;
+    
+    ret = multio_grib2_dict_has(dictionary_01, "hdate", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "hdate", "20230913");
+    ret = multio_grib2_dict_has(dictionary_01, "hdate", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "hdate", &readVal);
+    // printf("hdate: %s, %d, %d, %d\n", readVal, has1, has2, ret );
+    assert(strcmp(readVal, "20230913") == 0);
     free(readVal);
     readVal = NULL;
 

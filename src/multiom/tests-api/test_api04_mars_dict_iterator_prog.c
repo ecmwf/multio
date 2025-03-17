@@ -187,6 +187,15 @@ int main() {
     assert(strcmp(readVal, "20220812") == 0);
     free(readVal);
     readVal = NULL;
+    
+    ret = multio_grib2_dict_has(dictionary_01, "hdate", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "hdate", "20230913");
+    ret = multio_grib2_dict_has(dictionary_01, "hdate", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "hdate", &readVal);
+    // printf("hdate: %s, %d, %d, %d\n", readVal, has1, has2, ret );
+    assert(strcmp(readVal, "20230913") == 0);
+    free(readVal);
+    readVal = NULL;
 
     ret = multio_grib2_dict_has(dictionary_01, "time", &has1);     // no starting 0, e.g. 0800 would not be valid
     ret = multio_grib2_dict_set(dictionary_01, "time", "800");     // no starting 0, e.g. 0800 would not be valid

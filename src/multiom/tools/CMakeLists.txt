@@ -45,6 +45,61 @@ target_include_directories( multiom-tools-utils PUBLIC $<BUILD_INTERFACE:${CMAKE
 
 ecbuild_add_executable(
 
+  TARGET multiom-cmd-args
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_cmd_args_prog.F90
+
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+ecbuild_add_executable(
+
+  TARGET multiom-nested-rules-reader
+
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_nested_rules_reader_prog.F90
+
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+ecbuild_add_executable(
+
   TARGET multiom-feed
 
   CONDITION
@@ -73,35 +128,10 @@ ecbuild_add_executable(
 
 ecbuild_add_executable(
 
-  TARGET multiom-cmd-args
-
-  SOURCES
-    ${MULTIOM_TOOLS_DIR}/multiom_cmd_args_prog.F90
-
-
-  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
-
-  INCLUDES
-      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
-
-  LIBS
-    fckit
-    eccodes
-    eccodes_f90
-    multio-fapi
-    multiom
-    multiom-tools-utils
-
-  LINKER_LANGUAGE Fortran
-
-)
-
-
-
-
-ecbuild_add_executable(
-
   TARGET multiom-list
+
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
 
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_list_prog.F90
@@ -130,6 +160,9 @@ ecbuild_add_executable(
 
   TARGET multiom-params
 
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
+
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_par_prog.F90
 
@@ -157,6 +190,9 @@ ecbuild_add_executable(
 
   TARGET
       grib1-to-grib2
+
+  CONDITION
+    HAVE_MULTIO_BUILD_TOOLS
 
   SOURCES
       multiom-mtg2.cc

@@ -50,6 +50,7 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-36.yaml'
@@ -101,3 +102,4 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-36.yaml'

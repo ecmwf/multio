@@ -210,14 +210,28 @@ void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
     outputPath_tmp.mkdir();
     parseInputFileName(inputFile_, fesomName_, domain_, NSide_, level_, inputOrdering_);
 
-    if (inputOrderingType == "ring") { inputOrdering_ = orderingConvention_e::RING; }
-    else if (inputOrderingType == "nested") { inputOrdering_ = orderingConvention_e::NESTED; }
-    else { throw eckit::SeriousBug("Unsupported input ordering convention", Here()); }
+    if (inputOrderingType == "ring") {
+        inputOrdering_ = orderingConvention_e::RING;
+    }
+    else if (inputOrderingType == "nested") {
+        inputOrdering_ = orderingConvention_e::NESTED;
+    }
+    else {
+        throw eckit::SeriousBug("Unsupported input ordering convention", Here());
+    }
 
-    if (outputOrderingType == "input") { outputOrdering_ = inputOrdering_; }
-    else if (outputOrderingType == "ring") { outputOrdering_ = orderingConvention_e::RING; }
-    else if (outputOrderingType == "nested") { outputOrdering_ = orderingConvention_e::NESTED; }
-    else { throw eckit::SeriousBug("Unsupported output ordering convention", Here()); }
+    if (outputOrderingType == "input") {
+        outputOrdering_ = inputOrdering_;
+    }
+    else if (outputOrderingType == "ring") {
+        outputOrdering_ = orderingConvention_e::RING;
+    }
+    else if (outputOrderingType == "nested") {
+        outputOrdering_ = orderingConvention_e::NESTED;
+    }
+    else {
+        throw eckit::SeriousBug("Unsupported output ordering convention", Here());
+    }
 
     args.get("nCols", Ncol_);
     Nrow_ = NSide_ * NSide_ * 12;

@@ -24,7 +24,9 @@ public:
 
     template <typename Precision>
     void applyScaling(message::Message& msg) const {
-        if (!hasScaling_) { return; }
+        if (!hasScaling_) {
+            return;
+        }
 
         std::string cparam = extractParam(msg.metadata());
         // Find the scaling factor

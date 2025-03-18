@@ -69,7 +69,9 @@ private:
         const std::vector<long>& counts = win_.counts();
 
         for (size_t i = 0; i < values_.size(); ++i) {
-            if (val[i] == m) { continue; }
+            if (val[i] == m) {
+                continue;
+            }
             const auto c = counts[i];
             const auto c2 = icntpp(c);
             const auto c1 = sc(c2, c);

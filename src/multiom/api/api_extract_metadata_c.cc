@@ -466,9 +466,21 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
 
 
     // For some reason mars returns an empty string for step
-    ret = getAndSet(h, *mars_dict, "step", "step", {"0"});
-    if (ret != 0)
-        return ret;
+    if (hasKey(h, "endStep")) {
+        long endStep = getLong(h, "endStep");
+        long startStep = getLong(h, "startStep");
+        
+        ret = multio_grib2_dict_set(*mars_dict, "step", std::to_string(endStep).c_str());
+        if (ret != 0)
+            return ret;
+            
+        long stepRange = endStep - startStep;
+        if (stepRange > 0) {
+            ret = multio_grib2_dict_set(*mars_dict, "timeproc", std::to_string(stepRange).c_str());
+            if (ret != 0)
+                return ret;
+        }
+    }
 
     ret = getAndSet(h, *mars_dict, "truncation");
     if (ret != 0)

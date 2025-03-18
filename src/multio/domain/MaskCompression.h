@@ -99,8 +99,9 @@ MaskRunLengthProperties computeMaskRunLengthProperties(const Cont& maskVals, std
     p.numBitsPerInt = 0;
     p.startValue = false;
 
-    if (size == 0)
+    if (size == 0) {
         return p;
+    }
 
     p.startValue = static_cast<bool>(maskVals[0]);
 

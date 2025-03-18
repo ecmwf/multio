@@ -665,8 +665,9 @@ void MultioHammer::testData() {
 }
 
 void MultioHammer::executeGeneric() {
-    if (!testPolicy_->multioHandle)
+    if (!testPolicy_->multioHandle) {
         return;
+    }
 
     PeerList serverPeers{testPolicy_->computeServerPeers()};
     int rank{testPolicy_->computeRank()};
@@ -684,8 +685,9 @@ void MultioHammer::executeGeneric() {
 
 void MultioHammer::executeThread() {
     // Spawn servers
-    if (!testPolicy_->multioHandle)
+    if (!testPolicy_->multioHandle) {
         return;
+    }
 
     PeerList serverPeers;
     std::shared_ptr<Transport> transport{testPolicy_->createTransport()};

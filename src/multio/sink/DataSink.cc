@@ -62,8 +62,9 @@ std::unique_ptr<DataSink> DataSinkFactory::build(const std::string& name,
 
     auto f = factories_.find(name);
 
-    if (f != factories_.end())
+    if (f != factories_.end()) {
         return f->second->make(compConf);
+    }
 
     Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
     Log::error() << "DataSinkFactories are:" << std::endl;

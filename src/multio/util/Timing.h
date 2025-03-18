@@ -50,8 +50,9 @@ public:
     }
 
     void process() {
-        if (ind_ == 0)
+        if (ind_ == 0) {
             return;
+        }
 
         // Loop over compile time constant to support auto vectorization.
         // For indices >= ind_ the computed difference should be 0

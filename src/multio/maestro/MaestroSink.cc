@@ -97,8 +97,9 @@ MaestroSink::~MaestroSink() {
     util::Timing<> timing;
     {
         util::ScopedTiming timer{timing};
-        if (readyCdoEnabled_)
+        if (readyCdoEnabled_) {
             readyCdo_.dispose();
+        }
         mstro_finalize();
     }
     timing.process();

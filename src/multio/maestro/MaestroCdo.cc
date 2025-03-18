@@ -17,8 +17,9 @@ MaestroCdo::MaestroCdo(std::string name) : name_{name} {
 
 MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name_{name} {
     declare();
-    if (blob)
+    if (blob) {
         set_size_and_data(size, blob);
+    }
 }
 
 MaestroCdo::MaestroCdo(MaestroCdo&& rhs) :
@@ -104,8 +105,9 @@ void MaestroCdo::set_size_and_data(uint64_t size, const void* data) {
 void MaestroCdo::get_size_and_data() {
     ASSERT(cdo_);
     mstro_status s = mstro_cdo_access_ptr(cdo_, &data_, reinterpret_cast<int64_t*>(&size_));
-    if (s != MSTRO_OK)
+    if (s != MSTRO_OK) {
         std::cout << "[i] The demnaded CDO does not contain any data." << std::endl;
+    }
 }
 
 void MaestroCdo::print(std::ostream& os) const {

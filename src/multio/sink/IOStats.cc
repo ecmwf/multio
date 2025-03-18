@@ -52,8 +52,9 @@ IOStats::IOStats(const std::string& prefix) :
     numFlush_(0),
     sumFlushTimesSquared_(0) {
 
-    if (!prefix_.empty())
+    if (!prefix_.empty()) {
         prefix_ += std::string(" ");
+    }
 }
 
 

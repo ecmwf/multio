@@ -21,8 +21,9 @@ public:
     ScopedThread& operator=(const ScopedThread& rhs) = delete;
 
     void join() {
-        if (joined_)
+        if (joined_) {
             return;
+        }
 
         joined_ = true;
 

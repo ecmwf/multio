@@ -155,8 +155,9 @@ Transport::DistributionType Transport::distributionType() {
 
     const char* envVar = "MULTIO_SERVER_DISTRIBUTION";
     auto key = util::getEnv(envVar);
-    if (!key)
+    if (!key) {
         return DistributionType::hashed_to_single;
+    }
 
     auto it = str2dist.find(*key);
     if (it == str2dist.end()) {

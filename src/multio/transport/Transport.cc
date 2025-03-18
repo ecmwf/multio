@@ -116,8 +116,9 @@ std::unique_ptr<Transport> TransportFactory::build(const std::string& name, cons
 
     auto f = factories_.find(name);
 
-    if (f != factories_.end())
+    if (f != factories_.end()) {
         return f->second->make(compConf);
+    }
 
     Log::error() << "No TransportFactory for [" << name << "]" << std::endl;
     Log::error() << "TransportFactories are:" << std::endl;

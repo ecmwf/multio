@@ -90,8 +90,9 @@ constexpr inline IntType bitWidth(IntType v) noexcept {
                   "bitWidth is only valid for unsigned integral types");
     // Sort out edge case when highest bit is set
     IntType highestNP2 = 1UL << (sizeof(IntType) * CHAR_BIT - 1);
-    if (v == highestNP2)
+    if (v == highestNP2) {
         return (sizeof(IntType) * CHAR_BIT - 1);
+    }
     if (v > highestNP2) {
         return sizeof(IntType) * CHAR_BIT;
     }

@@ -124,18 +124,18 @@ private:
 public:
     // Special constructor to transparently create nested types that are supposed to be wrapped with unique_ptr
     template <typename T, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
-    MetadataValue(T&& val) : MetadataValue(std::make_unique<std::decay_t<T>>(std::forward<T>(val))){};
+    MetadataValue(T&& val) : MetadataValue(std::make_unique<std::decay_t<T>>(std::forward<T>(val))) {};
 
 
     // Constructor that handles predefined conversions for convenience. Required for smooth icpc compilation
     template <typename T, std::enable_if_t<NeedsCustomConversion_v<T>, bool> = true>
-    MetadataValue(T&& val) : Base(MetadataValueConversionHelper_t<std::decay_t<T>>(std::forward<T>(val))){};
+    MetadataValue(T&& val) : Base(MetadataValueConversionHelper_t<std::decay_t<T>>(std::forward<T>(val))) {};
 
     // Constructor that deals with all other cases exlusive to the unique_ptr handling - Sane conversion is
     // reimplemented for icpc
     template <typename T, std::enable_if_t<EverythingElse_v<T>, bool> = true>
     MetadataValue(T&& val) :
-        Base(util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>{std::forward<T>(val)}){};
+        Base(util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>{std::forward<T>(val)}) {};
 
 
     MetadataValue() : Base() {};

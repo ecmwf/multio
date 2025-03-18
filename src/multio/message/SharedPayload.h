@@ -87,7 +87,7 @@ public:
     template <typename T,
               std::enable_if_t<(!std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>), bool>
               = true>
-    SharedPayload(T&& val) : Base(util::SaneOverloadResolutionResult_t<T, SharedPayloadTypes>{std::forward<T>(val)}){};
+    SharedPayload(T&& val) : Base(util::SaneOverloadResolutionResult_t<T, SharedPayloadTypes>{std::forward<T>(val)}) {};
 
 
     SharedPayload() : Base() {};

@@ -1184,6 +1184,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert the key to an iterator' )
     CASE (ERRFLAG_UNABLE_TO_SET_VAL)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set the value' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//F_KEY )
     CASE (ERRFLAG_WRONG_HANDLE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong handle (handle is not from an dictionary)' )
     CASE DEFAULT

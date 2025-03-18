@@ -224,38 +224,50 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
             // Step gets extracted as string instead of long (because it could be ar ange).... we don't like step
             // anayway... startStep/endStep is prefered
-            if (metadata.has("step"))
+            if (metadata.has("step")) {
                 metadata.set("step", metadata.getLong("step"));
+            }
 
-            if (metadataDetailed.has("gridType"))
+            if (metadataDetailed.has("gridType")) {
                 metadata.set("gridType", metadataDetailed.getString("gridType"));
+            }
 
-            if (metadataDetailed.has("startStep"))
+            if (metadataDetailed.has("startStep")) {
                 metadata.set("startStep", metadataDetailed.getLong("startStep"));
-            if (metadataDetailed.has("endStep"))
+            }
+            if (metadataDetailed.has("endStep")) {
                 metadata.set("endStep", metadataDetailed.getLong("endStep"));
+            }
 
             // Maybe use gridType?
             if (metadataDetailed.getBool("sphericalHarmonics", false)) {
                 metadata.set("sphericalHarmonics", true);
 
-                if (metadataDetailed.has("complexPacking"))
+                if (metadataDetailed.has("complexPacking")) {
                     metadata.set("complexPacking", metadataDetailed.getLong("complexPacking"));
-                if (metadataDetailed.has("generatingProcessIdentifier"))
+                }
+                if (metadataDetailed.has("generatingProcessIdentifier")) {
                     metadata.set("generatingProcessIdentifier",
                                  metadataDetailed.getLong("generatingProcessIdentifier"));
-                if (metadataDetailed.has("J"))
+                }
+                if (metadataDetailed.has("J")) {
                     metadata.set("pentagonalResolutionParameterJ", metadataDetailed.getLong("J"));
-                if (metadataDetailed.has("K"))
+                }
+                if (metadataDetailed.has("K")) {
                     metadata.set("pentagonalResolutionParameterK", metadataDetailed.getLong("K"));
-                if (metadataDetailed.has("M"))
+                }
+                if (metadataDetailed.has("M")) {
                     metadata.set("pentagonalResolutionParameterM", metadataDetailed.getLong("M"));
-                if (metadataDetailed.has("JS"))
+                }
+                if (metadataDetailed.has("JS")) {
                     metadata.set("subSetJ", metadataDetailed.getLong("JS"));
-                if (metadataDetailed.has("KS"))
+                }
+                if (metadataDetailed.has("KS")) {
                     metadata.set("subSetK", metadataDetailed.getLong("KS"));
-                if (metadataDetailed.has("MS"))
+                }
+                if (metadataDetailed.has("MS")) {
                     metadata.set("subSetM", metadataDetailed.getLong("MS"));
+                }
 
                 // Seems not to be settable in codes
                 metadata.set("unpackedSubsetPrecision", 1);

@@ -231,8 +231,9 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
         domainDefinitions_.emplace(std::make_pair(grid.first, std::move(buffer)));
     }
-    if (!onlyLoadDefinitions)
+    if (!onlyLoadDefinitions) {
         multio_delete_metadata(md);
+    }
 }
 
 void MultioReplayNemoCApi::writeMasks() {

@@ -83,8 +83,9 @@ std::unique_ptr<Action> ActionFactory::build(const std::string& name, const Comp
 
     auto f = factories_.find(name);
 
-    if (f != factories_.end())
+    if (f != factories_.end()) {
         return f->second->make(compConf);
+    }
 
     Log::error() << "No ActionFactory for [" << name << "]" << std::endl;
     Log::error() << "ActionFactories are:" << std::endl;

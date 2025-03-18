@@ -157,8 +157,9 @@ bool RunLengthIterator::operator!=(const RunLengthIterator& other) const noexcep
 
 void RunLengthIterator::updateValue() noexcept {
     index_ += val_.second;
-    if (index_ >= header_.numBits)
+    if (index_ >= header_.numBits) {
         return;
+    }
     const std::size_t NUM_BITS = header_.runLengthNumBitsPerInt;
 
     std::size_t numBitsToRead = NUM_BITS;

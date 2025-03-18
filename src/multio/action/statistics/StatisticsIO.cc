@@ -268,8 +268,9 @@ std::shared_ptr<StatisticsIO> StatisticsIOFactory::build(const std::string& name
 
     auto f = factories_.find(name);
 
-    if (f != factories_.end())
+    if (f != factories_.end()) {
         return f->second->make(basePath, uniqueID);
+    }
 
     LOG_DEBUG_LIB(LibMultio) << "No StatisticsIOFactory for [" << name << "]" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "StatisticsIOFactories are:" << std::endl;

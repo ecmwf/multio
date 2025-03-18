@@ -32,6 +32,7 @@ from GenerateEncoding import (
     TimeConfig,
     TablesConfig,
     DirectionsFrequenciesConfig,
+    SatelliteConfig,
     hasType,
     lacksType,
     matchType,
@@ -786,6 +787,17 @@ PARAM_LEVTYPE_SOL = [
 ]
 
 
+# Satellite
+
+PARAM_SATELLITE = [
+    partialRule(
+        [matchParam(["260510:260513"])],
+        [PointInTime(), paramConfig("paramId"), SatelliteConfig()],
+    ),
+]
+
+
+
 # Combine all param levtype configurations
 
 PARAM_LEVTYPE = (
@@ -794,6 +806,7 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_ML
     + PARAM_LEVTYPE_PL
     + PARAM_LEVTYPE_SOL
+    + PARAM_SATELLITE
 )
 PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH
 

@@ -50,6 +50,7 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-36.yaml'
@@ -101,3 +102,4 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'

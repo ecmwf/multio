@@ -38,20 +38,20 @@ implicit none
         procedure, public,  pass :: write_domain         => multio_handle_write_domain
 
         ! Parametrization handling
-        procedure, public,  pass :: write_parametrization_metadata => multio_handle_write_parametrization
+        procedure, private,  pass :: write_parametrization_metadata => multio_handle_write_parametrization
 
-        procedure, public,  pass :: write_parametrization_array_byte     => multio_handle_write_parametrization_array_byte
-        procedure, public,  pass :: write_parametrization_array_int32    => multio_handle_write_parametrization_array_int32
-        procedure, public,  pass :: write_parametrization_array_int64    => multio_handle_write_parametrization_array_int64
-        procedure, public,  pass :: write_parametrization_array_real32  => multio_handle_write_parametrization_array_real32
-        procedure, public,  pass :: write_parametrization_array_real64  => multio_handle_write_parametrization_array_real64
+        procedure, private,  pass :: write_parametrization_array_byte    => multio_handle_write_parametrization_array_byte
+        procedure, private,  pass :: write_parametrization_array_int32   => multio_handle_write_parametrization_array_int32
+        procedure, private,  pass :: write_parametrization_array_int64   => multio_handle_write_parametrization_array_int64
+        procedure, private,  pass :: write_parametrization_array_real32  => multio_handle_write_parametrization_array_real32
+        procedure, private,  pass :: write_parametrization_array_real64  => multio_handle_write_parametrization_array_real64
 
         generic,   public        :: write_parametrization                => write_parametrization_array_byte, &
-                                                                            & write_parametrization_array_int32, &
-                                                                            & write_parametrization_array_int64, &
-                                                                            & write_parametrization_array_real32, &
-                                                                            & write_parametrization_array_real64, &
-                                                                            & write_parametrization_metadata
+                                                                          & write_parametrization_array_int32, &
+                                                                          & write_parametrization_array_int64, &
+                                                                          & write_parametrization_array_real32, &
+                                                                          & write_parametrization_array_real64, &
+                                                                          & write_parametrization_metadata
 
 
         ! Mask handling
@@ -390,8 +390,8 @@ contains
         use :: multio_api_constants_mod, only: MULTIO_SUCCESS
     implicit none
         ! Dummy arguments
-        class(multio_handle),           intent(inout) :: handle
-        character(len=*),               intent(in)    :: key
+        class(multio_handle),                           intent(inout) :: handle
+        character(len=*),                               intent(in)    :: key
         integer(kind=c_int32_t), dimension(:),  target, intent(in)    :: data
         ! Function result
         integer :: err

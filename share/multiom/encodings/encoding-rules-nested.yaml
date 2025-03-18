@@ -85,6 +85,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -156,6 +160,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:
@@ -255,6 +263,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -326,6 +338,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:
@@ -429,6 +445,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-36.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -500,6 +520,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic//rule-default-gg-satellite-deterministic-instant-ccsds-paramId-36.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:
@@ -599,6 +623,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -670,6 +698,10 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: null
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic//rule-default-gg-satellite-deterministic-instant-ccsds-paramId-1.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:

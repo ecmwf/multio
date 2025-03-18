@@ -305,6 +305,9 @@ class ChemConfig(BaseModel):
 
 class DirectionsFrequenciesConfig(BaseModel):
     type: str = "default"
+    
+class SatelliteConfig(BaseModel):
+    type: str = "default"
 
 
 class PeriodConfig(BaseModel):
@@ -352,6 +355,7 @@ class ProductDefinition(BaseModel):
     chemical: Optional[ChemConfig] = None
     directionsFrequencies: Optional[DirectionsFrequenciesConfig] = None
     periodRange: Optional[PeriodConfig] = None
+    satellite: Optional[SatelliteConfig] = None
 
 
 # Section 5
@@ -386,8 +390,13 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         if encode.product.periodRange is not None
         else None
     )
+    satellite = (
+        encode.product.satellite.type
+        if encode.product.satellite is not None
+        else None
+    )
 
-    levelWaveStr = "-".join([l for l in [level, wave, periodRange] if l is not None])
+    levelWaveStr = "-".join([l for l in [level, wave, periodRange, satellite] if l is not None])
 
     grid = encode.grid.shortName
     ensemble = "ensemble" if encode.product.ensemble else "deterministic"
@@ -410,8 +419,8 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         product += "-wave_spec"
     if encode.product.periodRange is not None:
         product += "-wave_period"
-    # if encode.product.satelite is not None:
-    #     product+="-satelite"
+    if encode.product.satellite is not None:
+        product += "-satellite"
 
     pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
@@ -526,6 +535,15 @@ def toDictRepres(val):
                     if val.periodRange is not None
                     else {}
                 ),
+                **(
+                    {
+                        "satellite-configurator": toDictRepres(
+                            val.satellite
+                        )
+                    }
+                    if val.satellite is not None
+                    else {}
+                ),
             }
         case DataRepresentation():
             return {"template-number": val.templateNumber}
@@ -587,6 +605,8 @@ def toDictRepres(val):
             return {"type": val.type}
         case DirectionsFrequenciesConfig():
             return {"type": val.type}
+        case SatelliteConfig():
+            return {"type": val.type}
         case PeriodConfig():
             return {"type": val.type}
         case EncodeRule():
@@ -625,6 +645,7 @@ Section4Part: TypeAlias = Union[
     ChemConfig,
     DirectionsFrequenciesConfig,
     PeriodConfig,
+    SatelliteConfig,
 ]
 
 
@@ -655,6 +676,7 @@ EncodePart: TypeAlias = Union[
     ChemConfig,
     DirectionsFrequenciesConfig,
     PeriodConfig,
+    SatelliteConfig,
     ProductDefinition,
     # Section 5
     DataRepresentation,
@@ -696,6 +718,8 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                 case DirectionsFrequenciesConfig():
                     yield pdtCatPair("productCategory", "wave")
                     yield pdtCatPair("productSubCategory", "spectraList")
+                case SatelliteConfig():
+                    yield pdtCatPair("productCategory", "satellite")
                 case _:
                     pass
 
@@ -764,6 +788,9 @@ def buildProductDefiniton(crumbs: List[EncodePart]):
             "directionsFrequencies", getCrumb(DirectionsFrequenciesConfig, pdtCrumbs)
         ),
         **toArgDict("periodRange", getCrumb(PeriodConfig, pdtCrumbs)),
+        **toArgDict(
+            "satellite", getCrumb(SatelliteConfig, pdtCrumbs)
+        ),
     }
     try:
         return ProductDefinition(**args)

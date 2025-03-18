@@ -52,6 +52,7 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-36.yaml'
@@ -105,3 +106,4 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'

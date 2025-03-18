@@ -166,14 +166,14 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             "([0-9][0-9]*)\\s+([0-9][0-9]*)\\s*([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)");
         std::smatch matchLine;
         if (std::regex_match(line, matchLine, lineGrammar)) {
-            if ( inputOrdering_ ==  outputOrdering_ ){
+            if (inputOrdering_ ==  outputOrdering_) {
               iHEALPix = std::stoi(matchLine[1].str());
             }
             else if (inputOrdering_ == orderingConvention_e::RING && outputOrdering_ == orderingConvention_e::NESTED) {
               HEALPix Idx(static_cast<int>(NSide_));
               iHEALPix = Idx.ring_to_nest(static_cast<int>(std::stoi(matchLine[1].str())));
             }
-            else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING){
+            else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING) {
               HEALPix Idx(static_cast<int>(NSide_));
               iHEALPix = Idx.nest_to_ring(static_cast<int>(std::stoi(matchLine[1].str())));
             }

@@ -259,6 +259,16 @@ int main() {
     assert(strcmp(readVal, "O1280") == 0);
     free(readVal);
     readVal = NULL;
+    
+    
+    ret = multio_grib2_dict_has(dictionary_01, "wavelength", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "wavelength", "123-456");
+    ret = multio_grib2_dict_has(dictionary_01, "wavelength", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "wavelength", &readVal);
+    // printf("wavelength: %s, %d, %d, %d\n", readVal, has1, has2, ret );
+    assert(strcmp(readVal, "123-456") == 0);
+    free(readVal);
+    readVal = NULL;
 
     printf(" + iterate through the mars dictionary\n");
     void* iterator = NULL;

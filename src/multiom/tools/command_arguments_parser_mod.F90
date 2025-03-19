@@ -5,7 +5,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 ! Definition of the module
-#define PP_FILE_NAME 'multiom_list_cfg_mod.F90'
+#define PP_FILE_NAME 'command_arguments_parser_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'COMMAND_ARGUMENTS_PARSER_MOD'
 MODULE COMMAND_ARGUMENTS_PARSER_MOD
@@ -3227,9 +3227,10 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check dump path' )
     CASE (ERRFLAG_INVALID_DUMP_PATH)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Dump path does not exist' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'current path: "'//TRIM(ADJUSTL(DUMP_PATH))//'"' )
     CASE (ERRFLAG_UNABLE_TO_EXPAND_ENVVAR)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to expand environment variable' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'variable: '//TRIM(ADJUSTL(VALUES(1))) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'variable: "'//TRIM(ADJUSTL(VALUES(1)))//'"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

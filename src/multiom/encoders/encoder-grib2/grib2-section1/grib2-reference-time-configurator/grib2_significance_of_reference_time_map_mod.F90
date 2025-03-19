@@ -250,15 +250,15 @@ IMPLICIT NONE
   CASE( TYPE_FP_E )
     ! Forecast probability
     SORT = 1_JPIB_K
-  ! CASE( TYPE_EM_E )
-  !   ! Ensemble mean
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_ES_E )
-  !   ! Ensemble standard deviation
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FA_E )
-  !   ! Forecast accumulation
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_EM_E )
+    ! Ensemble mean
+    SORT = 1_JPIB_K
+  CASE( TYPE_ES_E )
+    ! Ensemble standard deviation
+    SORT = 1_JPIB_K
+  CASE( TYPE_FA_E )
+    ! Forecast accumulation
+    SORT = 1_JPIB_K
   ! CASE( TYPE_CL_E )
   !   ! Climatology
   !   SORT = 1_JPIB_K
@@ -280,12 +280,12 @@ IMPLICIT NONE
   ! CASE( TYPE_OF_E )
   !   ! Ocean forward
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EFI_E )
-  !   ! Extreme forecast index
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_EFIC_E )
-  !   ! Extreme forecast index control
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_EFI_E )
+    ! Extreme forecast index
+    SORT = 1_JPIB_K
+  CASE( TYPE_EFIC_E )
+    ! Extreme forecast index control
+    SORT = 1_JPIB_K
   ! CASE( TYPE_PB_E )
   !   ! Probability boundaries
   !   SORT = 1_JPIB_K
@@ -325,30 +325,30 @@ IMPLICIT NONE
   ! CASE( TYPE_SIM_E )
   !   ! Simulated images
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_WEM_E )
-  !   ! Weighted ensemble mean
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_WES_E )
-  !   ! Weighted ensemble standard deviation
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_WEM_E )
+    ! Weighted ensemble mean
+    SORT = 1_JPIB_K
+  CASE( TYPE_WES_E )
+    ! Weighted ensemble standard deviation
+    SORT = 1_JPIB_K
   ! CASE( TYPE_CR_E )
   !   ! Cluster representative
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SES_E )
-  !   ! Scaled ensemble standard deviation
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TAEM_E )
-  !   ! Time average ensemble mean
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TAES_E )
-  !   ! Time average ensemble standard deviation
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SG_E )
-  !   ! Sensitivity gradient
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SF_E )
-  !   ! Sensitivity forecast
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_SES_E )
+    ! Scaled ensemble standard deviation
+    SORT = 1_JPIB_K
+  CASE( TYPE_TAEM_E )
+    ! Time average ensemble mean
+    SORT = 1_JPIB_K
+  CASE( TYPE_TAES_E )
+    ! Time average ensemble standard deviation
+    SORT = 1_JPIB_K
+  CASE( TYPE_SG_E )
+    ! Sensitivity gradient
+    SORT = 1_JPIB_K
+  CASE( TYPE_SF_E )
+    ! Sensitivity forecast
+    SORT = 1_JPIB_K
   CASE( TYPE_PA_E )
     ! Perturbed analysis
     SORT = 0_JPIB_K
@@ -382,21 +382,21 @@ IMPLICIT NONE
   CASE( TYPE_TPA_E )
     ! Time processed analysis
     SORT = 0_JPIB_K
-  ! CASE( TYPE_IF_E )
-  !   ! Interim forecast
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMEAN_E )
-  !   ! Forecast mean
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMAX_E )
-  !   ! Forecast maximum
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCMIN_E )
-  !   ! Forecast minimum
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_FCSTDEV_E )
-  !   ! Forecast standard deviation
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_IF_E )
+    ! Interim forecast
+    SORT = 1_JPIB_K
+  CASE( TYPE_FCMEAN_E )
+    ! Forecast mean
+    SORT = 1_JPIB_K
+  CASE( TYPE_FCMAX_E )
+    ! Forecast maximum
+    SORT = 1_JPIB_K
+  CASE( TYPE_FCMIN_E )
+    ! Forecast minimum
+    SORT = 1_JPIB_K
+  CASE( TYPE_FCSTDEV_E )
+    ! Forecast standard deviation
+    SORT = 1_JPIB_K
   ! CASE( TYPE_HCMEAN_E )
   !   ! Hindcast climate mean
   !   SORT = 1_JPIB_K
@@ -406,9 +406,9 @@ IMPLICIT NONE
   ! CASE( TYPE_GSD_E )
   !   ! Gridded satellite data
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_GA_E )
-  !   ! GFAS analysis
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_GA_E )
+    ! GFAS analysis
+    SORT = 0_JPIB_K
   CASE( TYPE_GAI_E )
     ! Gridded analysis input
     SORT = 0_JPIB_K
@@ -436,18 +436,18 @@ IMPLICIT NONE
   ! CASE( TYPE_FB_E )
   !   ! Feedback
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AI_E )
-  !   ! Analysis input
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AF_E )
-  !   ! Analysis feedback
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_AB_E )
-  !   ! Analysis bias
-  !   SORT = 1_JPIB_K
-  ! CASE( TYPE_TF_E )
-  !   ! Trajectory forecast
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_AI_E )
+    ! Analysis input
+    SORT = 0_JPIB_K
+  CASE( TYPE_AF_E )
+    ! Analysis feedback
+    SORT = 0_JPIB_K
+  CASE( TYPE_AB_E )
+    ! Analysis bias
+    SORT = 0_JPIB_K
+  CASE( TYPE_TF_E )
+    ! Trajectory forecast
+    SORT = 1_JPIB_K
   ! CASE( TYPE_MFB_E )
   !   ! MonDB feedback
   !   SORT = 1_JPIB_K

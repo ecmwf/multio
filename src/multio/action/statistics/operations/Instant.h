@@ -17,8 +17,8 @@ public:
     using OperationWithData<T>::checkTimeInterval;
 
 
-    Instant(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
-        OperationWithData<T>{name, "instant", sz, true, win, cfg} {}
+    Instant(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+        OperationWithData<T>{name, "instant", size, true, win, cfg} {}
 
     Instant(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsOptions& opt) :
@@ -30,11 +30,11 @@ public:
         buf.copy(values_.data(), values_.size() * sizeof(T));
     }
 
-    void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz, cfg);
+    void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) override {
+        checkSize(size, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        std::copy(val, val + (sz / sizeof(T)), values_.begin());
+        std::copy(val, val + (size / sizeof(T)), values_.begin());
     }
 
 private:

@@ -21,9 +21,9 @@ public:
     const std::string& name() const { return name_; };
     const std::string& operation() const { return operation_; };
 
-    virtual void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) = 0;
+    virtual void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) = 0;
 
-    virtual void updateWindow(const void* data, long sz, const message::Message& msg,
+    virtual void updateWindow(const void* data, std::size_t size, const message::Message& msg,
                               const StatisticsConfiguration& cfg)
         = 0;
     virtual void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
@@ -31,9 +31,9 @@ public:
     virtual void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const = 0;
     virtual void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) = 0;
 
-    virtual size_t byte_size() const = 0;
+    virtual std::size_t byte_size() const = 0;
     virtual void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) = 0;
-    virtual void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
+    virtual void init(const void* data, std::size_t size, const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
     virtual void init(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
     virtual bool needStepZero() const = 0;
 

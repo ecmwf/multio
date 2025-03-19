@@ -15,19 +15,24 @@
 
 namespace multio::action {
 
+enum OperationWindowType : std::int64_t {
+    FORWARD_OFFSET  = 0,
+    BACKWARD_OFFSET = 1
+};
+
 class OperationWindow {
 public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds,
-                    long windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
+                    std::int64_t timeStepInSeconds, OperationWindowType windowType);
 
-    long count() const;
-    const std::vector<long>& counts() const;
+    std::int64_t count() const;
+    const std::vector<std::int64_t>& counts() const;
 
     template <typename T>
-    void updateCounts(const T* values, size_t size, double missingValue) const;
+    void updateCounts(const T* values, std::size_t size, double missingValue) const;
 
     void updateData(const eckit::DateTime& currentPoint);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
@@ -42,51 +47,51 @@ public:
     bool leUpperBound(const eckit::DateTime& dt, bool throw_error) const;
     bool ltUpperBound(const eckit::DateTime& dt, bool throw_error) const;
 
-    long timeSpanInSeconds() const;
-    long timeSpanInHours() const;
-    long timeSpanInSteps() const;
-    long lastPointsDiffInSeconds() const;
+    std::int64_t timeSpanInSeconds() const;
+    std::int64_t timeSpanInHours() const;
+    std::int64_t timeSpanInSteps() const;
+    std::int64_t lastPointsDiffInSeconds() const;
 
     util::DateTimeDiff lastPointsDiff() const;
 
-    long startPointInSeconds() const;
-    long creationPointInSeconds() const;
-    long currPointInSeconds() const;
-    long prevPointInSeconds() const;
-    long endPointInSeconds() const;
+    std::int64_t startPointInSeconds() const;
+    std::int64_t creationPointInSeconds() const;
+    std::int64_t currPointInSeconds() const;
+    std::int64_t prevPointInSeconds() const;
+    std::int64_t endPointInSeconds() const;
 
-    long startPointInHours() const;
-    long creationPointInHours() const;
-    long currPointInHours() const;
-    long prevPointInHours() const;
-    long endPointInHours() const;
+    std::int64_t startPointInHours() const;
+    std::int64_t creationPointInHours() const;
+    std::int64_t currPointInHours() const;
+    std::int64_t prevPointInHours() const;
+    std::int64_t endPointInHours() const;
 
-    long startPointInSteps() const;
-    long creationPointInSteps() const;
-    long currPointInSteps() const;
-    long prevPointInSteps() const;
-    long endPointInSteps() const;
+    std::int64_t startPointInSteps() const;
+    std::int64_t creationPointInSteps() const;
+    std::int64_t currPointInSteps() const;
+    std::int64_t prevPointInSteps() const;
+    std::int64_t endPointInSteps() const;
 
 
-    long startPointInSeconds(const eckit::DateTime& refPoint) const;
-    long creationPointInSeconds(const eckit::DateTime& refPoint) const;
-    long currPointInSeconds(const eckit::DateTime& refPoint) const;
-    long prevPointInSeconds(const eckit::DateTime& refPoint) const;
-    long endPointInSeconds(const eckit::DateTime& refPoint) const;
+    std::int64_t startPointInSeconds(const eckit::DateTime& refPoint) const;
+    std::int64_t creationPointInSeconds(const eckit::DateTime& refPoint) const;
+    std::int64_t currPointInSeconds(const eckit::DateTime& refPoint) const;
+    std::int64_t prevPointInSeconds(const eckit::DateTime& refPoint) const;
+    std::int64_t endPointInSeconds(const eckit::DateTime& refPoint) const;
 
-    long startPointInHours(const eckit::DateTime& refPoint) const;
-    long creationPointInHours(const eckit::DateTime& refPoint) const;
-    long currPointInHours(const eckit::DateTime& refPoint) const;
-    long prevPointInHours(const eckit::DateTime& refPoint) const;
-    long endPointInHours(const eckit::DateTime& refPoint) const;
+    std::int64_t startPointInHours(const eckit::DateTime& refPoint) const;
+    std::int64_t creationPointInHours(const eckit::DateTime& refPoint) const;
+    std::int64_t currPointInHours(const eckit::DateTime& refPoint) const;
+    std::int64_t prevPointInHours(const eckit::DateTime& refPoint) const;
+    std::int64_t endPointInHours(const eckit::DateTime& refPoint) const;
 
-    long startPointInSteps(const eckit::DateTime& refPoint) const;
-    long creationPointInSteps(const eckit::DateTime& refPoint) const;
-    long currPointInSteps(const eckit::DateTime& refPoint) const;
-    long prevPointInSteps(const eckit::DateTime& refPoint) const;
-    long endPointInSteps(const eckit::DateTime& refPoint) const;
+    std::int64_t startPointInSteps(const eckit::DateTime& refPoint) const;
+    std::int64_t creationPointInSteps(const eckit::DateTime& refPoint) const;
+    std::int64_t currPointInSteps(const eckit::DateTime& refPoint) const;
+    std::int64_t prevPointInSteps(const eckit::DateTime& refPoint) const;
+    std::int64_t endPointInSteps(const eckit::DateTime& refPoint) const;
 
-    long timeStepInSeconds() const;
+    std::int64_t timeStepInSeconds() const;
 
 
     eckit::DateTime epochPoint() const;
@@ -103,9 +108,9 @@ public:
     std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
 
     void updateFlush();
-    long lastFlushInSteps() const;
+    std::int64_t lastFlushInSteps() const;
 
-    size_t restartSize() const;
+    std::size_t restartSize() const;
 
 private:
     eckit::DateTime epochPoint_;
@@ -116,12 +121,12 @@ private:
     eckit::DateTime endPoint_;
     eckit::DateTime lastFlush_;
 
-    long timeStepInSeconds_;
-    long count_;
-    mutable std::vector<long> counts_;
-    long type_;
+    std::int64_t timeStepInSeconds_;
+    std::int64_t count_;
+    mutable std::vector<std::int64_t> counts_;
+    OperationWindowType type_;
 
-    void initCountsLazy(size_t sz) const;
+    void initCountsLazy(std::size_t size) const;
 
     void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const;
     void deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt);

@@ -17,8 +17,8 @@ public:
     using OperationWithData<T>::checkTimeInterval;
 
 
-    Accumulate(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
-        OperationWithData<T>{name, "accumulate", sz, true, win, cfg} {}
+    Accumulate(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+        OperationWithData<T>{name, "accumulate", size, true, win, cfg} {}
 
     Accumulate(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                const StatisticsOptions& opt) :
@@ -30,10 +30,10 @@ public:
         buf.copy(values_.data(), values_.size() * sizeof(T));
     }
 
-    void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz, cfg);
+    void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) override {
+        checkSize(size, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
-        const T* val = static_cast<const T*>(data);
+        const auto val = static_cast<const T*>(data);
         cfg.bitmapPresent() ? updateWithMissing(val, cfg) : updateWithoutMissing(val, cfg);
     }
 
@@ -44,7 +44,7 @@ private:
     }
 
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
-        double m = cfg.missingValue();
+        const auto m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 + v2); });
     }

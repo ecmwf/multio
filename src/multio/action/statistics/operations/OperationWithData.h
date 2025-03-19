@@ -74,12 +74,10 @@ protected:
     void serialize(IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) const {
 
         const auto size = values_.size();
-        std::size_t cnt = 0;
         for (std::size_t i = 0; i < size; ++i) {
             auto lv = values_[i];
             auto dv = static_cast<double>(lv);
-            restartState[cnt] = *reinterpret_cast<std::uint64_t*>(&dv);
-            cnt++;
+            restartState[i] = *reinterpret_cast<std::uint64_t*>(&dv);
         }
         restartState.computeChecksum();
 
@@ -95,13 +93,11 @@ protected:
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
         restartState.checkChecksum();
-        std::size_t cnt = 0;
         auto size = values_.size();
         for (std::size_t i = 0; i < size; ++i) {
-            auto lv = restartState[cnt];
+            auto lv = restartState[i];
             auto dv = *reinterpret_cast<double*>(&lv);
             values_[i] = static_cast<T>(dv);
-            cnt++;
         }
         if (opt.debugRestart()) {
             std::ofstream outFile(fname);

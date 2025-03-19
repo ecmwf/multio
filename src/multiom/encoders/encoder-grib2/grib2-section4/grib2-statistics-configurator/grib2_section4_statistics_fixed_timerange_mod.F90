@@ -577,6 +577,12 @@ IMPLICIT NONE
   ! Allocate the time ranges
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfTimeRange', THIS%NUMBER_OF_TIME_RANGES_ )
 
+
+  !> Preset everything that can be preset
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfStatisticalProcessing', THIS%TYPE_OF_STATISTICAL_PROCESS_ )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitOfTimeRange', 'h' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeRange', 'h' )
+
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

@@ -785,6 +785,68 @@ PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
 )
 
 
+# # PT
+# # TODO discuss - in era6 it contains typeOfStatisticalProcessing 0 (average), for WMO not
+
+PARAM_LEVTYPE_PT = [
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([53, 54, 60, 131, 132, 133, 138, 155, 203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            PointInTime(),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([235203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="average",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([237203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="max",
+                descriptiveName="max",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([238203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="min",
+                descriptiveName="min",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([239203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="stddev",
+                descriptiveName="std",
+            ),
+        ]
+    )
+]
+
+PARAM_LEVTYPE_PV = [
+    partialRule(
+        [matchType("levtype", "pv"), matchParam([3, 54, 129, 131, 132, 133, 203])],
+        [levelConfig("potentialVorticity"), paramConfig("paramId"),
+            PointInTime(),
+        ]
+    ),
+]
+
+
 # SOIL
 
 PARAM_LEVTYPE_SOL = [
@@ -822,6 +884,8 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_ML
     + PARAM_LEVTYPE_PL
     + PARAM_LEVTYPE_SOL
+    + PARAM_LEVTYPE_PT
+    + PARAM_LEVTYPE_PV
     + PARAM_SATELLITE
 )
 PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH

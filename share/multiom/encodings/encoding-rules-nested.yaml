@@ -86,6 +86,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-instant-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-average-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-max-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-min-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-std-simple-paramId-36.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-simple-paramId-36.yaml'
+                            - operation: match
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
@@ -160,6 +172,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-average-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-max-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-min-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-std-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: null
                               rules:
@@ -264,6 +288,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-instant-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-average-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-max-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-min-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-std-simple-paramId-1.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-simple-paramId-1.yaml'
+                            - operation: match
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
@@ -338,6 +374,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-average-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-max-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-min-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-std-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: null
                               rules:
@@ -446,6 +494,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                             - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-instant-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-average-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-max-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-min-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-std-simple-paramId-36.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-simple-paramId-36.yaml'
+                            - operation: match
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-36.yaml'
@@ -520,6 +580,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-average-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-max-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-min-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-std-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: null
                               rules:
@@ -624,6 +696,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                             - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-instant-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-average-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-max-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-min-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pt/rule-theta-gg-deterministic-std-simple-paramId-1.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-simple-paramId-1.yaml'
+                            - operation: match
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
@@ -698,6 +782,18 @@ encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: pt
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-average-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-max-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-min-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pt/rule-theta-gg-deterministic-std-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: pv
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: null
                               rules:

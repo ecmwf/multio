@@ -15,7 +15,8 @@
 
 namespace {
 bool hasKey(codes_handle* handle, const char* key) {
-    return codes_is_defined(handle, key) != 0;
+    int err;
+    return codes_is_defined(handle, key) != 0 && codes_is_missing(handle, key, &err) == 0;
 }
 
 std::string getString(codes_handle* handle, const char* key) {
@@ -581,11 +582,11 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     if (ret != 0)
         return ret;
 
-    ret = getAndSet(h, *par_dict, "waveDirections");
+    ret = getAndSetLongArray(h, *par_dict, "scaledValuesOfWaveDirections", "waveDirections");
     if (ret != 0)
         return ret;
-
-    ret = getAndSet(h, *par_dict, "waveFrequencies");
+        
+    ret = getAndSetLongArray(h, *par_dict, "scaledValuesOfWaveFrequencies", "waveFrequencies");
     if (ret != 0)
         return ret;
 

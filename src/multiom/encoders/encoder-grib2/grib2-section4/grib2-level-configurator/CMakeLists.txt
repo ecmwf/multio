@@ -99,6 +99,8 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_walllayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_wall_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_watersurfacetoisothermaloceanlayer_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_abstractSingleLevel_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_abstractMultipleLevels_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_level_factory_mod.F90
 )
 

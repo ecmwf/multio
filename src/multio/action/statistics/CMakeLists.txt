@@ -51,17 +51,15 @@ list( APPEND _statistics_libs
     multio
 )
 
-if(HAVE_ATLAS_IO)
-
-ecbuild_find_package( NAME atlas_io    VERSION  0.33   REQUIRED )
+if(HAVE_ECKIT_CODEC)
 
 list( APPEND _statistics_sources
-    io/AtlasIO.cc
-    io/AtlasIO.h
+    io/EckitCodecIO.cc
+    io/EckitCodecIO.h
 )
 
 list( APPEND _statistics_libs
-    atlas_io
+    eckit_codec
 )
 
 endif()

@@ -33,7 +33,7 @@
 #include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
 
-#include "atlas_io/atlas-io.h"
+#include "eckit/codec/codec.h"
 
 namespace multio::action {
 
@@ -142,7 +142,7 @@ void CacheGenerator::init(const eckit::option::CmdArgs& args) {
 
 void CacheGenerator::execute(const eckit::option::CmdArgs& args) {
     size_t ref = 1;
-    atlas::io::RecordWriter record;
+    eckit::codec::RecordWriter record;
     record.compression("none");
     // for ( size_t i=from_; i<=to_; ++i ){
     for (size_t i = 0; i < list_.size(); ++i) {

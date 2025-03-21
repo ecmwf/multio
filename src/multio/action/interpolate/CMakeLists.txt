@@ -32,11 +32,11 @@ ecbuild_add_executable(
         ../../tools/MultioTool.cc
 
     CONDITION
-        HAVE_MIR AND HAVE_ATLAS_IO AND HAVE_MULTIO_BUILD_TOOLS
+        HAVE_MIR AND HAVE_ECKIT_CODEC AND HAVE_MULTIO_BUILD_TOOLS
 
     LIBS
         multio
-        atlas_io
         eckit
+        eckit_codec
         mir
 )

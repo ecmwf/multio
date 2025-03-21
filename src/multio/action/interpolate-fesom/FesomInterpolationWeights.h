@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "InterpolateFesom_debug.h"
-#include "atlas_io/atlas-io.h"
+#include "eckit/codec/codec.h"
 #include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"
 
@@ -143,7 +143,7 @@ public:
                              level)
            << ".atlas";
 
-        atlas::io::RecordWriter record;
+        eckit::codec::RecordWriter record;
         record.compression("none");
         record.set("version", static_cast<size_t>(0));
         record.set("nside", static_cast<size_t>(NSide));
@@ -154,10 +154,10 @@ public:
         record.set("nOutRows", static_cast<size_t>(nOutRows));
 
         record.set("landSeaMask",
-                   atlas::io::ArrayReference(landSeaMask.data(), std::vector<size_t>{landSeaMask.size()}));
-        record.set("rowPtr", atlas::io::ArrayReference(rowStart.data(), std::vector<size_t>{rowStart.size()}));
-        record.set("colIdx", atlas::io::ArrayReference(colIdx.data(), std::vector<size_t>{colIdx.size()}));
-        record.set("weights", atlas::io::ArrayReference(values.data(), std::vector<size_t>{values.size()}));
+                   eckit::codec::ArrayReference(landSeaMask.data(), std::vector<size_t>{landSeaMask.size()}));
+        record.set("rowPtr", eckit::codec::ArrayReference(rowStart.data(), std::vector<size_t>{rowStart.size()}));
+        record.set("colIdx", eckit::codec::ArrayReference(colIdx.data(), std::vector<size_t>{colIdx.size()}));
+        record.set("weights", eckit::codec::ArrayReference(values.data(), std::vector<size_t>{values.size()}));
         record.write(os.str());
 
         INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit dumpCache"

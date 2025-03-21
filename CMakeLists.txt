@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ### dependencies
 
 ecbuild_find_package( NAME eccodes     VERSION  2.31.2   REQUIRED )
-ecbuild_find_package( NAME eckit       VERSION  1.24     REQUIRED )
+ecbuild_find_package( NAME eckit       VERSION  1.25     REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.10     REQUIRED )
 ecbuild_find_package( NAME atlas       VERSION  0.35     REQUIRED )
 
@@ -35,12 +35,17 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.11.20" )
 
-### atlas-io plugin
+### eckit-codec plugin
 
-ecbuild_add_option( FEATURE ATLAS_IO
+set( eckit_HAVE_ECKIT_CODEC 0 )
+if( TARGET eckit_codec )
+  set( eckit_HAVE_ECKIT_CODEC 1 )
+endif()
+
+ecbuild_add_option( FEATURE ECKIT_CODEC
                     DEFAULT ON
-                    DESCRIPTION "Use atlasIO for the restart"
-                    REQUIRED_PACKAGES "NAME atlas_io VERSION 0.33" )
+                    DESCRIPTION "Use eckit codec for IO"
+                    CONDITION eckit_HAVE_ECKIT_CODEC )
 
 ### interpolate action
 

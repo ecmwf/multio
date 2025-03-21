@@ -23,7 +23,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 
-#include "atlas_io/atlas-io.h"
+#include "eckit/codec/codec.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/PrecisionTag.h"
@@ -95,7 +95,7 @@ void checkMetadata(const message::Metadata& md) {
 
 std::vector<size_t> makeMapping(size_t Nside, const std::string& cacheFileName) {
     std::vector<size_t> map;
-    atlas::io::RecordReader reader(cacheFileName);
+    eckit::codec::RecordReader reader(cacheFileName);
     std::ostringstream os;
     os << "H" << std::setfill('0') << std::setw(8) << Nside << "_ring2nest";
     reader.read(os.str(), map).wait();

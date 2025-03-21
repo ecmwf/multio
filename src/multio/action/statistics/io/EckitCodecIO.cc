@@ -1,12 +1,11 @@
 
-#include "AtlasIO.h"
+#include "EckitCodecIO.h"
 
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
 
-#include "atlas_io/atlas-io.h"
-
+#include "eckit/codec/codec.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 
@@ -35,13 +34,13 @@ public:
 };
 
 template <typename T>
-void interprete(const SubVector<T>& in, atlas::io::ArrayReference& out) {
-    out = atlas::io::ArrayReference(in.data(), atlas::io::make_datatype<T>(), atlas::io::ArrayShape{in.size()});
+void interprete(const SubVector<T>& in, eckit::codec::ArrayReference& out) {
+    out = eckit::codec::ArrayReference(in.data(), eckit::codec::make_datatype<T>(), eckit::codec::ArrayShape{in.size()});
 }
 
 template <typename T>
-void decode(const atlas::io::Metadata& metadata, const atlas::io::Data& data, SubVector<T>& out) {
-    atlas::io::ArrayMetadata array(metadata);
+void decode(const eckit::codec::Metadata& metadata, const eckit::codec::Data& data, SubVector<T>& out) {
+    eckit::codec::ArrayMetadata array(metadata);
     if (out.checkSize(array.shape(0))) {
         ::memcpy(out.data(), data, data.size());
     }
@@ -51,38 +50,38 @@ void decode(const atlas::io::Metadata& metadata, const atlas::io::Data& data, Su
 }
 }  // namespace
 
-AtlasIO::AtlasIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "atlasIO"} {};
+EckitCodecIO::EckitCodecIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "atlasIO"} {};
 
-void AtlasIO::write(const std::string& name, std::size_t fieldSize, std::size_t writeSize) {
+void EckitCodecIO::write(const std::string& name, std::size_t fieldSize, std::size_t writeSize) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the window write file is :: " << generateCurrFileName(name)
                              << std::endl;
     const std::string fname = generateCurrFileName(name);
-    atlas::io::RecordWriter record;
+    eckit::codec::RecordWriter record;
     SubVector<std::uint64_t> dat{buffer_.data(), writeSize};
     record.set("size", fieldSize, no_compression);
-    record.set(name, atlas::io::ref(dat), no_compression);
+    record.set(name, eckit::codec::ref(dat), no_compression);
     record.write(fname);
     return;
 };
 
-void AtlasIO::readSize(const std::string& name, std::size_t& readSize) {
+void EckitCodecIO::readSize(const std::string& name, std::size_t& readSize) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateCurrFileName(name)
                              << std::endl;
     const std::string fname = generateCurrFileName(name);
     checkFileExist(fname);
     std::uint64_t sz;
-    atlas::io::RecordReader record(fname);
+    eckit::codec::RecordReader record(fname);
     record.read("size", sz).wait();
     readSize = static_cast<std::size_t>(sz);
     return;
 };
 
-void AtlasIO::read(const std::string& name, std::size_t readSize) {
+void EckitCodecIO::read(const std::string& name, std::size_t readSize) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateCurrFileName(name)
                              << std::endl;
     const std::string fname = generateCurrFileName(name);
     checkFileExist(fname);
-    atlas::io::RecordReader record(fname);
+    eckit::codec::RecordReader record(fname);
     SubVector<std::uint64_t> dat{buffer_.data(), readSize};
     record.read(name, dat).wait();
     if (!dat.good()) {
@@ -93,13 +92,13 @@ void AtlasIO::read(const std::string& name, std::size_t readSize) {
     return;
 };
 
-void AtlasIO::flush() {
+void EckitCodecIO::flush() {
     // TODO: Decide what to do when flush is called. Flush partial statistics when the Tag::Flush is received is
     // probably okay
     return;
 };
 
-void AtlasIO::checkFileExist(const std::string& name) const {
+void EckitCodecIO::checkFileExist(const std::string& name) const {
     eckit::PathName file{name};
     if (!file.exists()) {
         std::ostringstream os;
@@ -109,6 +108,7 @@ void AtlasIO::checkFileExist(const std::string& name) const {
     return;
 };
 
-StatisticsIOBuilder<AtlasIO> AtalsIOBuilder("atlas_io");
+StatisticsIOBuilder<EckitCodecIO> EckitCodecIOBuilder("eckit_codec");
+StatisticsIOBuilder<EckitCodecIO> AtlasIOBuilder("atlas_io");  // Legacy name
 
 }  // namespace multio::action

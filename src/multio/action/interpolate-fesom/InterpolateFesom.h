@@ -23,7 +23,7 @@
 
 #include "FesomInterpolationWeights.h"
 #include "InterpolateFesom_debug.h"
-#include "atlas_io/atlas-io.h"
+#include "eckit/codec/codec.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
@@ -68,7 +68,7 @@ private:
         size_t version;
         size_t NSideR;
         size_t levelR;
-        atlas::io::RecordReader reader(file);
+        eckit::codec::RecordReader reader(file);
         // Read the objects needed for the interpolation
         reader.read("version", version);
         reader.wait();

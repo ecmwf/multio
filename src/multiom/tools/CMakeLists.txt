@@ -167,6 +167,7 @@ ecbuild_add_executable(
   LIBS
       multio
       multiom
+      atlas
       eckit
       fckit
       metkit

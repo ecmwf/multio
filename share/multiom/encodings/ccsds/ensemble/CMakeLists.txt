@@ -7,6 +7,7 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/sfc")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/sol")
 
+add_subdirectory("al")
 add_subdirectory("hl")
 add_subdirectory("ml")
 add_subdirectory("pl")

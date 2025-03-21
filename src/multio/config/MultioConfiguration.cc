@@ -122,7 +122,9 @@ ConfigAndPaths configureFromEnv(config::LocalPeerTag tag) {
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
                                          const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    parsedConfig_{globalConfig}, configDir_{configDir}, configFile_{configFile}, localPeerTag_{localPeerTag} {}
+    configDir_{configDir}, configFile_{configFile}, localPeerTag_{localPeerTag} {
+        parsedConfig_ = replaceAllCurly(globalConfig);
+    }
 
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
@@ -134,14 +136,16 @@ MultioConfiguration::MultioConfiguration(const eckit::PathName& configFile, Loca
                                              configuration_path_name(configFile), configFile, localPeerTag) {}
 
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag localPeerTag) :
-    parsedConfig_{globalConfig}, configDir_{}, configFile_{}, localPeerTag_{localPeerTag} {}
+    configDir_{}, configFile_{}, localPeerTag_{localPeerTag} {
+        parsedConfig_ = replaceAllCurly(globalConfig);
+    }
 
 
 MultioConfiguration::MultioConfiguration(ConfigAndPaths c, LocalPeerTag localPeerTag) :
-    parsedConfig_{c.parsedConfig},
-    configDir_{c.paths.configDir},
-    configFile_{c.paths.configFile},
-    localPeerTag_{localPeerTag} {}
+    configDir_{c.paths.configDir}, configFile_{c.paths.configFile}, localPeerTag_{localPeerTag} {
+        const auto& cfg = c.parsedConfig;
+        parsedConfig_ = replaceAllCurly(cfg);
+    }
 
 MultioConfiguration::MultioConfiguration(LocalPeerTag localPeerTag) :
     MultioConfiguration(configureFromEnv(localPeerTag), localPeerTag) {}
@@ -220,6 +224,38 @@ std::string MultioConfiguration::replaceCurly(const std::string& s) const {
             return std::optional<std::string>{};
         }
     });
+}
+
+void MultioConfiguration::replaceAllCurly(eckit::LocalConfiguration& cfg) const {
+    for (auto& key : cfg.keys()) {
+        if (cfg.isString(key)) {
+            cfg.set(key, replaceCurly(cfg.getString(key)));
+        }
+        if (cfg.isStringList(key)) {
+            std::vector<std::string> tmp;
+            for (const auto& str : cfg.getStringVector(key)) {
+                tmp.push_back(replaceCurly(str));
+            }
+            cfg.set(key, tmp);
+        }
+        if (cfg.isSubConfiguration(key)) {
+            const auto& sub = cfg.getSubConfiguration(key);
+            cfg.set(key, replaceAllCurly(sub));
+        }
+        if (cfg.isSubConfigurationList(key)) {
+            std::vector<eckit::LocalConfiguration> tmp;
+            for (const auto& sub : cfg.getSubConfigurations(key)) {
+                tmp.push_back(replaceAllCurly(sub));
+            }
+            cfg.set(key, tmp);
+        }
+    }
+}
+
+eckit::LocalConfiguration MultioConfiguration::replaceAllCurly(const eckit::LocalConfiguration& cfg) const {
+    eckit::LocalConfiguration tmp = cfg;
+    replaceAllCurly(tmp);
+    return tmp;
 }
 
 const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMappings(

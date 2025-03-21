@@ -136,20 +136,14 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
 
     if (format == "grib") {
         ASSERT(conf.has("template"));
-        std::string tmplPath = conf.getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{multioConfig.replaceCurly(tmplPath)};
+        eckit::AutoStdFile fin{conf.getString("template")};
         int err;
         auto sample = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
         handleCodesError("eccodes error while reading the grib template: ", err, Here());
 
         if (conf.has("atlas-named-grid")) {
-            const auto atlasNamedGrid
-                = util::replaceCurly(conf.getString("atlas-named-grid"), [](std::string_view replace) {
-                      std::string lookUpKey{replace};
-                      char* env = ::getenv(lookUpKey.c_str());
-                      return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                  });
+            const auto atlasNamedGrid = conf.getString("atlas-named-grid");
 
             eckit::Log::info() << "REQUESTED ATLAS GRID DEFINITION UPDATE: " << atlasNamedGrid << std::endl;
 

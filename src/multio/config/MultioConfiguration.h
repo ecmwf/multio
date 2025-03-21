@@ -138,6 +138,9 @@ private:
     MultioConfiguration(const eckit::LocalConfiguration& globalConfig, const eckit::PathName& configDir,
                         const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
+    void replaceAllCurly(eckit::LocalConfiguration& cfg) const;
+    eckit::LocalConfiguration replaceAllCurly(const eckit::LocalConfiguration& cfg) const;
+
     eckit::LocalConfiguration parsedConfig_;
     eckit::PathName configDir_;
     eckit::PathName configFile_;

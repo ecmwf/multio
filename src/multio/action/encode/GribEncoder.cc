@@ -238,8 +238,7 @@ std::optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
 }
 
 std::string getUnstructuredGridType(const eckit::LocalConfiguration& config) {
-    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
-    return multio::util::replaceCurly(config.getString("unstructured-grid-type"), F);
+    return config.getString("unstructured-grid-type");
 }
 
 }  // namespace

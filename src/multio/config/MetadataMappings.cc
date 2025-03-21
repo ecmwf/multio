@@ -34,16 +34,6 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
 
         std::vector<eckit::LocalConfiguration> sourceList = configFile.content.getSubConfigurations("data");
 
-        for (auto& s : sourceList) {
-            for (auto& key : s.keys()) {
-                // Replace the value if it is string
-                if (s.isString(key)) {
-                    s.set(key, multioConf.replaceCurly(s.getString(key)));
-                }
-            }
-        }
-
-
         // Evaluate mappings block
         if (!configFile.content.has("mappings")) {
             std::ostringstream oss;

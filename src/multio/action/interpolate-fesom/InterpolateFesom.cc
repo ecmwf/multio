@@ -59,13 +59,11 @@ void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, si
     return;
 };
 
+// TODO: Consider removing this function!
+// fname comes from an already expanded configuration.
 std::string fullFileName(const std::string& fname) {
     if (fname != "none") {
-        const std::string fullFname = util::replaceCurly(fname, [](std::string_view replace) {
-            std::string lookUpKey{replace};
-            char* env = ::getenv(lookUpKey.c_str());
-            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-        });
+        const std::string fullFname = util::replaceCurly(fname);
         eckit::PathName tmp{fullFname};
         if (!tmp.exists()) {
             std::ostringstream os;

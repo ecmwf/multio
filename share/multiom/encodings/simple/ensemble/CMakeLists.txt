@@ -9,6 +9,9 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/pv")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/sfc")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/sol")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/al")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/pv")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/pt")
 
 add_subdirectory("al")
 add_subdirectory("hl")

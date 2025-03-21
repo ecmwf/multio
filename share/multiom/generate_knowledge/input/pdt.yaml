@@ -40,6 +40,7 @@ categories:
         - focalStatistics
         - clusterStatCircular
         - clusterStatRectangular
+        - randomPatterns # don't know if this one is right
 
     processType:
         - name: null
@@ -580,6 +581,16 @@ groups:
         - temporalVicinityUnit
         - temporalVicinityTowardsPast
         - temporalVicinityTowardsFuture
+    
+    randomPatterns:
+        - randomFieldNumber
+        - totalNumberOfRandomFields
+        - spatioTemporalScaleNumber
+        - totalNumberOfSpatioTemporalScales 
+        - scaledValueOfSpatialScale 
+        - scaleFactorOfSpatialScale 
+        - scaledValueOfTemporalScale
+        - scaleFactorOfTemporalScale 
 
 
 
@@ -4467,7 +4478,43 @@ pdt:
             - numberOfForecastsInEnsemble
 
 
-
+    143:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - pointInTime
+            - randomPatterns
+            - horizontal
+            - largeIndividualEnsembleForecast
+        name: Random fields used in an ensemble forecast, at a horizontal level or in a horizontal layer at a point in time
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange # Will be named to indicatorOfUnitForForecastTime consistently
+            - forecastTime
+            - randomFieldNumber
+            - totalNumberOfRandomFields
+            - spatioTemporalScaleNumber
+            - totalNumberOfSpatioTemporalScales 
+            - scaledValueOfSpatialScale 
+            - scaleFactorOfSpatialScale 
+            - scaledValueOfTemporalScale
+            - scaleFactorOfTemporalScale 
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - extend: perturbed
+            - extend: ensemble
 
 
     254:

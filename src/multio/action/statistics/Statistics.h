@@ -40,6 +40,7 @@ public:
 private:
     bool needRestart_;
     std::string lastDateTime_;
+    bool initialDataAlreadyPassedThrough_;
     void TryDumpRestart(const message::Message& msg);
     std::string generateRestartNameFromFlush(const message::Message& msg) const;
     void DeleteLatestSymLink();

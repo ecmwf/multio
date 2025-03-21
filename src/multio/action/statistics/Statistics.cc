@@ -33,6 +33,7 @@ using message::glossary;
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     needRestart_{false},
+    initialDataAlreadyPassedThrough_{false},
     lastDateTime_{""},
     opt_{compConf},
     operations_{compConf.parsedConfig().getStringVector("operations")},
@@ -330,6 +331,16 @@ void Statistics::executeImpl(message::Message msg) {
         // TODO: Reorganize the code to avoid this second search
         // which is not efficient
         stat = fieldStats_.find(key);
+    }
+
+    // If the action sets the option that initial data is supposed to be passed to the next action in case of several statistic actions, 
+    // AND the model sends initial data AND the internal tracker if any message has been directly passed through is still false the message is passed through to the next action
+    // TODO check if this is a good position for this check. It looks like the next chekc would filter this message out anyway. 
+    //std::cout<<"STEBA opt_.solver_send_initial_condition() " << opt_.solver_send_initial_condition() << " opt_.initialDataPassThrough() " << opt_.initialDataPassThrough() <<" !initialDataAlreadyPassedThrough_ " << !initialDataAlreadyPassedThrough_ << std::endl;
+    if(opt_.solver_send_initial_condition() &&  opt_.initialDataPassThrough() && !initialDataAlreadyPassedThrough_) {
+        initialDataAlreadyPassedThrough_ = true;
+        executeNext(msg);
+        return;
     }
 
     // Exit if the current time is the same as the current point in the

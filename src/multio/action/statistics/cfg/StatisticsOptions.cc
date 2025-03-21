@@ -35,6 +35,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
         parseStepFrequency(options);
         parseTimeStep(options);
         parseInitialConditionPresent(options);
+        parseInitialDataPassThrough(options);
         parseWriteRestart(options);
         parseDebugRestart(options);
         parseClientSideStatistics(options);
@@ -83,6 +84,14 @@ void StatisticsOptions::parseInitialConditionPresent(const eckit::LocalConfigura
     solverSendInitStep_ = cfg.getBool("initial-condition-present", false);
     return;
 };
+
+void StatisticsOptions::parseInitialDataPassThrough(const eckit::LocalConfiguration& cfg) {
+    //This option needs to be set if we have two statistic actions in a plan. Then the second statistic action also needs the initial data to create the statistic window correctly. 
+    //Therefore the first action needs to have this option set to true. 
+    initDataPassTrough_ = cfg.getBool("initial-data-passed-through", false); 
+    return;
+}
+
 
 void StatisticsOptions::parseWriteRestart(const eckit::LocalConfiguration& cfg) {
     // Used to determine if the simulation need to save/load
@@ -304,6 +313,10 @@ const std::string& StatisticsOptions::restartLib() const {
 
 const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
     return accumulatedFieldsResetFreqency_;
+};
+
+bool StatisticsOptions::initialDataPassThrough() const {
+    return initDataPassTrough_;
 };
 
 

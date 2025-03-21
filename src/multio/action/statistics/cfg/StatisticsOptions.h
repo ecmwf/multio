@@ -19,6 +19,7 @@ private:
     long stepFreq_;
     long timeStep_;
     bool solverSendInitStep_;
+    bool initDataPassTrough_;
     bool readRestart_;
     bool writeRestart_;
     bool debugRestart_;
@@ -41,6 +42,7 @@ private:
     void parseStepFrequency(const eckit::LocalConfiguration& cfg);
     void parseTimeStep(const eckit::LocalConfiguration& cfg);
     void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
+    void parseInitialDataPassThrough(const eckit::LocalConfiguration& cfg);
     void parseWriteRestart(const eckit::LocalConfiguration& cfg);
     void parseDebugRestart(const eckit::LocalConfiguration& cfg);
     void parseClientSideStatistics(const eckit::LocalConfiguration& cfg);
@@ -77,6 +79,7 @@ public:
     bool writeRestart() const;
     bool debugRestart() const;
     bool clientSideStatistics() const;
+    bool initialDataPassThrough() const;
 
     const std::string& restartTime() const;
     const std::string& restartPath() const;

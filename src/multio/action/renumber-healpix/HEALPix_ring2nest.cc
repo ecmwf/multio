@@ -43,7 +43,7 @@ std::string parseCacheFileName(const ComponentConfiguration& compConf) {
     }
 
     // Expand file name
-    const auto cacheFileName = compConf.multioConfig().replaceCurly(cfg.getString("cache-file-name"));
+    const auto cacheFileName = cfg.getString("cache-file-name");
 
     // Check existence of the cache file
     eckit::PathName tmp{cacheFileName};

@@ -150,14 +150,12 @@ void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& c
                                          const eckit::LocalConfiguration& cfg) {
     // Read the path used to restart statistics
     // Default value is "."
-    if (cfg.has("restart-path")) {
-        restartPath_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-path", "."));
-        eckit::PathName path{restartPath_};
-        if (!path.exists() || !path.isDir()) {
-            std::ostringstream os;
-            os << "Restart path does not exist :: " << restartPath_ << std::endl;
-            throw eckit::UserError{os.str(), Here()};
-        }
+    restartPath_ = cfg.getString("restart-path", ".");
+    eckit::PathName path{restartPath_};
+    if (!path.exists() || !path.isDir()) {
+        std::ostringstream os;
+        os << "Restart path does not exist :: " << restartPath_ << std::endl;
+        throw eckit::UserError{os.str(), Here()};
     }
     return;
 };
@@ -167,9 +165,7 @@ void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& c
                                          const eckit::LocalConfiguration& cfg) {
     // Read the path used to restart statistics
     // Default value is "latest"
-    if (cfg.has("restart-time")) {
-        restartTime_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-time", "latest"));
-    }
+    restartTime_ = cfg.getString("restart-time", "latest");
     return;
 };
 
@@ -178,7 +174,7 @@ void StatisticsOptions::parseRestartPrefix(const config::ComponentConfiguration&
                                            const eckit::LocalConfiguration& cfg) {
     // Prefix used for the restart file names in order
     // to make the file name unique across different plans
-    restartPrefix_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-prefix", "StatisticsDump"));
+    restartPrefix_ = cfg.getString("restart-prefix", "StatisticsDump");
     return;
 };
 
@@ -222,7 +218,7 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
 
 void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfiguration& compConf,
                                                  const eckit::LocalConfiguration& cfg) {
-    long threshold = stol(compConf.multioConfig().replaceCurly(cfg.getString("value-count-threshold", "-1")));
+    long threshold = cfg.getLong("value-count-threshold", -1);
 
     if (threshold == -1) {
         valueCountThreshold_ = std::nullopt;

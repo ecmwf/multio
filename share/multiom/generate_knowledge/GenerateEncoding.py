@@ -297,6 +297,7 @@ def levelConfig(t: str) -> LevelConfig:
 
 class EnsembleConfig(BaseModel):
     type: str = "default"
+    largeEnsemble: bool = False
 
 
 class ChemConfig(BaseModel):
@@ -635,7 +636,7 @@ Section1Part: TypeAlias = Union[
 
 Section4Part: TypeAlias = Union[
     PDT,
-    # PDTCategoryPair,
+    PDTCategoryPair,
     TimeConfig,
     PointInTime,
     TimeRange,
@@ -666,7 +667,7 @@ EncodePart: TypeAlias = Union[
     GridDefinition,
     # Section 4
     PDT,
-    # PDTCategoryPair,  # Moved out of the list here because it is mapped from the configs
+    PDTCategoryPair,  # Moved out of the list here because it is mapped from the configs
     TimeConfig,
     PointInTime,
     TimeRange,
@@ -711,7 +712,7 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                 case ChemConfig():
                     yield pdtCatPair("productCategory", "chemical")
                 case EnsembleConfig():
-                    yield pdtCatPair("processSubType", "ensemble")
+                    yield pdtCatPair("processSubType", "largeEnsemble" if crumb.largeEnsemble else "ensemble")
                 case PeriodConfig():
                     yield pdtCatPair("productCategory", "wave")
                     yield pdtCatPair("productSubCategory", "periodRange")
@@ -720,6 +721,8 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                     yield pdtCatPair("productSubCategory", "spectraList")
                 case SatelliteConfig():
                     yield pdtCatPair("productCategory", "satellite")
+                case PDTCategoryPair():
+                    yield crumb
                 case _:
                     pass
 

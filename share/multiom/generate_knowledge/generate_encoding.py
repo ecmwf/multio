@@ -15,6 +15,7 @@ from GenerateEncoding import (
     buildRule,
     matchType,
     matchParam,
+    pdtCatPair,
     typeGE,
     typeGT,
     typeLE,
@@ -90,6 +91,10 @@ LOCALSECTION = [
 PROCESSTYPES = [
     partialRule([lacksType("number")], []),
     partialRule([hasType("number")], [EnsembleConfig()]),
+]
+
+PROCESSTYPES_AL = [
+    partialRule([hasType("number")], [EnsembleConfig(largeEnsemble=True)]),
 ]
 
 
@@ -830,6 +835,15 @@ PARAM_LEVTYPE_PV = [
     ),
 ]
 
+PARAM_LEVTYPE_AL = [
+    partialRule(
+        [matchType("levtype", "al"), matchParam(["213101:213160"])],
+        [levelConfig("abstractSingleLevel"), paramConfig("paramId"),
+            PointInTime(), pdtCatPair("spatialExtent", "randomPatterns"), # this may change
+        ]
+    ),
+]
+
 
 # SOIL
 
@@ -904,8 +918,14 @@ rules_sh = list(
         [TYPES, GRIDS_SH, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE_SH, PACKING_SH]
     )
 )
+rules_al = list(
+    combinePartialRules(
+        [TYPES, GRIDS, LOCALSECTION, PROCESSTYPES_AL, PARAM_LEVTYPE_AL, PACKING]
+    )
+)
+all_rules = rules + rules_sh + rules_al
 
-encodedRules = [buildRule(mergePartialRules(rl)) for rl in rules + rules_sh]
+encodedRules = [buildRule(mergePartialRules(rl)) for rl in all_rules]
 
 encodedRulesDict = {e.name: [] for e in encodedRules}
 for rule in encodedRules:

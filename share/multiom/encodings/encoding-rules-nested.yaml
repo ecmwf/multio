@@ -101,6 +101,10 @@ encoding-rules:
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
+                            - operation: match
+                              value: al
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-36.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -188,6 +192,10 @@ encoding-rules:
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'
+                            - operation: match
+                              value: al
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-ccsds-paramId-36.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:
@@ -303,6 +311,10 @@ encoding-rules:
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
+                            - operation: match
+                              value: al
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-1.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -390,6 +402,10 @@ encoding-rules:
                               value: null
                               rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
+                            - operation: match
+                              value: al
+                              rules:
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-ccsds-paramId-1.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:

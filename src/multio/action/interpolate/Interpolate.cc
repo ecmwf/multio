@@ -86,15 +86,10 @@ void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination
     }
     if (cfg.isString(key)) {
         if (cfg.isString("grid")) {
-            const std::string input = util::replaceCurly(cfg.getString("grid"), [](std::string_view replace) {
-                std::string lookUpKey{replace};
-                char* env = ::getenv(lookUpKey.c_str());
-                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-            });
-            destination.set(key, input);
+            destination.set(key, cfg.getString("grid"));
         }
         else {
-            destination.set(key, cfg.getString(key).c_str());
+            destination.set(key, cfg.getString(key));
         }
         return;
     }
@@ -214,11 +209,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 
     inp.visit([&](auto& v) {
         if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>) {
-            const std::string input = util::replaceCurly(v, [](std::string_view replace) {
-                std::string lookUpKey{replace};
-                char* env = ::getenv(lookUpKey.c_str());
-                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-            });
+            const std::string input = util::replaceCurly(v);
 
             static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
             static const std::regex gg("([FNO])([1-9][0-9]*)");
@@ -350,11 +341,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         std::vector<double> grid(2, 0.0);
 
         if (cfg.isString("grid")) {
-            const std::string input = util::replaceCurly(cfg.getString("grid"), [](std::string_view replace) {
-                std::string lookUpKey{replace};
-                char* env = ::getenv(lookUpKey.c_str());
-                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-            });
+            const std::string input = cfg.getString("grid");
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
             static const std::regex H("([h|H])([1-9][0-9]*)(_nested)?");
@@ -409,24 +396,15 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
 
             // If no interpolation matrix name is provided, generate one
             if (interpolationMatrix) {
-                const std::string input = util::replaceCurly(inp.get<std::string>(), [](std::string_view replace) {
-                    std::string lookUpKey{replace};
-                    char* env = ::getenv(lookUpKey.c_str());
-                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                });
+                const std::string input = util::replaceCurly(inp.get<std::string>());
                 if (input != "fesom") {
                     std::ostringstream os;
                     os << " - interpolation matrix supported only for fesom -> Healpix" << std::endl;
                     throw eckit::SeriousBug(os.str(), Here());
                 }
                 const auto& options = cfg.getSubConfiguration("options");
-                const auto cache_path = cfg.has("cache-path") ? cfg.getString("cache-path") : "";
-                const auto expanded_cache_path = util::replaceCurly(cache_path, [](std::string_view replace) {
-                    std::string lookUpKey{replace};
-                    char* env = ::getenv(lookUpKey.c_str());
-                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                });
-                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
+                const auto cache_path = cfg.getString("cache-path", "");
+                const auto weights_file = generateKey<double>(msg, cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
         }

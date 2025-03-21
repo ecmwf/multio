@@ -30,14 +30,13 @@ namespace {
 std::string create_path(const config::ComponentConfiguration& compConf) {
     const auto& cfg = compConf.parsedConfig();
     auto path = cfg.getString("path");
-    auto expanded_path = compConf.multioConfig().replaceCurly(path);
-    eckit::Log::info() << "path = " << expanded_path << std::endl;
+    eckit::Log::info() << "path = " << path << std::endl;
     if (cfg.getBool("per-server", false)) {
-        eckit::PathName tmp = expanded_path;
-        auto dirName = tmp.baseName().asString() == expanded_path ? "" : tmp.dirName().asString() + "/";
+        eckit::PathName tmp = path;
+        auto dirName = tmp.baseName().asString() == path ? "" : tmp.dirName().asString() + "/";
         return dirName + util::filename_prefix() + "-" + tmp.baseName().asString();
     }
-    return expanded_path;
+    return path;
 }
 }  // namespace
 

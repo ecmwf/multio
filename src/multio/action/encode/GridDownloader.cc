@@ -42,9 +42,7 @@ std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::config:
                               << std::endl;
         return nullptr;
     }
-    const auto tmplPath = compConf.parsedConfig().getString("grid-downloader-template");
-
-    eckit::AutoStdFile fin{compConf.multioConfig().replaceCurly(tmplPath)};
+    eckit::AutoStdFile fin{compConf.parsedConfig().getString("grid-downloader-template")};
 
     int err = 0;
     auto encoder = std::make_unique<multio::action::GribEncoder>(
@@ -64,8 +62,7 @@ atlas::Grid readGrid(const std::string& name) {
 }
 
 std::string getUnstructuredGridType(const multio::config::ComponentConfiguration& compConf) {
-    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
-    return multio::util::replaceCurly(compConf.parsedConfig().getString("unstructured-grid-type"), F);
+    return compConf.parsedConfig().getString("unstructured-grid-type");
 }
 
 }  // namespace

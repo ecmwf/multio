@@ -292,29 +292,16 @@ eckit::LocalConfiguration parseDisseminationFile(const eckit::LocalConfiguration
     sId = s.str();
 
     // Get templates Path
-    std::string templatesPath;
-    if (componentConfig.has("templates-path")) {
-        templatesPath = multioConf.replaceCurly(componentConfig.getString("templates-path"));
-        if (!eckit::PathName{templatesPath}.exists()) {
-            std::ostringstream oss;
-            oss << "templates path not exists";
-            throw eckit::UserError(oss.str(), Here());
-        }
-    }
-    else {
-        templatesPath = ".";
+    const auto templatesPath = componentConfig.getString("templates-path", ".");
+    if (!eckit::PathName{templatesPath}.exists()) {
+        std::ostringstream oss;
+        oss << "templates path does not exists";
+        throw eckit::UserError(oss.str(), Here());
     }
 
 
     // Get templates Path
-    std::string outputPath;
-    if (componentConfig.has("output-path")) {
-        outputPath = multioConf.replaceCurly(componentConfig.getString("output-path"));
-    }
-    else {
-        outputPath = ".";
-    }
-    outputPath = outputPath + "/" + planName + "/" + sId;
+    std::string outputPath = componentConfig.getString("output-path", ".") + "/" + planName + "/" + sId;
     eckit::PathName{outputPath}.mkdir();
 
     // The objective is to construct something like this starting from a metkit mars request
@@ -434,7 +421,7 @@ std::vector<eckit::LocalConfiguration> buildDisseminationPlan(const eckit::Local
                                                               const MultioConfiguration& multioConf) {
 
     // Get the name of the dissemination file
-    std::string disseminationFile = multioConf.replaceCurly(componentConfig.getString("dissemination"));
+    std::string disseminationFile = componentConfig.getString("dissemination");
 
     // Create plans
     std::vector<eckit::LocalConfiguration> rawPlans
@@ -458,7 +445,7 @@ std::vector<eckit::LocalConfiguration> configurePlans(const eckit::LocalConfigur
     eckit::LocalConfiguration cfg;
     std::string name;
     if (componentConfig.has("file")) {
-        const std::string fname = multioConf.replaceCurly(componentConfig.getString("file"));
+        const std::string fname = componentConfig.getString("file");
         const auto& file = multioConf.getConfigFile(fname);
         cfg = file.content;
         // Force the name in the plan configuration

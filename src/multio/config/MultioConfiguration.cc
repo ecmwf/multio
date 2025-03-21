@@ -4,7 +4,8 @@
 
 #include "multio/config/MetadataMappings.h"
 #include "multio/config/MultioConfiguration.h"
-
+#include "eckit/log/Log.h"
+#include "multio/LibMultio.h"
 #include "multio/util/Environment.h"
 #include "multio/util/Substitution.h"
 
@@ -61,14 +62,14 @@ ConfigAndPaths configureFromEnv(config::LocalPeerTag tag) {
 
     if (::getenv("MULTIO_PLANS")) {
         std::string cfg(::getenv("MULTIO_PLANS"));
-        std::cout << "MultIO initialising with plans " << cfg << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with plans " << cfg << std::endl;
         paths.configDir = "";
         return ConfigAndPaths{paths, eckit::LocalConfiguration{eckit::YAMLConfiguration(cfg)}};
     }
 
     if (::getenv("MULTIO_PLANS_FILE")) {
         eckit::PathName filePath(::getenv("MULTIO_PLANS_FILE"));
-        std::cout << "MultIO initialising with plans file " << filePath << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with plans file " << filePath << std::endl;
 
         auto paths2 = defaultConfigPaths(filePath);
         return ConfigAndPaths{paths2, eckit::LocalConfiguration{eckit::YAMLConfiguration{paths2.configDir}}};
@@ -77,14 +78,14 @@ ConfigAndPaths configureFromEnv(config::LocalPeerTag tag) {
     // IFS Legacy
     if (::getenv("MULTIO_CONFIG")) {
         std::string cfg(::getenv("MULTIO_CONFIG"));
-        std::cout << "MultIO initialising with config " << cfg << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with config " << cfg << std::endl;
         paths.configDir = "";
         return ConfigAndPaths{paths, configureFromSinks(eckit::LocalConfiguration{eckit::YAMLConfiguration(cfg)})};
     }
 
     if (::getenv("MULTIO_CONFIG_FILE")) {
         eckit::PathName filePath(::getenv("MULTIO_CONFIG_FILE"));
-        std::cout << "MultIO initialising with config file " << filePath << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with config file " << filePath << std::endl;
 
         auto paths2 = defaultConfigPaths(filePath);
         return ConfigAndPaths{
@@ -110,7 +111,7 @@ ConfigAndPaths configureFromEnv(config::LocalPeerTag tag) {
     }
     oss << "] }";
 
-    std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
     std::istringstream iss(oss.str());
     paths.configDir = "";

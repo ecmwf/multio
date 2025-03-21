@@ -22,6 +22,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/log/Log.h"
 #include "eckit/message/Message.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
@@ -34,6 +35,7 @@
 #include "multio/multio_version.h"
 #include "multio/util/FailureHandling.h"
 // #include "multio/action/Sink.h"
+
 #include "multio/LibMultio.h"
 
 #include "metkit/codes/CodesContent.h"
@@ -146,28 +148,28 @@ private:
 
         if (::getenv("MULTIO_PLANS")) {
             std::string cfg(::getenv("MULTIO_PLANS"));
-            std::cout << "MultIO initialising with plans " << cfg << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with plans " << cfg << std::endl;
             eckit::LocalConfiguration conf{eckit::YAMLConfiguration(cfg)};
             return std::make_tuple(conf, MultioConfiguration(conf, config::LocalPeerTag::Client));
         }
 
         if (::getenv("MULTIO_PLANS_FILE")) {
             PathName path(::getenv("MULTIO_PLANS_FILE"));
-            std::cout << "MultIO initialising with plans file " << path << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with plans file " << path << std::endl;
             MultioConfiguration multioConf(path, config::LocalPeerTag::Client);
             return std::make_tuple(multioConf.parsedConfig(), std::move(multioConf));
         }
 
         if (::getenv("MULTIO_CONFIG")) {
             std::string cfg(::getenv("MULTIO_CONFIG"));
-            std::cout << "MultIO initialising with config " << cfg << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with config " << cfg << std::endl;
             return configureFromSinks(MultioConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)),
                                                           config::LocalPeerTag::Client));
         }
 
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName filePath(::getenv("MULTIO_CONFIG_FILE"));
-            std::cout << "MultIO initialising with config file " << filePath << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "MultIO initialising with config file " << filePath << std::endl;
             return configureFromSinks(MultioConfiguration(filePath, config::LocalPeerTag::Client));
         }
 

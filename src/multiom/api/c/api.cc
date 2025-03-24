@@ -15,6 +15,7 @@ int multio_grib2_dict_set_real64_array_f(void* dict, const char* key, int klen, 
 int multio_grib2_dict_get_f(void* dict, const char* key, int klen, char** value);
 int multio_grib2_dict_has_f(void* dict, const char* key, int klen, int* has);
 int multio_grib2_dict_to_yaml_f(void* dict, const char* fname, int len);
+int multio_grib2_dict_to_json_f(void* dict, char** value);
 
 
 int multio_grib2_dict_create(void** dict, char* dict_type) {
@@ -86,5 +87,9 @@ int multio_grib2_dict_has(void* dict, const char* key, int* has) {
 int multio_grib2_dict_to_yaml(void* dict, const char* fname) {
     int len = std::strlen(fname);
     return multio_grib2_dict_to_yaml_f(dict, fname, len);
+};
+
+int multio_grib2_dict_to_json(void* dict, char** value) {
+    return multio_grib2_dict_to_json_f(dict, value);
 };
 }

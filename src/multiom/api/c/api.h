@@ -29,6 +29,7 @@ int multio_grib2_dict_set_int64_array(void* dict, const char* key, const int64_t
 int multio_grib2_dict_set_double_array(void* dict, const char* key, const double* value, int vlen);
 
 int multio_grib2_dict_to_yaml(void* dict, const char* fname);
+int multio_grib2_dict_to_json(void* dict, char** value);
 
 int multio_grib2_dict_set_geometry(void* dict, const void* geom_dict);
 

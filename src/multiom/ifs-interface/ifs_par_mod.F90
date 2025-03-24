@@ -12,6 +12,7 @@ MODULE IFS_PAR_MOD
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
 
 IMPLICIT NONE
@@ -229,7 +230,7 @@ TYPE :: GEO_PAR_T
   ! yomdim.F90 - Geometry dimensions
   ! --------------------------------
   ! NSMAX   : truncation order
-  INTEGER(KIND=JPIB_K) :: ISMAX
+  INTEGER(KIND=JPIM_K) :: ISMAX
   ! NDGLG  : number of rows of latitudes
   INTEGER(KIND=JPIB_K) :: ILATS
   ! NDLON  : length of a row of latitude near equator

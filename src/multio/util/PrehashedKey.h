@@ -21,21 +21,31 @@
 #include <type_traits>
 
 
-namespace multio::message {
+namespace multio::util {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 class PrehashedKey {
 public:
+    using This = PrehashedKey<T>;
     using ValueType = T;
     using HashType = std::decay_t<decltype(std::hash<T>{}(std::declval<T>()))>;
 
     PrehashedKey(const T& v) : value_{v}, hash_{std::hash<T>{}(value_)} {}
     PrehashedKey(T&& v) : value_{std::move(v)}, hash_{std::hash<T>{}(value_)} {}
 
+    PrehashedKey(const This&) = default;
+    PrehashedKey(This&&) = default;
+
+    This& operator=(const This&) = default;
+    This& operator=(This&&) = default;
+
     template <typename TC,
-              std::enable_if_t<(!std::is_same_v<std::decay_t<TC>, T> && std::is_constructible_v<T, TC>), bool> = true>
+              std::enable_if_t<(!std::is_same_v<std::decay_t<TC>, T> && !std::is_same_v<std::decay_t<TC>, This>
+                                && std::is_constructible_v<T, TC>),
+                               bool>
+              = true>
     PrehashedKey(TC&& v) : value_{std::forward<TC>(v)}, hash_{std::hash<T>{}(value_)} {}
 
     operator T&&() && noexcept { return std::move(value_); }
@@ -79,16 +89,16 @@ eckit::JSON& operator<<(eckit::JSON& json, const PrehashedKey<T>& k) {
 //----------------------------------------------------------------------------------------------------------------------
 
 
-}  // namespace multio::message
+}  // namespace multio::util
 
 
 //----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
-struct std::hash<multio::message::PrehashedKey<T>> {
-    using HashType = typename multio::message::PrehashedKey<T>::HashType;
+struct std::hash<multio::util::PrehashedKey<T>> {
+    using HashType = typename multio::util::PrehashedKey<T>::HashType;
 
-    HashType operator()(const multio::message::PrehashedKey<T>& t) const noexcept { return t.hash(); };
+    HashType operator()(const multio::util::PrehashedKey<T>& t) const noexcept { return t.hash(); };
 };
 
 //----------------------------------------------------------------------------------------------------------------------

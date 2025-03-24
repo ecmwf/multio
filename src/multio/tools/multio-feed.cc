@@ -33,9 +33,9 @@
 #include "metkit/codes/CodesSplitter.h"
 #include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
-using multio::message::glossary;
+using multio::datamod::glossary;
 
 namespace multio {
 namespace test {

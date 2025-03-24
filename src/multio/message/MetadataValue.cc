@@ -183,9 +183,9 @@ std::optional<MetadataValue> tryToMetadataValue(const eckit::Configuration& c, c
     if (c.isIntegralList(key)) {
         return getValueByType<std::vector<std::int64_t>>(c, key);
     }
-    if (c.isList(key)) {
-        return getValueByType<std::int64_t>(c, key);
-    }
+    // if (c.isList(key)) {
+    //    NOT SUPPORTED
+    // }
     if (c.isString(key)) {
         return getValueByType<std::string>(c, key);
     }
@@ -226,6 +226,7 @@ std::size_t std::hash<multio::message::MetadataValue>::operator()(const multio::
         else {
             return std::hash<T>{}(v);
         }
+        return 0;  // Unreachable, avoid compiler warning
     });
 }
 

@@ -24,18 +24,9 @@ int multio_grib2_dict_create(void** dict, char* dict_type) {
 
 
 int multio_grib2_dict_set(void* dict, const char* key, const char* value) {
-    if (std::strcmp(key, "param") == 0) {
-        std::string newVal;  // = std::to_string(metkit::Param(value).paramId());
-
-        int klen = std::strlen(key);
-        int vlen = std::strlen(newVal.c_str());
-        return multio_grib2_dict_set_f(dict, key, klen, newVal.c_str(), vlen);
-    }
-    else {
-        int klen = std::strlen(key);
-        int vlen = std::strlen(value);
-        return multio_grib2_dict_set_f(dict, key, klen, value, vlen);
-    }
+    int klen = std::strlen(key);
+    int vlen = std::strlen(value);
+    return multio_grib2_dict_set_f(dict, key, klen, value, vlen);
 };
 
 int multio_grib2_dict_set_int64(void* dict, const char* key, int64_t value) {

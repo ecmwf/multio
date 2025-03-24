@@ -6,12 +6,12 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "multio/action/scale/MetadataUtils.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Message.h"
 
 namespace multio::action::scale {
 
-using message::glossary;
+using datamod::glossary;
 
 class ScaleScaling {
 private:

@@ -19,7 +19,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
 
@@ -28,7 +28,7 @@
 
 namespace multio::action::statistics {
 
-using message::glossary;
+using datamod::glossary;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},

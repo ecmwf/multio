@@ -5,13 +5,13 @@
 
 #include "MetadataUtils.h"
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Substitution.h"
 
 
 namespace multio::action::scale {
 
-using message::glossary;
+using datamod::glossary;
 
 ScaleMapping::ScaleMapping(const config::ComponentConfiguration& compConf) : hasMapping_(false), scaleMap_{} {
 

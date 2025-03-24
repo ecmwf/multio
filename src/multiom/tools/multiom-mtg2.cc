@@ -1407,6 +1407,12 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
                                                  (void**)&rawOutputCodesHandle)
                    == 0);
             ASSERT(rawOutputCodesHandle != NULL);
+            if (verbosity_ > 0) {
+                char* jsonString;
+                multio_grib2_dict_to_json(marsDict.get(), &jsonString);
+                std::cout << "Converted " << jsonString << std::endl;
+                
+            }
 
             // Apply more changes
             extract::postFixToolOnly(inputCodesHandle.get(), rawOutputCodesHandle);

@@ -24,13 +24,13 @@
 #include "multio/message/Peer.h"
 #include "multio/message/SharedMetadata.h"
 #include "multio/message/SharedPayload.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 #include <memory>
 #include <optional>
 #include <string>
 
-using multio::message::glossary;
+using multio::datamod::glossary;
 
 namespace eckit {
 class Stream;

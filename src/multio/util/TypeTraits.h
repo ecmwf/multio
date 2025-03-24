@@ -15,13 +15,27 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>  // unique_ptr
 #include <optional>
+#include <tuple>
 #include <type_traits>
 #include <variant>
 #include <vector>
+#include <chrono>
+#include <string>
 
 namespace multio::util {
+
+//-----------------------------------------------------------------------------
+
+struct Identity {
+    template <typename T>
+    decltype(auto) operator()(T&& v) const noexcept {
+        return std::forward<T>(v);
+    }
+};
+
 
 //-----------------------------------------------------------------------------
 
@@ -247,11 +261,10 @@ template <typename Func>
 struct ForwardUnwrappedUniquePtr {
     Func func_;
 
-
     template <typename... Args>
     decltype(auto) operator()(Args&&... args) && noexcept(
-        noexcept(std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
-        return std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
+        noexcept(std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
+        return std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
     }
 };
 
@@ -309,6 +322,63 @@ inline constexpr bool IsVariant_v = IsVariant<T>::value;
 
 //-----------------------------------------------------------------------------
 
+template <typename T>
+struct IsTuple {
+    static constexpr bool value = false;
+};
+template <typename... T>
+struct IsTuple<std::tuple<T...>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsTuple_v = IsTuple<T>::value;
+
+
+// Apply a function for each element in a tuple
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    (func(std::get<I>(std::forward<Tup>(tup))), ...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup) {
+    forEach(std::forward<Func>(func), std::forward<Tup>(tup),
+            std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    return std::make_tuple(func(std::get<I>(std::forward<Tup>(tup)))...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup) {
+    return map(std::forward<Func>(func), std::forward<Tup>(tup),
+               std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsReferenceWrapper {
+    static constexpr bool value = false;
+};
+template <class T>
+struct IsReferenceWrapper<std::reference_wrapper<T>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsReferenceWrapper_v = IsReferenceWrapper<T>::value;
+
+
+//-----------------------------------------------------------------------------
+
 template <typename, class = void>
 struct HasVariantBaseType : std::false_type {};
 
@@ -320,6 +390,7 @@ template <typename T>
 inline constexpr bool HasVariantBaseType_v = HasVariantBaseType<T>::value;
 
 //-----------------------------------------------------------------------------
+
 
 }  // namespace multio::util
 

@@ -42,7 +42,7 @@
 
 namespace multio::action::encode {
 
-using message::glossary;
+using datamod::glossary;
 using message::Message;
 using message::MetadataTypes;
 using message::Peer;

@@ -1,5 +1,7 @@
 #pragma once
 
+// Mirco`s draft. Unused & WIP
+
 #include <string>
 #include <vector>
 #include <stdexcept>

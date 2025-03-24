@@ -24,6 +24,8 @@ list( APPEND multio_library_srcs
 list( APPEND multio_util_srcs
     util/DateTime.cc
     util/DateTime.h
+    util/Hash.cc
+    util/Hash.h
     util/Environment.cc
     util/Environment.h
     util/FailureHandling.cc
@@ -38,6 +40,9 @@ list( APPEND multio_util_srcs
     util/MioGribHandle.h
     util/MioGribHandle.cc
     util/Timing.h
+    util/PrehashedKey.h
+    util/TypeTraits.h
+    util/TypeToString.h
 )
 
 if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
@@ -121,8 +126,6 @@ list( APPEND multio_message_srcs
     message/MetadataValue.cc
     message/MetadataTypes.h
     message/MetadataTypes.cc
-    message/Glossary.cc
-    message/Glossary.h
     message/MetadataException.cc
     message/MetadataException.h
     message/MetadataMatcher.cc
@@ -139,7 +142,19 @@ list( APPEND multio_message_srcs
     message/Peer.h
     message/MetadataMapping.cc
     message/MetadataMapping.h
-    message/PrehashedKey.h
+)
+
+list( APPEND multio_datamod_srcs
+    datamod/ReaderWriter.h
+    datamod/DataModelling.h
+    datamod/DataModellingException.cc
+    datamod/DataModellingException.h
+    datamod/ContainerInterop.h
+    datamod/Glossary.cc
+    datamod/Glossary.h
+    datamod/MarsMiscGeo.h
+    datamod/MarsTypes.cc
+    datamod/MarsTypes.h
 )
 
 list( APPEND multio_server_srcs
@@ -190,6 +205,7 @@ list( APPEND multio_transport_srcs
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_util_srcs}
+    ${multio_datamod_srcs}
     ${multio_config_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}

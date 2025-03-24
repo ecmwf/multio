@@ -9,6 +9,11 @@
 
 namespace multio::util {
 
+// TODO 
+// Comment from Philipp Geier:
+//   The whole metkit::grib::GribHandle needs a proper refactoring to support all necessary methods and to
+//   be properly constructed from a `std::unique_ptr<codes_handle>` that can be passed around and supports proper moving to pass ownership.
+//   The C++ wrapper should just add methods and no further members/state. Currently we end up using `unique_ptr<GribHandle>`
 class MioGribHandle : public metkit::grib::GribHandle {
 public:
     // owning constructor

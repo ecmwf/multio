@@ -9,14 +9,17 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/util/Substitution.h"
 
 namespace multio::action::statistics_mtg2 {
 
-using message::glossary;
+using datamod::glossary;
 
-StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src, const StatisticsOptions& opt) :
+StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src,
+                                                 const StatisticsOptions& opt) :
     opt_{opt},
     date_{0},
     time_{0},
@@ -79,15 +82,17 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
     // auto gridType = md.find("grid");  // New MTG2 name
-    using namespace message::Mtg2;
+    using namespace datamod;
 
-    if( auto grid = md.find(mars::grid); grid != md.end()) {
-        gridType_ = mars::grid.get(grid->second);
+    // TODO use whole validated keyset...
+    if (const auto& grid = read(datamod::key<MarsKeys::GRID>(), md); grid.has()) {
+        gridType_ = grid.get();
         return;
     }
+
     // gridType = md.find("truncation");
-    if( auto truncation = md.find("truncation"); truncation != md.end() ) {
-        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics",Here());
+    if (auto truncation = md.find("truncation"); truncation != md.end()) {
+        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics", Here());
     }
     else {
         throw eckit::SeriousBug{"grid or truncation isn't present metadata not present", Here()};
@@ -100,18 +105,20 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
         levType_ = *levType;
     }
     else {
-        throw message::MetadataException("Levtype missing in metadata",Here());
+        throw message::MetadataException("Levtype missing in metadata", Here());
     }
     // if none of the above metadata options are present the default levtype is kept
     return;
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
-    using namespace message::Mtg2;
+    using namespace datamod;
 
-    if (auto param = md.find(mars::param);param!=md.end()) {
-        param_ = std::to_string(mars::param.get(param->second));
+    // TODO use whole validated keyset...
+    if (const auto& grid = read(datamod::key<MarsKeys::PARAM>(), md); grid.has()) {
+        param_ = std::to_string(grid.get());
     }
+
     else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
         param_ = std::to_string(*paramId);
     }
@@ -193,7 +200,8 @@ void StatisticsConfiguration::readMissingValue(const message::Metadata& md, cons
 
 void StatisticsConfiguration::generateKey(const message::Metadata& md, const message::Peer& src) {
     std::ostringstream os;
-    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src.group() << "_" << src.id();
+    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src.group()
+       << "_" << src.id();
     key_ = os.str();
 };
 

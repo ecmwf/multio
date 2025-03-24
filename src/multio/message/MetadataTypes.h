@@ -14,8 +14,9 @@
 
 #pragma once
 
-#include "multio/message/PrehashedKey.h"
+#include "multio/util/PrehashedKey.h"
 #include "multio/util/TypeTraits.h"
+#include "multio/util/TypeToString.h"
 
 #include "eckit/log/JSON.h"
 
@@ -56,6 +57,29 @@ constexpr bool operator!=(Null, Null) noexcept {
 std::ostream& operator<<(std::ostream& os, const Null&);
 eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 
+}  // namespace multio::message
+
+
+namespace multio {
+
+template <>
+struct util::TypeToString<multio::message::Null> {
+    std::string operator()() const { return std::string("Null"); };
+};
+template <>
+struct util::TypeToString<multio::message::BaseMetadata> {
+    std::string operator()() const { return std::string("BaseMetadata"); };
+};
+template <>
+struct util::TypeToString<multio::message::Metadata> {
+    std::string operator()() const { return std::string("Metadata"); };
+};
+
+}  // namespace multio
+
+
+namespace multio::message {
+
 
 //-----------------------------------------------------------------------------
 
@@ -69,7 +93,7 @@ eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 // that a unique_ptr is used is hidden from the user.
 struct MetadataTypes {
     // using KeyType = std::string;
-    using KeyType = PrehashedKey<std::string>;
+    using KeyType = util::PrehashedKey<std::string>;
 
     template <typename ValueType>
     using MapType = std::unordered_map<KeyType, ValueType>;

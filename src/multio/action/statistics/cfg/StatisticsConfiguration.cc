@@ -9,12 +9,12 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Substitution.h"
 
 namespace multio::action::statistics {
 
-using message::glossary;
+using datamod::glossary;
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     opt_{opt},

@@ -25,7 +25,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/server/Listener.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/transport/MpiTransport.h"
@@ -45,7 +45,7 @@ using multio::domain::Unstructured;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::message::Peer;
-using multio::message::glossary;
+using multio::datamod::glossary;
 using multio::transport::MpiPeer;
 using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;

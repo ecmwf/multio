@@ -43,7 +43,7 @@ public:
 class MetadataWrongTypeException : public MetadataException {
 public:
     MetadataWrongTypeException(const std::string& key, const eckit::CodeLocation& l = eckit::CodeLocation());
-    MetadataWrongTypeException(std::size_t requestedIndex, std::size_t containedIndex,
+    MetadataWrongTypeException(const std::string& requestedType, const std::string& containedType,
                                const eckit::CodeLocation& l = eckit::CodeLocation());
     MetadataWrongTypeException(const eckit::CodeLocation& l = eckit::CodeLocation());
 };

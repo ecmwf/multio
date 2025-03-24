@@ -12,11 +12,11 @@
 #include "multio/api/c/multio_c_cpp_utils.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 
 using multio::config::configuration_path_name;
-using multio::message::glossary;
+using multio::datamod::glossary;
 
 namespace {
 // TODO: Remove this helper class and update test configs to use the parameter-mapping action

@@ -24,7 +24,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Environment.h"
 #include "multio/util/Substitution.h"
 
@@ -82,7 +82,7 @@ AtlasInstance& AtlasInstance::instance() {
     return singleton;
 };
 
-using message::glossary;
+using datamod::glossary;
 
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {

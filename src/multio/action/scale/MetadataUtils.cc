@@ -4,11 +4,11 @@
 #include "multio/message/Metadata.h"
 
 
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 
 namespace multio::action::scale {
-using message::glossary;
+using datamod::glossary;
 
 std::string extractParam(const multio::message::Metadata& md) {
     std::string cparam{};

@@ -197,7 +197,9 @@ private:
         if (val.index() == util::GetVariantIndex_v<std::decay_t<T>, Base>) {
             return std::get<T>(std::forward<This_>(val));
         }
-        throw MetadataWrongTypeException(util::GetVariantIndex_v<std::decay_t<T>, Base>, val.index(), Here());
+        throw MetadataWrongTypeException(util::typeToString<T>(),
+                                         val.visit([&](const auto& v) { return util::typeToString<decltype(v)>(); }),
+                                         Here());
     }
 
     template <typename T, typename This_, std::enable_if_t<TypeContainedInList_v<T>, bool> = true>
@@ -205,14 +207,16 @@ private:
         return resolvedUniquePtrGetter<T>(std::forward<This_>(val));
     }
 
-    template <typename T, typename This_, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
+    // Use SFINAE instead `if constexpr` to avoid compiler warning of missing return type
+    template <typename T, typename This_,
+              std::enable_if_t<NeedsUniquePtrWrapping_v<T> && !std::is_lvalue_reference_v<This_>, bool> = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
-        if constexpr (!std::is_lvalue_reference_v<This_>) {
-            return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
-        }
-        else {
-            return *(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get();
-        }
+        return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
+    }
+    template <typename T, typename This_,
+              std::enable_if_t<NeedsUniquePtrWrapping_v<T> && std::is_lvalue_reference_v<This_>, bool> = true>
+    static decltype(auto) uniquePtrGetter(This_&& val) {
+        return *(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get();
     }
 
     template <typename T, typename This_>

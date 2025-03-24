@@ -4,12 +4,21 @@ ecbuild_add_library(
     TYPE SHARED # Due to reliance on factory self registration this library cannot be static
 
     SOURCES
-        wrappers/hack.h
-        wrappers/WrappedEncoder.h
-        wrappers/WrappedRules.h
         EncodeMtg2.cc
         EncodeMtg2.h
+        EncodeMtg2Exception.cc
+        EncodeMtg2Exception.h
         AtlasGeoSetter.h
+        Options.h
+        EncoderCache.cc
+        EncoderCache.h
+        EncoderConf.h
+        multiom/MultIOMDict.cc
+        multiom/MultIOMDict.h
+        multiom/MultIOMRawEncoder.cc
+        multiom/MultIOMRawEncoder.h
+        multiom/MultIOMRules.cc
+        multiom/MultIOMRules.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

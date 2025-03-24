@@ -4,13 +4,13 @@
 #include <string>
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Substitution.h"
 
 
 namespace multio::action::statistics {
 
-using message::glossary;
+using datamod::glossary;
 
 RemapParamID::RemapParamID(const config::ComponentConfiguration& compConf) : hasMapping_{false}, paramIDMap_{} {
     const auto mappings = compConf.parsedConfig().has("mapping-param")

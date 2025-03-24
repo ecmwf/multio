@@ -10,7 +10,7 @@
 
 #include "Message.h"
 
-#include "Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/serialisation/Stream.h"
 

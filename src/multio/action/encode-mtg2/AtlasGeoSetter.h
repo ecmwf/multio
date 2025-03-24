@@ -25,12 +25,12 @@
 #include "atlas/library.h"
 #include "atlas/parallel/mpi/mpi.h"
 
-#include "multio/action/encode-mtg2/EncodeMtg2.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/DataModelling.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
-namespace multio::action::encode_mtg2::extract {
+namespace multio::action::extract {
 
 using message::Parametrization;
 
@@ -48,11 +48,10 @@ GridType createGrid(const std::string& atlasNamedGrid) {
 
 
 struct AtlasGeoSetter {
-    using GridTypeFunction = std::function<void(const std::string& prefix, const std::string& gridName)>;
+    using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
 
-    static void handleGG(const std::string& prefix, const std::string& gridName) {
-
-        message::BaseMetadata& global = message::Parametrization::instance().get();
+    static void handleGG(const std::string& scope, const std::string& gridName) {
+        message::Metadata md{{scope, true}};
 
         // std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
         // bool isReducedGaussian = std::regex_match(gridName, reducedGaussianMatch);
@@ -61,22 +60,23 @@ struct AtlasGeoSetter {
         const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
 
         // getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
-        using namespace message::Mtg2;
-        global.set(prefix + std::string(gg::numberOfParallelsBetweenAPoleAndTheEquator), gaussianGrid.N());
+        using namespace datamod;
+        auto geoGG = reify(keySet<GeoGG>().scoped(scope));
+        key<GeoGG::NumberOfParallelsBetweenAPoleAndTheEquator>(geoGG).set(gaussianGrid.N());
         // getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
 
         {
             auto it = gaussianGrid.lonlat().begin();
 
-            global.set(prefix + std::string(gg::latitudeOfFirstGridPointInDegrees), (*it)[1]);
-            global.set(prefix + std::string(gg::longitudeOfFirstGridPointInDegrees), (*it)[0]);
+            key<GeoGG::LatitudeOfFirstGridPointInDegrees>(geoGG).set((*it)[1]);
+            key<GeoGG::LongitudeOfFirstGridPointInDegrees>(geoGG).set((*it)[0]);
 
             it += gaussianGrid.size() - 1;
-            global.set(prefix + std::string(gg::latitudeOfLastGridPointInDegrees), (*it)[1]);
+            key<GeoGG::LatitudeOfLastGridPointInDegrees>(geoGG).set((*it)[1]);
 
             const auto equator = gaussianGrid.N();
             const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-            global.set(prefix + std::string(gg::longitudeOfLastGridPointInDegrees), maxLongitude);
+            key<GeoGG::LongitudeOfLastGridPointInDegrees>(geoGG).set(maxLongitude);
         }
 
         {
@@ -85,11 +85,18 @@ struct AtlasGeoSetter {
             for (int i = 0; i < tmp.size(); ++i) {
                 pl[i] = long(tmp[i]);
             }
-            global.set(prefix + std::string(gg::pl), std::move(pl));
+            key<GeoGG::Pl>(geoGG).set(std::move(pl));
         }
+
+        // Explicitly validate after manual setting
+        alterAndValidate(geoGG);
+
+        write(geoGG, md);
+        // Todo - update parametrization directly with KeyValueSet ?
+        message::Parametrization::instance().update(md);
     }
 
-    static void handleGrid(const std::string& prefix, const std::string& gridName) {
+    static void handleGrid(const std::string& scope, const std::string& gridName) {
         const static std::vector<std::pair<std::string, GridTypeFunction>> gridMap{
             {"^\\s*[FON]\\d+\\s*$", &handleGG},
             // {"^\\s*L\\d+x\\d+\\s*$", &updateRegularLatLonGrid}
@@ -101,7 +108,7 @@ struct AtlasGeoSetter {
         });
 
         if (gridFunc != gridMap.cend()) {
-            gridFunc->second(prefix, gridName);
+            gridFunc->second(scope, gridName);
         }
         else {
             std::ostringstream oss;
@@ -113,4 +120,4 @@ struct AtlasGeoSetter {
 };
 
 
-}  // namespace multio::action::encode_mtg2::extract
+}  // namespace multio::action::extract

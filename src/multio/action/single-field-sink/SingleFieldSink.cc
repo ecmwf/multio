@@ -17,12 +17,12 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/sink/DataSink.h"
 
 namespace multio::action::single_field_sink {
 
-using message::glossary;
+using datamod::glossary;
 
 SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
     Action{compConf}, rootPath_{compConf.parsedConfig().getString("root_path", "")} {}

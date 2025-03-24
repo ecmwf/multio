@@ -62,8 +62,8 @@ public:
     //            it is reasonable to explicitly const-cast the object to select the const lookup version.
     Iterator find(const KeyType& k) override;
     ConstIterator find(const KeyType& k) const override;
-
-
+    
+    using Base::localFind;
     using Base::begin;
     using Base::cbegin;
     using Base::cend;

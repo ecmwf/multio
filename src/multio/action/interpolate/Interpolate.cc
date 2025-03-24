@@ -33,7 +33,7 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Substitution.h"
@@ -41,7 +41,7 @@
 
 namespace multio::action::interpolate {
 
-using message::glossary;
+using datamod::glossary;
 using message::MetadataTypes;
 
 namespace {

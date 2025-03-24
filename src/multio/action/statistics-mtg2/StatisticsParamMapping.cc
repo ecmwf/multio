@@ -1,7 +1,7 @@
 #include "StatisticsParamMapping.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -11,7 +11,7 @@
 namespace multio::action::statistics_mtg2 {
 
 
-using message::glossary;
+using datamod::glossary;
 
 
 StatisticsParamMapping::StatisticsParamMapping(ParamTypeOfStatisticalProcessingToParamMap paramMappings) :

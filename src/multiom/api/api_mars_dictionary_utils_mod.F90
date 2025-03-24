@@ -57,6 +57,10 @@ PUBLIC :: MARS_DICTIONARY_HAS
 PUBLIC :: MARS_DICTIONARY_GET_KEY_AS_STRING
 PUBLIC :: MARS_DICTIONARY_GET_VALUE_AS_STRING
 PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_STRING
+PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_INT64
+PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_REAL64
+PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+PUBLIC :: MARS_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
 
 CONTAINS
 
@@ -1609,6 +1613,473 @@ END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_STRING
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_SET_VALUE_FROM_INT64'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_INT64( MARS_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( MARS_ITERATOR_ANOFFSET )
+        MARS_DICTIONARY%ANOFFSET=VALUE
+
+  CASE ( MARS_ITERATOR_NUMBER )
+        MARS_DICTIONARY%NUMBER=VALUE
+
+  CASE ( MARS_ITERATOR_IDENT )
+        MARS_DICTIONARY%IDENT=VALUE
+
+  CASE ( MARS_ITERATOR_INSTRUMENT )
+        MARS_DICTIONARY%INSTRUMENT=VALUE
+
+  CASE ( MARS_ITERATOR_CHANNEL )
+        MARS_DICTIONARY%CHANNEL=VALUE
+
+  CASE ( MARS_ITERATOR_CHEM )
+        MARS_DICTIONARY%CHEM=VALUE
+
+  CASE ( MARS_ITERATOR_PARAM )
+        MARS_DICTIONARY%PARAM=VALUE
+
+  CASE ( MARS_ITERATOR_LEVELIST )
+        MARS_DICTIONARY%LEVELIST=VALUE
+
+  CASE ( MARS_ITERATOR_DIRECTION )
+        MARS_DICTIONARY%DIRECTION=VALUE
+
+  CASE ( MARS_ITERATOR_FREQUENCY )
+        MARS_DICTIONARY%FREQUENCY=VALUE
+
+  CASE ( MARS_ITERATOR_DATE )
+        MARS_DICTIONARY%DATE=VALUE
+
+  CASE ( MARS_ITERATOR_TIME )
+        MARS_DICTIONARY%TIME=VALUE
+
+  CASE ( MARS_ITERATOR_STEP )
+        ! TODO handle step range?
+        MARS_DICTIONARY%step=VALUE
+
+  CASE ( MARS_ITERATOR_TRUNCATION )
+        ! TODO
+        MARS_DICTIONARY%TRUNCATION=VALUE
+
+  CASE ( MARS_ITERATOR_TIMEPROC )
+        MARS_DICTIONARY%TIMEPROC=VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_MARS_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_INT64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_SET_VALUE_FROM_REAL64'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_REAL64( MARS_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPRD_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K),       INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_MARS_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_REAL64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY( MARS_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T),            INTENT(INOUT) :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),               INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                      INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_MARS_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MARS_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY'
+PP_THREAD_SAFE FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY( MARS_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPRD_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FORTRAN_MESSAGE_T),         INTENT(INOUT) :: MARS_DICTIONARY
+  INTEGER(KIND=JPIB_K),            INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_MARS_KEY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_MARS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_MARS_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MARS_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 END MODULE API_MARS_DICTIONARY_UTILS_MOD
 #undef PP_SECTION_NAME

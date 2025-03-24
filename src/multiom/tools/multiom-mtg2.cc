@@ -72,7 +72,7 @@ FieldValueMap parseFieldValueMap(std::string s, int verbosity) {
         std::string field = fieldAndVals.substr(0, posFieldVal);
         fieldAndVals.erase(0, posFieldVal + FIELDVAL_DELIM.length());
         // fieldAndVals should contain only values now
-        if (verbosity >= 1) {
+        if (verbosity >= 2) {
             std::cout << "Parsed field " << field << std::endl;
         }
 
@@ -84,7 +84,7 @@ FieldValueMap parseFieldValueMap(std::string s, int verbosity) {
             val = fieldAndVals.substr(0, posVals);
             fieldAndVals.erase(0, posVals + VALUES_DELIM.length());
 
-            if (verbosity >= 1) {
+            if (verbosity >= 2) {
                 std::cout << "   parsed value: " << val << std::endl;
             }
 
@@ -103,7 +103,7 @@ bool matches(eckit::message::Message msg, const FieldValueMap& map, int verbosit
 
         bool has = (fieldVals.second.find(fieldVal) != fieldVals.second.end());
         if (has) {
-            if (verbosity >= 1) {
+            if (verbosity >= 2) {
                 std::cout << "Matched field \"" << fieldVals.first << "\" with value \"" << fieldVal << "\""
                           << std::endl;
             }
@@ -183,8 +183,8 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) : multio::MultioTool{argc, argv}
         "mapping-rules", "Path to mapping-rules.yaml. Default: KNOWLEDGE_ROOT/mappings/mapping-rules.yaml"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "samples-path", "Path to grib2 samples directory. Default: KNOWLEDGE_ROOT/samples"));
-    options_.push_back(new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 1"));
-    options_.push_back(new eckit::option::SimpleOption<long>("verbosity", "Verbosity level"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 2"));
+    options_.push_back(new eckit::option::SimpleOption<long>("verbosity", "Verbosity level: 0 (print nothing), 1 (print mars keys per message), 2 (print additional extraction information)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "exclude",
         "Keys and values to be excluded. Multiple values are separated by ','. Multiple key-values pairs are separated "
@@ -216,7 +216,7 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     bool verbose = false;
     args.get("verbose", verbose);
     if (verbose) {
-        verbosity_ = 1;
+        verbosity_ = 2;
     }
     args.get("verbosity", verbosity_);
 
@@ -251,7 +251,7 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
         mappingFile_ = knowledgeRoot_ + "/share/multiom/mappings/mapping-rules.yaml";
     }
 
-    if (verbosity_ > 0) {
+    if (verbosity_ > 1) {
         std::cout << "knowledge-root: " << knowledgeRoot_ << std::endl;
         std::cout << "samples-path: " << samplePath_ << std::endl;
         std::cout << "encoding-rules: " << encodingFile_ << std::endl;
@@ -303,7 +303,9 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     if (outPath.exists()) {
         const int result = remove(((std::string)outPath).c_str());
         if (result == 0) {
-            std::cout << "Removed existing file " << outPath << std::endl;
+            if (verbosity_ > 0) {
+                std::cout << "Removed existing file " << outPath << std::endl;
+            }
         }
         else {
             std::cerr << "Could not remove existing file " << outPath << std::endl;
@@ -320,6 +322,8 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
     ASSERT(multio_grib2_init_options(&optDict) == 0);
 
 
+    ASSERT(multio_grib2_dict_set(optDict, "print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0).c_str()) == 0);
+    ASSERT(multio_grib2_dict_set(optDict, "print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0).c_str()) == 0);
     ASSERT(multio_grib2_dict_set(optDict, "samples-path", samplePath_.c_str()) == 0);
     ASSERT(multio_grib2_dict_set(optDict, "encoding-rules", encodingFile_.c_str()) == 0);
     ASSERT(multio_grib2_dict_set(optDict, "mapping-rules", mappingFile_.c_str()) == 0);
@@ -348,7 +352,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         if (excludeMap_) {
             bool ret = matches(msg, *excludeMap_, verbosity_);
             if (ret) {
-                if (verbosity_ >= 1) {
+                if (verbosity_ >= 2) {
                     std::cout << "exclude map  matched... skipping message" << std::endl;
                 }
                 continue;
@@ -357,7 +361,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         if (filterMap_) {
             bool ret = matches(msg, *filterMap_, verbosity_);
             if (!ret) {
-                if (verbosity_ >= 1) {
+                if (verbosity_ >= 2) {
                     std::cout << "filter map did not match... skipping message" << std::endl;
                 }
                 continue;
@@ -368,7 +372,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         // std::string paramId = inputMsg.getString("paramId");
         if (edition == "2" && copyGrib2Messages_) {
             // Write the message directly
-            if (verbosity_ > 0) {
+            if (verbosity_ > 2) {
                 std::cout << "Copying grib2 message..." << std::endl;
             }
             inputMsg.write(outputFileHandle);
@@ -378,20 +382,20 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             // now inputCodesHandle is save to use
             void* marsDict = NULL;
             void* parDict = NULL;
-            if (verbosity_ > 0) {
+            if (verbosity_ > 2) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
             ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*)inputCodesHandle.get(), &marsDict, &parDict)
                    == 0);
 
             if (overwritePacking_) {
-                if (verbosity_ > 0) {
+                if (verbosity_ > 2) {
                     std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
                 }
                 ASSERT(multio_grib2_dict_set(marsDict, "packing", overwritePacking_->c_str()) == 0);
             }
 
-            if (verbosity_ > 0) {
+            if (verbosity_ > 2) {
                 std::cout << "Extracted MARS dict:" << std::endl;
                 multio_grib2_dict_to_yaml(marsDict, "stdout");
                 std::cout << "Extracted PAR dict:" << std::endl;
@@ -403,13 +407,21 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             std::vector<double> values;
             inputMsg.getDoubleArray("values", values);
 
-            if (verbosity_ > 0) {
+            if (verbosity_ > 2) {
                 std::cout << "Encoding with extracted metadata..." << std::endl;
             }
             ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(),
                                                  (void**)&rawOutputCodesHandle)
                    == 0);
             ASSERT(rawOutputCodesHandle != NULL);
+            if (verbosity_ > 0) {
+                char* jsonString;
+                multio_grib2_dict_to_json(marsDict, &jsonString);
+                std::cout << "Converted " << jsonString << std::endl;
+                
+            }
+    ASSERT(multio_grib2_dict_destroy(&marsDict) == 0);
+    ASSERT(multio_grib2_dict_destroy(&parDict) == 0);
 
             // Output by writing all to the same binary file
             eckit::message::Message outputMsg{new metkit::codes::CodesContent{rawOutputCodesHandle, true}};

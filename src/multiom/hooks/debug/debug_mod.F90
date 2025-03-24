@@ -363,7 +363,7 @@ END SUBROUTINE DEBUG_PUSH_ERROR_MSG
 !> @param [in] THIS The `DEBUG_T` object containing the error stack to be printed.
 !> @param [in] UNIT The output unit where the error stack will be printed.
 !>                  This can be a file unit or the standard output.
-SUBROUTINE DEBUG_PRINT_ERROR_STACK_I64( THIS, UNIT )
+SUBROUTINE DEBUG_PRINT_ERROR_STACK_I64( THIS, UNIT, LAST_FRAME_ONLY )
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -373,6 +373,7 @@ IMPLICIT NONE
   !> Dummy arguments
   CLASS(DEBUG_T),       INTENT(IN) :: THIS
   INTEGER(KIND=JPIB_K), INTENT(IN) :: UNIT
+  LOGICAL, OPTIONAL,    INTENT(IN) :: LAST_FRAME_ONLY
 
   !> Local variables
   TYPE(ERROR_FRAME_NODE), POINTER :: CURRENT_FRAME
@@ -384,6 +385,15 @@ IMPLICIT NONE
   INTEGER(JPIB_K) :: OPEN_STATUS
   CHARACTER(LEN=32) :: TMP
   LOGICAL :: IS_OPENED
+  LOGICAL :: LOC_LAST_FRAME_ONLY
+  LOGICAL :: PRINT_THIS_FRAME
+
+  IF(PRESENT(LAST_FRAME_ONLY)) THEN
+    LOC_LAST_FRAME_ONLY = LAST_FRAME_ONLY
+  ELSE
+    LOC_LAST_FRAME_ONLY = .FALSE.
+  ENDIF
+  PRINT_THIS_FRAME = .TRUE.
 
   !> Set the current frame to the top of the stack
   CURRENT_FRAME => THIS%FRAME_STACK
@@ -415,83 +425,88 @@ IMPLICIT NONE
   CNT = 0
   LLEN=100
   DO WHILE (ASSOCIATED(CURRENT_FRAME))
-
-    !> Print the current frame
-    TMP=REPEAT(' ',32)
-    WRITE(TMP,*, IOSTAT=OPEN_STATUS) CNT
-    LLEN=LLEN-2
-
-    WRITE(LOC_UNIT,'(A,A)', IOSTAT=OPEN_STATUS)         &
-&     REPEAT(' ',OFFSET), REPEAT('-',LLEN)
-
-    WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS)       &
-&     REPEAT(' ',OFFSET), ' ** FRAME :: ', TRIM(ADJUSTL(TMP))
-
-    WRITE(LOC_UNIT,'(A,A,A,A)', IOSTAT=OPEN_STATUS)     &
-&     REPEAT(' ',OFFSET), REPEAT('-',LLEN)
-
-    IF ( ALLOCATED(CURRENT_FRAME%FILENAME) ) THEN
-    WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
-&     REPEAT(' ',OFFSET), ' - FILE         :: "', &
-&     TRIM(ADJUSTL(CURRENT_FRAME%FILENAME)), '"'
+    IF (LOC_LAST_FRAME_ONLY) THEN
+        PRINT_THIS_FRAME= .NOT.ASSOCIATED(CURRENT_FRAME%NEXT)
     ENDIF
 
-    IF ( ALLOCATED(CURRENT_FRAME%SECTION_TYPE) .AND. &
-&        ALLOCATED(CURRENT_FRAME%SECTION_NAME)) THEN
-      WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
-&       REPEAT(' ',OFFSET), ' - SECTION      :: "', &
-&       TRIM(ADJUSTL(CURRENT_FRAME%SECTION_TYPE)),  &
-&       '::', TRIM(ADJUSTL(CURRENT_FRAME%SECTION_NAME)), '"'
+    IF (PRINT_THIS_FRAME) THEN
+        !> Print the current frame
+        TMP=REPEAT(' ',32)
+        WRITE(TMP,*, IOSTAT=OPEN_STATUS) CNT
+        LLEN=LLEN-2
+
+        WRITE(LOC_UNIT,'(A,A)', IOSTAT=OPEN_STATUS)         &
+&         REPEAT(' ',OFFSET), REPEAT('-',LLEN)
+
+        WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS)       &
+&         REPEAT(' ',OFFSET), ' ** FRAME :: ', TRIM(ADJUSTL(TMP))
+
+        WRITE(LOC_UNIT,'(A,A,A,A)', IOSTAT=OPEN_STATUS)     &
+&         REPEAT(' ',OFFSET), REPEAT('-',LLEN)
+
+        IF ( ALLOCATED(CURRENT_FRAME%FILENAME) ) THEN
+        WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
+&         REPEAT(' ',OFFSET), ' - FILE         :: "', &
+&         TRIM(ADJUSTL(CURRENT_FRAME%FILENAME)), '"'
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%SECTION_TYPE) .AND. &
+&            ALLOCATED(CURRENT_FRAME%SECTION_NAME)) THEN
+          WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
+&           REPEAT(' ',OFFSET), ' - SECTION      :: "', &
+&           TRIM(ADJUSTL(CURRENT_FRAME%SECTION_TYPE)),  &
+&           '::', TRIM(ADJUSTL(CURRENT_FRAME%SECTION_NAME)), '"'
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%PROCEDURE_TYPE) .AND. &
+             ALLOCATED(CURRENT_FRAME%PROCEDURE_NAME) ) THEN
+          WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
+&           REPEAT(' ',OFFSET), ' - PROCEDURE    :: "', &
+&           TRIM(ADJUSTL(CURRENT_FRAME%PROCEDURE_TYPE)), &
+&           '::', TRIM(ADJUSTL(CURRENT_FRAME%PROCEDURE_NAME)), '"'
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%LINE) ) THEN
+          WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
+&            REPEAT(' ',OFFSET), ' - LINE         :: ', &
+&            CURRENT_FRAME%LINE
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%ERRIDX) ) THEN
+          WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
+&            REPEAT(' ',OFFSET), ' - ERROR INDEX  :: ', &
+&            CURRENT_FRAME%ERRIDX
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%THREAD_ID) ) THEN
+          WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
+&            REPEAT(' ',OFFSET), ' - THREAD ID.   :: ', &
+&            CURRENT_FRAME%THREAD_ID
+        ENDIF
+
+        IF ( ALLOCATED(CURRENT_FRAME%NUM_THREADS) ) THEN
+          WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
+&            REPEAT(' ',OFFSET), ' - NUM. THREADS :: ', &
+&            CURRENT_FRAME%NUM_THREADS
+        ENDIF
+
+
+        WRITE(LOC_UNIT,'(A,A)', IOSTAT=OPEN_STATUS)   &
+&          REPEAT(' ',OFFSET), ' ** MESSAGES:'
+
+        !> Print all messages in the current frame
+        CURRENT_MSG => CURRENT_FRAME%MSG_LIST_HEAD
+        DO WHILE (ASSOCIATED(CURRENT_MSG))
+          IF ( ALLOCATED(CURRENT_MSG%MESSAGE) ) THEN
+            WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
+&              REPEAT(' ',OFFSET), "    - ", CURRENT_MSG%MESSAGE
+          ENDIF
+          CURRENT_MSG => CURRENT_MSG%NEXT
+
+        END DO
+        WRITE(LOC_UNIT,*, IOSTAT=OPEN_STATUS) ' '
+        FLUSH(LOC_UNIT)
     ENDIF
-
-    IF ( ALLOCATED(CURRENT_FRAME%PROCEDURE_TYPE) .AND. &
-         ALLOCATED(CURRENT_FRAME%PROCEDURE_NAME) ) THEN
-      WRITE(LOC_UNIT,'(A,A,A,A,A,A)', IOSTAT=OPEN_STATUS) &
-&       REPEAT(' ',OFFSET), ' - PROCEDURE    :: "', &
-&       TRIM(ADJUSTL(CURRENT_FRAME%PROCEDURE_TYPE)), &
-&       '::', TRIM(ADJUSTL(CURRENT_FRAME%PROCEDURE_NAME)), '"'
-    ENDIF
-
-    IF ( ALLOCATED(CURRENT_FRAME%LINE) ) THEN
-      WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
-&        REPEAT(' ',OFFSET), ' - LINE         :: ', &
-&        CURRENT_FRAME%LINE
-    ENDIF
-
-    IF ( ALLOCATED(CURRENT_FRAME%ERRIDX) ) THEN
-      WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
-&        REPEAT(' ',OFFSET), ' - ERROR INDEX  :: ', &
-&        CURRENT_FRAME%ERRIDX
-    ENDIF
-
-    IF ( ALLOCATED(CURRENT_FRAME%THREAD_ID) ) THEN
-      WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
-&        REPEAT(' ',OFFSET), ' - THREAD ID.   :: ', &
-&        CURRENT_FRAME%THREAD_ID
-    ENDIF
-
-    IF ( ALLOCATED(CURRENT_FRAME%NUM_THREADS) ) THEN
-      WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
-&        REPEAT(' ',OFFSET), ' - NUM. THREADS :: ', &
-&        CURRENT_FRAME%NUM_THREADS
-    ENDIF
-
-
-    WRITE(LOC_UNIT,'(A,A)', IOSTAT=OPEN_STATUS)   &
-&      REPEAT(' ',OFFSET), ' ** MESSAGES:'
-
-    !> Print all messages in the current frame
-    CURRENT_MSG => CURRENT_FRAME%MSG_LIST_HEAD
-    DO WHILE (ASSOCIATED(CURRENT_MSG))
-      IF ( ALLOCATED(CURRENT_MSG%MESSAGE) ) THEN
-        WRITE(LOC_UNIT,'(A,A,A)', IOSTAT=OPEN_STATUS) &
-&          REPEAT(' ',OFFSET), "    - ", CURRENT_MSG%MESSAGE
-      ENDIF
-      CURRENT_MSG => CURRENT_MSG%NEXT
-
-    END DO
-    WRITE(LOC_UNIT,*, IOSTAT=OPEN_STATUS) ' '
-    FLUSH(LOC_UNIT)
 
     !> Move to the next frame
     CURRENT_FRAME => CURRENT_FRAME%NEXT
@@ -522,7 +537,7 @@ END SUBROUTINE DEBUG_PRINT_ERROR_STACK_I64
 !> @param [in] THIS The `DEBUG_T` object containing the error stack to be printed.
 !> @param [in] UNIT The output unit where the error stack will be printed.
 !>                  This can be a file unit or the standard output.
-SUBROUTINE DEBUG_PRINT_ERROR_STACK_I32( THIS, UNIT )
+SUBROUTINE DEBUG_PRINT_ERROR_STACK_I32( THIS, UNIT, LAST_FRAME_ONLY )
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
@@ -533,6 +548,7 @@ IMPLICIT NONE
   !> Dummy arguments
   CLASS(DEBUG_T),       INTENT(IN) :: THIS
   INTEGER(KIND=JPIM_K), INTENT(IN) :: UNIT
+  LOGICAL, OPTIONAL,    INTENT(IN) :: LAST_FRAME_ONLY
 
   !> Local variables
   INTEGER(KIND=JPIB_K) :: LOC_UNIT
@@ -541,7 +557,11 @@ IMPLICIT NONE
   LOC_UNIT = INT(UNIT, KIND=JPIB_K)
 
   !> Call the I64 version of the subroutine
-  CALL THIS%PRINT_ERROR_STACK_I64( LOC_UNIT )
+  IF(PRESENT(LAST_FRAME_ONLY)) THEN
+      CALL THIS%PRINT_ERROR_STACK_I64( LOC_UNIT, LAST_FRAME_ONLY )
+  ELSE
+      CALL THIS%PRINT_ERROR_STACK_I64( LOC_UNIT )
+  ENDIF
 
 END SUBROUTINE DEBUG_PRINT_ERROR_STACK_I32
 

@@ -39,6 +39,10 @@ PUBLIC :: REDUCED_GG_DICTIONARY_HAS
 PUBLIC :: REDUCED_GG_DICTIONARY_GET_KEY_AS_STRING
 PUBLIC :: REDUCED_GG_DICTIONARY_GET_VALUE_AS_STRING
 PUBLIC :: REDUCED_GG_DICTIONARY_SET_VALUE_FROM_STRING
+PUBLIC :: REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64
+PUBLIC :: REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64
+PUBLIC :: REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+PUBLIC :: REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
 
 CONTAINS
 
@@ -1083,6 +1087,480 @@ END FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_STRING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64'
+PP_THREAD_SAFE FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64( REDUCED_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REDUCED_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REDUCED_GG_T),   INTENT(INOUT) :: REDUCED_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REDUCED_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( REDUCED_GG_ITERATOR_TRUNCATE_DEGREES )
+    REDUCED_GG_DICTIONARY%TRUNCATE_DEGREES = VALUE
+
+  CASE ( REDUCED_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
+    REDUCED_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_MERIDIAN = VALUE
+
+  CASE ( REDUCED_GG_ITERATOR_NPARALLELS )
+    REDUCED_GG_DICTIONARY%NUMBER_OF_PARALLELS_BETWEEN_POLE_AND_EQUATOR = VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REDUCED_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REDUCED_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64'
+PP_THREAD_SAFE FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64( REDUCED_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REDUCED_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REDUCED_GG_T),   INTENT(INOUT) :: REDUCED_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K),    INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REDUCED_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( REDUCED_GG_ITERATOR_LAT_FIRST_GP_DEG )
+    REDUCED_GG_DICTIONARY%LAT_FIRST_GP_DEG = VALUE
+
+  CASE ( REDUCED_GG_ITERATOR_LON_FIRST_GP_DEG )
+    REDUCED_GG_DICTIONARY%LON_FIRST_GP_DEG = VALUE
+
+  CASE ( REDUCED_GG_ITERATOR_LAT_LAST_GP_DEG )
+    REDUCED_GG_DICTIONARY%LAT_LAST_GP_DEG = VALUE
+
+  CASE ( REDUCED_GG_ITERATOR_LON_LAST_GP_DEG )
+    REDUCED_GG_DICTIONARY%LON_LAST_GP_DEG = VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REDUCED_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REDUCED_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY'
+PP_THREAD_SAFE FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY( REDUCED_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REDUCED_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REDUCED_GG_T),                 INTENT(INOUT) :: REDUCED_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K),               INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                      INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITEMP
+  INTEGER(KIND=JPIB_K) :: ALLOC_STATUS
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REDUCED_GG_KEY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOC_FAILURE=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEALLOC_FAILURE=6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( REDUCED_GG_ITERATOR_PL )
+
+    IF ( ASSOCIATED(REDUCED_GG_DICTIONARY%PL) ) THEN
+        DEALLOCATE(REDUCED_GG_DICTIONARY%PL, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG)
+        PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_DEALLOC_FAILURE )
+    ENDIF
+
+    ALLOCATE( REDUCED_GG_DICTIONARY%PL(SIZE(VALUE) ), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
+    DO ITEMP = 1, SIZE(VALUE)
+        REDUCED_GG_DICTIONARY%PL(ITEMP) = VALUE(ITEMP)
+    END DO
+    REDUCED_GG_DICTIONARY%TO_BE_DEALLOCATED=.TRUE.
+
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REDUCED_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REDUCED_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE( ERRFLAG_ALLOC_FAILURE )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Allocation failure' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STATUS)
+      ENDIF
+    CASE( ERRFLAG_DEALLOC_FAILURE )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Deallocation failure' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STATUS)
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY'
+PP_THREAD_SAFE FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY( REDUCED_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REDUCED_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REDUCED_GG_T),              INTENT(INOUT) :: REDUCED_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K),            INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REDUCED_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REDUCED_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REDUCED_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REDUCED_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 END MODULE API_REDUCED_GG_DICTIONARY_UTILS_MOD

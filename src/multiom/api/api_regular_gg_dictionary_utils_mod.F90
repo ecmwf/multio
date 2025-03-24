@@ -39,7 +39,12 @@ PUBLIC :: REGULAR_GG_DICTIONARY_GET_NEXT_ITERATOR
 PUBLIC :: REGULAR_GG_DICTIONARY_HAS
 PUBLIC :: REGULAR_GG_DICTIONARY_GET_KEY_AS_STRING
 PUBLIC :: REGULAR_GG_DICTIONARY_GET_VALUE_AS_STRING
+
 PUBLIC :: REGULAR_GG_DICTIONARY_SET_VALUE_FROM_STRING
+PUBLIC :: REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64
+PUBLIC :: REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64
+PUBLIC :: REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+PUBLIC :: REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
 
 CONTAINS
 
@@ -410,7 +415,7 @@ IMPLICIT NONE
 
   CASE ( 'numberofpointsalongameridian', 'number-of-points-along-a-meridian' )
     ITERATOR = REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN
-    
+
   CASE ( 'numberofpointsalongaparallel', 'number-of-points-along-a-parallel' )
     ITERATOR = REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL
 
@@ -545,7 +550,7 @@ IMPLICIT NONE
 
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
     HAS = .TRUE.
-    
+
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL )
     HAS = .TRUE.
 
@@ -563,7 +568,7 @@ IMPLICIT NONE
 
   CASE ( REGULAR_GG_ITERATOR_LON_LAST_GP_DEG )
     HAS = .TRUE.
-    
+
   CASE ( REGULAR_GG_ITERATOR_IDIR_INC )
     HAS = .TRUE.
 
@@ -685,7 +690,7 @@ IMPLICIT NONE
 
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
     KEY = 'number-of-points-along-a-meridian'
-    
+
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL )
     KEY = 'number-of-points-along-a-parallel'
 
@@ -825,7 +830,7 @@ IMPLICIT NONE
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
     PP_TRYCALL(ERRFLAG_CONVERT_TO_STRING) CONVERT_TO_C_STRING( REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_MERIDIAN, VALUE, HOOKS )
     HAS = .TRUE.
-    
+
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL )
     PP_TRYCALL(ERRFLAG_CONVERT_TO_STRING) CONVERT_TO_C_STRING( REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_PARALLEL, VALUE, HOOKS )
     HAS = .TRUE.
@@ -982,7 +987,7 @@ IMPLICIT NONE
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
     PP_TRYCALL(ERRFLAG_CONVERT_REGULAR_GG_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
     REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_MERIDIAN=ITEMP
-    
+
   CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL )
     PP_TRYCALL(ERRFLAG_CONVERT_REGULAR_GG_TO_ENUM) CINT2IINT(VALUE, ITEMP, HOOKS)
     REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_PARALLEL=ITEMP
@@ -1078,6 +1083,451 @@ END FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_STRING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64'
+PP_THREAD_SAFE FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64( REGULAR_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REGULAR_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REGULAR_GG_T),   INTENT(INOUT) :: REGULAR_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REGULAR_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( REGULAR_GG_ITERATOR_TRUNCATE_DEGREES )
+    REGULAR_GG_DICTIONARY%TRUNCATE_DEGREES = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_MERIDIAN )
+    REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_MERIDIAN = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_NPTS_ALONG_PARALLEL )
+    REGULAR_GG_DICTIONARY%NUMBER_OF_POINTS_ALONG_A_PARALLEL = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_NPARALLELS )
+    REGULAR_GG_DICTIONARY%NUMBER_OF_PARALLELS_BETWEEN_POLE_AND_EQUATOR = VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REGULAR_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REGULAR_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64'
+PP_THREAD_SAFE FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64( REGULAR_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REGULAR_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REGULAR_GG_T),   INTENT(INOUT) :: REGULAR_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K),    INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REGULAR_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( REGULAR_GG_ITERATOR_LAT_FIRST_GP_DEG )
+    REGULAR_GG_DICTIONARY%LAT_FIRST_GP_DEG = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_LON_FIRST_GP_DEG )
+    REGULAR_GG_DICTIONARY%LON_FIRST_GP_DEG = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_LAT_LAST_GP_DEG )
+    REGULAR_GG_DICTIONARY%LAT_LAST_GP_DEG = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_LON_LAST_GP_DEG )
+    REGULAR_GG_DICTIONARY%LON_LAST_GP_DEG = VALUE
+
+  CASE ( REGULAR_GG_ITERATOR_IDIR_INC )
+    REGULAR_GG_DICTIONARY%IDIR_INC = VALUE
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REGULAR_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REGULAR_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY'
+PP_THREAD_SAFE FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY( REGULAR_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REGULAR_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REGULAR_GG_T),                 INTENT(INOUT) :: REGULAR_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K),               INTENT(IN)    :: ITERATOR
+  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                      INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REGULAR_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REGULAR_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REGULAR_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY'
+PP_THREAD_SAFE FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY( REGULAR_GG_DICTIONARY, ITERATOR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD,     ONLY: REGULAR_GG_T
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,       ONLY: JPRD_K
+  USE :: HOOKS_MOD,               ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(REGULAR_GG_T),              INTENT(INOUT) :: REGULAR_GG_DICTIONARY
+  INTEGER(KIND=JPIB_K),            INTENT(IN)    :: ITERATOR
+  REAL(KIND=JPRD_K), DIMENSION(:), INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_REGULAR_GG_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_REGULAR_GG_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE( ERRFLAG_NO_REGULAR_GG_KEY )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION REGULAR_GG_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 END MODULE API_REGULAR_GG_DICTIONARY_UTILS_MOD

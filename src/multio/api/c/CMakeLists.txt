@@ -29,7 +29,7 @@ if( HAVE_MIR )
     )
 endif()
 
-if ( HAVE_ATLAS_IO )
+if ( HAVE_ECKIT_CODEC )
     list( APPEND multio_action_plugins
         multio-action-interpolate-fesom
     )

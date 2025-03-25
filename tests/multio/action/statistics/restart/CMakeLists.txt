@@ -49,7 +49,7 @@ endif()
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_run_0-24_new_restart
-    CONDITION    HAVE_ATLAS_IO
+    CONDITION    HAVE_ECKIT_CODEC
     TEST_DEPENDS ${PREFIX}_get_data
     ENVIRONMENT  READ_RESTART=${READ_RESTART} WRITE_RESTART=${WRITE_RESTART} RESTART_MAIN_FOLDER=${RESTART_MAIN_FOLDER}  RESULT_FILE=${RESULT_FILE}  RESTART_ID=${RESTART_ID}
     COMMAND      multio-feed
@@ -86,7 +86,7 @@ foreach(i RANGE 1 ${NUM_STEPS})
     # Run the multio-feed command
     ecbuild_add_test(
         TARGET      ${PREFIX}_run_${stepRange}_new_restart
-        CONDITION   HAVE_ATLAS_IO
+        CONDITION   HAVE_ECKIT_CODEC
         ENVIRONMENT READ_RESTART=${READ_RESTART} WRITE_RESTART=${WRITE_RESTART} RESTART_MAIN_FOLDER=${RESTART_MAIN_FOLDER}  RESULT_FILE=${RESULT_FILE}  RESTART_ID=${RESTART_ID}
         COMMAND     multio-feed
         ARGS        --stepRange=${stepRange} --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
@@ -112,7 +112,7 @@ set(RESTART_ID "none")
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_run_single_chunk_new_restart
-    CONDITION    HAVE_ATLAS_IO
+    CONDITION    HAVE_ECKIT_CODEC
     TEST_DEPENDS ${PREFIX}_get_data
     ENVIRONMENT  READ_RESTART=${READ_RESTART} WRITE_RESTART=${WRITE_RESTART} RESTART_MAIN_FOLDER=${RESTART_MAIN_FOLDER}  RESULT_FILE=${RESULT_FILE}  RESTART_ID=${RESTART_ID}
     COMMAND      multio-feed

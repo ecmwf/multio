@@ -25,6 +25,8 @@ list( APPEND _statistics_sources
     operations/OperationWithDeaccumulatedData.h
     operations/Accumulate.h
     operations/Average.h
+    operations/Difference.h
+    operations/InverseDifference.h
     operations/FluxAverage.h
     operations/Instant.h
     operations/Minimum.h

@@ -53,6 +53,14 @@ struct MultiOMDict {
     void set(const char* key, const char* val);
     void set(const std::string& key, const std::string& val);
 
+    // Typed setters
+    void set(const std::string& key, std::int64_t val);
+    void set(const std::string& key, double val);
+    void set(const std::string& key, const std::int64_t* val, std::size_t len);
+    void set(const std::string& key, const double* val, std::size_t len);
+    void set(const std::string& key, const std::vector<std::int64_t>& val);
+    void set(const std::string& key, const std::vector<double>& val);
+
     ~MultiOMDict();
 
     void* get();
@@ -64,7 +72,8 @@ struct MultiOMDict {
 struct MultiOMEncoder {
     MultiOMEncoder(MultiOMDict& options);
 
-    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, double* data, std::size_t len);
+    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, const double* data, std::size_t len);
+    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, const float* data, std::size_t len);
 
     ~MultiOMEncoder();
 

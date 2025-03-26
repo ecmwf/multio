@@ -22,8 +22,8 @@ int multio_grib2_encoder_encode_f(void* multio_grib2, void* mars_dict, void* par
                                   void* size_loc);
 
 
-int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par_dict, double* data, size_t data_len,
-                                  void** out_handle) {
+int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par_dict, const double* data,
+                                  size_t data_len, void** out_handle) {
     void* message = NULL;
     int messageLength = 0;
     int ret = multio_grib2_encoder_encode_f(multio_grib2, mars_dict, par_dict, &message, &messageLength);
@@ -64,8 +64,8 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
 }
 
 
-int multio_grib2_encoder_encode32(void* multio_grib2, void* mars_dict, void* par_dict, float* data, size_t data_len,
-                                  void** out_handle) {
+int multio_grib2_encoder_encode32(void* multio_grib2, void* mars_dict, void* par_dict, const float* data,
+                                  size_t data_len, void** out_handle) {
     std::vector<double> values{data, data + data_len};
     return multio_grib2_encoder_encode64(multio_grib2, mars_dict, par_dict, values.data(), data_len, out_handle);
 }

@@ -33,6 +33,7 @@ void codesCheckRelaxed(int ret, const char* name, const T& value) {
 
 
 MioGribHandle::MioGribHandle(codes_handle* hdl) : metkit::grib::GribHandle{hdl} {};
+MioGribHandle::MioGribHandle(codes_handle& hdl) : metkit::grib::GribHandle{hdl} {};
 
 std::unique_ptr<MioGribHandle> MioGribHandle::duplicate() const {
     codes_handle* h = codes_handle_clone(raw());

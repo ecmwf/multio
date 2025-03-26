@@ -203,8 +203,10 @@ std::string arrayToJSONString(const std::vector<T>& arr) {
 
 int getAndSetDoubleArray(codes_handle* h, void* dict, const char* key, const char* setName = NULL) {
     if (hasKey(h, key)) {
-        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName,
-                                        arrayToJSONString(getDoubleArray(h, key)).data());
+        // int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName,
+        //                                 arrayToJSONString(getDoubleArray(h, key)).data());
+        auto data = getDoubleArray(h, key);
+        int ret = multio_grib2_dict_set_double_array(dict, setName == NULL ? key : setName, data.data(), data.size());
         if (ret != 0)
             return ret;
     }
@@ -608,7 +610,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     if (ret != 0)
         return ret;
 
-    ret = getAndSet(h, *par_dict, "pv");
+    ret = getAndSetDoubleArray(h, *par_dict, "pv", "pv");
     if (ret != 0)
         return ret;
 

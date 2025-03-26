@@ -37,7 +37,7 @@ endif()
 
 if( HAVE_MULTIOM )
     list( APPEND multio_action_plugins
-        multio-action-encode-grib2
+        multio-action-encode-mtg2
     )
 endif()
 

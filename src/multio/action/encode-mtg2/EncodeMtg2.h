@@ -72,16 +72,16 @@ struct MultiOMEncoder {
 };
 
 
-class EncodeGrib2 : public ChainedAction {
+class EncodeMtg2 : public ChainedAction {
 public:
-    explicit EncodeGrib2(const ComponentConfiguration& compConf);
+    explicit EncodeMtg2(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
 private:
     // Internal constructor delegate with prepared configuration for specific
     // encoder
-    explicit EncodeGrib2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
+    explicit EncodeMtg2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
 
     void print(std::ostream& os) const override;
 
@@ -91,9 +91,9 @@ private:
 
 //---------------------------------------------------------------------------------------------------------------------
 
-class EncodeGrib2Exception : public eckit::Exception {
+class EncodeMtg2Exception : public eckit::Exception {
 public:
-    EncodeGrib2Exception(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
+    EncodeMtg2Exception(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
 };
 
 //---------------------------------------------------------------------------------------------------------------------

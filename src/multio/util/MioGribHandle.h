@@ -11,7 +11,10 @@ namespace multio::util {
 
 class MioGribHandle : public metkit::grib::GribHandle {
 public:
+    // owning constructor
     MioGribHandle(codes_handle* hdl);
+    // Non owning constructor
+    MioGribHandle(codes_handle& hdl);
     ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
     std::unique_ptr<MioGribHandle> duplicate() const;

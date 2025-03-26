@@ -17,12 +17,17 @@
 
 #include "multio/LibMultio.h"
 #include "multio/config/PathConfiguration.h"
+#include "multio/util/MioGribHandle.h"
+#include "multio/util/PrecisionTag.h"
 
 namespace multio::action {
 
 using config::configuration_path_name;
 
-using multio::message::Message;
+// using message::glossary;
+using message::Message;
+using message::MetadataTypes;
+using message::Peer;
 
 namespace {
 
@@ -122,6 +127,27 @@ void MultiOMDict::set(const std::string& key, const std::string& val) {
     set(key.c_str(), val.c_str());
 }
 
+
+void MultiOMDict::set(const std::string& key, std::int64_t val) {
+    ASSERT(multio_grib2_dict_set_int64(dict_, key.c_str(), val) == 0);
+}
+void MultiOMDict::set(const std::string& key, double val) {
+    ASSERT(multio_grib2_dict_set_double(dict_, key.c_str(), val) == 0);
+}
+void MultiOMDict::set(const std::string& key, const std::int64_t* val, std::size_t len) {
+    ASSERT(multio_grib2_dict_set_int64_array(dict_, key.c_str(), val, len) == 0);
+}
+void MultiOMDict::set(const std::string& key, const double* val, std::size_t len) {
+    ASSERT(multio_grib2_dict_set_double_array(dict_, key.c_str(), val, len) == 0);
+}
+void MultiOMDict::set(const std::string& key, const std::vector<std::int64_t>& val) {
+    set(key, val.data(), val.size());
+}
+void MultiOMDict::set(const std::string& key, const std::vector<double>& val) {
+    set(key, val.data(), val.size());
+}
+
+
 MultiOMDict::~MultiOMDict() {
     ASSERT(multio_grib2_dict_destroy(&dict_) == 0);
 }
@@ -135,10 +161,17 @@ MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
     ASSERT(multio_grib2_encoder_open(options.get(), &encoder_) == 0);
 }
 
-std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, double* data,
+std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const double* data,
                                                      std::size_t len) {
     codes_handle* rawOutputCodesHandle = nullptr;
     ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle));
+    return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
+}
+
+std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const float* data,
+                                                     std::size_t len) {
+    codes_handle* rawOutputCodesHandle = nullptr;
+    ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle));
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
@@ -162,8 +195,32 @@ void EncodeMtg2::executeImpl(Message msg) {
     }
 
     // TO encoding
+    MultiOMDict mars{MultiOMDictKind::MARS};
+    MultiOMDict par{MultiOMDictKind::Parametrization};
 
-    // executeNext(encodeField(std::move(msg), gridUID));
+    auto& payload = msg.payload();
+
+    // auto beg = reinterpret_cast<const T*>(msg.payload().data());
+    // this->setDataValues(beg, msg.globalSize());
+
+    // msg.header().acquireMetadata();
+    // const auto& metadata = msg.metadata();
+
+    executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using Precision = typename decltype(pt)::type;
+        auto rawGrib2Handle = encoder_.encode(mars, par, static_cast<const Precision*>(payload.data()),
+                                              payload.size() / sizeof(Precision));
+
+        // Create non-owning grib handle by passing by reference
+        util::MioGribHandle gribHandle{*rawGrib2Handle.get()};
+
+        // Initialize buffer with length
+        eckit::Buffer buf{gribHandle.length()};
+        gribHandle.write(buf);
+
+        return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
+                       std::move(buf)};
+    }));
 }
 
 void EncodeMtg2::print(std::ostream& os) const {

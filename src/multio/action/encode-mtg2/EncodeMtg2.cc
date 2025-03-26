@@ -8,7 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
-#include "EncodeGrib2.h"
+#include "EncodeMtg2.h"
 
 #include <iostream>
 
@@ -80,7 +80,7 @@ MultiOMEncoder makeEncoder(const EncodeMultiOMOptions& opts, const ComponentConf
 }
 
 std::string encodingExceptionReason(const std::string& r) {
-    std::string s("Grib2 Enocding exception: ");
+    std::string s("Mtg2 Enocding exception: ");
     s.append(r);
     return s;
 }
@@ -148,14 +148,14 @@ MultiOMEncoder::~MultiOMEncoder() {
 }
 
 
-EncodeGrib2Exception::EncodeGrib2Exception(const std::string& r, const eckit::CodeLocation& l) :
+EncodeMtg2Exception::EncodeMtg2Exception(const std::string& r, const eckit::CodeLocation& l) :
     eckit::Exception(encodingExceptionReason(r), l) {}
 
 
-EncodeGrib2::EncodeGrib2(const ComponentConfiguration& compConf) :
+EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf}, options_{parseOptions(compConf)}, encoder_{makeEncoder(options_, compConf)} {}
 
-void EncodeGrib2::executeImpl(Message msg) {
+void EncodeMtg2::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
         executeNext(std::move(msg));
         return;
@@ -166,8 +166,8 @@ void EncodeGrib2::executeImpl(Message msg) {
     // executeNext(encodeField(std::move(msg), gridUID));
 }
 
-void EncodeGrib2::print(std::ostream& os) const {
-    os << "EncodeGrib2(knowledege-root=" << options_.knowledgeRoot.value_or("") << ", ";
+void EncodeMtg2::print(std::ostream& os) const {
+    os << "EncodeMtg2(knowledege-root=" << options_.knowledgeRoot.value_or("") << ", ";
     os << "samples-path=" << options_.samplesPath.value_or("") << ", ";
     os << "mapping-rules=" << options_.mappingFile.value_or("") << ", ";
     os << "encoding-rules=" << options_.encodingFile.value_or("");
@@ -175,6 +175,6 @@ void EncodeGrib2::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<EncodeGrib2> EncodeGrib2Builder("encode-grib2");
+static ActionBuilder<EncodeMtg2> EncodeMtg2Builder("encode-mtg2");
 
 }  // namespace multio::action

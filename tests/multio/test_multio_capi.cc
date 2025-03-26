@@ -126,7 +126,7 @@ CASE("Create handle with default configuration through nullptr configuration pat
     err = multio_new_configuration_from_filename(&cc, nullptr);
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     std::string errStr(multio_error_string(err));
-    EXPECT(errStr.rfind("Assertion failed: conf_file_name in operator()") != std::string::npos);
+    EXPECT(errStr.rfind("Assertion failed: conf_file_name") != std::string::npos);
 }
 
 

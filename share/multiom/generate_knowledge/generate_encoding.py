@@ -744,7 +744,7 @@ PARAM_LEVTYPE_PL = combineAndMergePartialRules(
             partialRule(
                 [
                     matchType("levtype", "pl"),
-                    matchParam([60, "75:76", "129:135", 203, "246:248", 260290]),
+                    matchParam([60, "75:76", "129:135", 203, "246:248",157, 260290]),
                 ],
                 [PointInTime(), paramConfig("paramId")],
             ),

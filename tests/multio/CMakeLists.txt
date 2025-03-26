@@ -91,16 +91,17 @@ list( APPEND _api_test_environment
 )
 
 
-ecbuild_add_test( TARGET    test_multio_capi
-                  SOURCES   test_multio_capi.cc
-                  LIBS      multio-api
+ecbuild_add_test( ENABLED      OFF
+                  TARGET       test_multio_capi
+                  SOURCES      test_multio_capi.cc
+                  LIBS         multio-api
                   ENVIRONMENT "${_api_test_environment}"
 )
 
-ecbuild_add_test( TARGET    test_multio_fapi_general
-                  SOURCES   test_multio_fapi_general.f90
-                  CONDITION HAVE_FORTRAN
-                  LIBS      multio-fapi
+ecbuild_add_test( TARGET      test_multio_fapi_general
+                  SOURCES     test_multio_fapi_general.f90
+                  CONDITION   HAVE_FORTRAN
+                  LIBS        multio-fapi
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 

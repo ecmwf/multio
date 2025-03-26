@@ -91,10 +91,9 @@ list( APPEND _api_test_environment
 )
 
 
-ecbuild_add_test( ENABLED      OFF
-                  TARGET       test_multio_capi
-                  SOURCES      test_multio_capi.cc
-                  LIBS         multio-api
+ecbuild_add_test( TARGET      test_multio_capi
+                  SOURCES     test_multio_capi.cc
+                  LIBS        multio-api
                   ENVIRONMENT "${_api_test_environment}"
 )
 

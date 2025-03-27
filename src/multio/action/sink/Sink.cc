@@ -37,6 +37,10 @@ void Sink::executeImpl(Message msg) {
             trigger(msg);
             return;
 
+        case Message::Tag::Parametrization:
+            eckit::Log::debug<LibMultio>() << "Parametrization message: " << msg << std::endl;
+            return;
+
         default:
             throw eckit::SeriousBug("Cannot handle message <" + Message::tag2str(msg.tag()) + ">");
     }

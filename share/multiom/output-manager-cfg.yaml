@@ -15,3 +15,14 @@ grib-header-to-multio:
   verbose: false
   profile: false
   save-report: false
+
+
+model-data-to-multio:
+  samples-path: '{IFS_INSTALL_DIR}/share/multiom/samples'
+  multio-plans-file: '{IFS_INSTALL_DIR}/share/multiom/plans/multio-empty-plan.yaml'
+  mapping-rules-file: '{IFS_INSTALL_DIR}/share/multiom/mappings/mapping-rules.yaml'
+  encoding-rules-file: '{IFS_INSTALL_DIR}/share/multiom/encodings/encoding-rules.yaml'
+  log-path: '{MULTIO_LOG_PATH}'
+  verbose: false
+  profile: false
+  save-report: false

@@ -151,8 +151,7 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
     }
     catch (FailureAwareException& e) {
         std::ostringstream oss;
-        oss << "Caught a nested exception on C-C++ API boundary: ";
-        oss << e;
+        oss << "Caught a nested exception on C-C++ API boundary: " << e.what() << e.location();
 
         MultioErrorValues error = getNestedErrorValue(e);
         g_failure_info.lastErrorString = oss.str();
@@ -170,7 +169,7 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
     catch (eckit::Exception& e) {
         int error = MULTIO_ERROR_ECKIT_EXCEPTION;
         std::ostringstream oss;
-        oss << "Caught eckit exception on C-C++ API boundary: " << e.what();
+        oss << "Caught eckit exception on C-C++ API boundary: " << e.what() << e.location();
 
         g_failure_info.lastErrorString = oss.str();
         if (fh && fh->handler) {

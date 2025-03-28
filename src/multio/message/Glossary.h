@@ -373,6 +373,7 @@ namespace Mtg2 {
         }
     };
 
+
     namespace mars {
         // Model
         static const KV<std::string> expver{"expver"};
@@ -443,12 +444,12 @@ namespace Mtg2 {
         func(marsLegacy::repres);
     }
 
-
     template<typename TP>
     struct Prefixed {
         template<typename ... Args>
         Prefixed(const std::string& prefix, const std::string& key, Args&& ... args):
             plain{key, args...}, prefixed{prefix + std::string("-") + key, args...} {}
+
 
         TP plain;
         TP prefixed;
@@ -515,7 +516,6 @@ namespace Mtg2 {
         func(misc::satelliteSeries);
         func(misc::scaleFactorOfCentralWavenumber);
         func(misc::scaledValueOfCentralWavenumber);
-
         func(misc::methodNumber);
         func(misc::systemNumber);
     }

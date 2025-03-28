@@ -233,6 +233,7 @@ void EncodeMtg2::executeImpl(Message msg) {
                 mars.set(kvDescr, kvDescr.get(search->second));
             }
         });
+
         withParametrizationKeys([&](const auto& prefixedKvDescr){
             if (auto search = md.find(prefixedKvDescr.prefixed); search != md.end()) {
                 par.set(prefixedKvDescr.plain, prefixedKvDescr.prefixed.get(search->second));
@@ -258,7 +259,6 @@ void EncodeMtg2::executeImpl(Message msg) {
         } else {
             grid = mars::grid.get(searchGrid->second);
         }
-
 
         Repres repres;
         std::string prefix;
@@ -343,8 +343,6 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     }
 
-    // TODO MIVAL : to be removed
-    // std::cout << "Exit encoding with metadata: " << md << std::endl;
 
 }
 

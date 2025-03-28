@@ -43,7 +43,7 @@ class PatchedLib:
     def __init__(self):
         ffi.cdef(self.__read_header())
 
-        libname = findlibs.find("multio-api")
+        libname = findlibs.find("multio-api", "multiolib")
         self.__lib = None
 
         if libname is None:

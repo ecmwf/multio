@@ -59,6 +59,7 @@ struct MultiOMDict {
     // Typed setters
     void set(const std::string& key, std::int64_t val);
     void set(const std::string& key, double val);
+    void set(const std::string& key, bool val);
     void set(const std::string& key, const std::int64_t* val, std::size_t len);
     void set(const std::string& key, const double* val, std::size_t len);
     void set(const std::string& key, const std::vector<std::int64_t>& val);

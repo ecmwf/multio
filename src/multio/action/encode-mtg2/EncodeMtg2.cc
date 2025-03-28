@@ -19,15 +19,17 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
+#include "multio/message/Glossary.h"
 
 namespace multio::action {
 
 using config::configuration_path_name;
 
-// using message::glossary;
+using message::glossary;
 using message::Message;
 using message::MetadataTypes;
 using message::Peer;
+
 
 namespace {
 
@@ -100,14 +102,18 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
             return "mars";
         case MultiOMDictKind::Parametrization:
             return "parametrization";
-        case MultiOMDictKind::Geometry:
-            return "geometry";
+        case MultiOMDictKind::ReducedGG:
+            return "reduced-gg";
+        case MultiOMDictKind::RegularLL:
+            return "regular-ll";
+        case MultiOMDictKind::SH:
+            return "sh";
         default:
             NOTIMP;
     }
 }
 
-MultiOMDict::MultiOMDict(MultiOMDictKind kind) {
+MultiOMDict::MultiOMDict(MultiOMDictKind kind): kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
     ASSERT(multio_grib2_dict_create(&dict_, kindStr.data()) == 0);
 
@@ -125,6 +131,17 @@ void MultiOMDict::set(const char* key, const char* val) {
 }
 void MultiOMDict::set(const std::string& key, const std::string& val) {
     set(key.c_str(), val.c_str());
+}
+void MultiOMDict::set_geometry(MultiOMDict& geom) {
+    ASSERT(kind_ == MultiOMDictKind::Parametrization);
+    switch (geom.kind_) {
+        case MultiOMDictKind::ReducedGG:
+        case MultiOMDictKind::RegularLL:
+        case MultiOMDictKind::SH:
+            ASSERT(multio_grib2_dict_set_geometry(dict_, geom.dict_) == 0);
+        default:
+            throw EncodeMtg2Exception("Passed dict is not a geometry dictt", Here());
+    }
 }
 
 
@@ -187,16 +204,78 @@ EncodeMtg2Exception::EncodeMtg2Exception(const std::string& r, const eckit::Code
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf}, options_{parseOptions(compConf)}, encoder_{makeEncoder(options_, compConf)} {}
+    
+
+namespace {
+
+
+void handleGeometryGG(MultiOMDict& mars, const message::Metadata& md, const std::string& keyPrefix) {
+}
+void handleGeometrySH(MultiOMDict& mars, const message::Metadata& md, const std::string& keyPrefix) {
+}
+void handleGeometryLL(MultiOMDict& mars, const message::Metadata& md, const std::string& keyPrefix) {
+}
+
+void handleGeometry(MultiOMDict& mars, const message::Metadata& md) {
+    using namespace message::Mtg2;
+}
+
+}
 
 void EncodeMtg2::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
         executeNext(std::move(msg));
         return;
     }
+    
+    auto& md = msg.metadata();
 
     // TO encoding
     MultiOMDict mars{MultiOMDictKind::MARS};
     MultiOMDict par{MultiOMDictKind::Parametrization};
+    
+    {
+        using namespace message::Mtg2;
+        withMarsKeys([&](const auto& kvDescr){
+            if (auto search = md.find(kvDescr); search != md.end()) {
+                mars.set(kvDescr, kvDescr.get(search->second));
+            }
+        });
+        
+        withParametrizationKeys([&](const auto& kvDescrPrefixed, const auto& kvDescr){
+            if (auto search = md.find(kvDescrPrefixed); search != md.end()) {
+                par.set(kvDescr, kvDescrPrefixed.get(search->second));
+            }
+        });
+        
+        auto grid = mars::grid.get(md);
+        Repres repres;
+        std::string prefix;
+        std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
+        
+        MultiOMDict geom{
+            ([&](){
+                switch (repres) {
+                    case Repres::GG:
+                        return MultiOMDictKind::ReducedGG;
+                    case Repres::LL:
+                        return MultiOMDictKind::RegularLL;
+                    case Repres::SH:
+                        return MultiOMDictKind::SH;
+                }
+                throw EncodeMtg2Exception("unkown repres", Here());
+            })()
+        };
+        
+        withGeometryKeys(repres, [&](const auto& kvDescr) {
+            if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
+                geom.set(kvDescr, kvDescr.get(search->second));
+            }
+        });
+        par.set_geometry(geom);
+    }
+    
+    
 
     auto& payload = msg.payload();
 

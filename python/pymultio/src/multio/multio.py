@@ -93,12 +93,12 @@ class Multio:
         self.__dummy_metadata_flush = Metadata(self, md={})
         self.__dummy_metadata_notification = Metadata(self, md={})
 
-    def __enter__(self):
+    def open(self):
         lib.multio_open_connections(self._handle)
-        return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def close(self):
         lib.multio_close_connections(self._handle)
+
 
     def __version__(self):
         tmp_str = ffi.new("char**")

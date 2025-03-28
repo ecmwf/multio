@@ -53,6 +53,7 @@ dependencies = [
   "pyyaml",
   "numpy",
   "findlibs",
+  "multiolib",
 ]
 
 optional-dependencies.all = [ "pymultio" ]

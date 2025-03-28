@@ -359,6 +359,14 @@ namespace Mtg2 {
             throw MetadataException("Param must be an int or string", Here());
         }
     };
+    struct IntToBoolMapper {
+        bool operator()(bool) const noexcept;
+        bool operator()(std::int64_t v) const { return v > 0;};
+        template <typename T>
+        bool operator()(T&& t) const {
+            throw MetadataException("Value must be an int or string", Here());
+        }
+    };
     
     namespace mars {
         // Model
@@ -428,19 +436,81 @@ namespace Mtg2 {
         func(mars::hdate);
     }
    
+   
+    template<typename TP>
+    struct Prefixed {
+        template<typename ... Args>
+        Prefixed(const std::string& prefix, const std::string& key, Args&& ... args):
+            plain{key, args...}, prefixed{prefix + std::string("-") + key, args...} {}
+        
+        TP plain;
+        TP prefixed;
+    };
     
     namespace misc {
-        static const KV<std::int64_t> generatingProcessIdentifier{"generatingProcessIdentifier"};
-        static const KV<std::int64_t> generatingProcessIdentifierPrefixed{"misc-generatingProcessIdentifier"};
+        static const std::string prefix{"misc"};
         
-        // TODO add more
+        static const Prefixed<KV<std::int64_t>> tablesVersion{prefix, "tablesVersion"};
+        static const Prefixed<KV<std::int64_t>> generatingProcessIdentifier{prefix, "generatingProcessIdentifier"};
+        static const Prefixed<KV<std::int64_t>> typeofprocesseddata{prefix, "typeofprocesseddata"}; 
+        static const Prefixed<KV<bool, IntToBoolMapper>> encodeStepZero{prefix, "encodeStepZero", IntToBoolMapper{}}; 
+        static const Prefixed<KV<std::int64_t>> initialStep{prefix, "initialStep"}; 
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeRange{prefix, "lengthOfTimeRange"}; 
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeStep{prefix, "lengthOfTimeStep"}; 
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeRangeInSeconds{prefix, "lengthOfTimeRangeInSeconds"}; 
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeStepInSeconds{prefix, "lengthOfTimeStepInSeconds"};  
+        static const Prefixed<KV<double>> valuesScaleFactor{prefix, "valuesScaleFactor"};  
+        static const Prefixed<KV<std::vector<double>>> pv{prefix, "pv"};  
+        static const Prefixed<KV<std::int64_t>> numberOfMissingValues{prefix, "numberOfMissingValues"};  
+        static const Prefixed<KV<double>> valueOfMissingValues{prefix, "valueOfMissingValues"};  
+        static const Prefixed<KV<std::int64_t>> typeOfEnsembleForecast{prefix, "typeOfEnsembleForecast"};  
+        static const Prefixed<KV<std::int64_t>> numberOfForecastsInEnsemble{prefix, "numberOfForecastsInEnsemble"};  
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindow{prefix, "lengthOfTimeWindow"};  
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindowInSeconds{prefix, "lengthOfTimeWindowInSeconds"};  
+        static const Prefixed<KV<std::int64_t>> bitsPerValue{prefix, "bitsPerValue"};  
+        static const Prefixed<KV<std::int64_t>> periodMin{prefix, "periodMin"};  
+        static const Prefixed<KV<std::int64_t>> periodMax{prefix, "periodMax"};  
+        static const Prefixed<KV<std::vector<double>>> waveDirections{prefix, "waveDirections"};  
+        static const Prefixed<KV<std::vector<double>>> waveFrequencies{prefix, "waveFrequencies"};  
+        static const Prefixed<KV<std::int64_t>> satelliteSeries{prefix, "satelliteSeries"};  
+        static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};  
+        static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};  
+        
+        // TBD - move to marse
+        static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};  
+        static const Prefixed<KV<std::int64_t>> systemNumber{prefix, "systemNumber"};  
     }  
     
     template<typename Func>
     void withParametrizationKeys(Func&& func) {
-        func(misc::generatingProcessIdentifierPrefixed, misc::generatingProcessIdentifier);
+        func(misc::tablesVersion);
+        func(misc::generatingProcessIdentifier);
+        func(misc::typeofprocesseddata);
+        func(misc::encodeStepZero);
+        func(misc::initialStep);
+        func(misc::lengthOfTimeRange);
+        func(misc::lengthOfTimeStep);
+        func(misc::lengthOfTimeRangeInSeconds);
+        func(misc::lengthOfTimeStepInSeconds);
+        func(misc::valuesScaleFactor);
+        func(misc::pv);
+        func(misc::numberOfMissingValues);
+        func(misc::valueOfMissingValues);
+        func(misc::typeOfEnsembleForecast);
+        func(misc::numberOfForecastsInEnsemble);
+        func(misc::lengthOfTimeWindow);
+        func(misc::lengthOfTimeWindowInSeconds);
+        func(misc::bitsPerValue);
+        func(misc::periodMin);
+        func(misc::periodMax);
+        func(misc::waveDirections);
+        func(misc::waveFrequencies);
+        func(misc::satelliteSeries);
+        func(misc::scaleFactorOfCentralWavenumber);
+        func(misc::scaledValueOfCentralWavenumber);
        
-        // TODO add more
+        func(misc::methodNumber);
+        func(misc::systemNumber);
     }
     
     namespace gg {

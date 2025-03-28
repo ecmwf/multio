@@ -649,8 +649,8 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    ret = getAndSet(h, *par_dict, "scaledFactorOfCentralWavenumber");
-    if (ret != 0) {
+    ret = getAndSet(h, *par_dict, "scaleFactorOfCentralWavenumber");
+    if (ret != 0)
         return ret;
     }
 

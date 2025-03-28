@@ -31,8 +31,7 @@ int multio_grib2_dict_set(void* dict, const char* key, const char* value) {
         int klen = std::strlen(key);
         int vlen = std::strlen(newVal.c_str());
         return multio_grib2_dict_set_f(dict, key, klen, newVal.c_str(), vlen);
-    }
-    else {
+    } else {
         int klen = std::strlen(key);
         int vlen = std::strlen(value);
         return multio_grib2_dict_set_f(dict, key, klen, value, vlen);

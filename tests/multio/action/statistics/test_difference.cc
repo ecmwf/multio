@@ -20,12 +20,10 @@
 namespace multio::test {
 
 
-template<typename T>
-std::vector<T> expectedPayloadDifference(std::vector<std::vector<T>> payloads) {
-    EXPECT(payloads.size() >= 2);
-    std::vector<T> expected(payloads[0].size());
-    std::transform(payloads[0].begin(), payloads[0].end(), payloads[payloads.size() - 1].begin(), expected.begin(),
-                   [](double vf, double vl) { return vl - vf; });
+template <typename T>
+std::vector<T> expectedPayloadDifference(const std::vector<T>& first, const std::vector<T>& last) {
+    std::vector<T> expected(first.size());
+    std::transform(first.begin(), first.end(), last.begin(), expected.begin(), [](T vf, T vl) { return vl - vf; });
     return expected;
 }
 
@@ -42,28 +40,28 @@ const std::string actionsDifference(
                     "use-current-time": "false",
                     "step-frequency": 1,
                     "time-step": 3600,
-                    "initial-condition-present": "true"
+                    "initial-condition-present": "true",
+                    "solver-reset-accumulate-fields-every": "never"
                 }
             },
             {
                 "type": "debug-sink"
             }
         ]
-    })json"
-);
+    })json");
 
 
 CASE("Statistics Action Difference Static") {
     const size_t payloadSize = 10;
     auto env = MultioTestEnvironment(actionsDifference);
 
-    std::vector<double> payloadFirst {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
-    std::vector<double> payloadLast  {{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}};
-    auto payloadExpected = expectedPayloadDifference<double>({payloadFirst, payloadLast});
+    std::vector<double> payloadFirst{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    std::vector<double> payloadLast{{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}};
+    auto payloadExpected = expectedPayloadDifference<double>(payloadFirst, payloadLast);
 
     EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(0, payloadFirst)));
     for (size_t step = 1; step <= 23; ++step) {
-        auto payloadRandom = randomVector<double>(10, 0, 10);
+        auto payloadRandom = randomVector<double>(10, 0, 10, step);
         EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloadRandom)));
     }
     EXPECT_EQUAL(env.debugSink().size(), 0);
@@ -86,9 +84,9 @@ CASE("Statistics Action Difference Random") {
 
     std::vector<std::vector<double>> payloads;
     for (size_t step = 0; step <= 24; ++step) {
-        payloads.push_back(randomVector<double>(payloadSize, 0, 10));
+        payloads.push_back(randomVector<double>(payloadSize, 0, 10, step));
     }
-    auto payloadExpected = expectedPayloadDifference(payloads);
+    auto payloadExpected = expectedPayloadDifference(payloads[0], payloads[payloads.size() - 1]);
 
     for (size_t step = 0; step <= 23; ++step) {
         EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloads[step])));
@@ -113,10 +111,10 @@ CASE("Statistics Action Difference Random Multiple Windows") {
 
     std::vector<std::vector<double>> payloads;
     for (size_t step = 0; step <= 48; ++step) {
-        payloads.push_back(randomVector<double>(payloadSize, 0, 10));
+        payloads.push_back(randomVector<double>(payloadSize, 0, 10, step));
     }
-    auto firstPayloadExpected = expectedPayloadDifference<double>({payloads[0], payloads[24]});
-    auto secondPayloadExpected = expectedPayloadDifference<double>({payloads[24], payloads[48]});
+    auto firstPayloadExpected = expectedPayloadDifference<double>(payloads[0], payloads[24]);
+    auto secondPayloadExpected = expectedPayloadDifference<double>(payloads[24], payloads[48]);
 
     // Run first window
     {

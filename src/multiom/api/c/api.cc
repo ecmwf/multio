@@ -1,7 +1,7 @@
 #include "api.h"
 #include <cstring>
 #include <string>
-#include "metkit/mars/Param.h"
+// #include "metkit/mars/Param.h"
 
 extern "C" {
 
@@ -26,7 +26,7 @@ int multio_grib2_dict_create(void** dict, char* dict_type) {
 
 int multio_grib2_dict_set(void* dict, const char* key, const char* value) {
     if (std::strcmp(key, "param") == 0) {
-        std::string newVal = std::to_string(metkit::Param(value).paramId());
+        std::string newVal; // = std::to_string(metkit::Param(value).paramId());
 
         int klen = std::strlen(key);
         int vlen = std::strlen(newVal.c_str());
@@ -40,7 +40,7 @@ int multio_grib2_dict_set(void* dict, const char* key, const char* value) {
 
 int multio_grib2_dict_set_int64(void* dict, const char* key, int64_t value ) {
     if (std::strcmp(key, "param") == 0) {
-        int64_t val = metkit::Param(std::to_string(value).c_str()).paramId();
+        int64_t val; // = metkit::Param(std::to_string(value).c_str()).paramId();
         int klen = std::strlen(key);
         return multio_grib2_dict_set_int64_f(dict, key, klen, val);
     }

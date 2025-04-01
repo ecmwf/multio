@@ -14,6 +14,6 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        multiom
+        multiom-encoders
         eccodes
 )

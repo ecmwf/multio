@@ -207,20 +207,20 @@ EncodeMtg2Exception::EncodeMtg2Exception(const std::string& r, const eckit::Code
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf}, options_{parseOptions(compConf)}, encoder_{makeEncoder(options_, compConf)} {}
-    
+
 
 void EncodeMtg2::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
         executeNext(std::move(msg));
         return;
     }
-    
+
     auto& md = msg.metadata();
 
     // TO encoding
     MultiOMDict mars{MultiOMDictKind::MARS};
     MultiOMDict par{MultiOMDictKind::Parametrization};
-    
+
     {
         using namespace message::Mtg2;
         withMarsKeys([&](const auto& kvDescr){
@@ -228,21 +228,20 @@ void EncodeMtg2::executeImpl(Message msg) {
                 mars.set(kvDescr, kvDescr.get(search->second));
             }
         });
-        
         withParametrizationKeys([&](const auto& prefixedKvDescr){
             if (auto search = md.find(prefixedKvDescr.prefixed); search != md.end()) {
                 par.set(prefixedKvDescr.plain, prefixedKvDescr.prefixed.get(search->second));
             }
         });
-        
-        
+
+
         // Legacy handling -- assume no grid has been passed for SH but truncation and repres are given
         std::string grid;
         auto searchGrid = md.find(mars::grid);
         if (searchGrid == md.end()) {
             auto searchRepres = md.find(marsLegacy::repres);
             auto searchTruncation = md.find(marsLegacy::truncation);
-            
+
             if (searchRepres != md.end() && searchTruncation != md.end()) {
                 if (searchRepres->second.get<std::string>() == "sh") {
                     grid = std::string("TCO") + std::to_string(searchTruncation->second.get<std::int64_t>());
@@ -255,12 +254,12 @@ void EncodeMtg2::executeImpl(Message msg) {
         } else {
             grid = mars::grid.get(searchGrid->second);
         }
-        
-        
+
+
         Repres repres;
         std::string prefix;
         std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
-        
+
         // Legacy handling -- add repres and truncation assuming grid has been passed properly and also handles SH
         {
             if (auto searchRepres = md.find(marsLegacy::repres); searchRepres != md.end()) {
@@ -269,9 +268,9 @@ void EncodeMtg2::executeImpl(Message msg) {
                     oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" << toString(repres) << "\"";
                     throw EncodeMtg2Exception(oss.str(), Here());
                 }
-            } 
+            }
             mars.set(marsLegacy::repres, toString(repres));
-            
+
             if (repres == Repres::SH) {
                 std::int64_t truncation = std::stol(grid.substr(3, grid.size()-1));
                 if (auto searchTruncation = md.find(marsLegacy::truncation); searchTruncation != md.end()) {
@@ -280,12 +279,12 @@ void EncodeMtg2::executeImpl(Message msg) {
                         oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered truncation \"" << truncation << "\"";
                         throw EncodeMtg2Exception(oss.str(), Here());
                     }
-                } 
+                }
                 mars.set(marsLegacy::truncation, truncation);
             }
-            
+
         }
-        
+
         MultiOMDict geom{
             ([&](){
                 switch (repres) {
@@ -299,7 +298,7 @@ void EncodeMtg2::executeImpl(Message msg) {
                 throw EncodeMtg2Exception("unkown repres", Here());
             })()
         };
-        
+
         withGeometryKeys(repres, [&](const auto& kvDescr) {
             if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
                 geom.set(kvDescr, kvDescr.get(search->second));
@@ -307,8 +306,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         });
         par.set_geometry(geom);
     }
-    
-    
+
 
     auto& payload = msg.payload();
 

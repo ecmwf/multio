@@ -190,7 +190,7 @@ ecbuild_add_library(
     # ${MULTIOM_ENCODING_RULES_SOURCES}
     ${MULTIOM_IFS_INTERFACE_SOURCES}
     # ${MULTIOM_OUTPUT_MANAGER_SOURCES}
-    ${MULTIOM_SINKS_SOURCES}
+    # ${MULTIOM_SINKS_SOURCES}
     # ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_IFS2MARS_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
@@ -205,7 +205,6 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
 )
 
 
@@ -222,6 +221,9 @@ ecbuild_add_library(
     ${MULTIOM_MAPPING_RULES_SOURCES}
     ${MULTIOM_ENCODING_RULES_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
+    ${MULTIOM_API_SOURCES}
+    ${MULTIOM_IFS_ENCODERS_SOURCES}
+    ./multiom_api.F90
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -233,7 +235,6 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
     multiom-core
 )
 
@@ -249,10 +250,7 @@ ecbuild_add_library(
     multiom
 
   SOURCES
-    ${MULTIOM_API_SOURCES}
-    ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_OUTPUT_MANAGER_SOURCES}
-    ./multiom_api.F90
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -264,9 +262,9 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
     multiom-core
     multiom-encoders
+    multio-fapi
 )
 
 

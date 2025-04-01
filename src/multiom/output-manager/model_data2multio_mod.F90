@@ -25,7 +25,6 @@ MODULE MODEL_DATA2MULTIO_MOD
   USE :: IFS_PAR_MOD,                ONLY: PROC_TOPO_T
   USE :: IFS_PAR_MOD,                ONLY: MODEL_PAR_T
   USE :: PROFILE_MOD,                ONLY: PROFILE_T
-  USE :: MULTIO_METADATA_MOD,        ONLY: MULTIO_METADATA_T
   USE :: REPRESENTATIONS_MOD,        ONLY: REPRES_A
 
   ! Symbols imported from other libraries

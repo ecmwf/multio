@@ -15,13 +15,10 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_significanceOfReferenceTimeMap_mod.F90'
+#define PP_FILE_NAME 'grib2_significance_of_reference_rime_map_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SIGNIFICANCEOFREFERENCETIME'
+#define PP_SECTION_NAME 'GRIB2_SIGNIFICANCEOFREFERENCETIME_MOD'
 MODULE GRIB2_SIGNIFICANCEOFREFERENCETIME_MOD
-
-  !> Symbols imported from other modules within the project.
-  USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
 
 IMPLICIT NONE
 

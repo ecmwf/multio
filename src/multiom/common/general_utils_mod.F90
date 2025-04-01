@@ -72,9 +72,192 @@ PUBLIC :: SET_DR_HOOK
 PUBLIC :: GET_DR_HOOK
 PUBLIC :: SET_CUSTOM_UNITS
 PUBLIC :: GET_CUSTOM_UNITS
+PUBLIC :: GET_GRIB_MESSAGE
 
 CONTAINS
 
+
+
+
+!>
+!> @brief Extracts a grib message to a fortran array
+!>
+!> @param [inout] buffer  Allocatable byet array
+!> @param [in]    handle  Codes fortran handle
+!>
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GET_GRIB_MESSAGE'
+PP_THREAD_SAFE FUNCTION GET_GRIB_MESSAGE( BUFFER, HANDLE, DATA_LENGTH, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: ISO_C_BINDING,     ONLY: C_CHAR
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from external libraries.
+  USE :: GRIB_API,   ONLY: GRIB_SUCCESS
+  USE :: GRIB_API,   ONLY: GRIB_GET_MESSAGE_SIZE
+  USE :: GRIB_API,   ONLY: GRIB_COPY_MESSAGE
+  USE :: GRIB_API,   ONLY: GRIB_GET_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(KIND=C_CHAR,LEN=1), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: BUFFER
+  INTEGER(KIND=JPIM_K),                                    INTENT(IN)    :: HANDLE
+  INTEGER(KIND=JPIM_K),                                    INTENT(INOUT) :: DATA_LENGTH
+  TYPE(HOOKS_T),                                           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIM_K) :: ERR
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_BUFFER_SIZE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUFFER_SIZE_MUST_BE_GREATER_THAN_ZERO=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_BUFFER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_BUFFER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_COPY_MESSAGE_TO_BUFFER=5_JPIB_K
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Get encoded grib message size
+  KRET = GRIB_SUCCESS
+  CALL GRIB_GET_MESSAGE_SIZE( HANDLE, DATA_LENGTH, STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_READ_BUFFER_SIZE)
+  PP_DEBUG_CRITICAL_COND_THROW(DATA_LENGTH.LE.0, ERRFLAG_BUFFER_SIZE_MUST_BE_GREATER_THAN_ZERO)
+
+  ! Maange buffer allocation
+  IF (ALLOCATED(BUFFER) .AND. (SIZE(BUFFER) .LT. DATA_LENGTH)) THEN
+    DEALLOCATE(BUFFER, STAT=STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_DEVELOP_COND_THROW(STAT.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_BUFFER)
+  ENDIF
+
+  IF (.NOT.ALLOCATED(BUFFER)) THEN
+    STAT = 0
+    ALLOCATE(BUFFER(DATA_LENGTH), STAT=STAT, ERRMSG=ERRMSG)
+    PP_DEBUG_DEVELOP_COND_THROW(STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_BUFFER)
+  ENDIF
+
+  ! Extract encoded message
+  KRET = GRIB_SUCCESS
+  CALL GRIB_COPY_MESSAGE(HANDLE, BUFFER, STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_COPY_MESSAGE_TO_BUFFER)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+    CHARACTER(LEN=32) :: TMP
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_UNABLE_TO_READ_BUFFER_SIZE)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR)
+      TMP = REPEAT(' ', 32)
+      WRITE(TMP,*, IOSTAT=STAT) KRET
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the buffer size' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error code: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error message: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+
+    CASE (ERRFLAG_BUFFER_SIZE_MUST_BE_GREATER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Buffer size must be greater than 0' )
+
+    CASE (ERRFLAG_UNABLE_TO_DEALLOCATE_BUFFER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate buffer' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=STAT)
+      ENDIF
+
+    CASE (ERRFLAG_UNABLE_TO_ALLOCATE_BUFFER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate buffer' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG, STAT=STAT)
+      ENDIF
+
+    CASE (ERRFLAG_UNABLE_TO_COPY_MESSAGE_TO_BUFFER)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      TMP = REPEAT(' ', 32)
+      WRITE(TMP,*, IOSTAT=STAT) KRET
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to copy the message to the buffer' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error code: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'eccodes error message: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GET_GRIB_MESSAGE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

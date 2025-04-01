@@ -1375,9 +1375,9 @@ IMPLICIT NONE
   ! NGRBTSN  - 238    - Temperature of snow layer
   ! NGRBWSN  - 228038 - Snow liquid water (multi-layer)
   ! NGRBSD   - 228141 - Snow depth (multi-layer)
-  ! NGRBSOT  -  260360 Soil temperature (multi-layer)
-  ! NGRBSIT  -  262024 Sea ice temperature (multi-layer)
-  ! NGRBVSW  -  260199 Volumetric soil moisture (multi-layer)
+  ! NGRBSOT  - 260360 - Soil temperature (multi-layer)
+  ! NGRBSIT  - 262024 - Sea ice temperature (multi-layer)
+  ! NGRBVSW  - 260199 - Volumetric soil moisture (multi-layer)
 
   SELECT CASE ( IPREFIX )
 

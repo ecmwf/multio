@@ -167,9 +167,6 @@ endif()
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 
-
-if (TRUE)
-
 ecbuild_add_library(
   TARGET
     multiom-core
@@ -223,7 +220,6 @@ ecbuild_add_library(
     ${MULTIOM_ENCODERS_SOURCES}
     ${MULTIOM_API_SOURCES}
     ${MULTIOM_IFS_ENCODERS_SOURCES}
-    ./multiom_api.F90
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -251,6 +247,7 @@ ecbuild_add_library(
 
   SOURCES
     ${MULTIOM_OUTPUT_MANAGER_SOURCES}
+    ./multiom_api.F90
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -272,33 +269,6 @@ ecbuild_add_library(
 set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
 target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
 
-else()
-ecbuild_add_library(
-  TARGET
-    multiom
-
-  SOURCES
-   ${output_manager_src}
-
-  DEFINITIONS
-    ${OUTPUT_MANAGER_BUILD_FLAVOUR}
-
-  PRIVATE_INCLUDES
-    $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
-
-  PUBLIC_LIBS
-    fckit
-    eccodes
-    eccodes_f90
-    multio-fapi
-)
-
-
-# Module directory
-set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
-target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
-
-endif()
 
 # add tests
 set(HAVE_OUTPUT_MANAGER_TESTS 1)

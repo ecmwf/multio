@@ -360,8 +360,8 @@ namespace Mtg2 {
         }
     };
     struct IntToBoolMapper {
-        bool operator()(bool) const noexcept;
-        bool operator()(std::int64_t v) const { return v > 0;};
+        inline bool operator()(bool v) const noexcept { return v; };
+        inline bool operator()(std::int64_t v) const { return v > 0; };
         template <typename T>
         bool operator()(T&& t) const {
             throw MetadataException("Value must be an int or string", Here());

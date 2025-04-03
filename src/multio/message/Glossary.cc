@@ -36,14 +36,13 @@ Repres parseRepres(const std::string& repres) {
 
 std::string toString(Repres repres) {
     switch (repres) {
-        case Repres::GG: 
+        case Repres::GG:
             return std::string{"gg"};
-        case Repres::LL: 
+        case Repres::LL:
             return std::string{"ll"};
-        case Repres::SH: 
+        case Repres::SH:
             return std::string{"sh"};
     }
-    
     throw MetadataException("Unknown repres", Here());
 }
 
@@ -51,9 +50,9 @@ std::string toString(Repres repres) {
 std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& gridName) {
     if (gridName.empty()) throw MetadataException("empty gridName", Here());
     using Ret = std::tuple<Repres, std::string>;
-    
+
     auto fail = [&](auto loc){ return MetadataException(std::string("invalid gridName: ") + gridName, std::move(loc)); };
-    
+
     auto handleGG = [&]() -> Ret {
         return Ret{Repres::GG, std::string("geo-") + gridName + std::string("-")};
     };
@@ -63,7 +62,7 @@ std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& g
     auto handleSH = [&]() -> Ret {
         return Ret{Repres::SH, std::string("geo-") + gridName + std::string("-")};
     };
-    
+
     switch (gridName[0]) {
         case 'F':
             return handleGG();
@@ -77,7 +76,7 @@ std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& g
             }
         case 'T':
             if (gridName.rfind("TCO", 3) != std::string::npos) {
-               return handleSH(); 
+               return handleSH();
             }
             throw fail(Here());
         default:

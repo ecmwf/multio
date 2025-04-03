@@ -115,7 +115,7 @@ struct KeyValueDescription {
  */
 struct Glossary {
     using KeyType = typename MetadataTypes::KeyType;
-    
+
     template<typename ValueType, typename Mapper = void>
     using KV = KeyValueDescription<KeyType, ValueType, Mapper>;
 
@@ -126,11 +126,11 @@ struct Glossary {
     const KeyType name{"name"};
     const KeyType paramId{"paramId"};
     const KeyType param{"param"};
-    const KeyType globalSize{"globalSize"};
+    const KeyType globalSize{"misc-globalSize"};
     const KeyType domain{"domain"};
     const KeyType date{"date"};
     const KeyType time{"time"};
-    const KeyType precision{"precision"};
+    const KeyType precision{"misc-precision"};
 
 
     // Nemo
@@ -367,14 +367,14 @@ namespace Mtg2 {
             throw MetadataException("Value must be an int or string", Here());
         }
     };
-    
+
     namespace mars {
         // Model
         static const KV<std::string> expver{"expver"};
         static const KV<std::string> stream{"stream"};
         static const KV<std::string> type{"type"};
         static const KV<std::string> marsClass{"class"};
-        
+
         static const KV<std::string> origin{"origin"};
         static const KV<std::int64_t> anoffset{"anoffset"};
         static const KV<std::string> packing{"packing"};
@@ -384,10 +384,10 @@ namespace Mtg2 {
         static const KV<std::int64_t> channel{"channel"};
         static const KV<std::int64_t> chem{"chem"};
         static const KV<std::int64_t,ParamMapper> param{"param", ParamMapper{}};
-        
+
         static const KV<std::string> model{"model"};
         static const KV<std::string> levtype{"levtype"};
-        
+
         static const KV<std::int64_t> levelist{"levelist"};
         static const KV<std::int64_t> direction{"direction"};
         static const KV<std::int64_t> frequency{"frequency"};
@@ -396,19 +396,19 @@ namespace Mtg2 {
         static const KV<std::int64_t> step{"step"};
         static const KV<std::int64_t> timespan{"timespan"};
         static const KV<std::int64_t> hdate{"hdate"};
-        
+
         static const KV<std::string> grid{"grid"};
     }
-    
+
     namespace marsCustom {
         static const KV<std::string> gridName{"gridName"};
     }
-    
+
     namespace marsLegacy {
         static const KV<std::string> repres{"repres"};
         static const KV<std::int64_t> truncation{"truncation"};
     }
-    
+
     template<typename Func>
     void withMarsKeys(Func&& func) {
         func(mars::expver);
@@ -434,53 +434,55 @@ namespace Mtg2 {
         func(mars::step);
         func(mars::timespan);
         func(mars::hdate);
+        func(mars::grid);
+        func(marsLegacy::repres);
     }
-   
-   
+
+
     template<typename TP>
     struct Prefixed {
         template<typename ... Args>
         Prefixed(const std::string& prefix, const std::string& key, Args&& ... args):
             plain{key, args...}, prefixed{prefix + std::string("-") + key, args...} {}
-        
+
         TP plain;
         TP prefixed;
     };
-    
+
     namespace misc {
         static const std::string prefix{"misc"};
-        
+
         static const Prefixed<KV<std::int64_t>> tablesVersion{prefix, "tablesVersion"};
         static const Prefixed<KV<std::int64_t>> generatingProcessIdentifier{prefix, "generatingProcessIdentifier"};
-        static const Prefixed<KV<std::int64_t>> typeofprocesseddata{prefix, "typeofprocesseddata"}; 
-        static const Prefixed<KV<bool, IntToBoolMapper>> encodeStepZero{prefix, "encodeStepZero", IntToBoolMapper{}}; 
-        static const Prefixed<KV<std::int64_t>> initialStep{prefix, "initialStep"}; 
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeRange{prefix, "lengthOfTimeRange"}; 
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeStep{prefix, "lengthOfTimeStep"}; 
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeRangeInSeconds{prefix, "lengthOfTimeRangeInSeconds"}; 
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeStepInSeconds{prefix, "lengthOfTimeStepInSeconds"};  
-        static const Prefixed<KV<double>> valuesScaleFactor{prefix, "valuesScaleFactor"};  
-        static const Prefixed<KV<std::vector<double>>> pv{prefix, "pv"};  
-        static const Prefixed<KV<std::int64_t>> numberOfMissingValues{prefix, "numberOfMissingValues"};  
-        static const Prefixed<KV<double>> valueOfMissingValues{prefix, "valueOfMissingValues"};  
-        static const Prefixed<KV<std::int64_t>> typeOfEnsembleForecast{prefix, "typeOfEnsembleForecast"};  
-        static const Prefixed<KV<std::int64_t>> numberOfForecastsInEnsemble{prefix, "numberOfForecastsInEnsemble"};  
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindow{prefix, "lengthOfTimeWindow"};  
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindowInSeconds{prefix, "lengthOfTimeWindowInSeconds"};  
-        static const Prefixed<KV<std::int64_t>> bitsPerValue{prefix, "bitsPerValue"};  
-        static const Prefixed<KV<std::int64_t>> periodMin{prefix, "periodMin"};  
-        static const Prefixed<KV<std::int64_t>> periodMax{prefix, "periodMax"};  
-        static const Prefixed<KV<std::vector<double>>> waveDirections{prefix, "waveDirections"};  
-        static const Prefixed<KV<std::vector<double>>> waveFrequencies{prefix, "waveFrequencies"};  
-        static const Prefixed<KV<std::int64_t>> satelliteSeries{prefix, "satelliteSeries"};  
-        static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};  
-        static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};  
-        
+        static const Prefixed<KV<std::int64_t>> typeofprocesseddata{prefix, "typeofprocesseddata"};
+        static const Prefixed<KV<bool, IntToBoolMapper>> encodeStepZero{prefix, "encodeStepZero", IntToBoolMapper{}};
+        static const Prefixed<KV<std::int64_t>> initialStep{prefix, "initialStep"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeRange{prefix, "lengthOfTimeRange"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeStep{prefix, "lengthOfTimeStep"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeRangeInSeconds{prefix, "lengthOfTimeRangeInSeconds"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeStepInSeconds{prefix, "lengthOfTimeStepInSeconds"};
+        static const Prefixed<KV<double>> valuesScaleFactor{prefix, "valuesScaleFactor"};
+        static const Prefixed<KV<std::vector<double>>> pv{prefix, "pv"};
+        static const Prefixed<KV<std::int64_t>> numberOfMissingValues{prefix, "numberOfMissingValues"};
+        static const Prefixed<KV<double>> valueOfMissingValues{prefix, "valueOfMissingValues"};
+        static const Prefixed<KV<std::int64_t>> typeOfEnsembleForecast{prefix, "typeOfEnsembleForecast"};
+        static const Prefixed<KV<std::int64_t>> numberOfForecastsInEnsemble{prefix, "numberOfForecastsInEnsemble"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindow{prefix, "lengthOfTimeWindow"};
+        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindowInSeconds{prefix, "lengthOfTimeWindowInSeconds"};
+        static const Prefixed<KV<std::int64_t>> bitsPerValue{prefix, "bitsPerValue"};
+        static const Prefixed<KV<std::int64_t>> periodMin{prefix, "periodMin"};
+        static const Prefixed<KV<std::int64_t>> periodMax{prefix, "periodMax"};
+        static const Prefixed<KV<std::vector<double>>> waveDirections{prefix, "waveDirections"};
+        static const Prefixed<KV<std::vector<double>>> waveFrequencies{prefix, "waveFrequencies"};
+        static const Prefixed<KV<std::int64_t>> satelliteSeries{prefix, "satelliteSeries"};
+        static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};
+        static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};
+
         // TBD - move to marse
-        static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};  
-        static const Prefixed<KV<std::int64_t>> systemNumber{prefix, "systemNumber"};  
-    }  
-    
+        static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};
+        static const Prefixed<KV<std::int64_t>> systemNumber{prefix, "systemNumber"};
+    }
+
     template<typename Func>
     void withParametrizationKeys(Func&& func) {
         func(misc::tablesVersion);
@@ -508,13 +510,13 @@ namespace Mtg2 {
         func(misc::satelliteSeries);
         func(misc::scaleFactorOfCentralWavenumber);
         func(misc::scaledValueOfCentralWavenumber);
-       
+
         func(misc::methodNumber);
         func(misc::systemNumber);
     }
-    
+
     namespace gg {
-        static const KV<double> truncateDegrees{"truncateDegrees"};
+        static const KV<std::int64_t> truncateDegrees{"truncateDegrees"};
         static const KV<std::int64_t> numberOfPointsAlongAMeridian{"numberOfPointsAlongAMeridian"};
         static const KV<std::int64_t> numberOfParallelsBetweenAPoleAndTheEquator{"numberOfParallelsBetweenAPoleAndTheEquator"};
         static const KV<double> latitudeOfFirstGridPointInDegrees{"latitudeOfFirstGridPointInDegrees"};
@@ -523,13 +525,13 @@ namespace Mtg2 {
         static const KV<double> longitudeOfLastGridPointInDegrees{"longitudeOfLastGridPointInDegrees"};
         static const KV<std::vector<std::int64_t>> pl{"pl"};
     }
-    
+
     namespace sh {
         static const KV<double> pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
         static const KV<double> pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
         static const KV<double> pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
     }
-    
+
     template<typename Func>
     void withGGKeys(Func&& func) {
         func(gg::truncateDegrees);
@@ -541,20 +543,20 @@ namespace Mtg2 {
         func(gg::longitudeOfLastGridPointInDegrees);
         func(gg::pl);
     }
-    
+
     template<typename Func>
     void withLLKeys(Func&& func) {
     }
-    
+
     template<typename Func>
     void withSHKeys(Func&& func) {
         func(sh::pentagonalResolutionParameterJ);
         func(sh::pentagonalResolutionParameterK);
         func(sh::pentagonalResolutionParameterM);
     }
-    
+
     std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& gridName);
-    
+
     template<typename Func>
     void withGeometryKeys(Repres repres, Func&& func) {
         switch (repres) {

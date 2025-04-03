@@ -391,6 +391,7 @@ IMPLICIT NONE
   ! Initialization of the hooks
   CALL HOOKS%DEBUG_HOOK_%INIT( )
 
+
 !$omp critical(API_ENCODER_MAP_REMOVE)
   !> Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MULTIO_GRIB2), ERRFLAG_ENCODER_NOT_ASSOCIATED )
@@ -515,223 +516,6 @@ PP_ERROR_HANDLER
 END FUNCTION MULTIO_GRIB2_ENCODER_CLOSE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
-
-
-
-! #define PP_PROCEDURE_TYPE 'FUNCTION'
-! #define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_ENCODE64'
-! PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_ENCODE64( MULTIO_GRIB2, MARS_DICT, PAR_DICT, VALUES, DATA_LEN, GRIB_HANDLE ) &
-!  BIND(C,NAME='multio_grib2_encoder_encode64') RESULT(RET)
-
-!   !> Symbols imported from intrinsic modules.
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
-
-!   ! Symbols imported from other modules within the project.
-!   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-!   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-!   ! Symbols imported by the preprocessor for debugging purposes
-!   PP_DEBUG_USE_VARS
-
-!   ! Symbols imported by the preprocessor for logging purposes
-!   PP_LOG_USE_VARS
-
-!   ! Symbols imported by the preprocessor for tracing purposes
-!   PP_TRACE_USE_VARS
-
-! IMPLICIT NONE
-
-!   !> Dummy arguments
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: MULTIO_GRIB2
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: MARS_DICT
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: PAR_DICT
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: VALUES
-!   INTEGER(KIND=C_LONG), VALUE, INTENT(IN) :: DATA_LEN
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: GRIB_HANDLE
-
-!   !> Function result
-!   INTEGER(KIND=C_INT) :: RET
-
-!   !> Local variables
-!   REAL(KIND=C_DOUBLE), DIMENSION(:), POINTER :: VALUES_ARRAY32
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: ENCODER_ID
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: MARS_ID
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: PAR_ID
-
-!   !> Local error flags
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_DATA_LEN=1_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_VALUES_IS_NULL_POINTER=2_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MULTIO_GRIB2_IS_NULL_POINTER=3_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICT_IS_NULL_POINTER=4_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PAR_DICT_IS_NULL_POINTER=5_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_HANDLE_IS_NULL_POINTER=6_JPIB_K
-
-!   ! Local variables declared by the preprocessor for debugging purposes
-!   PP_DEBUG_DECL_VARS
-
-!   ! Local variables declared by the preprocessor for logging purposes
-!   PP_LOG_DECL_VARS
-
-!   ! Local variables declared by the preprocessor for tracing purposes
-!   PP_TRACE_DECL_VARS
-
-!   ! Trace begin of procedure
-!   PP_TRACE_ENTER_PROCEDURE()
-
-!   ! Initialization of good path return value
-!   RET = 0_C_INT
-
-!   !> Error handling
-!   PP_DEBUG_CRITICAL_COND_THROW( DATA_LEN .LE. 0, ERRFLAG_WRONG_DATA_LEN )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(VALUES), ERRFLAG_VALUES_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MULTIO_GRIB2), ERRFLAG_MULTIO_GRIB2_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MARS_DICT), ERRFLAG_MARS_DICT_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(PAR_DICT), ERRFLAG_PAR_DICT_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(GRIB_HANDLE), ERRFLAG_GRIB_HANDLE_IS_NULL_POINTER )
-
-!   !> Cast the VALUES pointer to a real array
-!   CALL C_F_POINTER( VALUES, VALUES_ARRAY32, [DATA_LEN] )
-
-!   !> Get encoder handle from the c pointer
-!   CALL C_F_POINTER( MULTIO_GRIB2, ENCODER_ID )
-
-!   !> Get mars dictionary handle from the c pointer
-!   CALL C_F_POINTER( MARS_DICT, MARS_ID )
-
-!   !> Parameterization handle from the c pointer
-!   CALL C_F_POINTER( PAR_DICT, PAR_ID )
-
-!   !>
-
-!   ! Trace end of procedure (on success)
-!   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-!   ! Exit point (On success)
-!   RETURN
-
-! ! Error handler
-! PP_ERROR_HANDLER
-
-!   ! Initialization of bad path return value
-!   PP_SET_ERR_FAILURE( RET )
-
-!   ! TODO: Add error handling code here
-
-!   RETURN
-
-! END FUNCTION MULTIO_GRIB2_ENCODER_ENCODE64
-! #undef PP_PROCEDURE_NAME
-! #undef PP_PROCEDURE_TYPE
-
-
-! #define PP_PROCEDURE_TYPE 'FUNCTION'
-! #define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_ENCODE32'
-! PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_ENCODE32( MULTIO_GRIB2, MARS_DICT, PAR_DICT, VALUES, DATA_LEN, GRIB_HANDLE ) &
-!  BIND(C,NAME='multio_grib2_encoder_encode32') RESULT(RET)
-
-!   !> Symbols imported from intrinsic modules.
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_FLOAT
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY, INTRINSIC :: ISO_C_BINDING, ONLY, INTRINSIC :: ISO_C_BINDING
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
-!   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
-
-!   ! Symbols imported from other modules within the project.
-!   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-!   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-!   ! Symbols imported by the preprocessor for debugging purposes
-!   PP_DEBUG_USE_VARS
-
-!   ! Symbols imported by the preprocessor for logging purposes
-!   PP_LOG_USE_VAR       S
-
-!   ! Symbols impo       rted by the preprocessor for tracing purposes
-!   PP_TRACE_USE_VARS
-
-! IMPLICIT NONE
-
-!   !> Dummy arguments
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: MULTIO_GRIB2
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: MARS_DICT
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: PAR_DICT
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: VALUES
-!   INTEGER(KIND=C_LONG), VALUE, INTENT(IN) :: DATA_LEN
-!   TYPE(C_PTR),          VALUE, INTENT(IN) :: GRIB_HANDLE
-
-!   !> Function result
-!   INTEGER(KIND=C_INT) :: RET
-
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: ENCODER_ID
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: MARS_ID
-!   INTEGER(KIND=C_LONG_LONG), POINTER :: PAR_ID
-
-!   !> Local error flags
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_DATA_LEN=1_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MULTIO_GRIB2_IS_NULL_POINTER=3_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICT_IS_NULL_POINTER=4_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PAR_DICT_IS_NULL_POINTER=5_JPIB_K
-!   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_HANDLE_IS_NULL_POINTER=6_JPIB_K
-
-!   ! Local variables declared by the preprocessor for debugging purposes
-!   PP_DEBUG_DECL_VARS
-
-!   ! Local variables declared by the preprocessor for logging purposes
-!   PP_LOG_DECL_VARS
-
-!   ! Local variables declared by the preprocessor for tracing purposes
-!   PP_TRACE_DECL_VARS
-
-!   ! Trace begin of procedure
-!   PP_TRACE_ENTER_PROCEDURE()
-
-!   ! Initialization of good path return value
-!   RET = 0_C_INT
-
-!   !> Error handling
-!   PP_DEBUG_CRITICAL_COND_THROW( DATA_LEN .LE. 0, ERRFLAG_WRONG_DATA_LEN )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(VALUES), ERRFLAG_VALUES_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MULTIO_GRIB2), ERRFLAG_MULTIO_GRIB2_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MARS_DICT), ERRFLAG_MARS_DICT_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(PAR_DICT), ERRFLAG_PAR_DICT_IS_NULL_POINTER )
-!   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(GRIB_HANDLE), ERRFLAG_GRIB_HANDLE_IS_NULL_POINTER )
-
-!   !> Cast the VALUES pointer to a real array
-!   CALL C_F_POINTER( VALUES, VALUES_ARRAY32, [DATA_LEN] )
-
-!   !> Get encoder handle from the c pointer
-!   CALL C_F_POINTER( MULTIO_GRIB2, ENCODER_ID )
-
-!   !> Get mars dictionary handle from the c pointer
-!   CALL C_F_POINTER( PAR_DICT, PAR_ID )
-
-!   ! Trace end of procedure (on success)
-!   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-!   ! Exit point (On success)
-!   RETURN
-
-! ! Error handler
-! PP_ERROR_HANDLER
-
-!   ! Initialization of bad path return value
-!   PP_SET_ERR_FAILURE( RET )
-
-!   ! TODO: Add error handling code here
-
-!   RETURN
-
-! END FUNCTION MULTIO_GRIB2_ENCODER_ENCODE32
-! #undef PP_PROCEDURE_NAME
-! #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -884,10 +668,12 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) EXTRACT_PAR_DICTIONARY( F_PAR_DICT, PAR_DICT, HOOKS )
 
   ! WRITE(6, *) "PAR YAML.."
-  ! PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) PAR_DICT%WRITE_TO_YAML(6_JPIB_K, 0_JPIB_K, HOOKS)
+  PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) PAR_DICT%WRITE_TO_YAML(6_JPIB_K, 0_JPIB_K, HOOKS)
 
   ! Call the encoder
   PP_TRYCALL(ERRFLAG_CALL_THE_ENCODER) ENCODER%ENCODE(  MARS_DICT, PAR_DICT, METADATA_LIST, HOOKS )
+
+  PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) PAR_DICT%WRITE_TO_YAML(6_JPIB_K, 0_JPIB_K, HOOKS)
 
   !> Loop over the encoding rules
   PP_TRYCALL(ERRFLAG_UNABLE_CHECK_LIST) METADATA_LIST%SIZE( MD_SIZE, HOOKS )
@@ -896,16 +682,6 @@ IMPLICIT NONE
   !> Get the encoding rule
   PP_TRYCALL(ERRFLAG_UNABLE_TO_POP_FROM_LIST) METADATA_LIST%POP( OUT_MSG, OUT_PAR, &
 &       MAPPING_TAG, MAPPING_NAME, ENCODER_TAG, ENCODER_NAME, MD, HOOKS )
-
-  !> Print Mapped message For debug
-  !! PP_TRYCALL(ERRFLAG_MARS_TO_JSON) OUT_MSG%TO_JSON( JSON, HOOKS )
-  !! IF ( ALLOCATED(JSON) ) THEN
-  !!   WRITE(*,'(A,A)') ' * WRITE ATM-DP :: MAPPED - MARS to JSON: ', JSON
-  !!   DEALLOCATE( JSON, STAT=DEALLOC_STAT, ERRMSG=ERRMSG )
-  !!   PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
-  !! ELSE
-  !!   WRITE(*,*) ' * MAPPED - MARS to JSON: ', 'NO JSON'
-  !! END IF
 
   ! Get the metadata
 
@@ -939,6 +715,8 @@ IMPLICIT NONE
   !> Free the message/parametrization
   PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_MSG) OUT_MSG%FREE( HOOKS )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_PAR) OUT_PAR%FREE( HOOKS )
+
+  PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) PAR_DICT%WRITE_TO_YAML(6_JPIB_K, 0_JPIB_K, HOOKS)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

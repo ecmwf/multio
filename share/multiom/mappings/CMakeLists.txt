@@ -1,5 +1,7 @@
 file(GLOB mapping_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/mappings/fix")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/mappings/rules")
 
 # Mapping rules used to fix wrong information coming from IFS
 add_subdirectory(fix)
@@ -12,6 +14,10 @@ add_subdirectory(rules)
 foreach(rule ${mapping_rules})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
                    ${CMAKE_CURRENT_BINARY_DIR}/${rule}
+                   COPYONLY)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
+                   ${CMAKE_BINARY_DIR}/share/multiom/mappings/${rule}
                    COPYONLY)
 endforeach()
 

@@ -15,5 +15,5 @@ plans:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: allFields-pl-gg-new-encoder.grib
+            path: allFields-new-encoder.grib
 

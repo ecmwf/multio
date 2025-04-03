@@ -33,7 +33,7 @@ struct KeyValueDescription<KeyType, ValueType, void> {
     operator const KeyType&() const { return key; }
     operator std::string&() { return key; }
     operator const std::string&() const { return key; }
-    
+
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
     decltype(auto) get(MD&& md) const {
         return std::forward<MD>(md).template get<ValueType>(key);;
@@ -42,7 +42,7 @@ struct KeyValueDescription<KeyType, ValueType, void> {
     decltype(auto) getOpt(MD&& md) const {
         return std::forward<MD>(md).template getOpt<ValueType>(key);;
     }
-    
+
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
     decltype(auto) set(MD&& md, ValueType&& val) const {
         return std::forward<MD>(md).set(key, std::move(val));
@@ -51,12 +51,12 @@ struct KeyValueDescription<KeyType, ValueType, void> {
     decltype(auto) set(MD&& md, const ValueType& val) const {
         return std::forward<MD>(md).set(key, val);
     }
-    
+
     template<typename MDV, std::enable_if_t<std::is_base_of_v<MetadataValue, std::decay_t<MDV>>, bool> = true>
     decltype(auto) get(MDV&& md) const {
         return std::forward<MDV>(md).template get<ValueType>();;
     }
-    
+
 };
 
 
@@ -341,7 +341,7 @@ namespace Mtg2 {
 
     template<typename ValueType, typename Mapper = void>
     using KV = KeyValueDescription<KeyType, ValueType, Mapper>;
-    
+
     enum class Repres: long {
         GG,
         LL,
@@ -349,8 +349,7 @@ namespace Mtg2 {
     };
     Repres parseRepres(const std::string& repres);
     std::string toString(Repres);
-    
-    
+
     struct ParamMapper {
         std::int64_t operator()(std::int64_t) const noexcept;
         std::int64_t operator()(const std::string&) const;

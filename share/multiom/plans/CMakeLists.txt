@@ -6,6 +6,10 @@ foreach(plan ${multio_plans})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${plan}
                    ${CMAKE_CURRENT_BINARY_DIR}/${plan}
                    COPYONLY)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${plan}
+                   ${CMAKE_BINARY_DIR}/share/multiom/plans/${plan}
+                   COPYONLY)
 endforeach()
 
 

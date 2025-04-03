@@ -70,10 +70,9 @@ PP_THREAD_SAFE FUNCTION IS_VALID_OUTPUT_MANAGER( OMTYPE, IS_VALID, HOOKS ) RESUL
   USE :: DUMP_MOD,                 ONLY: DUMP_OUTPUT_MANAGER_T
   USE :: DUMP_MOD,                 ONLY: DUMP_OMNAME
 
-#if 0
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OMNAME
-#endif
+
 
   USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OUTPUT_MANAGER_T
   USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OMNAME
@@ -178,7 +177,7 @@ IMPLICIT NONE
   CASE ( 'GRIB-MSG-TO-MULTIO', GRIBX2MULTIO_BIN_OMNAME )
     ALLOCATE( GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-
+#endif
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager utilizing multIO as a sink. Binary-encoded
   ! grib files are transformed into multIO metadata and a raw data array.
@@ -186,7 +185,7 @@ IMPLICIT NONE
   ! on-the-fly post-processing and storage to disk.
   CASE ( GRIB_HEADER2MULTIO_OMNAME )
     IS_VALID = .TRUE.
-#endif
+
 
 #if 0
   ! ------------------------------------------------------------------------------------------------
@@ -311,10 +310,8 @@ PP_THREAD_SAFE FUNCTION MAKE_OUTPUT_MANAGER( OMTYPE, PROCESSOR_TOPO, &
   USE :: DUMP_MOD,                 ONLY: DUMP_OUTPUT_MANAGER_T
   USE :: DUMP_MOD,                 ONLY: DUMP_OMNAME
 
-#if 0
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OMNAME
-#endif
 
   USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OUTPUT_MANAGER_T
   USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OMNAME
@@ -427,6 +424,7 @@ IMPLICIT NONE
   CASE ( 'GRIB-MSG-TO-MULTIO', GRIBX2MULTIO_BIN_OMNAME )
     ALLOCATE( GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+#endif
 
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager utilizing multIO as a sink. Binary-encoded
@@ -436,7 +434,7 @@ IMPLICIT NONE
   CASE ( GRIB_HEADER2MULTIO_OMNAME )
     ALLOCATE( GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE )
-#endif
+
 
 
 #if 0

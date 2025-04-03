@@ -55,14 +55,14 @@ EncodeMultiOMOptions parseOptions(const ComponentConfiguration& compConf) {
         ret.mappingFile = conf.getString("mapping-rules");
     }
     else {
-        ret.mappingFile = ret.knowledgeRoot.value() + "/share/multiom/encodings/encoding-rules.yaml";
+        ret.mappingFile = ret.knowledgeRoot.value() + "/share/multiom/mappings/mapping-rules.yaml";
     }
 
     if (conf.has("encoding-rules")) {
         ret.encodingFile = conf.getString("encoding-rules");
     }
     else {
-        ret.encodingFile = ret.knowledgeRoot.value() + "/share/multiom/mappings/mapping-rules.yaml";
+        ret.encodingFile = ret.knowledgeRoot.value() + "/share/multiom/encodings/encoding-rules.yaml";
     }
 
     return ret;
@@ -113,7 +113,7 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
     }
 }
 
-MultiOMDict::MultiOMDict(MultiOMDictKind kind): kind_{kind} {
+MultiOMDict::MultiOMDict(MultiOMDictKind kind): dict_{NULL},kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
     ASSERT(multio_grib2_dict_create(&dict_, kindStr.data()) == 0);
 
@@ -123,15 +123,17 @@ MultiOMDict::MultiOMDict(MultiOMDictKind kind): kind_{kind} {
 }
 
 void MultiOMDict::toYAML(const std::string& file) {
-    multio_grib2_dict_to_yaml(&dict_, "stdout");
+    multio_grib2_dict_to_yaml(dict_, "stdout");
 }
 
 void MultiOMDict::set(const char* key, const char* val) {
     ASSERT(multio_grib2_dict_set(dict_, key, val) == 0);
 }
+
 void MultiOMDict::set(const std::string& key, const std::string& val) {
     set(key.c_str(), val.c_str());
 }
+
 void MultiOMDict::set_geometry(MultiOMDict& geom) {
     ASSERT(kind_ == MultiOMDictKind::Parametrization);
     switch (geom.kind_) {
@@ -139,8 +141,9 @@ void MultiOMDict::set_geometry(MultiOMDict& geom) {
         case MultiOMDictKind::RegularLL:
         case MultiOMDictKind::SH:
             ASSERT(multio_grib2_dict_set_geometry(dict_, geom.dict_) == 0);
+            break;
         default:
-            throw EncodeMtg2Exception("Passed dict is not a geometry dictt", Here());
+            throw EncodeMtg2Exception("Passed dict is not a geometry dict", Here());
     }
 }
 
@@ -169,6 +172,8 @@ void MultiOMDict::set(const std::string& key, const std::vector<double>& val) {
 
 
 MultiOMDict::~MultiOMDict() {
+    // TODO MIVAL : to be removed
+    // std::cout << "Destroying dict: " << multiOMDictKindString(kind_) << std::endl;
     ASSERT(multio_grib2_dict_destroy(&dict_) == 0);
 }
 
@@ -184,14 +189,14 @@ MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const double* data,
                                                      std::size_t len) {
     codes_handle* rawOutputCodesHandle = nullptr;
-    ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle));
+    ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const float* data,
                                                      std::size_t len) {
     codes_handle* rawOutputCodesHandle = nullptr;
-    ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle));
+    ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
@@ -217,6 +222,10 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     auto& md = msg.metadata();
 
+
+    // TODO MIVAL : to be removed
+    // std::cout << "Encoding message with metadata: " << md << std::endl;
+
     // TO encoding
     MultiOMDict mars{MultiOMDictKind::MARS};
     MultiOMDict par{MultiOMDictKind::Parametrization};
@@ -233,7 +242,6 @@ void EncodeMtg2::executeImpl(Message msg) {
                 par.set(prefixedKvDescr.plain, prefixedKvDescr.prefixed.get(search->second));
             }
         });
-
 
         // Legacy handling -- assume no grid has been passed for SH but truncation and repres are given
         std::string grid;
@@ -261,30 +269,30 @@ void EncodeMtg2::executeImpl(Message msg) {
         std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
 
         // Legacy handling -- add repres and truncation assuming grid has been passed properly and also handles SH
-        {
-            if (auto searchRepres = md.find(marsLegacy::repres); searchRepres != md.end()) {
-                if (searchRepres->second.get<std::string>() != toString(repres)) {
-                    std::ostringstream oss;
-                    oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" << toString(repres) << "\"";
-                    throw EncodeMtg2Exception(oss.str(), Here());
-                }
-            }
-            mars.set(marsLegacy::repres, toString(repres));
-
-            if (repres == Repres::SH) {
-                std::int64_t truncation = std::stol(grid.substr(3, grid.size()-1));
-                if (auto searchTruncation = md.find(marsLegacy::truncation); searchTruncation != md.end()) {
-                    if (searchTruncation->second.get<std::int64_t>() != truncation) {
-                        std::ostringstream oss;
-                        oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered truncation \"" << truncation << "\"";
-                        throw EncodeMtg2Exception(oss.str(), Here());
-                    }
-                }
-                mars.set(marsLegacy::truncation, truncation);
-            }
-
-        }
-
+        // {
+        //     if (auto searchRepres = md.find(marsLegacy::repres); searchRepres != md.end()) {
+        //         if (searchRepres->second.get<std::string>() != toString(repres)) {
+        //             std::ostringstream oss;
+        //             oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" << toString(repres) << "\"";
+        //             throw EncodeMtg2Exception(oss.str(), Here());
+        //         }
+        //     }
+        //     mars.set(marsLegacy::repres, toString(repres));
+//
+        //     if (repres == Repres::SH) {
+        //         std::int64_t truncation = std::stol(grid.substr(3, grid.size()-1));
+        //         if (auto searchTruncation = md.find(marsLegacy::truncation); searchTruncation != md.end()) {
+        //             if (searchTruncation->second.get<std::int64_t>() != truncation) {
+        //                 std::ostringstream oss;
+        //                 oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered truncation \"" << truncation << "\"";
+        //                 throw EncodeMtg2Exception(oss.str(), Here());
+        //             }
+        //         }
+        //         mars.set(marsLegacy::truncation, truncation);
+        //     }
+//
+        // }
+//
         MultiOMDict geom{
             ([&](){
                 switch (repres) {
@@ -304,33 +312,44 @@ void EncodeMtg2::executeImpl(Message msg) {
                 geom.set(kvDescr, kvDescr.get(search->second));
             }
         });
+
         par.set_geometry(geom);
+
+
+
+        auto& payload = msg.payload();
+
+        // auto beg = reinterpret_cast<const T*>(msg.payload().data());
+        // this->setDataValues(beg, msg.globalSize());
+
+        // msg.header().acquireMetadata();
+        // const auto& metadata = msg.metadata();
+
+        executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+            using Precision = typename decltype(pt)::type;
+
+            auto rawGrib2Handle = encoder_.encode(mars, par, static_cast<const Precision*>(payload.data()),
+                                                  payload.size() / sizeof(Precision));
+
+            // Create non-owning grib handle by passing by reference
+            util::MioGribHandle gribHandle{*rawGrib2Handle.get()};
+
+            // Initialize buffer with length
+            eckit::Buffer buf{gribHandle.length()};
+            gribHandle.write(buf);
+
+            // TODO MIVAL : to be removed
+            // std::cout << "Encoded message size: " << buf.size() << std::endl;
+
+            return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
+                           std::move(buf)};
+        }));
+
     }
 
+    // TODO MIVAL : to be removed
+    // std::cout << "Exit encoding with metadata: " << md << std::endl;
 
-    auto& payload = msg.payload();
-
-    // auto beg = reinterpret_cast<const T*>(msg.payload().data());
-    // this->setDataValues(beg, msg.globalSize());
-
-    // msg.header().acquireMetadata();
-    // const auto& metadata = msg.metadata();
-
-    executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using Precision = typename decltype(pt)::type;
-        auto rawGrib2Handle = encoder_.encode(mars, par, static_cast<const Precision*>(payload.data()),
-                                              payload.size() / sizeof(Precision));
-
-        // Create non-owning grib handle by passing by reference
-        util::MioGribHandle gribHandle{*rawGrib2Handle.get()};
-
-        // Initialize buffer with length
-        eckit::Buffer buf{gribHandle.length()};
-        gribHandle.write(buf);
-
-        return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
-                       std::move(buf)};
-    }));
 }
 
 void EncodeMtg2::print(std::ostream& os) const {

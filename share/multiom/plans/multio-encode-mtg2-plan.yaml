@@ -1,0 +1,19 @@
+# This is just a debug plan used to check that the multIO is called correctly.
+plans:
+
+  - name: 'Debug-plan'
+    actions:
+
+      - type: print
+        stream: cout
+        prefix: "MultIO debug plan:"
+
+      - type: encode-mtg2
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: allFields-new-encoder.grib
+

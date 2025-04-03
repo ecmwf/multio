@@ -6,6 +6,10 @@ foreach(sample ${samples})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${sample}
                    ${CMAKE_CURRENT_BINARY_DIR}/${sample}
                    COPYONLY)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${sample}
+                   ${CMAKE_BINARY_DIR}/share/multiom/samples/${sample}
+                   COPYONLY)
 endforeach()
 
 

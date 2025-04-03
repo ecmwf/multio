@@ -64,7 +64,7 @@ struct MultiOMDict {
     void set(const std::string& key, const double* val, std::size_t len);
     void set(const std::string& key, const std::vector<std::int64_t>& val);
     void set(const std::string& key, const std::vector<double>& val);
-    
+
     // Set geoemtry on parametrization
     void set_geometry(MultiOMDict& geom);
 

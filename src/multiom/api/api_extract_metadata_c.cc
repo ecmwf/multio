@@ -5,6 +5,7 @@
 #include <string.h>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 #include <vector>

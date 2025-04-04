@@ -725,7 +725,7 @@ IMPLICIT NONE
               CALL GRIB_IS_DEFINED( HANDLE, 'localDefinitionNumber', IS_DEFINED, STATUS=KRET )
               PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS , ERRFLAG_UNABLE_TO_CHECK_IS_DEFINED )
 
-              IF( IS_DEFINED.NE.0 ) THEN
+              IF( IS_DEFINED .NE. 0_JPIM_K ) THEN
                   LOCAL_DEFINITION=0_JPIM_K
                   KRET=GRIB_SUCCESS
                   CALL GRIB_GET( HANDLE, 'localDefinitionNumber', LOCAL_DEFINITION, STATUS=KRET )
@@ -936,7 +936,7 @@ IMPLICIT NONE
               CALL GRIB_IS_DEFINED( HANDLE, 'localDefinitionNumber', IS_DEFINED, STATUS=KRET )
               PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS , ERRFLAG_UNABLE_TO_CHECK_IS_DEFINED )
 
-              IF( IS_DEFINED.NE.0 ) THEN
+              IF( IS_DEFINED .NE. 0_JPIM_K ) THEN
                   LOCAL_DEFINITION=0_JPIM_K
                   KRET=GRIB_SUCCESS
                   CALL GRIB_GET( HANDLE, 'localDefinitionNumber', LOCAL_DEFINITION, STATUS=KRET )

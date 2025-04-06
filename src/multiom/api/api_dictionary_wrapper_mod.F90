@@ -275,6 +275,9 @@ IMPLICIT NONE
     ALLOCATE( MESSAGE, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
     PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
 
+    !> Initialize the parametrization dictionary
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_MAP) MESSAGE%INIT( HOOKS )
+
     MESSAGE_DESTRUCTOR => FREE_MARS_MESSAGE
     PP_TRYCALL(ERRFLAG_UNABLE_TO_ADD_DICTIONARY) SHARED_MARS_DICT_MAP%INSERT( F_MULTIO_GRIB2, MESSAGE, MESSAGE_DESTRUCTOR, HOOKS )
 !$omp end critical(API_DICTIONARY_MAP_INSERT)
@@ -318,6 +321,9 @@ IMPLICIT NONE
     !> Allocate the mars dictionary
     ALLOCATE( PARAMETRIZATION, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
     PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_ALLOC_FAILURE )
+
+    !> Initialize the parametrization dictionary
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_MAP) PARAMETRIZATION%INIT( HOOKS )
 
     PARAMETRIZATION_DESTRUCTOR => FREE_PARAMETRIZATION
     PP_TRYCALL(ERRFLAG_UNABLE_TO_ADD_DICTIONARY) SHARED_PAR_DICT_MAP%INSERT( F_MULTIO_GRIB2, PARAMETRIZATION, PARAMETRIZATION_DESTRUCTOR, HOOKS )
@@ -369,8 +375,7 @@ IMPLICIT NONE
 
     !> Get the location of the dictionary
     MULTIO_GRIB2 = C_LOC( F_MULTIO_GRIB2 )
-    
-    
+
   CASE ( 'regulargg', 'regular-gg', 'geometryregulargg', 'geometry-regular-gg' )
 
     !> Get the dictionary handle from the c pointer
@@ -668,15 +673,12 @@ IMPLICIT NONE
   !> Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(MULTIO_GRIB2), ERRFLAG_DICTIONARY_NOT_ASSOCIATED )
 
-  ! WRITE(*,*) 'MULTIO_GRIB2 0 '
   TMP => NULL()
   CALL C_F_POINTER( MULTIO_GRIB2, TMP, [1] )
-  ! WRITE(*,*) 'MULTIO_GRIB2 1 '
 
   !> Get th fortran handle from the c handle
   F_MULTIO_GRIB2 => NULL()
   CALL C_F_POINTER( TMP(1), F_MULTIO_GRIB2, [2] )
-  ! WRITE(*,*) 'F_MULTIO_GRIB2(1): ', F_MULTIO_GRIB2(1)
 
   !> Check the allocation status of the fortran handle
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_MULTIO_GRIB2), ERRFLAG_DICTIONARY_NOT_ASSOCIATED )
@@ -711,6 +713,7 @@ IMPLICIT NONE
     !> Get the map size
     PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_SIZE) SHARED_MARS_DICT_MAP%SIZE( MAP_SIZE, HOOKS )
 
+
     !> To avoid the need of init/exit API, every time the map is empty we deallocate the map
     IF ( MAP_SIZE .EQ. 0_JPIB_K ) THEN
       PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_MAP) SHARED_MARS_DICT_MAP%FREE( HOOKS )
@@ -718,7 +721,6 @@ IMPLICIT NONE
 !$omp end critical(API_DICTIONARY_MAP_REMOVE)
 
   CASE ( PAR_DICT_TYPE_E )
-
 
 !$omp critical(API_DICTIONARY_MAP_REMOVE)
 
@@ -751,9 +753,7 @@ IMPLICIT NONE
     ENDIF
 !$omp end critical(API_DICTIONARY_MAP_REMOVE)
 
-
   CASE ( REDUCED_GG_DICT_TYPE_E )
-
 
 !$omp critical(API_DICTIONARY_MAP_REMOVE)
 
@@ -788,7 +788,6 @@ IMPLICIT NONE
 
   CASE ( REGULAR_GG_DICT_TYPE_E )
 
-
 !$omp critical(API_DICTIONARY_MAP_REMOVE)
 
     !> Print the parametrization dictionary map
@@ -820,9 +819,7 @@ IMPLICIT NONE
     ENDIF
 !$omp end critical(API_DICTIONARY_MAP_REMOVE)
 
-
   CASE ( SH_DICT_TYPE_E )
-
 
 !$omp critical(API_DICTIONARY_MAP_REMOVE)
 
@@ -855,9 +852,7 @@ IMPLICIT NONE
     ENDIF
 !$omp end critical(API_DICTIONARY_MAP_REMOVE)
 
-
   CASE ( OPT_DICT_TYPE_E )
-
 
 !$omp critical(API_DICTIONARY_MAP_REMOVE)
 
@@ -3085,8 +3080,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! WRITE(*,*) ' + ENTER ITERATE'
-
   ! Initialization of the hooks
   CALL HOOKS%DEBUG_HOOK_%INIT( )
 
@@ -3662,8 +3655,6 @@ IMPLICIT NONE
   DO I = 1, LEN
     FNAME_F(I:I) = FNAME_C(I)
   END DO
-
-  WRITE(*,*) 'FNAME_F:', TRIM(FNAME_F)
 
   SELECT CASE( TRIM(FNAME_F) )
 

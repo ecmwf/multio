@@ -393,7 +393,7 @@ namespace Mtg2 {
         static const KV<std::int64_t> date{"date"};
         static const KV<std::int64_t> time{"time"};
         static const KV<std::int64_t> step{"step"};
-        static const KV<std::int64_t> timespan{"timespan"};
+        static const KV<std::int64_t> timespan{"timeproc"};
         static const KV<std::int64_t> hdate{"hdate"};
 
         static const KV<std::string> grid{"grid"};
@@ -526,9 +526,9 @@ namespace Mtg2 {
     }
 
     namespace sh {
-        static const KV<double> pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
-        static const KV<double> pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
-        static const KV<double> pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
+        static const KV<std::int64_t> pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
+        static const KV<std::int64_t> pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
+        static const KV<std::int64_t> pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
     }
 
     template<typename Func>

@@ -172,6 +172,8 @@ void MultiOMDict::set(const std::string& key, const std::vector<double>& val) {
 
 
 MultiOMDict::~MultiOMDict() {
+    // TODO MIVAL : to be removed
+    // std::cout << "Destroying dict: " << multiOMDictKindString(kind_) << std::endl;
     ASSERT(multio_grib2_dict_destroy(&dict_) == 0);
 }
 
@@ -219,6 +221,10 @@ void EncodeMtg2::executeImpl(Message msg) {
     }
 
     auto& md = msg.metadata();
+
+
+    // TODO MIVAL : to be removed
+    // std::cout << "Encoding message with metadata: " << md << std::endl;
 
     // TO encoding
     MultiOMDict mars{MultiOMDictKind::MARS};
@@ -332,11 +338,18 @@ void EncodeMtg2::executeImpl(Message msg) {
             eckit::Buffer buf{gribHandle.length()};
             gribHandle.write(buf);
 
+            // TODO MIVAL : to be removed
+            // std::cout << "Encoded message size: " << buf.size() << std::endl;
+
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                            std::move(buf)};
         }));
 
     }
+
+    // TODO MIVAL : to be removed
+    std::cout << "Exit encoding with metadata: " << md << std::endl;
+
 }
 
 void EncodeMtg2::print(std::ostream& os) const {

@@ -348,7 +348,7 @@ void EncodeMtg2::executeImpl(Message msg) {
     }
 
     // TODO MIVAL : to be removed
-    std::cout << "Exit encoding with metadata: " << md << std::endl;
+    // std::cout << "Exit encoding with metadata: " << md << std::endl;
 
 }
 

@@ -49,8 +49,8 @@ PRIVATE
 
 
     ! Configorations to be discussed and eventually to be integrated in the MARS keywords
-    TYPE(TIME_PAR_T)                :: TIME
     TYPE(LEVEL_PAR_T)               :: LEVELS
+    TYPE(TIME_PAR_T)                :: TIME
     TYPE(BITMAP_PAR_T)              :: BITMAP
     TYPE(ENSEMBLE_PAR_T)            :: ENSEMBLE
     TYPE(ANALYSIS_PAR_T)            :: ANALYSIS

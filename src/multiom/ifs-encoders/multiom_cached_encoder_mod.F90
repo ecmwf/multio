@@ -451,10 +451,12 @@ IMPLICIT NONE
       ENDIF
     ENDDO
 
-
+    ! TODO MIVAL: Remove code that caused weird corruption
+    ! WRITE(*,*) 'Free temporary encoders 0 :: ', __FILE__, __LINE__
     !> Reset mapped message and parameter
-    PP_TRYCALL(ERRFLAG_FREE_MAPPED_MSG) MAPPED_MSG%FREE( HOOKS )
-    PP_TRYCALL(ERRFLAG_FREE_MAPPED_PAR) MAPPED_PAR%FREE( HOOKS )
+    ! PP_TRYCALL(ERRFLAG_FREE_MAPPED_MSG) MAPPED_MSG%FREE( HOOKS )
+    ! PP_TRYCALL(ERRFLAG_FREE_MAPPED_PAR) MAPPED_PAR%FREE( HOOKS )
+    ! WRITE(*,*) 'Free temporary encoders 1 :: ', __FILE__, __LINE__
 
   ENDDO
 

@@ -38,7 +38,6 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_shared_data_mod.F90
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
-  ${MULTIOM_API_DIR}/api_extract_metadata_c.cc
   ${MULTIOM_API_DIR}/api_encode_c.cc
   ${CMAKE_CURRENT_BINARY_DIR}/map_int64_opt_dict_mod.F90
 )

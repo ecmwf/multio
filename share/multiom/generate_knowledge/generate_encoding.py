@@ -205,14 +205,30 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam(["165:168", 207, 174096, 129172, 228029, 228037, "228131:228132", "228239:228241"]),
+            matchParam(["129172", "228239:228241"]),
         ],
         [PointInTime(), levelConfig("heightAboveGround")],
     ),
-    # heightAboveSea - point in time
+    # heightAboveGroundAt10m - point in time
+    partialRule(
+        [
+            matchType("levtype", "sfc"),
+            matchParam(["165:166", 207, 228029, "228131:228132"]),
+        ],
+        [PointInTime(), levelConfig("heightAboveGroundAt10m")],
+    ),
+    # heightAboveGroundAt2m - point in time
+    partialRule(
+        [
+            matchType("levtype", "sfc"),
+            matchParam(["167:168", 174096, 228037]),
+        ],
+        [PointInTime(), levelConfig("heightAboveGroundAt2m")],
+    ),
+    # heightAboveSeaAt10m - point in time
     partialRule(
         [matchType("levtype", "sfc"), matchParam([140245, 140249, 140233])],
-        [PointInTime(), levelConfig("heightAboveSea")],
+        [PointInTime(), levelConfig("heightAboveSeaAt10m")],
     ),
     # highCloudLayer - point in time
     partialRule(

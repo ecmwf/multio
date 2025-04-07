@@ -18,9 +18,14 @@
 #include <stdlib.h>
 #include <fstream>
 #include <regex>
+#include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 
+#include "atlas/grid.h"
+#include "atlas/library.h"
+#include "atlas/parallel/mpi/mpi.h"
 #include "eccodes.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -43,11 +48,624 @@
 #include "multio/tools/MultioTool.h"
 #include "multiom/api/c/api.h"
 
+namespace multiom {
+
+struct ForeignDictType;
+
+}
+
+template <>
+class std::default_delete<multiom::ForeignDictType> {
+public:
+    void operator()(multiom::ForeignDictType* ptr) const {
+        void* p = static_cast<void*>(ptr);
+        ASSERT(multio_grib2_dict_destroy(&p) == 0);
+    }
+};
+
 
 namespace multiom {
-namespace test {
 
 namespace {
+
+
+// Extract functionality
+using Value = std::variant<std::string, long, double>;
+using Map = std::unordered_map<std::string, Value>;
+
+class MapSetter : public eckit::message::MetadataGatherer {
+    Map& map_;
+
+    void setValue(const std::string& key, const std::string& value) override { map_.insert_or_assign(key, value); }
+    void setValue(const std::string& key, long value) override { map_.insert_or_assign(key, value); }
+    void setValue(const std::string& key, double value) override { map_.insert_or_assign(key, value); }
+
+public:
+    MapSetter(Map& map) : map_(map) {}
+};
+
+Map getMarsKeys(const eckit::message::Message& msg) {
+    Map map;
+    MapSetter setter{map};
+    msg.getMetadata(setter, {eckit::message::ValueRepresentation::Native, eckit::Optional<std::string>{"mars"}});
+    return map;
+}
+
+
+// API Wrappers
+enum class MultiOMDictKind : unsigned long
+{
+    Options,
+    MARS,
+    Parametrization,
+    // Geometry dicts
+    ReducedGG,
+    RegularLL,
+    SH,
+};
+
+
+std::string multiOMDictKindString(MultiOMDictKind kind) {
+    switch (kind) {
+        case MultiOMDictKind::Options:
+            return "options";
+        case MultiOMDictKind::MARS:
+            return "mars";
+        case MultiOMDictKind::Parametrization:
+            return "parametrization";
+        case MultiOMDictKind::ReducedGG:
+            return "reduced-gg";
+        case MultiOMDictKind::RegularLL:
+            return "regular-ll";
+        case MultiOMDictKind::SH:
+            return "sh";
+        default:
+            NOTIMP;
+    }
+}
+
+struct MultiOMDict {
+    MultiOMDict(MultiOMDictKind kind);
+    ~MultiOMDict() = default;
+
+    MultiOMDict(MultiOMDict&&) noexcept = default;
+    MultiOMDict& operator=(MultiOMDict&&) noexcept = default;
+
+    void toYAML(const std::string& file = "stdout");
+
+    void set(const char* key, const char* val);
+    void set(const std::string& key, const std::string& val);
+
+    // Typed setters
+    void set(const std::string& key, std::int64_t val);
+    void set(const std::string& key, double val);
+    void set(const std::string& key, bool val);
+    void set(const std::string& key, const std::int64_t* val, std::size_t len);
+    void set(const std::string& key, const double* val, std::size_t len);
+    void set(const std::string& key, const std::vector<std::int64_t>& val);
+    void set(const std::string& key, const std::vector<double>& val);
+
+    void set(const std::string& key, const Value& val);
+
+    // Set geoemtry on parametrization
+    void set_geometry(MultiOMDict&& geom);
+
+    void* get();
+
+    MultiOMDictKind kind_;
+    std::unique_ptr<ForeignDictType> dict_;
+    std::unique_ptr<MultiOMDict> geom_;
+};
+
+MultiOMDict::MultiOMDict(MultiOMDictKind kind) : kind_{kind} {
+    std::string kindStr = multiOMDictKindString(kind);
+    void* dict = NULL;
+    ASSERT(multio_grib2_dict_create(&dict, kindStr.data()) == 0);
+
+    if (kind == MultiOMDictKind::Options) {
+        ASSERT(multio_grib2_init_options(&dict) == 0);
+    }
+    dict_.reset(static_cast<ForeignDictType*>(dict));
+}
+
+void MultiOMDict::toYAML(const std::string& file) {
+    multio_grib2_dict_to_yaml(get(), file.c_str());
+}
+
+void MultiOMDict::set(const char* key, const char* val) {
+    if (multio_grib2_dict_set(get(), key, val) != 0) {
+        throw std::runtime_error(std::string("Can not set key ") + std::string(key) + std::string(" with value ")
+                                 + std::string(val));
+    }
+}
+void MultiOMDict::set(const std::string& key, const std::string& val) {
+    set(key.c_str(), val.c_str());
+}
+
+// Typed setters
+void MultiOMDict::set(const std::string& key, std::int64_t val) {
+    if (multio_grib2_dict_set_int64(get(), key.c_str(), val) != 0) {
+        throw std::runtime_error(std::string("Can not set key ") + std::string(key) + std::string(" with int64 value ")
+                                 + std::to_string(val));
+    }
+}
+void MultiOMDict::set(const std::string& key, double val) {
+    if (multio_grib2_dict_set_double(get(), key.c_str(), val) == 0) {
+        throw std::runtime_error(std::string("Can not set key ") + std::string(key) + std::string(" with double value ")
+                                 + std::to_string(val));
+    }
+}
+void MultiOMDict::set(const std::string& key, bool val) {
+    set(key, (std::int64_t)val);
+}
+void MultiOMDict::set(const std::string& key, const std::int64_t* val, std::size_t len) {
+    if (multio_grib2_dict_set_int64_array(get(), key.c_str(), val, len) != 0) {
+        throw std::runtime_error(std::string("Can not set key ") + std::string(key) + std::string(" with int64 array"));
+    }
+}
+void MultiOMDict::set(const std::string& key, const double* val, std::size_t len) {
+    if (multio_grib2_dict_set_double_array(get(), key.c_str(), val, len) != 0) {
+        throw std::runtime_error(std::string("Can not set key ") + std::string(key)
+                                 + std::string(" with double array"));
+    }
+}
+void MultiOMDict::set(const std::string& key, const std::vector<std::int64_t>& val) {
+    set(key, val.data(), val.size());
+}
+void MultiOMDict::set(const std::string& key, const std::vector<double>& val) {
+    set(key, val.data(), val.size());
+}
+void MultiOMDict::set(const std::string& key, const Value& val) {
+    std::visit([&](const auto& typedVal) { this->set(key, typedVal); }, val);
+}
+
+// Set geoemtry on parametrization
+void MultiOMDict::set_geometry(MultiOMDict&& geom) {
+    ASSERT(kind_ == MultiOMDictKind::Parametrization);
+    switch (geom.kind_) {
+        case MultiOMDictKind::ReducedGG:
+        case MultiOMDictKind::RegularLL:
+        case MultiOMDictKind::SH:
+            geom_ = std::make_unique<MultiOMDict>(std::move(geom));
+            ASSERT(multio_grib2_dict_set_geometry(get(), geom_->get()) == 0);
+            // ASSERT(multio_grib2_dict_set_geometry(get(), geom.get()) == 0);
+            break;
+        default:
+            throw std::runtime_error(std::string("Passed dict is not a geometry dict"));
+    }
+}
+
+void* MultiOMDict::get() {
+    return static_cast<void*>(dict_.get());
+}
+
+
+namespace extract {
+
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+
+template <class GridType>
+GridType createGrid(const std::string& atlasNamedGrid) {
+    const atlas::Grid grid = readGrid(atlasNamedGrid);
+    auto structuredGrid = atlas::StructuredGrid(grid);
+    return GridType(structuredGrid);
+}
+
+
+bool hasKey(codes_handle* handle, const char* key) {
+    int err;
+    return codes_is_defined(handle, key) != 0 && codes_is_missing(handle, key, &err) == 0;
+}
+
+std::string getString(codes_handle* handle, const char* key) {
+    std::string ret;
+    std::size_t keylen = 1024;
+    // Use resize instead of reserive - will allocate enough memory and sets the size internally to the string
+    ret.resize(keylen);
+    // Now eccodes is writing in the buffer...
+    CODES_CHECK(codes_get_string(handle, key, ret.data(), &keylen), nullptr);
+    ret.resize(strlen(ret.c_str()));
+    return ret;
+}
+
+long getLong(codes_handle* handle, const char* key) {
+    long ret;
+    CODES_CHECK(codes_get_long(handle, key, &ret), nullptr);
+    return ret;
+}
+
+double getDouble(codes_handle* handle, const char* key) {
+    double ret;
+    CODES_CHECK(codes_get_double(handle, key, &ret), nullptr);
+    return ret;
+}
+
+std::size_t getSize(codes_handle* handle, const char* key) {
+    std::size_t ret;
+    CODES_CHECK(codes_get_size(handle, key, &ret), nullptr);
+    return ret;
+}
+
+std::vector<double> getDoubleArray(codes_handle* handle, const char* key) {
+    std::vector<double> ret;
+    std::size_t size = getSize(handle, key);
+    ret.resize(size);
+    CODES_CHECK(codes_get_double_array(handle, key, ret.data(), &size), nullptr);
+    ret.resize(size);
+    return ret;
+}
+
+std::vector<long> getLongArray(codes_handle* handle, const char* key) {
+    std::vector<long> ret;
+    std::size_t size = getSize(handle, key);
+    ret.resize(size);
+    CODES_CHECK(codes_get_long_array(handle, key, ret.data(), &size), nullptr);
+    ret.resize(size);
+    return ret;
+}
+
+enum class SetDefault : unsigned long
+{
+    IfKeyGiven = 0,
+    Always = 1,
+};
+
+using OptVal = std::optional<std::string>;
+void getAndSet(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
+               SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if (hasKey(h, key)) {
+        std::string val = getString(h, key);
+        if (val.empty() && defaultVal) {
+            val = *defaultVal;
+        }
+        dict.set(setName == NULL ? key : setName, val);
+    }
+    else {
+        if (defaultVal && (defPolicy == SetDefault::Always)) {
+            dict.set(setName == NULL ? key : setName, *defaultVal);
+        }
+    }
+}
+void getAndSet(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
+               SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    getAndSet(h, dict, key, NULL, defaultVal, defPolicy);
+}
+void getAndSetIfNonZero(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL) {
+    if (hasKey(h, key)) {
+        std::string val = getString(h, key);
+        if (!val.empty() && val != "0") {
+            dict.set(setName == NULL ? key : setName, val);
+        }
+    }
+}
+
+
+void getAndSet(const Map& map, MultiOMDict& dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
+               SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if (auto search = map.find(key); search != map.end()) {
+        dict.set(setName == NULL ? key : setName, search->second);
+    }
+    else {
+        if (defaultVal && (defPolicy == SetDefault::Always)) {
+            dict.set(setName == NULL ? key : setName, *defaultVal);
+        }
+    }
+}
+void getAndSet(const Map& map, MultiOMDict& dict, const char* key, OptVal defaultVal,
+               SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    getAndSet(map, dict, key, NULL, defaultVal, defPolicy);
+}
+
+
+void getAndSetDouble(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL,
+                     OptVal defaultVal = {}, SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if (hasKey(h, key)) {
+        std::string val = std::to_string(getDouble(h, key));
+        dict.set(setName == NULL ? key : setName, val);
+    }
+    else {
+        if (defaultVal && (defPolicy == SetDefault::Always)) {
+            dict.set(setName == NULL ? key : setName, *defaultVal);
+        }
+    }
+}
+void getAndSetDouble(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
+                     SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    getAndSetDouble(h, dict, key, NULL, defaultVal, defPolicy);
+}
+
+using OptVal = std::optional<std::string>;
+void getAndSetLong(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL,
+                   OptVal defaultVal = {}, SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    if (hasKey(h, key)) {
+        std::string val = std::to_string(getLong(h, key));
+        dict.set(setName == NULL ? key : setName, val);
+    }
+    else {
+        if (defaultVal && (defPolicy == SetDefault::Always)) {
+            dict.set(setName == NULL ? key : setName, *defaultVal);
+        }
+    }
+}
+void getAndSetLong(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
+                   SetDefault defPolicy = SetDefault::IfKeyGiven) {
+    getAndSetLong(h, dict, key, NULL, defaultVal, defPolicy);
+}
+
+template <typename T>
+std::string arrayToJSONString(const std::vector<T>& arr) {
+    std::ostringstream oss;
+    bool first = true;
+    oss << "[";
+    for (const auto& v : arr) {
+        if (first) {
+            first = false;
+        }
+        else {
+            oss << ", ";
+        }
+        oss << v;
+    }
+    oss << "]";
+    return oss.str();
+}
+
+void getAndSetDoubleArray(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL) {
+    if (hasKey(h, key)) {
+        dict.set(setName == NULL ? key : setName, getDoubleArray(h, key));
+    }
+}
+
+void getAndSetLongArray(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL) {
+    if (hasKey(h, key)) {
+        auto jsonData = arrayToJSONString(getLongArray(h, key));
+        dict.set(setName == NULL ? key : setName, jsonData.data());
+    }
+}
+
+using GridTypeFunction = std::function<void(codes_handle*, MultiOMDict&, MultiOMDict&)>;
+
+void handleReducedGG(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
+    MultiOMDict geom{MultiOMDictKind::ReducedGG};
+
+    getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
+    getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
+    getAndSetIfNonZero(h, geom, "numberOfParallelsBetweenAPoleAndTheEquator",
+                       "number-of-parallels-between-pole-and-equator");
+    getAndSetDouble(h, geom, "latitudeOfFirstGridPointInDegrees", "latitude-of-first-grid-point-in-degrees");
+    getAndSetDouble(h, geom, "longitudeOfFirstGridPointInDegrees", "longitude-of-first-grid-point-in-degrees");
+    getAndSetDouble(h, geom, "latitudeOfLastGridPointInDegrees", "latitude-of-last-grid-point-in-degrees");
+    getAndSetDouble(h, geom, "longitudeOfLastGridPointInDegrees", "longitude-of-last-grid-point-in-degrees");
+    getAndSetLongArray(h, geom, "pl", "pl");
+    mars_dict.set("repres", "gg");
+    par_dict.set_geometry(std::move(geom));
+}
+
+void handleReducedGGAtlas(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
+    MultiOMDict geom{MultiOMDictKind::ReducedGG};
+
+    std::string gridName = getString(h, "gridName");
+    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
+
+    getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
+    geom.set("numberOfParallelsBetweenAPoleAndTheEquator", std::to_string(gaussianGrid.N()).c_str());
+    getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
+
+    {
+        auto it = gaussianGrid.lonlat().begin();
+
+        geom.set("latitudeOfFirstGridPointInDegrees", std::to_string((*it)[1]).data());
+        geom.set("longitudeOfFirstGridPointInDegrees", std::to_string((*it)[0]).data());
+
+        it += gaussianGrid.size() - 1;
+        geom.set("latitudeOfLastGridPointInDegrees", std::to_string((*it)[1]).data());
+
+        const auto equator = gaussianGrid.N();
+        const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
+        geom.set("longitudeOfLastGridPointInDegrees", std::to_string(maxLongitude).data());
+    }
+
+    {
+        auto tmp = gaussianGrid.nx();
+        std::vector<long> pl(tmp.size(), 0);
+        for (int i = 0; i < tmp.size(); ++i) {
+            pl[i] = long(tmp[i]);
+        }
+        geom.set("pl", arrayToJSONString(pl).data());
+    }
+
+    mars_dict.set("repres", "gg");
+    par_dict.set_geometry(std::move(geom));
+}
+
+void handleSH(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
+    MultiOMDict geom{MultiOMDictKind::SH};
+
+    geom.set("pentagonalResolutionParameterJ", "pentagonal-resolution-j");
+    geom.set("pentagonalResolutionParameterK", "pentagonal-resolution-k");
+    geom.set("pentagonalResolutionParameterM", "pentagonal-resolution-m");
+    mars_dict.set("repres", "sh");
+
+    par_dict.set_geometry(std::move(geom));
+}
+
+void handleLL(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
+    MultiOMDict geom{MultiOMDictKind::RegularLL};
+
+    mars_dict.set("repres", "ll");
+
+    par_dict.set_geometry(std::move(geom));
+}
+
+void handleGridType(codes_handle* h, const std::string& gridType, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
+    const static std::unordered_map<std::string, GridTypeFunction> gridMap{
+        {"reduced_gg", &handleReducedGGAtlas},
+        {"regular_ll", &handleLL},
+        {"sh", &handleSH},
+    };
+
+    const auto gridTypeFunc = gridMap.find(gridType);
+    if (gridTypeFunc == gridMap.cend()) {
+        throw std::runtime_error(std::string("Unhandled gridType '") + gridType + std::string("'"));
+    }
+    gridTypeFunc->second(h, mars_dict, par_dict);
+};
+
+void handlePackingType(codes_handle* h, const std::string& packingType, MultiOMDict& mars_dict) {
+    const static std::unordered_map<std::string, std::string> packingMap{
+        {"grid_simple", "simple"},
+        {"grid_complex", "complex"},
+        {"spectral_complex", "complex"},
+        {"grid_ccsds", "ccsds"},
+    };
+
+    const auto packingTypeVal = packingMap.find(packingType);
+    if (packingTypeVal == packingMap.cend()) {
+        throw std::runtime_error(std::string("Unhandled packingType '") + packingType + std::string("'"));
+    }
+    mars_dict.set("packing", packingTypeVal->second.c_str());
+};
+
+
+void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOMDict& parDict) {
+    getAndSet(marsKeys, marsDict, "stream");
+    getAndSet(marsKeys, marsDict, "type");
+    getAndSet(marsKeys, marsDict, "class");
+    getAndSet(marsKeys, marsDict, "expver");
+
+    if (hasKey(h, "origin")) {
+        getAndSet(h, marsDict, "origin");
+    }
+    else if (hasKey(h, "centre")) {
+        getAndSet(h, marsDict, "centre", "origin");
+    }
+
+    getAndSet(marsKeys, marsDict, "anoffset");
+    getAndSet(marsKeys, marsDict, "ident");
+    getAndSet(marsKeys, marsDict, "instrument");
+    getAndSet(marsKeys, marsDict, "channel");
+    // getAndSet(marsKeys, marsDict, "chemId", "chem");
+    getAndSet(marsKeys, marsDict, "chem");
+    getAndSet(marsKeys, marsDict, "param");
+    getAndSet(marsKeys, marsDict, "model");
+
+    if (hasKey(h, "levtype")) {
+        std::string levtype = getString(h, "levtype");
+        marsDict.set("levtype", levtype);
+
+        // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
+        if (hasKey(h, "level")) {
+            std::optional<std::string> levelist;
+            if (levtype == "pl") {
+                std::string pressureUnits = getString(h, "pressureUnits");
+                if (pressureUnits == "hPa") {
+                    long levelistVal = getLong(h, "level");
+                    levelist = std::to_string(levelistVal * 100);
+                }
+            }
+
+            if (!levelist) {
+                levelist = getString(h, "level");
+            }
+
+            marsDict.set("levelist", *levelist);
+        }
+    }
+
+    getAndSet(marsKeys, marsDict, "direction");
+    getAndSet(marsKeys, marsDict, "frequency");
+    getAndSet(marsKeys, marsDict, "date");
+    getAndSet(marsKeys, marsDict, "hdate");
+
+    // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
+    {
+        // TODO - this will cause problems with referenceDate/time in grib2....
+        long hh = getLong(h, "hour");
+        long mm = getLong(h, "minute");
+        long ss = getLong(h, "second");
+        marsDict.set("time", std::to_string(hh * 10000 + mm * 100 + ss));
+    }
+
+    // For some reason mars returns an empty string for step
+    if (hasKey(h, "endStep")) {
+        long endStep = getLong(h, "endStep");
+        long startStep = getLong(h, "startStep");
+        marsDict.set("step", std::to_string(endStep));
+
+        long stepRange = endStep - startStep;
+        if (stepRange > 0) {
+            // TODO to be renamed to timespan
+            marsDict.set("timeproc", std::to_string(stepRange));
+        }
+    }
+    getAndSet(marsKeys, marsDict, "truncation");
+
+    getAndSet(h, marsDict, "gridName", "grid");
+
+    getAndSet(h, parDict, "tablesVersion");
+    getAndSet(h, parDict, "generatingProcessIdentifier");
+    getAndSetLong(h, parDict, "typeOfProcessedData");
+    getAndSet(h, parDict, "initialStep", OptVal{"0"}, SetDefault::Always);
+    getAndSet(h, parDict, "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
+    getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
+    getAndSet(h, parDict, "valuesScaleFactor");
+    getAndSetDoubleArray(h, parDict, "pv", "pv");
+    getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
+    getAndSet(h, parDict, "valueOfMissingValues");
+    getAndSet(h, parDict, "systemNumber");
+    getAndSet(h, parDict, "methodNumber");
+
+    if (marsKeys.find("number") != marsKeys.end()) {
+        getAndSet(marsKeys, marsDict, "number");
+        if (hasKey(h, "typeOfEnsembleForecast")) {
+            getAndSet(h, parDict, "typeOfEnsembleForecast");
+        }
+        else if (hasKey(h, "eps")) {
+            getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
+        }
+
+        if (!hasKey(h, "numberOfForecastsInEnsemble")) {
+            throw std::runtime_error("Expected a key numberOfForecastsInEnsemble");
+        }
+        long numForecasts = getLong(h, "numberOfForecastsInEnsemble");
+        if (numForecasts == 0) {
+            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+        }
+        parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
+    }
+
+
+    getAndSet(h, parDict, "lengthOfTimeWindow");
+    getAndSet(h, parDict, "bitsPerValue", OptVal{"24"});
+    getAndSet(h, parDict, "periodMin");
+    getAndSet(h, parDict, "periodMax");
+    getAndSetLongArray(h, parDict, "scaledValuesOfWaveDirections", "waveDirections");
+    getAndSetLongArray(h, parDict, "scaledValuesOfWaveFrequencies", "waveFrequencies");
+    getAndSet(h, parDict, "satelliteSeries");
+    getAndSet(h, parDict, "scaledFactorOfCentralWavenumber");
+    getAndSet(h, parDict, "scaledValueOfCentralWavenumber");
+
+    // TODO - this should be only set to 1 for statistical fields with step 0
+    parDict.set("encodeStepZero", "1");
+
+    if (hasKey(h, "setPackingType")) {
+        std::string setPackingType = getString(h, "setPackingType");
+        handlePackingType(h, setPackingType, marsDict);
+    }
+
+    if (hasKey(h, "gridType")) {
+        std::string gridType = getString(h, "gridType");
+        handleGridType(h, gridType, marsDict, parDict);
+    }
+}
+
+}  // namespace extract
+
+
+// Helpers
 
 bool isDiscipline192Param(long p) {
     // Fetched via rest API of paramDb
@@ -302,8 +920,10 @@ bool isDiscipline192Param(long p) {
     return (set.find(p) != set.end());
 }
 
-using ValueSet = std::unordered_set<std::string>;
 
+// Tool managing specific types & functions
+
+using ValueSet = std::unordered_set<std::string>;
 using FieldValueMap = std::unordered_map<std::string, ValueSet>;
 
 FieldValueMap parseFieldValueMap(std::string s, int verbosity) {
@@ -389,7 +1009,7 @@ Discipline192Handling parseDiscipline192Handling(const std::string& str) {
     if (auto search = map.find(str); search != map.end()) {
         return search->second;
     }
-    throw eckit::UserError(std::string("Unsupported discipline-192 handling: ") + str);
+    throw std::runtime_error(std::string("Unsupported discipline-192 handling: ") + str);
 }
 
 }  // namespace
@@ -431,24 +1051,9 @@ private:
     std::optional<FieldValueMap> filterMap_ = {};
     std::optional<std::string> overwritePacking_ = {};
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
-    // bool encode32_ = false;
-    // std::string configPath_ = "";
-    // std::string stepRange_ = "";
-    // long minStep_ = -1;
-    // long maxStep_ = 1000000000;
 };
 
 MultioMMtg2::MultioMMtg2(int argc, char** argv) : multio::MultioTool{argc, argv} {
-    // TODO
-    // - skip or copy grib2 messages (by reading edition key?)
-    //   - --all (to explicitly reencode all messages, default is copy)
-    // - test all AIFS output (read from fdb)
-    // - module on HPC with this tool being deployed
-    // x remove environmental variables (use lib info)
-    // x load sample FROM_FILE
-    // - pass down verbosity to fortran
-
-
     options_.push_back(new eckit::option::SimpleOption<bool>("help", "Print help"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "all", "If specified also grib2 messages will reencoded instead of copied"));
@@ -503,7 +1108,7 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
             overwritePacking_ = packing;
         }
         else {
-            throw eckit::UserError(std::string("Unsupported packing: ") + packing);
+            throw std::runtime_error(std::string("Unsupported packing: ") + packing);
         }
     }
 
@@ -549,27 +1154,6 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     if (!discipline192.empty()) {
         discipline192Handling_ = parseDiscipline192Handling(discipline192);
     }
-
-    // if (testSubtoc_) {
-    //     std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
-    //     fdbRootPath_.mkdir();
-    // }
-
-
-    // args.get("plans", configPath_);
-
-    // if (args.has("stepRange")) {
-    //     args.get("stepRange", stepRange_);
-    // }
-    // else {
-    //     stepRange_ = "0-1000000000";
-    // }
-
-    // parseStepRange(stepRange_, minStep_, maxStep_);
-
-    // if (!configPath_.empty()) {
-    //     ::setenv("MULTIO_PLANS_FILE", configPath_.c_str(), 1);
-    // }
 }
 
 void MultioMMtg2::finish(const eckit::option::CmdArgs&) {}
@@ -595,21 +1179,16 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
 
     outputFileHandle.openForWrite(0);
 
-    void* optDict = NULL;
+    MultiOMDict optDict{MultiOMDictKind::Options};
     void* encoder = NULL;
-    ASSERT(multio_grib2_dict_create(&optDict, "options") == 0);
-    ASSERT(multio_grib2_init_options(&optDict) == 0);
 
-    ASSERT(multio_grib2_dict_set(optDict, "print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0).c_str())
-           == 0);
-    ASSERT(multio_grib2_dict_set(optDict, "print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0).c_str()) == 0);
-    ASSERT(multio_grib2_dict_set(optDict, "samples-path", samplePath_.c_str()) == 0);
-    ASSERT(multio_grib2_dict_set(optDict, "encoding-rules", encodingFile_.c_str()) == 0);
-    ASSERT(multio_grib2_dict_set(optDict, "mapping-rules", mappingFile_.c_str()) == 0);
-    // ASSERT(multio_grib2_dict_set(optDict, "sample", "{MULTIO_INSTALL_DIR}/share/multiom/49r2v9/samples/sample.tmpl")
-    // == 0); ASSERT(multio_grib2_dict_set(optDict, "sample", "/MEMFS/samples/GRIB2.tmpl") == 0);
+    optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
+    optDict.set("print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0));
+    optDict.set("samples-path", samplePath_);
+    optDict.set("encoding-rules", encodingFile_);
+    optDict.set("mapping-rules", mappingFile_);
 
-    ASSERT(multio_grib2_encoder_open(optDict, &encoder) == 0);
+    ASSERT(multio_grib2_encoder_open(optDict.get(), &encoder) == 0);
 
     eckit::message::Message msg;
     while ((msg = reader.next())) {
@@ -649,16 +1228,9 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
 
         std::string edition = inputMsg.getString("edition");
         if (discipline192Handling_ != Discipline192Handling::TryToHandle) {
-            bool isDiscipline192;
             long paramId = inputMsg.getLong("paramId");
-            if (edition == "1") {
-                // TBD - need some lookup table from paramId ....
-                // discipline = inputMsg.getLong("section1Flags");
-                isDiscipline192 = isDiscipline192Param(paramId);
-            }
-            else {
-                isDiscipline192 = inputMsg.getLong("discipline") == 192;
-            }
+            bool isDiscipline192
+                = (edition == "1") ? isDiscipline192Param(paramId) : (inputMsg.getLong("discipline") == 192);
             if (isDiscipline192) {
                 if (discipline192Handling_ == Discipline192Handling::LogAndIgnore) {
                     std::cout << "Excluding message with discipline 192 (paramId: " << paramId << ")" << std::endl;
@@ -678,26 +1250,29 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
         else {
 
             // now inputCodesHandle is save to use
-            void* marsDict = NULL;
-            void* parDict = NULL;
+            MultiOMDict marsDict{MultiOMDictKind::MARS};
+            MultiOMDict parDict{MultiOMDictKind::Parametrization};
+
+            Map marsKeys = getMarsKeys(inputMsg);
             if (verbosity_ > 2) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
-            ASSERT(multio_grib2_encoder_extract_metadata(encoder, (void*)inputCodesHandle.get(), &marsDict, &parDict)
-                   == 0);
+
+            extract::grib1ToGrib2(marsKeys, (codes_handle*)inputCodesHandle.get(), marsDict, parDict);
+
 
             if (overwritePacking_) {
                 if (verbosity_ > 2) {
                     std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
                 }
-                ASSERT(multio_grib2_dict_set(marsDict, "packing", overwritePacking_->c_str()) == 0);
+                marsDict.set("packing", overwritePacking_->c_str());
             }
 
             if (verbosity_ > 2) {
                 std::cout << "Extracted MARS dict:" << std::endl;
-                multio_grib2_dict_to_yaml(marsDict, "stdout");
+                marsDict.toYAML("stdout");
                 std::cout << "Extracted PAR dict:" << std::endl;
-                multio_grib2_dict_to_yaml(parDict, "stdout");
+                parDict.toYAML("stdout");
             }
 
             codes_handle* rawOutputCodesHandle = NULL;
@@ -708,17 +1283,15 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             if (verbosity_ > 2) {
                 std::cout << "Encoding with extracted metadata..." << std::endl;
             }
-            ASSERT(multio_grib2_encoder_encode64(encoder, marsDict, parDict, values.data(), values.size(),
+            ASSERT(multio_grib2_encoder_encode64(encoder, marsDict.get(), parDict.get(), values.data(), values.size(),
                                                  (void**)&rawOutputCodesHandle)
                    == 0);
             ASSERT(rawOutputCodesHandle != NULL);
             if (verbosity_ > 0) {
                 char* jsonString;
-                multio_grib2_dict_to_json(marsDict, &jsonString);
+                multio_grib2_dict_to_json(marsDict.get(), &jsonString);
                 std::cout << "Converted " << jsonString << std::endl;
             }
-            ASSERT(multio_grib2_dict_destroy(&marsDict) == 0);
-            ASSERT(multio_grib2_dict_destroy(&parDict) == 0);
 
             // Output by writing all to the same binary file
             eckit::message::Message outputMsg{new metkit::codes::CodesContent{rawOutputCodesHandle, true}};
@@ -728,15 +1301,13 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
 
     outputFileHandle.close();
     ASSERT(multio_grib2_encoder_close(&encoder) == 0);
-    ASSERT(multio_grib2_dict_destroy(&optDict) == 0);
 }
 
-}  // namespace test
 }  // namespace multiom
 
 //---------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-    multiom::test::MultioMMtg2 tool(argc, argv);
+    multiom::MultioMMtg2 tool(argc, argv);
     return tool.start();
 }

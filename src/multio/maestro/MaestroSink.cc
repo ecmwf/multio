@@ -32,12 +32,13 @@ extern "C" {
 
 namespace {
 static void setStringValue(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
-    cdo.set_attribute(key.c_str(), value.c_str(), true);
+    const char* stringValue = value.c_str();
+    cdo.set_attribute(key, &stringValue, true);
 }
 
 static void setInt64Value(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
-    int64_t intvalue = std::stoi(value);
-    cdo.set_attribute(key.c_str(), &intvalue, true);
+    int64_t intValue = std::stoi(value);
+    cdo.set_attribute(key, &intValue, true);
 }
 
 

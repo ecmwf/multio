@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveSea-gg-deterministic-instant-ccsds-paramId-1
+name: rule-heightAboveSeaAt10m-gg-deterministic-instant-ccsds-paramId-1
 
 filter:
   type: composed
@@ -55,6 +55,6 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: heightAboveSea
+      type: heightAboveSeaAt10m
   data-representation-section:
     template-number: 42

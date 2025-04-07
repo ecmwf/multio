@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveGround-gg-ensemble-instant-ccsds-paramId-36
+name: rule-heightAboveGroundAt2m-gg-ensemble-instant-simple-paramId-36
 
 filter:
   type: composed
@@ -19,11 +19,12 @@ filter:
     - type: param
       operation: match
       values:
-        - 129172
-        - "228239:228241"
+        - "167:168"
+        - 174096
+        - 228037
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -54,8 +55,8 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: heightAboveGround
+      type: heightAboveGroundAt2m
     ensemble-configurator:
       type: default
   data-representation-section:
-    template-number: 42
+    template-number: 0

@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveGround-gg-ensemble-instant-ccsds-paramId-36
+name: rule-heightAboveSeaAt10m-gg-deterministic-instant-simple-paramId-36
 
 filter:
   type: composed
@@ -12,18 +12,19 @@ filter:
     - type: anoffset
       operation: has
     - type: number
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
     - type: param
       operation: match
       values:
-        - 129172
-        - "228239:228241"
+        - 140245
+        - 140249
+        - 140233
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -46,7 +47,7 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 1
+    template-number: 0
     point-in-time-configurator:
       type: default
     param-configurator:
@@ -54,8 +55,6 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: heightAboveGround
-    ensemble-configurator:
-      type: default
+      type: heightAboveSeaAt10m
   data-representation-section:
-    template-number: 42
+    template-number: 0

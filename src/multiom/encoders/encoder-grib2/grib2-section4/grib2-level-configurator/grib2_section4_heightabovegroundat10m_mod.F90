@@ -3,7 +3,7 @@
 !>
 !> @brief Module for managing GRIB2 Section 4 level configuration operations.
 !>
-!> The `G2S4_HEIGHTABOVEGROUND_MOD` module contains procedures to initialize, allocate,
+!> The `G2S4_HEIGHTABOVEGROUNDAT10M_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 4 level configuration objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see G2S4_HEIGHTABOVEGROUND_INIT
-!>   - @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!>   - @see G2S4_HEIGHTABOVEGROUND_PRESET
-!>   - @see G2S4_HEIGHTABOVEGROUND_RT
-!>   - @see G2S4_HEIGHTABOVEGROUND_TBE
-!>   - @see G2S4_HEIGHTABOVEGROUND_FREE
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!>   - @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 !> @section dependencies
 !>
@@ -54,8 +54,8 @@
 
 #define PP_FILE_NAME 'grib2_section4_heightaboveground_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION4_HEIGHTABOVEGROUND_MOD'
-MODULE GRIB2_SECTION4_HEIGHTABOVEGROUND_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_MOD'
+MODULE GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_MOD
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
@@ -68,14 +68,14 @@ IMPLICIT NONE
 PRIVATE
 
 !> Definition of the typeOfLevel
-CHARACTER(LEN=*), PARAMETER :: TYPE_OF_LEVEL = 'heightAboveGround'
+CHARACTER(LEN=*), PARAMETER :: TYPE_OF_LEVEL = 'heightAboveGroundAt10m'
 INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_FIRST_FIXED_SURFACE = 103_JPIB_K
 INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_SECOND_FIXED_SURFACE = 255_JPIB_K
 
 !>
 !> @brief Type definition for GRIB2 Section 4 level configuration handler.
 !>
-!> The `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runlevel,
 !> encoding checks, and cleanup operations for GRIB2 Section 4 level configuration objects.
 !>
@@ -83,7 +83,7 @@ INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_SECOND_FIXED_SURFACE = 255_JPIB_K
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_HEIGHTABOVEGROUND_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T
 
   !> Default symbols visibility
   PRIVATE
@@ -98,7 +98,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_HEIGHTABOVEGROUND_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_HEIGHTABOVEGROUNDAT10M_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 4 level configuration object.
@@ -108,7 +108,7 @@ CONTAINS
   !> The preocedure starts from a message and from the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_HEIGHTABOVEGROUND_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_HEIGHTABOVEGROUNDAT10M_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 4 level configuration object.
@@ -116,7 +116,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_HEIGHTABOVEGROUND_ALLOC
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 4 level configuration object.
@@ -124,7 +124,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runlevel execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_HEIGHTABOVEGROUND_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
 
   !>
   !> @brief Manages the runlevel execution of GRIB2 Section 4 level configuration operations.
@@ -132,7 +132,7 @@ CONTAINS
   !> This procedure handles operations and computations during runlevel,
   !> making use of level and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_HEIGHTABOVEGROUND_RT
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_HEIGHTABOVEGROUNDAT10M_RT
 
   !>
   !> @brief Determines if the GRIB2 Section 4 level configuration object needs to be encoded.
@@ -140,7 +140,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_HEIGHTABOVEGROUND_TBE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_HEIGHTABOVEGROUNDAT10M_TBE
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 4 level configuration object.
@@ -148,21 +148,21 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_HEIGHTABOVEGROUND_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 
   !>
   !> @brief Set Levels for this object
   !>
   !> This procedure set in the grib header all the variables needed to configure a specific level
   !>
-  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_HEIGHTABOVEGROUND_SET_LEVELS
+  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_HEIGHTABOVEGROUNDAT10M_SET_LEVELS
 
   !>
   !> @brief Check metadatafor this object
   !>
   !> This procedure scheck the level metadata in the grib header
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: CHECK => G2S4_HEIGHTABOVEGROUND_CHECK
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: CHECK => G2S4_HEIGHTABOVEGROUNDAT10M_CHECK
 
 
 END TYPE
@@ -170,7 +170,7 @@ END TYPE
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: GRIB2_SECTION4_HEIGHTABOVEGROUND_T
+PUBLIC :: GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T
 
 CONTAINS
 
@@ -182,7 +182,7 @@ CONTAINS
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -204,16 +204,16 @@ CONTAINS
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_INIT_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -234,7 +234,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -304,7 +304,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_CFG
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -316,7 +316,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -339,16 +339,16 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -370,7 +370,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -440,7 +440,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_LAZY
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -454,7 +454,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -479,16 +479,16 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_ALLOC'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_ALLOC( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -512,7 +512,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_ALLOC( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -546,7 +546,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Logging
-  PP_LOG_DEVELOP_STR( 'Allocate heightAboveGround' )
+  PP_LOG_DEVELOP_STR( 'Allocate heightAboveGroundAt10m' )
 
   ! Initialize the levels
   IF ( OPT%BAD_INIT_TYPE_OF_LEVEL ) THEN
@@ -598,7 +598,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_ALLOC
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -611,7 +611,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_ALLOC
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -636,16 +636,16 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_ALLOC
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_PRESET'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -669,7 +669,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -701,7 +701,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Logging
-  PP_LOG_DEVELOP_STR( 'Preset heightAboveGround' )
+  PP_LOG_DEVELOP_STR( 'Preset heightAboveGroundAt10m' )
 
   ! According to the options decide where to set the levels (preset or runlevel)
   PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS );
@@ -751,7 +751,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_PRESET
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -765,7 +765,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_PRESET
 !> the success or failure of the runlevel operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section for runlevel execution.
+!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section for runlevel execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -794,16 +794,16 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_RT'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_RT( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_RT'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_RT( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -833,7 +833,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_RT( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -873,7 +873,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Logging
-  PP_LOG_DEVELOP_STR( 'Runtime heightAboveGround' )
+  PP_LOG_DEVELOP_STR( 'Runtime heightAboveGroundAt10m' )
 
   ! Check if level has been overriden
   IF ( OPT%CHECK_TYPE_OF_LEVEL_RT ) THEN
@@ -930,7 +930,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_RT
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_RT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -944,7 +944,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_RT
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -972,16 +972,16 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_RT
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_FREE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_TBE'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_TBE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_TBE'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_TBE( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1005,7 +1005,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_TBE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1075,7 +1075,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_TBE
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_TBE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1088,7 +1088,7 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_TBE
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUND_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1104,15 +1104,15 @@ END FUNCTION G2S4_HEIGHTABOVEGROUND_TBE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_HEIGHTABOVEGROUND_INIT
-!> @see G2S4_HEIGHTABOVEGROUND_ALLOC
-!> @see G2S4_HEIGHTABOVEGROUND_PRESET
-!> @see G2S4_HEIGHTABOVEGROUND_RT
-!> @see G2S4_HEIGHTABOVEGROUND_TBE
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_INIT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_ALLOC
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_PRESET
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_RT
+!> @see G2S4_HEIGHTABOVEGROUNDAT10M_TBE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_FREE'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1131,7 +1131,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_FREE( THIS, OPT, HOOKS ) RESULT(R
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1193,15 +1193,15 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_FREE
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_SET_LEVELS'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_SET_LEVELS( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_SET_LEVELS'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_SET_LEVELS( THIS, &
 &  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1212,7 +1212,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_SET_LEVELS( THIS, &
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: LEVELS_UTILS_MOD,         ONLY: CHECK_LEVELS
-  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_SFC_E
+  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_HL_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1226,7 +1226,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_SET_LEVELS( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T), INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T), INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),                   INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),                   INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),              INTENT(IN)    :: OPT
@@ -1259,19 +1259,15 @@ IMPLICIT NONE
 
 
   ! According to the options decide where to set the levels (preset or runlevel)
-  PP_LOG_INFO( 'TypeOfLevel: heightAboveGround' )
+  PP_LOG_INFO( 'TypeOfLevel: heightAboveGroundAt10m' )
   IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', TYPE_OF_LEVEL )
-    IF ( MSG%LEVTYPE .NE. LEVTYPE_SFC_E ) THEN
-      PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
-    ENDIF
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', 10_JPIB_K )
   ELSE
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', TYPE_OF_FIRST_FIXED_SURFACE )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', TYPE_OF_SECOND_FIXED_SURFACE )
-    IF ( MSG%LEVTYPE .NE. LEVTYPE_SFC_E ) THEN
-      PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', MSG%LEVELIST )
-      PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface', 0_JPIB_K )
-    ENDIF
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', MSG%LEVELIST )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface', 10_JPIB_K )
     PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
     PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfSecondFixedSurface' )
   ENDIF
@@ -1281,7 +1277,7 @@ IMPLICIT NONE
   IF ( OPT%CHECK_TYPE_OF_LEVEL ) THEN
 !    PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
 !&       METADATA,    &
-!&       'heightAboveGround', &
+!&       'heightAboveGroundAt10m', &
 !&       103_JPIB_K,    &
 !&       255_JPIB_K,  &
 !&       HOOKS, &
@@ -1338,14 +1334,14 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_SET_LEVELS
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_SET_LEVELS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUND_CHECK'
-PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_CHECK( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_HEIGHTABOVEGROUNDAT10M_CHECK'
+PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_CHECK( THIS, &
 &  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1356,7 +1352,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_CHECK( THIS, &
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: LEVELS_UTILS_MOD,         ONLY: CHECK_LEVELS
-  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_SFC_E
+  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_HL_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1370,7 +1366,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HEIGHTABOVEGROUND_CHECK( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUND_T), INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_T), INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),                   INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),                   INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),              INTENT(IN)    :: OPT
@@ -1409,30 +1405,21 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! According to the options decide where to set the levels (preset or runlevel)
-  PP_LOG_INFO( 'check typeOfLevel: heightAboveGround' )
+  PP_LOG_INFO( 'check typeOfLevel: heightAboveGroundAt10m' )
   PP_TRYCALL(ERRFLAG_MARS_TO_JSON) MSG%TO_JSON( JSON, HOOKS )
 
 
   ! Check the levels
   IF ( OPT%CHECK_TYPE_OF_LEVEL ) THEN
-    IF (  MSG%LEVTYPE .NE. LEVTYPE_SFC_E ) THEN
-      PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
-&         METADATA,    &
-&         TYPE_OF_LEVEL, &
-&         TYPE_OF_FIRST_FIXED_SURFACE,    &
-&         TYPE_OF_SECOND_FIXED_SURFACE,  &
-&         HOOKS, &
-&         SCALED_VALUE_OF_FIRST_FIXED_SURFACES = MSG%LEVELIST, &
-&         SCALE_FACTOR_OF_FIRST_FIXED_SURFACES = 0_JPIB_K, &
-&         LEVEL = MSG%LEVELIST )
-    ELSE
-      PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
-&         METADATA,    &
-&         TYPE_OF_LEVEL, &
-&         TYPE_OF_FIRST_FIXED_SURFACE,    &
-&         TYPE_OF_SECOND_FIXED_SURFACE,  &
-&         HOOKS )
-    ENDIF
+    PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
+&        METADATA,    &
+&        TYPE_OF_LEVEL, &
+&        TYPE_OF_FIRST_FIXED_SURFACE,    &
+&        TYPE_OF_SECOND_FIXED_SURFACE,  &
+&        HOOKS, &
+&        SCALED_VALUE_OF_FIRST_FIXED_SURFACES = MSG%LEVELIST, &
+&        SCALE_FACTOR_OF_FIRST_FIXED_SURFACES = 10_JPIB_K, &
+&        LEVEL = MSG%LEVELIST )
   ENDIF
 
   ! Free json if checks passed
@@ -1500,12 +1487,12 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_HEIGHTABOVEGROUND_CHECK
+END FUNCTION G2S4_HEIGHTABOVEGROUNDAT10M_CHECK
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
-END MODULE GRIB2_SECTION4_HEIGHTABOVEGROUND_MOD
+END MODULE GRIB2_SECTION4_HEIGHTABOVEGROUNDAT10M_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

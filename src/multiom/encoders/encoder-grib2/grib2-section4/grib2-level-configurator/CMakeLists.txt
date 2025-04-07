@@ -20,6 +20,8 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_potentialvorticity_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_theta_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightaboveground_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovegroundat10m_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovegroundat2m_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_custom_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_adiabaticcondensation_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_atmosphere_mod.F90
@@ -43,6 +45,8 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovegroundlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovesealayer_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightabovesea_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightaboveseaat10m_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_heightaboveseaat2m_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_highcloudlayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_hybridheight_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_hybridlayer_mod.F90

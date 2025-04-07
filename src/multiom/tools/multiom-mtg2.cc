@@ -662,6 +662,16 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     }
 }
 
+void postFixToolOnly(codes_handle* in, codes_handle* out) {
+    if (hasKey(in, "gridType")) {
+        std::string gridType = getString(in, "gridType");
+        if (gridType == "reduced_gg") {
+            long shapeOfTheEarth = getLong(in, "shapeOfTheEarth");
+            CODES_CHECK(codes_set_long(out, "shapeOfTheEarth", shapeOfTheEarth), nullptr);
+        }
+    }
+}
+
 }  // namespace extract
 
 
@@ -1287,6 +1297,10 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
                                                  (void**)&rawOutputCodesHandle)
                    == 0);
             ASSERT(rawOutputCodesHandle != NULL);
+
+            // Apply more changes
+            extract::postFixToolOnly(inputCodesHandle.get(), rawOutputCodesHandle);
+
             if (verbosity_ > 0) {
                 char* jsonString;
                 multio_grib2_dict_to_json(marsDict.get(), &jsonString);
@@ -1295,6 +1309,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
 
             // Output by writing all to the same binary file
             eckit::message::Message outputMsg{new metkit::codes::CodesContent{rawOutputCodesHandle, true}};
+
             outputMsg.write(outputFileHandle);
         }
     }

@@ -609,8 +609,8 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(h, parDict, "generatingProcessIdentifier");
     getAndSetLong(h, parDict, "typeOfProcessedData");
     getAndSet(h, parDict, "initialStep", OptVal{"0"}, SetDefault::Always);
-    getAndSet(h, parDict, "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
-    getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
+    getAndSet(h, parDict, "timeIncrement", "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
+    // getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
     getAndSetIfNonZero(h, parDict, "numberOfMissingValues");

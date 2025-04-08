@@ -76,10 +76,10 @@ struct KeyValueDescription {
     }
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
     std::optional<ValueType> getOpt(MD&& md) const {
-        if (auto search = std::forward<MD>(md).find(key); search != md.end() {
+        if (auto search = std::forward<MD>(md).find(key); search != md.end()) {
             return search->second.visit(mapper);
         }
-        return {}
+        return {};
     }
 
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>

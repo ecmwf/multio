@@ -132,6 +132,8 @@ struct Glossary {
     const KeyType time{"time"};
     const KeyType precision{"misc-precision"};
 
+    const KeyType shortName{"shortName"};
+    const KeyType unpackedSubsetPrecision{"unpackedSubsetPrecision"};
 
     // Nemo
     const KeyType nemoParam{"nemoParam"};

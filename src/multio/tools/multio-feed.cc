@@ -33,6 +33,9 @@
 #include "metkit/codes/CodesSplitter.h"
 #include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/message/Glossary.h"
+
+using multio::message::glossary;
 
 namespace multio {
 namespace test {
@@ -224,106 +227,94 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
             // Step gets extracted as string instead of long (because it could be ar ange).... we don't like step
             // anayway... startStep/endStep is prefered
-            if (metadata.has("step")) {
-                metadata.set("step", metadata.getLong("step"));
-            }
+            if (metadata.has(glossary().step))
+                metadata.set(glossary().step, metadata.getLong("step"));
 
-            if (metadataDetailed.has("gridType")) {
-                metadata.set("gridType", metadataDetailed.getString("gridType"));
-            }
+            if (metadataDetailed.has("gridType"))
+                metadata.set(glossary().gridType, metadataDetailed.getString("gridType"));
 
-            if (metadataDetailed.has("startStep")) {
-                metadata.set("startStep", metadataDetailed.getLong("startStep"));
-            }
-            if (metadataDetailed.has("endStep")) {
-                metadata.set("endStep", metadataDetailed.getLong("endStep"));
-            }
+            if (metadataDetailed.has("startStep"))
+                metadata.set(glossary().startStep, metadataDetailed.getLong("startStep"));
+            if (metadataDetailed.has("endStep"))
+                metadata.set(glossary().endStep, metadataDetailed.getLong("endStep"));
 
             // Maybe use gridType?
             if (metadataDetailed.getBool("sphericalHarmonics", false)) {
-                metadata.set("sphericalHarmonics", true);
+                metadata.set(glossary().sphericalHarmonics, true);
 
-                if (metadataDetailed.has("complexPacking")) {
-                    metadata.set("complexPacking", metadataDetailed.getLong("complexPacking"));
-                }
-                if (metadataDetailed.has("generatingProcessIdentifier")) {
-                    metadata.set("generatingProcessIdentifier",
+                if (metadataDetailed.has("complexPacking"))
+                    metadata.set(glossary().complexPacking, metadataDetailed.getLong("complexPacking"));
+                if (metadataDetailed.has("generatingProcessIdentifier"))
+                    metadata.set(glossary().generatingProcessIdentifier,
                                  metadataDetailed.getLong("generatingProcessIdentifier"));
-                }
-                if (metadataDetailed.has("J")) {
-                    metadata.set("pentagonalResolutionParameterJ", metadataDetailed.getLong("J"));
-                }
-                if (metadataDetailed.has("K")) {
-                    metadata.set("pentagonalResolutionParameterK", metadataDetailed.getLong("K"));
-                }
-                if (metadataDetailed.has("M")) {
-                    metadata.set("pentagonalResolutionParameterM", metadataDetailed.getLong("M"));
-                }
-                if (metadataDetailed.has("JS")) {
-                    metadata.set("subSetJ", metadataDetailed.getLong("JS"));
-                }
-                if (metadataDetailed.has("KS")) {
-                    metadata.set("subSetK", metadataDetailed.getLong("KS"));
-                }
-                if (metadataDetailed.has("MS")) {
-                    metadata.set("subSetM", metadataDetailed.getLong("MS"));
-                }
+                if (metadataDetailed.has("J"))
+                    metadata.set(glossary().pentagonalResolutionParameterJ, metadataDetailed.getLong("J"));
+                if (metadataDetailed.has("K"))
+                    metadata.set(glossary().pentagonalResolutionParameterK, metadataDetailed.getLong("K"));
+                if (metadataDetailed.has("M"))
+                    metadata.set(glossary().pentagonalResolutionParameterM, metadataDetailed.getLong("M"));
+                if (metadataDetailed.has("JS"))
+                    metadata.set(glossary().subSetJ, metadataDetailed.getLong("JS"));
+                if (metadataDetailed.has("KS"))
+                    metadata.set(glossary().subSetK, metadataDetailed.getLong("KS"));
+                if (metadataDetailed.has("MS"))
+                    metadata.set(glossary().subSetM, metadataDetailed.getLong("MS"));
 
                 // Seems not to be settable in codes
-                metadata.set("unpackedSubsetPrecision", 1);
+                metadata.set(glossary().unpackedSubsetPrecision, 1);
             }
 
             // Name is not required but convenient to print...
             if (metadataDetailed.has("name")) {
-                metadata.set("name", metadataDetailed.getString("name"));
+                metadata.set(glossary().name, metadataDetailed.getString("name"));
             }
             if (metadataDetailed.has("shortName")) {
-                metadata.set("shortName", metadataDetailed.getString("shortName"));
+                metadata.set(glossary().shortName, metadataDetailed.getString("shortName"));
             }
             if (metadataDetailed.has("paramId")) {
-                metadata.set("paramId", metadataDetailed.getLong("paramId"));
+                metadata.set(glossary().paramId, metadataDetailed.getLong("paramId"));
             }
             if (metadataDetailed.has("param")) {
-                metadata.set("param", metadataDetailed.getString("param"));
-                if (!metadata.has("paramId")) {
-                    metadata.set("paramId", metadataDetailed.getLong("param"));
+                metadata.set(glossary().param, metadataDetailed.getString("param"));
+                if (!metadata.has(glossary().paramId)) {
+                    metadata.set(glossary().paramId, metadataDetailed.getLong("param"));
                 }
             }
             if (metadataDetailed.has("GRIBEditionNumber")) {
-                metadata.set("gribEdition", metadataDetailed.getString("GRIBEditionNumber"));
+                metadata.set(glossary().gribEdition, metadataDetailed.getString("GRIBEditionNumber"));
             }
-            if (!metadata.has("level") && metadataDetailed.has("level")) {
-                metadata.set("level", metadataDetailed.getLong("level"));
+            if (!metadata.has(glossary().level) && metadataDetailed.has("level")) {
+                metadata.set(glossary().level, metadataDetailed.getLong("level"));
             }
 
             // Inject metadata needed for statistics
-            if (!metadata.has("timeStep")) {
-                metadata.set("timeStep", 3600);
+            if (!metadata.has(glossary().timeStep)) {
+                metadata.set(glossary().timeStep, 3600);
             }
-            if (!metadata.has("step-frequency")) {
-                metadata.set("step-frequency", 1);
+            if (!metadata.has(glossary().stepFrequency)) {
+                metadata.set(glossary().stepFrequency, 1);
             }
 
             // Metadata required to handle missing values in statistics and interpolation
             if (metadataDetailed.has("bitmapPresent")) {
-                metadata.set("bitmapPresent", metadataDetailed.getBool("bitmapPresent"));
+                metadata.set(glossary().bitmapPresent, metadataDetailed.getBool("bitmapPresent"));
             }
             if (metadataDetailed.has("missingValue")) {
-                metadata.set("missingValue", metadataDetailed.getDouble("missingValue"));
+                metadata.set(glossary().missingValue, metadataDetailed.getDouble("missingValue"));
             }
 
             // Multio pipelines require hhmmss format
-            if (metadata.has("time")) {
+            if (metadata.has(glossary().time)) {
                 auto time = metadata.getLong("time");
-                metadata.set("time", time);
+                metadata.set(glossary().time, time);
             }
 
             eckit::Buffer data = msg.decode();
 
-            metadata.set("globalSize", data.size() / sizeof(double));
+            metadata.set(glossary().globalSize, data.size() / sizeof(double));
 
             if (decodeDoubleData_) {
-                metadata.set("precision", "double");
+                metadata.set(glossary().precision, "double");
                 size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
                 fortint iwords = static_cast<fortint>(words);
 
@@ -332,7 +323,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 }
             }
             else {
-                metadata.set("precision", "single");
+                metadata.set(glossary().precision, "single");
                 size_t words
                     = eckit::round(data.size() / sizeof(double) * sizeof(float), sizeof(fortint)) / sizeof(fortint);
                 fortint iwords = static_cast<fortint>(words);

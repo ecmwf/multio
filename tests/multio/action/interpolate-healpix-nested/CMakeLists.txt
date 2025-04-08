@@ -1,3 +1,5 @@
+if(HAVE_MIR AND HAVE_MULTIO_BUILD_TOOLS)
+
 set(DATA_PREFIX multio_tests_action_interpolate_reduced_gg_to_HEALPix_nested)
 
 ecbuild_get_test_multidata(
@@ -109,3 +111,10 @@ ecbuild_add_test(
     COMMAND       grib_compare
     ARGS          MultIO_fesom_CORE2_ngrid_to_HEALPix_128_nested_original.grib MultIO_fesom_CORE2_ngrid_to_HEALPix_128_nested_direct.grib
 )
+if ( TEST ${PREFIX}_compare )
+    set_tests_properties(${PREFIX}_compare PROPERTIES
+        FIXTURES_REQUIRED "${PREFIX}_original;${PREFIX}_direct"
+    )
+endif()
+
+endif()

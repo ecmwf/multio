@@ -224,7 +224,7 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
             multio_metadata_set_string(md, "category", "ocean-domain-map");
             multio_metadata_set_string(md, "representation", "structured");
-            multio_metadata_set_int(md, "globalSize", globalSize_);
+            multio_metadata_set_int(md, "misc-globalSize", globalSize_);
             multio_metadata_set_bool(md, "toAllServers", true);
 
             multio_write_domain(multio_handle, md, buffer.data(), sz);
@@ -260,7 +260,7 @@ void MultioReplayNemoCApi::writeMasks() {
         multio_metadata_set_string(md, "domain", domain.c_str());
 
         multio_metadata_set_string(md, "category", "ocean-mask");
-        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "misc-globalSize", globalSize_);
         multio_metadata_set_int(md, "level", level_);
         multio_metadata_set_bool(md, "toAllServers", true);
 
@@ -307,7 +307,7 @@ void MultioReplayNemoCApi::writeFields() {
 
         // Set reused fields once at the beginning
         multio_metadata_set_string(md, "category", "ocean-2d");
-        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "misc-globalSize", globalSize_);
         multio_metadata_set_int(md, "level", level_);
         multio_metadata_set_int(md, "step", step_);
 

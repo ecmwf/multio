@@ -12,9 +12,11 @@
 #include "multio/api/c/multio_c_cpp_utils.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/message/Glossary.h"
 
 
 using multio::config::configuration_path_name;
+using multio::message::glossary;
 
 namespace {
 // TODO: Remove this helper class and update test configs to use the parameter-mapping action
@@ -211,7 +213,7 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
         // Global size is constant for all domains, send by parametrization (mainly for testing purpose...)
         multio_metadata_set_string(md, "category", "parametrization");
         multio_metadata_set_bool(md, "toAllServers", true);
-        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "misc-globalSize", globalSize_);
         multio_write_parametrization(multio_handle, md);
     }
 

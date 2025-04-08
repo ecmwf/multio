@@ -389,10 +389,10 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             }
         }
         else if (gridKind == "HEALPix" || gridKind == "HEALPix_nested") {
-            md.set("gridded", true);
-            md.set("gridType", "HEALPix");
-            md.set("Nside", (std::int64_t)grid[0]);
-            md.set("orderingConvention", gridKind == "HEALPix_nested" ? "nested" : "ring");
+            md.set(glossary().gridded, true);
+            md.set(glossary().gridType, "HEALPix");
+            md.set(glossary().nside, (std::int64_t)grid[0]);
+            md.set(glossary().orderingConvention, gridKind == "HEALPix_nested" ? "nested" : "ring");
 
             // If no interpolation matrix name is provided, generate one
             if (interpolationMatrix) {
@@ -427,7 +427,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     message::Metadata md;
     fill_out_metadata(msg.metadata(), md);
-    md.set("precision", "double");
+    md.set(glossary().precision, "double");
 
     mir::param::SimpleParametrisation inputPar;
     auto inp = getInputGrid(config, md);
@@ -460,14 +460,14 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     eckit::mpi::setCommDefault("self");
     job.execute(input, output);
     eckit::mpi::setCommDefault(originalComm.name().c_str());
-    md.set<std::int64_t>("globalSize", outData.size());
+    md.set<std::int64_t>("misc-globalSize", outData.size());
 
     // Forward the metadata from mir to multIO (at the moment only missingValue)
     if (outMetadata.has("missing_value")) {
         double v;
         outMetadata.get("missing_value", v);
-        md.set("missingValue", v);
-        md.set("bitmapPresent", true);
+        md.set(glossary().missingValue, v);
+        md.set(glossary().bitmapPresent, true);
     }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));

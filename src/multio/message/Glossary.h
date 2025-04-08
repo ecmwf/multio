@@ -132,8 +132,11 @@ struct Glossary {
     const KeyType time{"time"};
     const KeyType precision{"misc-precision"};
 
+    // Added missing 08/04/2025
     const KeyType shortName{"shortName"};
     const KeyType unpackedSubsetPrecision{"unpackedSubsetPrecision"};
+    const KeyType representation{"representation"};
+    const KeyType trigger{"trigger"};
 
     // Nemo
     const KeyType nemoParam{"nemoParam"};

@@ -137,6 +137,7 @@ struct Glossary {
     const KeyType unpackedSubsetPrecision{"unpackedSubsetPrecision"};
     const KeyType representation{"representation"};
     const KeyType trigger{"trigger"};
+    const KeyType gridded{"gridded"};
 
     // Nemo
     const KeyType nemoParam{"nemoParam"};

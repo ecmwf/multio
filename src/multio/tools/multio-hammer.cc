@@ -25,6 +25,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
+#include "multio/message/Glossary.h"
 #include "multio/server/Listener.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/transport/MpiTransport.h"
@@ -44,6 +45,7 @@ using multio::domain::Unstructured;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::message::Peer;
+using multio::message::glossary;
 using multio::transport::MpiPeer;
 using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;
@@ -559,10 +561,10 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
     // send partial mapping
     for (auto& server : serverPeers) {
         Metadata metadata;
-        metadata.set("name", "grid-point");
-        metadata.set("category", "atms-domain-map");
-        metadata.set("globalSize", static_cast<std::int64_t>(field_size()));
-        metadata.set("representation", "unstructured");
+        metadata.set(glossary().name, "grid-point");
+        metadata.set(glossary().category, "atms-domain-map");
+        metadata.set(glossary().globalSize, static_cast<std::int64_t>(field_size()));
+        metadata.set(glossary().representation, "unstructured");  // TODO: Use glossary?
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)}, buffer};
 
@@ -574,9 +576,9 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
         for (auto param : sequence(paramCount_, 1)) {
             for (auto level : sequence(levelCount_, 1)) {
                 Metadata metadata;
-                metadata.set("level", level);
-                metadata.set("param", param);
-                metadata.set("step", step);
+                metadata.set(glossary().level, level);
+                metadata.set(glossary().param, param);
+                metadata.set(glossary().step, step);
 
                 std::string field_id = metadata.toString();
 
@@ -593,12 +595,12 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
                 // different problems.
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()), field.size() * sizeof(double));
 
-                metadata.set("name", std::to_string(param));
-                metadata.set("param", std::to_string(param));
-                metadata.set("category", "model-level");
-                metadata.set("globalSize", static_cast<std::int64_t>(field_size()));
-                metadata.set("domain", "grid-point");
-                metadata.set("precision", "double");
+                metadata.set(glossary().name, std::to_string(param));
+                metadata.set(glossary().param, std::to_string(param));
+                metadata.set(glossary().category, "model-level");
+                metadata.set(glossary().globalSize, static_cast<std::int64_t>(field_size()));
+                metadata.set(glossary().domain, "grid-point");
+                metadata.set(glossary().precision, "double");
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id], std::move(metadata)},
                             std::move(buffer)};
@@ -609,10 +611,10 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
         // Send flush messages
         Metadata md;
-        md.set("step", eckit::Translator<std::int64_t, std::string>{}(step));
-        md.set("category", "atms-checkpoint");
-        md.set("trigger", "step");
-        md.set("domain", "grid-point");
+        md.set(glossary().step, eckit::Translator<std::int64_t, std::string>{}(step));
+        md.set(glossary().category, "atms-checkpoint");
+        md.set(glossary().trigger, "step");
+        md.set(glossary().domain, "grid-point");
         for (auto& server : serverPeers) {
             Message flush{Message::Header{Message::Tag::Flush, client, *server, Metadata{md}}};
             transport->send(flush);
@@ -638,9 +640,9 @@ void MultioHammer::testData() {
                 std::string file_name = std::to_string(level) + std::string("::") + std::to_string(param)
                                       + std::string("::") + std::to_string(step);
                 Metadata metadata;
-                metadata.set("level", level);
-                metadata.set("param", param);
-                metadata.set("step", step);
+                metadata.set(glossary().level, level);
+                metadata.set(glossary().param, param);
+                metadata.set(glossary().step, step);
 
                 std::string field_id = metadata.toString();
 
@@ -772,11 +774,11 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         }
 
         Metadata md;
-        md.set("step", eckit::Translator<std::int64_t, std::string>()(step));
-        md.set("category", "atms-checkpoint");
+        md.set(glossary().step, eckit::Translator<std::int64_t, std::string>()(step));
+        md.set(glossary().category, "atms-checkpoint");
         md.set("trigger", "step");
-        md.set("domain", "grid-point");
-        md.set("precision", "double");
+        md.set(glossary().domain, "grid-point");
+        md.set(glossary().precision, "double");
 
         Message msg{Message::Header{Message::Tag::Flush, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {

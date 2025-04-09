@@ -65,18 +65,20 @@ def test_multio_config_path():
 
 
 def test_multio_open_close_connections():
-    multioclient = multio.Multio(**default_dict)
-    pass
+    multio_object = multio.Multio(**default_dict)
+    multio_object.open_connections()
+    multio_object.close_connections()
+
 
 def test_create_metadata():
-    multioclient = multio.Multio(**default_dict)
+    multio_object = multio.Multio(**default_dict)
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1}
-    metadata = multio.Metadata(multioclient, metadata)
+    metadata = multio.Metadata(multio_object, metadata)
 
 
 def test_metadata_set_item_syntax():
-    multioclient = multio.Multio(**default_dict)
-    metadata = multio.Metadata(multioclient, None)
+    multio_object = multio.Multio(**default_dict)
+    metadata = multio.Metadata(multio_object, None)
     metadata["category"] = "path"
     metadata["new"] = 1
     metadata["new_float"] = 1.0
@@ -85,17 +87,17 @@ def test_metadata_set_item_syntax():
 
 
 def test_create_wrong_metadata_object():
-    multioclient = multio.Multio(**default_dict)
+    multio_object = multio.Multio(**default_dict)
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1, "pair": (1, 2)}
     with pytest.raises(TypeError):
-        multio.Metadata(multioclient, metadata)
+        multio.Metadata(multio_object, metadata)
 
 
 def test_create_wrong_metadata_dict():
-    multioclient = multio.Multio(**default_dict)
+    multio_object = multio.Multio(**default_dict)
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1, "pair": (1, 2)}
     with pytest.raises(TypeError):
-        multioclient.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
+        multio_object.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
 
 
 def test_write_field():

@@ -93,10 +93,10 @@ class Multio:
         self.__dummy_metadata_flush = Metadata(self, md={})
         self.__dummy_metadata_notification = Metadata(self, md={})
 
-    def open(self):
+    def open_connections(self):
         lib.multio_open_connections(self._handle)
 
-    def close(self):
+    def close_connections(self):
         lib.multio_close_connections(self._handle)
 
 

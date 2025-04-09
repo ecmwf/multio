@@ -11,6 +11,8 @@ from pydantic import ValidationError
 import multio
 from multio.plans import Client, Plan, Server, actions
 
+default_dict = {"allow_world": True, "parent_comm": 1, "client_comm": [2, 3], "server_comm": [4, 5]}
+
 sample_plan = {
     "plans": [
         {
@@ -34,15 +36,13 @@ def test_sample_config():
 def test_with_multio_server_sample():
     config = Client(**sample_plan)
     with multio.MultioPlan(config):
-        with multio.Multio():
-            pass
+        multioclient = multio.Multio(**default_dict)
 
 
 def test_with_multio_server_empty():
     config = Client()
     with multio.MultioPlan(config):
-        with multio.Multio():
-            pass
+        multioclient = multio.Multio(**default_dict)
 
 
 def test_with_multio_server_add():

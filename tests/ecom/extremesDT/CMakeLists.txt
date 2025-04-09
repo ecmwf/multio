@@ -25,16 +25,18 @@ list( APPEND _arguments
   "-i ${CMAKE_CURRENT_BINARY_DIR}/reproducer"
 )
 
-#ecbuild_add_test(
-#    TARGET       ${PREFIX}_${_test}_run
-#    TEST_DEPENDS ${PREFIX}_get_test_data ${PREFIX}_get_test_cfg
-#    COMMAND      secom
-#    ARGS         ${_arguments}
-#)
-#
-#ecbuild_add_test(
-#    TARGET       ${PREFIX}_${_test}_metadata
-#    TEST_DEPENDS ${PREFIX}_get_data ${PREFIX}_get_cache
-#    COMMAND      grib_compare -H
-#    ARGS         -H ${CMAKE_CURRENT_BINARY_DIR}/reference.grib ${CMAKE_CURRENT_BINARY_DIR}/allfields.00000001.grib
-#)
+ecbuild_add_test(
+  ENABLED       OFF
+  TARGET        ${PREFIX}_${_test}_run
+  TEST_REQUIRES ${PREFIX}_get_test_data ${PREFIX}_get_test_cfg
+  COMMAND       secom
+  ARGS          ${_arguments}
+)
+
+ecbuild_add_test(
+  ENABLED       OFF
+  TARGET        ${PREFIX}_${_test}_metadata
+  TEST_REQUIRES ${PREFIX}_get_data ${PREFIX}_get_cache
+  COMMAND       grib_compare
+  ARGS          -H ${CMAKE_CURRENT_BINARY_DIR}/reference.grib ${CMAKE_CURRENT_BINARY_DIR}/allfields.00000001.grib
+)

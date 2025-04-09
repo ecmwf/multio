@@ -28,10 +28,12 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
     void* message = NULL;
     int messageLength = 0;
     int ret = multio_grib2_encoder_encode_f(multio_grib2, mars_dict, par_dict, &message, &messageLength);
-    if (ret != 0)
+    if (ret != 0) {
         return ret;
-    if (messageLength == 0)
+    }
+    if (messageLength == 0) {
         return -1;
+    }
 
     std::size_t messageLength2 = messageLength;
 
@@ -44,8 +46,9 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
     char* scaleFactorCStr = NULL;
     std::optional<double> scaleFactor;
     ret = multio_grib2_dict_get(par_dict, "values-scale-factor", &scaleFactorCStr);
-    if (ret != 0)
+    if (ret != 0) {
         return ret;
+    }
     if (scaleFactorCStr != NULL) {
         scaleFactor = std::stod(scaleFactorCStr);
         free(scaleFactorCStr);

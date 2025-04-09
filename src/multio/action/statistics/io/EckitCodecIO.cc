@@ -61,7 +61,6 @@ void EckitCodecIO::write(const std::string& name, std::size_t fieldSize, std::si
     record.set("size", fieldSize, no_compression);
     record.set(name, eckit::codec::ref(dat), no_compression);
     record.write(fname);
-    return;
 };
 
 void EckitCodecIO::readSize(const std::string& name, std::size_t& readSize) {
@@ -73,7 +72,6 @@ void EckitCodecIO::readSize(const std::string& name, std::size_t& readSize) {
     eckit::codec::RecordReader record(fname);
     record.read("size", sz).wait();
     readSize = static_cast<std::size_t>(sz);
-    return;
 };
 
 void EckitCodecIO::read(const std::string& name, std::size_t readSize) {
@@ -89,13 +87,11 @@ void EckitCodecIO::read(const std::string& name, std::size_t readSize) {
         os << "ERROR : wrong file size for restart : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 void EckitCodecIO::flush() {
     // TODO: Decide what to do when flush is called. Flush partial statistics when the Tag::Flush is received is
     // probably okay
-    return;
 };
 
 void EckitCodecIO::checkFileExist(const std::string& name) const {
@@ -105,7 +101,6 @@ void EckitCodecIO::checkFileExist(const std::string& name) const {
         os << "ERROR : wrong file not exist : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 StatisticsIOBuilder<EckitCodecIO> EckitCodecIOBuilder("eckit_codec");

@@ -162,8 +162,6 @@ public:
 
         INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit dumpCache"
                                      << (sizeof(T) == 4 ? "<single>" : "<double>") << std::endl;
-
-        return;
     }
 };
 

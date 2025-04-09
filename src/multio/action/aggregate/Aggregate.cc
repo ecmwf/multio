@@ -63,7 +63,7 @@ bool Aggregate::handleFlush(const Message& msg) {
     util::ScopedTiming timing{statistics_.actionTiming_};
     // to allow flushes coming without a domain to direclty pass through.
     auto domain = msg.metadata().get<std::string>("domain");
-    if(domain=="global") {
+    if (domain=="global") {
         return true;
     }
     // get domain info if existant
@@ -71,7 +71,7 @@ bool Aggregate::handleFlush(const Message& msg) {
 
     auto flCount = flushCount(msg);
 
-    if(domainMap.isComplete() && flCount == domainMap.size()){
+    if (domainMap.isComplete() && flCount == domainMap.size()) {
         //if complete, pass through and reset counter
         flushes_.erase(msg.fieldId());
         return true;

@@ -71,7 +71,6 @@ void parseInputFileName(const std::string& fname, std::string& fesomName, std::s
     else {
         throw eckit::SeriousBug("Unable to parse filename: " + fname, Here());
     }
-    return;
 }
 
 std::string fesomCacheName(const std::string& fesomName, const std::string& domain, const std::string& precision,
@@ -148,8 +147,6 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
         "inputOrdering", "Ordering of the input files. Options( \"ring\", \"nested\") Default( \"ring\" )", "ring"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "outputOrdering", "Ordering of the output files. Options( \"ring\", \"nested\", \"input\") Default( \"input\" )", "input"));
-
-    return;
 }
 
 
@@ -169,14 +166,14 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             "([0-9][0-9]*)\\s+([0-9][0-9]*)\\s*([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)");
         std::smatch matchLine;
         if (std::regex_match(line, matchLine, lineGrammar)) {
-            if ( inputOrdering_ ==  outputOrdering_ ){
+            if (inputOrdering_ ==  outputOrdering_) {
               iHEALPix = std::stoi(matchLine[1].str());
             }
             else if (inputOrdering_ == orderingConvention_e::RING && outputOrdering_ == orderingConvention_e::NESTED) {
               HEALPix Idx(static_cast<int>(NSide_));
               iHEALPix = Idx.ring_to_nest(static_cast<int>(std::stoi(matchLine[1].str())));
             }
-            else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING){
+            else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING) {
               HEALPix Idx(static_cast<int>(NSide_));
               iHEALPix = Idx.nest_to_ring(static_cast<int>(std::stoi(matchLine[1].str())));
             }
@@ -213,14 +210,28 @@ void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
     outputPath_tmp.mkdir();
     parseInputFileName(inputFile_, fesomName_, domain_, NSide_, level_, inputOrdering_);
 
-    if (inputOrderingType == "ring") { inputOrdering_ = orderingConvention_e::RING; }
-    else if (inputOrderingType == "nested") { inputOrdering_ = orderingConvention_e::NESTED; }
-    else { throw eckit::SeriousBug("Unsupported input ordering convention", Here()); }
+    if (inputOrderingType == "ring") {
+        inputOrdering_ = orderingConvention_e::RING;
+    }
+    else if (inputOrderingType == "nested") {
+        inputOrdering_ = orderingConvention_e::NESTED;
+    }
+    else {
+        throw eckit::SeriousBug("Unsupported input ordering convention", Here());
+    }
 
-    if (outputOrderingType == "input") { outputOrdering_ = inputOrdering_; }
-    else if (outputOrderingType == "ring") { outputOrdering_ = orderingConvention_e::RING; }
-    else if (outputOrderingType == "nested") { outputOrdering_ = orderingConvention_e::NESTED; }
-    else { throw eckit::SeriousBug("Unsupported output ordering convention", Here()); }
+    if (outputOrderingType == "input") {
+        outputOrdering_ = inputOrdering_;
+    }
+    else if (outputOrderingType == "ring") {
+        outputOrdering_ = orderingConvention_e::RING;
+    }
+    else if (outputOrderingType == "nested") {
+        outputOrdering_ = orderingConvention_e::NESTED;
+    }
+    else {
+        throw eckit::SeriousBug("Unsupported output ordering convention", Here());
+    }
 
     args.get("nCols", Ncol_);
     Nrow_ = NSide_ * NSide_ * 12;

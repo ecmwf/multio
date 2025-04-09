@@ -504,8 +504,9 @@ int set_codes_handle_c(const void* values, int len, void** location) {
 
 int copy_f_buf_to_c_buf_c(const char* val, int len, void** location) {
     *location = malloc(len * sizeof(char));
-    if (*location == NULL)
+    if (*location == NULL) {
         return -1;
+    }
     memcpy(*location, val, len);
     return 0;
 }

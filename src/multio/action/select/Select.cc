@@ -32,7 +32,7 @@ void Select::executeImpl(Message msg) {
         executeNext(std::move(msg));
         return;
     }
-    if ( matches(msg) ) {
+    if (matches(msg)) {
         executeNext(std::move(msg));
         return;
     }

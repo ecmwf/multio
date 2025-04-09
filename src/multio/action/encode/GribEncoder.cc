@@ -941,7 +941,6 @@ void GribEncoder::setOceanCoordMetadata(message::Metadata& md) {
 
 void GribEncoder::initEncoder() {
     encoder_ = template_.duplicate();
-    return;
 };
 
 bool GribEncoder::hasKey(const char* key) {

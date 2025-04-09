@@ -114,9 +114,6 @@ CacheGenerator::CacheGenerator(int argc, char** argv) :
         "by", "ordering convention used to create the triplets. Default(\"ring\")"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "list", "ordering convention used to create the triplets. Default(\"ring\")"));
-
-    // Exit point
-    return;
 }
 
 

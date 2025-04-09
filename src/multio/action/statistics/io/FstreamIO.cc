@@ -20,7 +20,6 @@ void FstreamIO::write(const std::string& name, std::size_t fieldSize, std::size_
     std::fwrite(buffer_.data(), sizeof(std::uint64_t), writeSize, fp);
     std::fflush(fp);
     std::fclose(fp);
-    return;
 };
 
 void FstreamIO::readSize(const std::string& name, std::size_t& readSize) {
@@ -33,7 +32,6 @@ void FstreamIO::readSize(const std::string& name, std::size_t& readSize) {
     std::fread(&sz, sizeof(uint64_t), 1, fp);
     readSize = static_cast<std::size_t>(sz);
     std::fclose(fp);
-    return;
 };
 
 void FstreamIO::read(const std::string& name, std::size_t readSize) {
@@ -47,13 +45,11 @@ void FstreamIO::read(const std::string& name, std::size_t readSize) {
     std::fread(&sz, sizeof(uint64_t), 1, fp);
     std::fread(buffer_.data(), sizeof(uint64_t), readSize, fp);
     std::fclose(fp);
-    return;
 };
 
 void FstreamIO::flush() {
     // TODO: Decide what to do when flush is called. Flush partial statistics when the Tag::Flush is received is
     // probably okay
-    return;
 };
 
 
@@ -64,7 +60,6 @@ void FstreamIO::checkFileExist(const std::string& name) const {
         os << "ERROR : wrong file not exist : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) const {
@@ -74,7 +69,6 @@ void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) cons
         os << "ERROR : wrong file size for restart : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};
     }
-    return;
 };
 
 StatisticsIOBuilder<FstreamIO> FstreamBuilder("fstream_io");

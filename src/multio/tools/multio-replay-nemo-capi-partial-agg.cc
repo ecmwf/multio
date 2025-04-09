@@ -143,7 +143,6 @@ MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) :
             singlePrecision_ = true;
         }
     }
-    return;
 }
 
 void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
@@ -203,8 +202,9 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
         = {{"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
     multio_metadata_t* md = nullptr;
-    if (!onlyLoadDefinitions)
+    if (!onlyLoadDefinitions) {
         multio_new_metadata(&md, multio_handle);
+    }
 
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
@@ -232,8 +232,9 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
         domainDefinitions_.emplace(std::make_pair(grid.first, std::move(buffer)));
     }
-    if (!onlyLoadDefinitions)
+    if (!onlyLoadDefinitions) {
         multio_delete_metadata(md);
+    }
 }
 
 void MultioReplayNemoCApi::writeMasks() {

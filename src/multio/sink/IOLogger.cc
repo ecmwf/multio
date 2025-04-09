@@ -69,8 +69,9 @@ void IOLogger::report(std::ostream& s) const {
             = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
 
-        if (numReads_ != 0)
+        if (numReads_ != 0) {
             s << std::endl;
+        }
     }
 
     // -----

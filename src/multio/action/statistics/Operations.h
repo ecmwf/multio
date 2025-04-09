@@ -33,38 +33,38 @@
 namespace multio::action {
 
 template <typename Precision>
-std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, std::shared_ptr<StatisticsIO>& IOmanager,
+std::unique_ptr<Operation> make_operation(const std::string& opname, std::size_t size, std::shared_ptr<StatisticsIO>& IOmanager,
                                           const OperationWindow& win, const StatisticsConfiguration& cfg) {
 
     if (opname == "instant") {
-        return std::make_unique<Instant<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Instant<Precision>>(opname, size, win, cfg);
     }
     if (opname == "average") {
-        return std::make_unique<Average<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Average<Precision>>(opname, size, win, cfg);
     }
     if (opname == "difference") {
-        return std::make_unique<Difference<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Difference<Precision>>(opname, size, win, cfg);
     }
     if (opname == "inverse-difference") {
-        return std::make_unique<InverseDifference<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<InverseDifference<Precision>>(opname, size, win, cfg);
     }
     if (opname == "flux-average") {
-        return std::make_unique<FluxAverage<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<FluxAverage<Precision>>(opname, size, win, cfg);
     }
     if (opname == "minimum") {
-        return std::make_unique<Minimum<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Minimum<Precision>>(opname, size, win, cfg);
     }
     if (opname == "maximum") {
-        return std::make_unique<Maximum<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Maximum<Precision>>(opname, size, win, cfg);
     }
     if (opname == "accumulate") {
-        return std::make_unique<Accumulate<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<Accumulate<Precision>>(opname, size, win, cfg);
     }
     if (opname == "de-accumulate") {
-        return std::make_unique<DeAccumulate<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<DeAccumulate<Precision>>(opname, size, win, cfg);
     }
     if (opname == "fixed-window-flux-average") {
-        return std::make_unique<FixedWindowFluxAverage<Precision>>(opname, sz, win, cfg);
+        return std::make_unique<FixedWindowFluxAverage<Precision>>(opname, size, win, cfg);
     }
 
     std::ostringstream os;
@@ -77,57 +77,40 @@ template <typename Precision>
 std::unique_ptr<Operation> load_operation(const std::string& opname, std::shared_ptr<StatisticsIO>& IOmanager,
                                           const OperationWindow& win, const StatisticsOptions& opt) {
 
-    std::unique_ptr<Operation> ret;
-    bool found = false;
-
     if (opname == "instant") {
-        found = true;
-        ret = std::make_unique<Instant<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Instant<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "average") {
-        found = true;
-        ret = std::make_unique<Average<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Average<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "difference") {
-        found = true;
-        ret = std::make_unique<Difference<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Difference<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "inverse-difference") {
-        found = true;
-        ret = std::make_unique<InverseDifference<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<InverseDifference<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "flux-average") {
-        found = true;
-        ret = std::make_unique<FluxAverage<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<FluxAverage<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "minimum") {
-        found = true;
-        ret = std::make_unique<Minimum<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Minimum<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "maximum") {
-        found = true;
-        ret = std::make_unique<Maximum<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Maximum<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "accumulate") {
-        found = true;
-        ret = std::make_unique<Accumulate<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<Accumulate<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "de-accumulate") {
-        found = true;
-        ret = std::make_unique<DeAccumulate<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<DeAccumulate<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "fixed-window-flux-average") {
-        found = true;
-        ret = std::make_unique<FixedWindowFluxAverage<Precision>>(opname, win, IOmanager, opt);
+        return std::make_unique<FixedWindowFluxAverage<Precision>>(opname, win, IOmanager, opt);
     }
 
-    if (!found) {
-        std::ostringstream os;
-        os << "Invalid opname in statistics operation :: " << opname << std::endl;
-        throw eckit::UserError(os.str(), Here());
-    }
-
-    return ret;
+    std::ostringstream os;
+    os << "Invalid opname in statistics operation :: " << opname << std::endl;
+    throw eckit::UserError(os.str(), Here());
 }
 
 std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,

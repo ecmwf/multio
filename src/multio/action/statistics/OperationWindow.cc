@@ -12,30 +12,29 @@ namespace multio::action {
 
 namespace {
 
-long lastDayOfTheMonth(long y, long m) {
+std::int64_t lastDayOfTheMonth(std::int64_t y, std::int64_t m) {
     // month must be base 0
-    long i = m - 1;
+    std::int64_t i = m - 1;
     return 31 - std::max(0L, i % 6 - i / 6) % 2
          - std::max(0L, 2 - i * (i % 2)) % 2 * (y % 4 == 0 ? y % 100 == 0 ? y % 400 == 0 ? 1 : 2 : 1 : 2);
 }
 
-void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
-    d = static_cast<long>(yyyymmdd % 100);
-    m = static_cast<long>((yyyymmdd % 10000) / 100);
-    y = static_cast<long>((yyyymmdd % 100000000) / 10000);
+void yyyymmdd2ymd(std::int64_t yyyymmdd, std::int64_t& y, std::int64_t& m, std::int64_t& d) {
+    d = yyyymmdd % 100;
+    m = (yyyymmdd % 10000) / 100;
+    y = (yyyymmdd % 100000000) / 10000;
     if (m < 1 || m > 12) {
         throw eckit::SeriousBug("invalid month range", Here());
     }
     if (d < 1 || d > lastDayOfTheMonth(y, m)) {
         throw eckit::SeriousBug("invalid day range", Here());
     }
-    return;
 }
 
-void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
-    s = static_cast<long>(hhmmss % 100);
-    m = static_cast<long>((hhmmss % 10000) / 100);
-    h = static_cast<long>((hhmmss % 1000000) / 10000);
+void hhmmss2hms(std::int64_t hhmmss, std::int64_t& h, std::int64_t& m, std::int64_t& s) {
+    s = hhmmss % 100;
+    m = (hhmmss % 10000) / 100;
+    h = (hhmmss % 1000000) / 10000;
     if (s < 0 || s > 59) {
         throw eckit::SeriousBug("invalid seconds range", Here());
     }
@@ -45,11 +44,10 @@ void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
     if (h < 0 || h > 23) {
         throw eckit::SeriousBug("invalid hour range", Here());
     }
-    return;
 }
 
-eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
-    long dy = 0, dm = 0, dd = 0, th = 0, tm = 0, ts = 0;
+eckit::DateTime yyyymmdd_hhmmss2DateTime(std::int64_t yyyymmdd, std::int64_t hhmmss) {
+    std::int64_t dy, dm, dd, th, tm, ts;
     yyyymmdd2ymd(yyyymmdd, dy, dm, dd);
     hhmmss2hms(hhmmss, th, tm, ts);
     return eckit::DateTime{eckit::Date{dy, dm, dd}, eckit::Time{th, tm, ts}};
@@ -62,19 +60,17 @@ OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater,
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
     eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    long windowType = 0;
+
     if (cfg.options().windowType() == "forward-offset") {
-        windowType = 0;
+        return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), FORWARD_OFFSET};
     }
     else if (cfg.options().windowType() == "backward-offset") {
-        windowType = 1;
+        return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), BACKWARD_OFFSET};
     }
-    else {
-        std::ostringstream os;
-        os << " Unknown window type: " << cfg.options().windowType() << std::endl;
-        throw eckit::SeriousBug(os.str(), Here());
-    };
-    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};
+
+    std::ostringstream os;
+    os << " Unknown window type: " << cfg.options().windowType() << std::endl;
+    throw eckit::SeriousBug(os.str(), Here());
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -99,14 +95,13 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     timeStepInSeconds_{0},
     count_{0},
     counts_{},
-    type_{0} {
+    type_{FORWARD_OFFSET} {
     load(IOmanager, opt);
-    return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeStepInSeconds, long windowType) :
+                                 std::int64_t timeStepInSeconds, OperationWindowType windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -120,42 +115,39 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     type_{windowType} {}
 
 
-long OperationWindow::count() const {
+std::int64_t OperationWindow::count() const {
     return count_;
 }
 
-const std::vector<long>& OperationWindow::counts() const {
+const std::vector<std::int64_t>& OperationWindow::counts() const {
     return counts_;
 }
 
 template <typename T>
-void OperationWindow::updateCounts(const T* values, size_t size, double missingValue) const {
+void OperationWindow::updateCounts(const T* values, std::size_t size, double missingValue) const {
     initCountsLazy(size);
     std::transform(counts_.begin(), counts_.end(), values, counts_.begin(),
-                   [missingValue](long c, T v) { return v == missingValue ? c : c + 1; });
-    return;
+                   [missingValue](std::int64_t c, T v) { return v == missingValue ? c : c + 1; });
 }
-template void OperationWindow::updateCounts(const float* values, size_t size, double missingValue) const;
-template void OperationWindow::updateCounts(const double* values, size_t size, double missingValue) const;
+template void OperationWindow::updateCounts(const float* values, std::size_t size, double missingValue) const;
+template void OperationWindow::updateCounts(const double* values, std::size_t size, double missingValue) const;
 
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
-    const size_t writeSize = restartSize();
+    const std::size_t writeSize = restartSize();
     IOBuffer restartState{IOmanager->getBuffer(writeSize)};
     restartState.zero();
     serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt);
     IOmanager->write("operationWindow", writeSize, writeSize);
     IOmanager->flush();
-    return;
 }
 
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
-    size_t readSize;
+    std::size_t readSize;
     IOmanager->readSize("operationWindow", readSize);
     IOBuffer restartState{IOmanager->getBuffer(readSize)};
     IOmanager->read("operationWindow", readSize);
     deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
-    return;
 }
 
 void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
@@ -165,7 +157,6 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     currPoint_ = currentPoint;
     count_++;
     LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
-    return;
 }
 
 void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint) {
@@ -177,14 +168,13 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     endPoint_ = endPoint;
     count_ = 0;
     counts_.clear();
-    return;
 }
 
 std::string OperationWindow::windowType() const {
-    if (type_ == 0) {
+    if (type_ == FORWARD_OFFSET) {
         return std::string{"forward-offset"};
     }
-    else if (type_ == 1) {
+    else if (type_ == BACKWARD_OFFSET) {
         return std::string{"backward-offset"};
     }
     else {
@@ -197,10 +187,10 @@ std::string OperationWindow::windowType() const {
 
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret;
-    if (type_ == 0) {
+    if (type_ == FORWARD_OFFSET) {
         ret = gtLowerBound(dt, false) && leUpperBound(dt, false);
     }
-    else if (type_ == 1) {
+    else if (type_ == BACKWARD_OFFSET) {
         ret = geLowerBound(dt, false) && ltUpperBound(dt, false);
     }
     else {
@@ -251,20 +241,20 @@ bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) 
     return dt < endPoint();
 };
 
-long OperationWindow::timeSpanInHours() const {
-    return long(endPoint_ - creationPoint_) / 3600;
+std::int64_t OperationWindow::timeSpanInHours() const {
+    return std::int64_t(endPoint_ - creationPoint_) / 3600;
 }
 
-long OperationWindow::timeSpanInSeconds() const {
-    return long(endPoint_ - creationPoint_);
+std::int64_t OperationWindow::timeSpanInSeconds() const {
+    return std::int64_t(endPoint_ - creationPoint_);
 }
 
-long OperationWindow::timeSpanInSteps() const {
+std::int64_t OperationWindow::timeSpanInSteps() const {
     return timeSpanInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::lastPointsDiffInSeconds() const {
-    return long(currPoint_ - prevPoint_);
+std::int64_t OperationWindow::lastPointsDiffInSeconds() const {
+    return std::int64_t(currPoint_ - prevPoint_);
 }
 
 util::DateTimeDiff OperationWindow::lastPointsDiff() const {
@@ -273,127 +263,127 @@ util::DateTimeDiff OperationWindow::lastPointsDiff() const {
         util::toDateInts(prevPoint_.date().yyyymmdd()), util::toTimeInts(prevPoint_.time().hhmmss()));
 }
 
-long OperationWindow::startPointInSeconds() const {
+std::int64_t OperationWindow::startPointInSeconds() const {
     return startPoint_ - epochPoint_;
 }
 
-long OperationWindow::creationPointInSeconds() const {
+std::int64_t OperationWindow::creationPointInSeconds() const {
     return creationPoint_ - epochPoint_;
 }
 
-long OperationWindow::endPointInSeconds() const {
+std::int64_t OperationWindow::endPointInSeconds() const {
     return endPoint_ - epochPoint_;
 }
 
-long OperationWindow::currPointInSeconds() const {
+std::int64_t OperationWindow::currPointInSeconds() const {
     return currPoint_ - epochPoint_;
 }
 
-long OperationWindow::prevPointInSeconds() const {
+std::int64_t OperationWindow::prevPointInSeconds() const {
     return prevPoint_ - epochPoint_;
 }
 
 
-long OperationWindow::startPointInHours() const {
+std::int64_t OperationWindow::startPointInHours() const {
     return startPointInSeconds() / 3600;
 }
 
-long OperationWindow::creationPointInHours() const {
+std::int64_t OperationWindow::creationPointInHours() const {
     return creationPointInSeconds() / 3600;
 }
 
-long OperationWindow::endPointInHours() const {
+std::int64_t OperationWindow::endPointInHours() const {
     return endPointInSeconds() / 3600;
 }
 
-long OperationWindow::currPointInHours() const {
+std::int64_t OperationWindow::currPointInHours() const {
     return currPointInSeconds() / 3600;
 }
 
-long OperationWindow::prevPointInHours() const {
+std::int64_t OperationWindow::prevPointInHours() const {
     return prevPointInSeconds() / 3600;
 }
 
 
-long OperationWindow::startPointInSteps() const {
+std::int64_t OperationWindow::startPointInSteps() const {
     return startPointInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::creationPointInSteps() const {
+std::int64_t OperationWindow::creationPointInSteps() const {
     return creationPointInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::endPointInSteps() const {
+std::int64_t OperationWindow::endPointInSteps() const {
     return endPointInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::currPointInSteps() const {
+std::int64_t OperationWindow::currPointInSteps() const {
     return currPointInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::prevPointInSteps() const {
+std::int64_t OperationWindow::prevPointInSteps() const {
     return prevPointInSeconds() / timeStepInSeconds_;
 }
 
-long OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
     return startPoint_ - refPoint;
 }
 
-long OperationWindow::creationPointInSeconds(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::creationPointInSeconds(const eckit::DateTime& refPoint) const {
     return creationPoint_ - refPoint;
 }
 
-long OperationWindow::endPointInSeconds(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::endPointInSeconds(const eckit::DateTime& refPoint) const {
     return endPoint_ - refPoint;
 }
 
-long OperationWindow::currPointInSeconds(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::currPointInSeconds(const eckit::DateTime& refPoint) const {
     return currPoint_ - refPoint;
 }
 
-long OperationWindow::prevPointInSeconds(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::prevPointInSeconds(const eckit::DateTime& refPoint) const {
     return prevPoint_ - refPoint;
 }
 
 
-long OperationWindow::startPointInHours(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::startPointInHours(const eckit::DateTime& refPoint) const {
     return startPointInSeconds(refPoint) / 3600;
 }
 
-long OperationWindow::creationPointInHours(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::creationPointInHours(const eckit::DateTime& refPoint) const {
     return creationPointInSeconds(refPoint) / 3600;
 }
 
-long OperationWindow::endPointInHours(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::endPointInHours(const eckit::DateTime& refPoint) const {
     return endPointInSeconds(refPoint) / 3600;
 }
 
-long OperationWindow::currPointInHours(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::currPointInHours(const eckit::DateTime& refPoint) const {
     return currPointInSeconds(refPoint) / 3600;
 }
 
-long OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
     return prevPointInSeconds(refPoint) / 3600;
 }
 
 
-long OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
     return startPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
     return creationPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
     return endPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
     return currPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
+std::int64_t OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
     return prevPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
@@ -447,14 +437,13 @@ std::string OperationWindow::stepRangeInHours(const eckit::DateTime& refPoint) c
 
 void OperationWindow::updateFlush() {
     lastFlush_ = currPoint_;
-    return;
 }
 
-long OperationWindow::lastFlushInSteps() const {
+std::int64_t OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
 }
 
-void OperationWindow::initCountsLazy(size_t size) const {
+void OperationWindow::initCountsLazy(std::size_t size) const {
     if (counts_.size() == size) {
         return;
     }
@@ -511,35 +500,33 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[15] = static_cast<std::uint64_t>(count_);
     currState[16] = static_cast<std::uint64_t>(type_);
 
-    const size_t countsSize = counts_.size();
+    const std::size_t countsSize = counts_.size();
     currState[17] = static_cast<std::uint64_t>(countsSize);
-    for (size_t i = 0; i < countsSize; ++i) {
+    for (std::size_t i = 0; i < countsSize; ++i) {
         currState[i+18] = static_cast<std::uint64_t>(counts_[i]);
     }
 
     currState.computeChecksum();
-
-    return;
 }
 
 void OperationWindow::deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
 
     currState.checkChecksum();
-    epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[0]), static_cast<long>(currState[1]));
-    startPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[2]), static_cast<long>(currState[3]));
-    endPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[4]), static_cast<long>(currState[5]));
-    creationPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[6]), static_cast<long>(currState[7]));
-    prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[8]), static_cast<long>(currState[9]));
-    currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[10]), static_cast<long>(currState[11]));
-    lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
-    timeStepInSeconds_ = static_cast<long>(currState[14]);
-    count_ = static_cast<long>(currState[15]);
-    type_ = static_cast<long>(currState[16]);
+    epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[0]), static_cast<std::int64_t>(currState[1]));
+    startPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[2]), static_cast<std::int64_t>(currState[3]));
+    endPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[4]), static_cast<std::int64_t>(currState[5]));
+    creationPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[6]), static_cast<std::int64_t>(currState[7]));
+    prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[8]), static_cast<std::int64_t>(currState[9]));
+    currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[10]), static_cast<std::int64_t>(currState[11]));
+    lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[12]), static_cast<std::int64_t>(currState[13]));
+    timeStepInSeconds_ = static_cast<std::int64_t>(currState[14]);
+    count_ = static_cast<std::int64_t>(currState[15]);
+    type_ = static_cast<OperationWindowType>(currState[16]);
 
-    const auto countsSize = static_cast<size_t>(currState[17]);
+    const auto countsSize = static_cast<std::size_t>(currState[17]);
     counts_.resize(countsSize);
-    for (size_t i = 0; i < countsSize; ++i) {
-        counts_[i] = static_cast<long>(currState[i+18]);
+    for (std::size_t i = 0; i < countsSize; ++i) {
+        counts_[i] = static_cast<std::int64_t>(currState[i+18]);
     }
 
     if (opt.debugRestart()) {
@@ -557,11 +544,9 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "type_ :: " << type_ << std::endl;
         outFile.close();
     }
-
-    return;
 }
 
-size_t OperationWindow::restartSize() const {
+std::size_t OperationWindow::restartSize() const {
     return 18 + counts_.size() + 1;  // values + counts + checksum
 }
 

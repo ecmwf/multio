@@ -125,8 +125,6 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
     param.set("west", west);
     param.set("south", south);
     param.set("east", east);
-
-    return;
 };
 
 
@@ -181,7 +179,6 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
             out_md.set(kv.first, kv.second);
         }
     }
-    return;
 };
 
 message::MetadataValue getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {

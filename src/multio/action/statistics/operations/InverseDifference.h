@@ -18,8 +18,8 @@ public:
     using OperationWithDeaccumulatedData<T>::checkTimeInterval;
 
 
-    InverseDifference(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
-        OperationWithDeaccumulatedData<T>{name, "inverse-difference", sz, true, win, cfg} {}
+    InverseDifference(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+        OperationWithDeaccumulatedData<T>{name, "inverse-difference", size, true, win, cfg} {}
 
     InverseDifference(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsOptions& opt) :
@@ -30,30 +30,25 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);
-        return;
     }
 
-    void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
-        checkSize(sz, cfg);
+    void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) override {
+        checkSize(size, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         auto val = static_cast<const T*>(data);
-        std::copy(val, val + (sz / sizeof(T)), values_.begin());
-        return;
+        std::copy(val, val + (size / sizeof(T)), values_.begin());
     }
 
 private:
-
     void computeWithoutMissing(T* val, const StatisticsConfiguration& cfg) {
         std::transform(values_.begin(), values_.end(), initValues_.begin(), val,
                        [](T v1, T v2) { return static_cast<T>(v2 - v1); });
-        return;
     }
 
     void computeWithMissing(T* val, const StatisticsConfiguration& cfg) {
-        double m = cfg.missingValue();
+        const auto m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), initValues_.begin(), val,
                        [m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v2 - v1); });
-        return;
     }
 
     void print(std::ostream& os) const override { os << logHeader_; }

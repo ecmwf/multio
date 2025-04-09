@@ -11,10 +11,10 @@ public:
     using Operation::logHeader_;
     using Operation::name_;
 
-    OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
+    OperationWithData(const std::string& name, const std::string& operation, std::size_t size, bool needRestart,
                       const OperationWindow& win, const StatisticsConfiguration& cfg, T initial_value = 0.0) :
         Operation{name, operation, win, cfg.options()},
-        values_{std::vector<T>(sz /= sizeof(T), initial_value)},
+        values_{std::vector<T>(size /= sizeof(T), initial_value)},
         needRestart_{needRestart},
         initialValue_{initial_value} {}
 
@@ -25,7 +25,7 @@ public:
         load(IOmanager, opt);
     }
 
-    void updateWindow(const void* data, long sz, const message::Message& msg,
+    void updateWindow(const void* data, std::size_t size, const message::Message& msg,
                       const StatisticsConfiguration& cfg) override {
         std::fill(values_.begin(), values_.end(), initialValue_);
     };
@@ -34,19 +34,17 @@ public:
         std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
-    void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
+    void init(const void* data, std::size_t size, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the first field of the window
-        return;
     };
 
     void init(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the initialization time of the window
-        return;
     };
 
     bool needStepZero() const override { return false; };
 
-    size_t byte_size() const override { return values_.size() * sizeof(T); };
+    std::size_t byte_size() const override { return values_.size() * sizeof(T); };
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const override {
         if (needRestart_) {
@@ -57,85 +55,75 @@ public:
             IOmanager->write(fname, values_.size(), restartSize());
             IOmanager->flush();
         }
-        return;
     };
 
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) override {
         if (needRestart_) {
-            std::size_t sz;
+            std::size_t size;
             std::string fname = restartFileName();
-            IOmanager->readSize(fname, sz);
-            values_.resize(sz);
+            IOmanager->readSize(fname, size);
+            values_.resize(size);
             IOBuffer restartState{IOmanager->getBuffer(restartSize())};
             IOmanager->read(fname, restartSize());
             deserialize(restartState, IOmanager->getCurrentDir() + "/" + fname + "_load.txt", opt);
             restartState.zero();
         }
-        return;
     };
 
 protected:
     void serialize(IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) const {
 
-        size_t sz = values_.size();
-        size_t cnt = 0;
-        // restartState[cnt] = static_cast<uint64_t>(sz);
-        for (size_t i = 0; i < sz; ++i) {
-            T lv = values_[i];
-            double dv = static_cast<double>(lv);
-            restartState[cnt] = *reinterpret_cast<uint64_t*>(&dv);
-            cnt++;
+        const auto size = values_.size();
+        for (std::size_t i = 0; i < size; ++i) {
+            auto lv = values_[i];
+            auto dv = static_cast<double>(lv);
+            restartState[i] = *reinterpret_cast<std::uint64_t*>(&dv);
         }
         restartState.computeChecksum();
 
         if (opt.debugRestart()) {
             std::ofstream outFile(fname);
-            outFile << "values(" << sz << ")" << std::endl;
-            for (size_t i = 0; i < sz; ++i) {
+            outFile << "values(" << size << ")" << std::endl;
+            for (std::size_t i = 0; i < size; ++i) {
                 outFile << i << ", " << values_[i] << std::endl;
             }
             outFile.close();
         }
-        return;
     };
 
     void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
         restartState.checkChecksum();
-        size_t cnt = 0;
-        size_t sz = values_.size();
-        for (size_t i = 0; i < sz; ++i) {
-            std::uint64_t lv = restartState[cnt];
-            double dv = *reinterpret_cast<double*>(&lv);
+        auto size = values_.size();
+        for (std::size_t i = 0; i < size; ++i) {
+            auto lv = restartState[i];
+            auto dv = *reinterpret_cast<double*>(&lv);
             values_[i] = static_cast<T>(dv);
-            cnt++;
         }
         if (opt.debugRestart()) {
             std::ofstream outFile(fname);
-            outFile << "values(" << sz << ")" << std::endl;
-            for (size_t i = 0; i < sz; ++i) {
+            outFile << "values(" << size << ")" << std::endl;
+            for (std::size_t i = 0; i < size; ++i) {
                 outFile << i << ", " << values_[i] << std::endl;
             }
             outFile.close();
         }
-        return;
     };
 
-    void checkSize(long sz, const StatisticsConfiguration& cfg) {
-        if (values_.size() != static_cast<long>(sz / sizeof(T))) {
+    void checkSize(std::size_t size, const StatisticsConfiguration& cfg) {
+        if (values_.size() != size / sizeof(T)) {
             throw eckit::AssertionFailed(logHeader_ + " :: Expected size: " + std::to_string(values_.size())
-                                         + " -- actual size: " + std::to_string(sz));
+                                         + " -- actual size: " + std::to_string(size));
         }
     };
 
     void checkTimeInterval(const StatisticsConfiguration& cfg) {
-        long sec = win_.count() * cfg.stepFreq() * cfg.timeStep();
+        auto sec = win_.count() * cfg.stepFreq() * cfg.timeStep();
         if (sec == 0) {
             throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
         }
-        return;
     };
 
-    size_t restartSize() const { return values_.size() + 1; }
+    std::size_t restartSize() const { return values_.size() + 1; }
     std::vector<T> values_;
 
 private:

@@ -56,7 +56,6 @@ void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, si
     out_md.set<bool>("bitmapPresent", true);
     out_md.set("missingValue", missingValue);
     INTERPOLATE_FESOM_OUT_STREAM << " - exit fill_metadata" << std::endl;
-    return;
 };
 
 // TODO: Consider removing this function!

@@ -24,30 +24,29 @@ public:
 
     template <typename Precision>
     void applyScaling(message::Message& msg) const {
-        if (hasScaling_) {
-            std::string cparam = extractParam(msg.metadata());
-            // Find the scaling factor
-            double scaleFactor = getScalingFactor(cparam);
-
-            // Ensure the payload size is compatible with Precision type
-            size_t size = msg.payload().size() / sizeof(Precision);
-            if (size == 0) {
-                throw eckit::SeriousBug{" Payload is empty: Scaling Action: " + msg.metadata().toString(), Here()};
-            }
-
-            // Access the payload data
-            auto data = static_cast<Precision*>(msg.payload().modifyData());
-            if (!data) {
-                throw eckit::SeriousBug{
-                    " Payload data could not be modified: Scaling Action: " + msg.metadata().toString(), Here()};
-            }
-            // Apply the scaling factor using std::transform
-            std::transform(data, data + size, data,
-                           [scaleFactor](Precision value) { return static_cast<Precision>(value * scaleFactor); });
-        }
-        else {
+        if (!hasScaling_) {
             return;
         }
+
+        std::string cparam = extractParam(msg.metadata());
+        // Find the scaling factor
+        double scaleFactor = getScalingFactor(cparam);
+
+        // Ensure the payload size is compatible with Precision type
+        size_t size = msg.payload().size() / sizeof(Precision);
+        if (size == 0) {
+            throw eckit::SeriousBug{" Payload is empty: Scaling Action: " + msg.metadata().toString(), Here()};
+        }
+
+        // Access the payload data
+        auto data = static_cast<Precision*>(msg.payload().modifyData());
+        if (!data) {
+            throw eckit::SeriousBug{
+                " Payload data could not be modified: Scaling Action: " + msg.metadata().toString(), Here()};
+        }
+        // Apply the scaling factor using std::transform
+        std::transform(data, data + size, data,
+                        [scaleFactor](Precision value) { return static_cast<Precision>(value * scaleFactor); });
     }
 };
 

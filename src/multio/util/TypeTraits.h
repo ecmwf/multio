@@ -17,11 +17,22 @@
 
 #include <memory>  // unique_ptr
 #include <optional>
+#include <tuple>
 #include <type_traits>
 #include <variant>
 #include <vector>
 
 namespace multio::util {
+
+//-----------------------------------------------------------------------------
+
+struct Identity {
+    template <typename T>
+    decltype(auto) operator()(T&& v) const noexcept {
+        return std::forward<T>(v);
+    }
+};
+
 
 //-----------------------------------------------------------------------------
 
@@ -247,11 +258,10 @@ template <typename Func>
 struct ForwardUnwrappedUniquePtr {
     Func func_;
 
-
     template <typename... Args>
     decltype(auto) operator()(Args&&... args) && noexcept(
-        noexcept(std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
-        return std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
+        noexcept(std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
+        return std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
     }
 };
 
@@ -305,6 +315,21 @@ struct IsVariant<std::variant<T...>> {
 
 template <typename T>
 inline constexpr bool IsVariant_v = IsVariant<T>::value;
+
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsTuple {
+    static constexpr bool value = false;
+};
+template <typename... T>
+struct IsTuple<std::tuple<T...>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsTuple_v = IsTuple<T>::value;
 
 
 //-----------------------------------------------------------------------------

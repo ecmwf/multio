@@ -14,96 +14,653 @@
 
 #pragma once
 
-#include "multio/message/Metadata.h"
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
+#include "multio/message/Metadata.h"
+#include "multio/util/Hash.h"
+#include "multio/util/TypeTraits.h"
 
 
 namespace multio::message {
 
 
-template <typename KeyType, typename ValueType, typename Mapper = void>
+//-----------------------------------------------------------------------------
+// Definitions to handle key sets
+//-----------------------------------------------------------------------------
+
+/* To be specialized to stringify a enum as namespace
+ */
+template <typename EnumType>
+struct KeySet;
+
+template <typename EnumType>
+inline constexpr std::string_view KeySetName_v = KeySet<EnumType>::name;
+
+
+template <typename EnumType>
+constexpr const auto& keySet() {
+    static_assert(util::IsTuple_v<std::decay_t<decltype(KeySet<EnumType>::keys())>>, "Expected a tuple");
+    return KeySet<EnumType>::keys();
+}
+
+
+namespace keyUtils {
+template <auto val, typename T1, typename... T, std::enable_if_t<(sizeof...(T) == 0), bool> = true>
+constexpr std::size_t getKeyIndexById() {
+    static_assert(std::is_same_v<std::decay_t<decltype(T1::id)>, decltype(val)>);
+    static_assert(T1::id == val, "Non of the types match the key");
+    return 0;
+}
+template <auto val, typename T1, typename... T, std::enable_if_t<(sizeof...(T) > 0), bool> = true>
+constexpr std::size_t getKeyIndexById() {
+    if constexpr (std::is_same_v<std::decay_t<decltype(T1::id)>, decltype(val)> && (T1::id == val)) {
+        return 0;
+    }
+    else {
+        return 1 + getKeyIndexById<val, T...>();
+    }
+    return 0;  // Unreachable - avoid compiler warning
+}
+
+
+template <auto keyId, typename... T>
+const auto& getById(const std::tuple<T...>& tup) {
+    return std::get<getKeyIndexById<keyId, T...>()>(tup);
+}
+
+
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void withKeySet(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    (func(std::get<I>(std::forward<Tup>(tup))), ...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void withKeySet(Func&& func, Tup&& tup) {
+    withKeySet(std::forward<Func>(func), std::forward<Tup>(tup),
+               std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+}  // namespace keyUtils
+
+
+template <auto keyId, typename... T>
+const auto& key(const std::tuple<T...>& keySet) {
+    using EnumType = decltype(keyId);
+    return keyUtils::getById<keyId>(keySet);
+}
+template <auto keyId>
+const auto& key() {
+    return key<keyId>(keySet<decltype(keyId)>());
+}
+
+
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void withKeySet(Func&& func, Tup&& tup) {
+    keyUtils::withKeySet(std::forward<Func>(func), std::forward<Tup>(tup));
+}
+template <typename KeySet_, typename Func>
+void withKeySet(Func&& func) {
+    withKeySet(std::forward<Func>(func), keySet<KeySet_>());
+}
+
+
+//-----------------------------------------------------------------------------
+// Definitions to describe key-value pairs
+//-----------------------------------------------------------------------------
+
+// TODO describe required/optional in description
+
+namespace description {
+enum class Tags : std::uint64_t
+{
+    Required,
+    Optional,
+};
+;
+}  // namespace description
+
+
+template <auto id, typename ValueType, typename Mapper = void>
 struct KeyValueDescription;
 
-template <typename KeyType, typename ValueType>
-struct KeyValueDescription<KeyType, ValueType, void> {
+
+template <typename T>
+struct IsKeyValueDescription {
+    static constexpr bool value = false;
+};
+template <auto id, typename ValueType, typename Mapper>
+struct IsKeyValueDescription<KeyValueDescription<id, ValueType, Mapper>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsKeyValueDescription_v = IsKeyValueDescription<T>::value;
+
+
+template <auto id_, typename ValueType_>
+struct KeyValueDescription<id_, ValueType_, void> {
+    using KeyType = typename MetadataTypes::KeyType;
+    using ValueType = ValueType_;
+    using Mapper = void;
+
     KeyType key;
+
+    static constexpr auto id = id_;
 
     operator KeyType&() { return key; }
     operator const KeyType&() const { return key; }
     operator std::string&() { return key; }
     operator const std::string&() const { return key; }
-
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) get(MD&& md) const {
-        return std::forward<MD>(md).template get<ValueType>(key);;
-    }
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) getOpt(MD&& md) const {
-        return std::forward<MD>(md).template getOpt<ValueType>(key);;
-    }
-
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) set(MD&& md, ValueType&& val) const {
-        return std::forward<MD>(md).set(key, std::move(val));
-    }
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) set(MD&& md, const ValueType& val) const {
-        return std::forward<MD>(md).set(key, val);
-    }
-
-    template<typename MDV, std::enable_if_t<std::is_base_of_v<MetadataValue, std::decay_t<MDV>>, bool> = true>
-    decltype(auto) get(MDV&& md) const {
-        return std::forward<MDV>(md).template get<ValueType>();;
-    }
-
 };
 
 
-template<typename KeyType, typename ValueType, typename Mapper>
+template <auto id_, typename ValueType_, typename Mapper_>
 struct KeyValueDescription {
+    using KeyType = typename MetadataTypes::KeyType;
+    using ValueType = ValueType_;
+    using Mapper = Mapper_;
+
     KeyType key;
     Mapper mapper;
 
+    static const auto id = id_;
+
     operator KeyType&() { return key; }
     operator const KeyType&() const { return key; }
     operator std::string&() { return key; }
     operator const std::string&() const { return key; }
-
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) get(MD&& md) const {
-        return std::forward<MD>(md).visit(key, mapper);;
-    }
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    std::optional<ValueType> getOpt(MD&& md) const {
-        if (auto search = std::forward<MD>(md).find(key); search != md.end()) {
-            return search->second.visit(mapper);
-        }
-        return {};
-    }
-
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) set(MD&& md, ValueType&& val) const {
-        return std::forward<MD>(md).set(mapper(key), std::move(val));
-    }
-    template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
-    decltype(auto) set(MD&& md, const ValueType& val) const {
-        return std::forward<MD>(md).set(mapper(key), val);
-    }
-
-    template<typename MDV, std::enable_if_t<std::is_base_of_v<MetadataValue, std::decay_t<MDV>>, bool> = true>
-    decltype(auto) get(MDV&& md) const {
-        return std::forward<MDV>(md).visit(mapper);
-    }
-
 };
+
+
+// Getter and setter functions to operate on some types with KeyValueDescription
+// Can/Should be specilized by other types if needed
+
+template <typename KVD, typename MD,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) get(const KVD& kvd, MD&& md) {
+    return std::forward<MD>(md).template get<typename KVD::ValueType>(kvd.key);
+    ;
+}
+template <typename KVD, typename MD,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && !std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) get(const KVD& kvd, MD&& md) {
+    return std::forward<MD>(md).get(kvd.key).visit(kvd.mapper);
+}
+
+template <typename KVD, typename MD,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) getOpt(const KVD& kvd, MD&& md) {
+    return std::forward<MD>(md).template getOpt<typename KVD::ValueType>(kvd.key);
+    ;
+}
+template <typename KVD, typename MD,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && !std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) getOpt(const KVD& kvd, MD&& md) {
+    if (auto search = std::forward<MD>(md).find(key); search != md.end()) {
+        return search->second.visit(mapper);
+    }
+    return std::optional<typename KVD::ValueType> {}
+}
+
+
+template <typename KVD, typename MDV,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<MetadataValue, std::decay_t<MDV>>),
+                           bool>
+          = true>
+decltype(auto) get(const KVD& kvd, MDV&& md) {
+    return std::forward<MDV>(md).template get<typename KVD::ValueType>();
+    ;
+}
+template <typename KVD, typename MDV,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && !std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<MetadataValue, std::decay_t<MDV>>),
+                           bool>
+          = true>
+decltype(auto) get(const KVD& kvd, MDV&& md) {
+    return std::forward<MDV>(md).visit(kvd.mapper);
+}
+
+template <typename KVD, typename MD, typename ValType,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) set(const KVD& kvd, MD&& md, ValType&& value) {
+    return std::forward<MD>(md).set(kvd.key, std::forward<ValType>(val));
+}
+template <typename KVD, typename MD, typename ValType,
+          std::enable_if_t<(IsKeyValueDescription_v<KVD> && !std::is_same_v<void, typename KVD::Mapper>
+                            && std::is_base_of_v<BaseMetadata, std::decay_t<MD>>),
+                           bool>
+          = true>
+decltype(auto) set(const KVD& kvd, MD&& md, ValType&& value) {
+    return std::forward<MD>(md).set(kvd.key, kvd.mapper(std::forward<ValType>(val)));
+}
+
+
+template <auto id_, typename ValueType_, typename Mapper = void>
+struct PrefixedDescription {
+    using KeyType = typename MetadataTypes::KeyType;
+    using ValueType = ValueType_;
+
+    static const auto id = id_;
+
+    template <typename... Args>
+    PrefixedDescription(const std::string& key, Args&&... args) :
+        plain{key, args...}, prefixed{std::string(KeySetName_v<decltype(id_)>) + std::string("-") + key, args...} {}
+
+    using KV = KeyValueDescription<id_, ValueType, Mapper>;
+    KV plain;
+    KV prefixed;
+};
+
+template <auto id_, typename ValueType, typename KeyType>
+PrefixedDescription<id_, ValueType> prefixedDescription(KeyType&& key) {
+    return PrefixedDescription<id_, ValueType>{std::forward<KeyType>(key)};
+}
+template <auto id_, typename ValueType, typename KeyType, typename Mapper>
+PrefixedDescription<id_, ValueType, std::decay_t<Mapper>> prefixedDescription(KeyType&& key, Mapper&& mapper) {
+    return PrefixedDescription<id_, ValueType, std::decay_t<Mapper>>{std::forward<KeyType>(key),
+                                                                     std::forward<Mapper>(mapper)};
+}
+
+
+//-----------------------------------------------------------------------------
+// Value containers
+//-----------------------------------------------------------------------------
+
+struct MissingValue {};
+
+template <auto id_, typename ValueType_, typename Mapper>
+struct KeyValue {
+    using KeyType = typename MetadataTypes::KeyType;
+    using ValueType = ValueType_;
+    using This = KeyValue<id_, ValueType, Mapper>;
+    static const auto id = id_;
+
+    using Description = KeyValueDescription<id_, ValueType, Mapper>;
+
+    using RefType = std::reference_wrapper<const ValueType>;
+    using Container = std::variant<MissingValue, ValueType, RefType>;
+
+
+    Description description;
+    Container value;
+
+    bool isMissing() const { return std::holds_alternative<MissingValue>(value); }
+    bool holdsReference() const { return std::holds_alternative<const ValueType>(value); }
+
+    const ValueType& get() const {
+        return std::visit(eckit::Overloaded{
+                              [&](const ValueType& val) -> const ValueType& { return val },
+                              [&](const RefType& val) -> const ValueType& { return val.get(); },
+                              [&](MissingValue) {
+                                  throw MetadataException(
+                                      std::string("Value is missing for key ") + std::string(description), Here());
+                              },
+                          },
+                          value);
+    }
+    operator const ValueType&() const { return get(); }
+
+
+    void set(MissingValue val) noexcept { value = val; }
+    void setMissing() noexcept { value = MissingValue{}; }
+    void set(ValueType&& val) noexcept { value = std::move(val); }
+    void set(const ValueType& val) { value = val; }
+
+    This& operator=(MissingValue val) noexcept { value = val; }
+    This& operator=(ValueType&& val) noexcept { value = std::move(val); }
+    This& operator=(const ValueType& val) { value = val; }
+
+    // Make sure no reference is hold and value is owned
+    void acquire() {
+        std::visit(eckit::Overloaded{
+                       [&](const RefType& val) { this->value = val.get(); },
+                       [&](auto) {},
+                   },
+                   value);
+    }
+};
+
+
+template <typename T>
+struct IsKeyValue {
+    static constexpr bool value = false;
+};
+template <auto id, typename ValueType, typename Mapper>
+struct IsKeyValue<KeyValue<id, ValueType, Mapper>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsKeyValue_v = IsKeyValue<T>::value;
+
+
+template <auto id, typename ValType, typename Mapper, typename V,
+          std::enable_if_t<!IsKeyValue_v<std::decay_t<V>>, bool> = true>
+decltype(auto) toKeyValueRef(const KeyValueDescription<id, ValType, Mapper>& descr, V&& val) {
+    using KV = KeyValue<id, ValueType, Mapper>;
+    if constexpr (!std::is_lvalue_reference_v<V> || std::is_same_v<std::decay_t<V>, MissingValue>) {
+        return KV{descr, std::move(val)};
+    }
+    else {
+        return KV{descr, typename KV::RefType(val)};
+    }
+}
+template <auto id, typename ValType, typename Mapper, typename V,
+          std::enable_if_t<!IsKeyValue_v<std::decay_t<V>>, bool> = true>
+decltype(auto) toKeyValue(const KeyValueDescription<id, ValType, Mapper>& descr, V&& val) {
+    using KV = KeyValue<id, ValueType, Mapper>;
+    if constexpr (!std::is_lvalue_reference_v<V> || std::is_same_v<std::decay_t<V>, MissingValue>) {
+        return KV{descr, std::move(val)};
+    }
+    else {
+        return KV{descr, val};
+    }
+}
 
 
 //-----------------------------------------------------------------------------
 
+
+namespace mapper {
+struct ParamMapper {
+    std::int64_t operator()(std::int64_t) const noexcept;
+    std::int64_t operator()(const std::string&) const;
+    template <typename T>
+    std::int64_t operator()(T&& t) const {
+        throw MetadataException("Param must be an int or string", Here());
+    }
+};
+struct IntToBoolMapper {
+    inline bool operator()(bool v) const noexcept { return v; };
+    inline bool operator()(std::int64_t v) const { return v > 0; };
+    template <typename T>
+    bool operator()(T&& t) const {
+        throw MetadataException("Value must be an int or string", Here());
+    }
+};
+}  // namespace mapper
+
+
+//-----------------------------------------------------------------------------
+// Mars Keys
+//-----------------------------------------------------------------------------
+
+
+enum class MarsKeys : std::uint64_t
+{
+    EXPVER,
+    STREAM,
+    TYPE,
+    CLASS,
+    ORIGIN,
+    ANOFFSET,
+    PACKING,
+    NUMBER,
+    IDENT,
+    INSTRUMENT,
+    CHANNEL,
+    CHEM,
+    PARAM,
+    MODEL,
+    LEVTYPE,
+    LEVELIST,
+    DIRECTION,
+    FREQUENCY,
+    DATE,
+    TIME,
+    STEP,
+    TIMEPROC,
+    HDATE,
+    GRID,
+    TRUNCATION,
+    REPRES,
+};
+
+template <>
+struct KeySet<MarsKeys> {
+    static constexpr std::string_view name = "mars";
+
+    static const auto& keys() {
+        static const auto keys
+            = std::make_tuple(prefixedDescription<MarsKeys::EXPVER, std::string>("expver"),
+                              prefixedDescription<MarsKeys::STREAM, std::string>("stream"),
+                              prefixedDescription<MarsKeys::TYPE, std::string>("type"),
+                              prefixedDescription<MarsKeys::CLASS, std::string>("class"),
+
+                              prefixedDescription<MarsKeys::ORIGIN, std::string>("origin"),
+                              prefixedDescription<MarsKeys::ANOFFSET, std::int64_t>("anoffset"),
+                              prefixedDescription<MarsKeys::PACKING, std::string>("packing"),
+                              prefixedDescription<MarsKeys::NUMBER, std::int64_t>("number"),
+                              prefixedDescription<MarsKeys::IDENT, std::int64_t>("ident"),
+                              prefixedDescription<MarsKeys::INSTRUMENT, std::int64_t>("instrument"),
+                              prefixedDescription<MarsKeys::CHANNEL, std::int64_t>("channel"),
+                              prefixedDescription<MarsKeys::CHEM, std::int64_t>("chem"),
+                              prefixedDescription<MarsKeys::PARAM, std::int64_t>("param", mapper::ParamMapper{}),
+
+                              prefixedDescription<MarsKeys::MODEL, std::string>("model"),
+                              prefixedDescription<MarsKeys::LEVTYPE, std::string>("levtype"),
+
+                              prefixedDescription<MarsKeys::LEVELIST, std::int64_t>("levelist"),
+                              prefixedDescription<MarsKeys::DIRECTION, std::int64_t>("direction"),
+                              prefixedDescription<MarsKeys::FREQUENCY, std::int64_t>("frequency"),
+                              prefixedDescription<MarsKeys::DATE, std::int64_t>("date"),
+                              prefixedDescription<MarsKeys::TIME, std::int64_t>("time"),
+                              prefixedDescription<MarsKeys::STEP, std::int64_t>("step"),
+                              prefixedDescription<MarsKeys::TIMEPROC, std::int64_t>("timeproc"),
+                              prefixedDescription<MarsKeys::HDATE, std::int64_t>("hdate"),
+
+                              prefixedDescription<MarsKeys::GRID, std::string>("grid"),
+                              prefixedDescription<MarsKeys::TRUNCATION, std::string>("truncation"));
+        return keys;
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+// Parametrization keys
+//-----------------------------------------------------------------------------
+
+
+enum class MiscKeys : std::uint64_t
+{
+    TablesVersion,
+    GeneratingProcessIdentifier,
+    Typeofprocesseddata,
+    EncodeStepZero,
+    InitialStep,
+    LengthOfTimeRange,
+    LengthOfTimeStep,
+    LengthOfTimeRangeInSeconds,
+    LengthOfTimeStepInSeconds,
+    ValuesScaleFactor,
+    Pv,
+    NumberOfMissingValues,
+    ValueOfMissingValues,
+    TypeOfEnsembleForecast,
+    NumberOfForecastsInEnsemble,
+    LengthOfTimeWindow,
+    LengthOfTimeWindowInSeconds,
+    BitsPerValue,
+    PeriodMin,
+    PeriodMax,
+    WaveDirections,
+    WaveFrequencies,
+    SatelliteSeries,
+    ScaleFactorOfCentralWavenumber,
+    ScaledValueOfCentralWavenumber,
+
+    // TBD - move to mars
+    MethodNumber,
+    SystemNumber
+};
+
+template <>
+struct KeySet<MiscKeys> {
+    static constexpr std::string_view name = "misc";
+
+    static const auto& keys() {
+        static const auto keys = std::make_tuple(
+            prefixedDescription<MiscKeys::TablesVersion, std::int64_t>("tablesVersion"),
+            prefixedDescription<MiscKeys::GeneratingProcessIdentifier, std::int64_t>("generatingProcessIdentifier"),
+            prefixedDescription<MiscKeys::Typeofprocesseddata, std::int64_t>("typeofprocesseddata"),
+            prefixedDescription<MiscKeys::EncodeStepZero, bool>("encodeStepZero", mapper::IntToBoolMapper{}),
+            prefixedDescription<MiscKeys::InitialStep, std::int64_t>("initialStep"),
+            prefixedDescription<MiscKeys::LengthOfTimeRange, std::int64_t>("lengthOfTimeRange"),
+            prefixedDescription<MiscKeys::LengthOfTimeStep, std::int64_t>("lengthOfTimeStep"),
+            prefixedDescription<MiscKeys::LengthOfTimeRangeInSeconds, std::int64_t>("lengthOfTimeRangeInSeconds"),
+            prefixedDescription<MiscKeys::LengthOfTimeStepInSeconds, std::int64_t>("lengthOfTimeStepInSeconds"),
+            prefixedDescription<MiscKeys::ValuesScaleFactor, double>("valuesScaleFactor"),
+            prefixedDescription<MiscKeys::Pv, std::vector<double>>("pv"),
+            prefixedDescription<MiscKeys::NumberOfMissingValues, std::int64_t>("numberOfMissingValues"),
+            prefixedDescription<MiscKeys::ValueOfMissingValues, double>("valueOfMissingValues"),
+            prefixedDescription<MiscKeys::TypeOfEnsembleForecast, std::int64_t>("typeOfEnsembleForecast"),
+            prefixedDescription<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>("numberOfForecastsInEnsemble"),
+            prefixedDescription<MiscKeys::LengthOfTimeWindow, std::int64_t>("lengthOfTimeWindow"),
+            prefixedDescription<MiscKeys::LengthOfTimeWindowInSeconds, std::int64_t>("lengthOfTimeWindowInSeconds"),
+            prefixedDescription<MiscKeys::BitsPerValue, std::int64_t>("bitsPerValue"),
+            prefixedDescription<MiscKeys::PeriodMin, std::int64_t>("periodMin"),
+            prefixedDescription<MiscKeys::PeriodMax, std::int64_t>("periodMax"),
+            prefixedDescription<MiscKeys::WaveDirections, std::vector<double>>("waveDirections"),
+            prefixedDescription<MiscKeys::WaveFrequencies, std::vector<double>>("waveFrequencies"),
+            prefixedDescription<MiscKeys::SatelliteSeries, std::int64_t>("satelliteSeries"),
+            prefixedDescription<MiscKeys::ScaleFactorOfCentralWavenumber, std::int64_t>(
+                "scaleFactorOfCentralWavenumber"),
+            prefixedDescription<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>(
+                "scaledValueOfCentralWavenumber"),
+
+            // TBD - move to marse
+            prefixedDescription<MiscKeys::MethodNumber, std::int64_t>("methodNumber"),
+            prefixedDescription<MiscKeys::SystemNumber, std::int64_t>("systemNumber"));
+        return keys;
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+// Geometry keys - gg
+//-----------------------------------------------------------------------------
+
+enum class GeoGG : std::uint64_t
+{
+    TruncateDegrees,
+    NumberOfPointsAlongAMeridian,
+    NumberOfParallelsBetweenAPoleAndTheEquator,
+    LatitudeOfFirstGridPointInDegrees,
+    LongitudeOfFirstGridPointInDegrees,
+    LatitudeOfLastGridPointInDegrees,
+    LongitudeOfLastGridPointInDegrees,
+    Pl
+};
+
+template <>
+struct KeySet<GeoGG> {
+    static constexpr std::string_view name = "geo-gg";
+
+    static const auto& keys() {
+        static const auto keys = std::make_tuple(
+            prefixedDescription<GeoGG::TruncateDegrees, std::int64_t>("truncateDegrees"),
+            prefixedDescription<GeoGG::NumberOfPointsAlongAMeridian, std::int64_t>("numberOfPointsAlongAMeridian"),
+            prefixedDescription<GeoGG::NumberOfParallelsBetweenAPoleAndTheEquator, std::int64_t>(
+                "numberOfParallelsBetweenAPoleAndTheEquator"),
+            prefixedDescription<GeoGG::LatitudeOfFirstGridPointInDegrees, double>("latitudeOfFirstGridPointInDegrees"),
+            prefixedDescription<GeoGG::LongitudeOfFirstGridPointInDegrees, double>(
+                "longitudeOfFirstGridPointInDegrees"),
+            prefixedDescription<GeoGG::LatitudeOfLastGridPointInDegrees, double>("latitudeOfLastGridPointInDegrees"),
+            prefixedDescription<GeoGG::LongitudeOfLastGridPointInDegrees, double>("longitudeOfLastGridPointInDegrees"),
+            prefixedDescription<GeoGG::Pl, std::vector<std::int64_t>>("pl"));
+        return keys;
+    }
+};
+
+//-----------------------------------------------------------------------------
+// Geometry keys - sh
+//-----------------------------------------------------------------------------
+
+enum class GeoSH : std::uint64_t
+{
+    PentagonalResolutionParameterJ,
+    PentagonalResolutionParameterK,
+    PentagonalResolutionParameterM
+};
+
+template <>
+struct KeySet<GeoSH> {
+    static constexpr std::string_view name = "geo-sh";
+
+    static const auto& keys() {
+        static const auto keys = std::make_tuple(
+            prefixedDescription<GeoSH::PentagonalResolutionParameterJ, std::int64_t>("pentagonalResolutionParameterJ"),
+            prefixedDescription<GeoSH::PentagonalResolutionParameterK, std::int64_t>("pentagonalResolutionParameterK"),
+            prefixedDescription<GeoSH::PentagonalResolutionParameterM, std::int64_t>("pentagonalResolutionParameterM"));
+        return keys;
+    }
+};
+
+//-----------------------------------------------------------------------------
+// Geometry keys - ll
+//-----------------------------------------------------------------------------
+
+enum class GeoLL : std::uint64_t
+{
+};
+
+template <>
+struct KeySet<GeoLL> {
+    static constexpr std::string_view name = "geo-ll";
+
+    static const auto& keys() {
+        static auto keys = std::make_tuple();
+        return keys;
+    }
+};
+
+
+// namespace Mtg2 {
+
+//     std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& gridName);
+
+//     template<typename Func>
+//     void withGeometryKeys(Repres repres, Func&& func) {
+//         switch (repres) {
+//             case Repres::GG: {
+//                 withGGKeys(std::forward<Func>(func));
+//                 return;
+//             }
+//             case Repres::LL: {
+//                 withLLKeys(std::forward<Func>(func));
+//                 return;
+//             }
+//             case Repres::SH: {
+//                 withSHKeys(std::forward<Func>(func));
+//                 return;
+//             }
+//         }
+//     }
+// };
+
+
+//-----------------------------------------------------------------------------
+// To be refactored / replaced
+//-----------------------------------------------------------------------------
+
 /**
- * TODO Think about another option: create namespcae `glosasry` and declare all keys as `const static KeyType
- * keyName{"keyName"}`
+ * TODO old glossary ... will be refactored
  *
  * This class is ment to keep track of different metadata keys used within the action provided through multio.
  * Reasons to have this:
@@ -116,11 +673,8 @@ struct KeyValueDescription {
 struct Glossary {
     using KeyType = typename MetadataTypes::KeyType;
 
-    template<typename ValueType, typename Mapper = void>
-    using KV = KeyValueDescription<KeyType, ValueType, Mapper>;
-
-    // template <typename ValidTypes>
-    // using Description = KeyValueDescription<KeyType, ValidTypes>;
+    template <typename ValueType, typename Mapper = void>
+    using KV = KeyValueDescription<0, ValueType, Mapper>;
 
     // General keys
     const KeyType name{"name"};
@@ -339,247 +893,6 @@ struct Glossary {
 
 const Glossary& glossary();
 
-
-
-
-namespace Mtg2 {
-    using KeyType = typename MetadataTypes::KeyType;
-
-    template<typename ValueType, typename Mapper = void>
-    using KV = KeyValueDescription<KeyType, ValueType, Mapper>;
-
-    enum class Repres: long {
-        GG,
-        LL,
-        SH,
-    };
-    Repres parseRepres(const std::string& repres);
-    std::string toString(Repres);
-
-    struct ParamMapper {
-        std::int64_t operator()(std::int64_t) const noexcept;
-        std::int64_t operator()(const std::string&) const;
-        template <typename T>
-        std::int64_t operator()(T&& t) const {
-            throw MetadataException("Param must be an int or string", Here());
-        }
-    };
-    struct IntToBoolMapper {
-        inline bool operator()(bool v) const noexcept { return v; };
-        inline bool operator()(std::int64_t v) const { return v > 0; };
-        template <typename T>
-        bool operator()(T&& t) const {
-            throw MetadataException("Value must be an int or string", Here());
-        }
-    };
-
-    namespace mars {
-        // Model
-        static const KV<std::string> expver{"expver"};
-        static const KV<std::string> stream{"stream"};
-        static const KV<std::string> type{"type"};
-        static const KV<std::string> marsClass{"class"};
-
-        static const KV<std::string> origin{"origin"};
-        static const KV<std::int64_t> anoffset{"anoffset"};
-        static const KV<std::string> packing{"packing"};
-        static const KV<std::int64_t> number{"number"};
-        static const KV<std::int64_t> ident{"ident"};
-        static const KV<std::int64_t> instrument{"instrument"};
-        static const KV<std::int64_t> channel{"channel"};
-        static const KV<std::int64_t> chem{"chem"};
-        static const KV<std::int64_t,ParamMapper> param{"param", ParamMapper{}};
-
-        static const KV<std::string> model{"model"};
-        static const KV<std::string> levtype{"levtype"};
-
-        static const KV<std::int64_t> levelist{"levelist"};
-        static const KV<std::int64_t> direction{"direction"};
-        static const KV<std::int64_t> frequency{"frequency"};
-        static const KV<std::int64_t> date{"date"};
-        static const KV<std::int64_t> time{"time"};
-        static const KV<std::int64_t> step{"step"};
-        static const KV<std::int64_t> timespan{"timeproc"};
-        static const KV<std::int64_t> hdate{"hdate"};
-
-        static const KV<std::string> grid{"grid"};
-    }
-
-    namespace marsCustom {
-        static const KV<std::string> gridName{"gridName"};
-    }
-
-    namespace marsLegacy {
-        static const KV<std::string> repres{"repres"};
-        static const KV<std::int64_t> truncation{"truncation"};
-    }
-
-    template<typename Func>
-    void withMarsKeys(Func&& func) {
-        func(mars::expver);
-        func(mars::stream);
-        func(mars::type);
-        func(mars::marsClass);
-        func(mars::origin);
-        func(mars::anoffset);
-        func(mars::packing);
-        func(mars::number);
-        func(mars::ident);
-        func(mars::instrument);
-        func(mars::channel);
-        func(mars::chem);
-        func(mars::param);
-        func(mars::model);
-        func(mars::levtype);
-        func(mars::levelist);
-        func(mars::direction);
-        func(mars::frequency);
-        func(mars::date);
-        func(mars::time);
-        func(mars::step);
-        func(mars::timespan);
-        func(mars::hdate);
-        func(mars::grid);
-        func(marsLegacy::repres);
-    }
-
-
-    template<typename TP>
-    struct Prefixed {
-        template<typename ... Args>
-        Prefixed(const std::string& prefix, const std::string& key, Args&& ... args):
-            plain{key, args...}, prefixed{prefix + std::string("-") + key, args...} {}
-
-        TP plain;
-        TP prefixed;
-    };
-
-    namespace misc {
-        static const std::string prefix{"misc"};
-
-        static const Prefixed<KV<std::int64_t>> tablesVersion{prefix, "tablesVersion"};
-        static const Prefixed<KV<std::int64_t>> generatingProcessIdentifier{prefix, "generatingProcessIdentifier"};
-        static const Prefixed<KV<std::int64_t>> typeofprocesseddata{prefix, "typeofprocesseddata"};
-        static const Prefixed<KV<bool, IntToBoolMapper>> encodeStepZero{prefix, "encodeStepZero", IntToBoolMapper{}};
-        static const Prefixed<KV<std::int64_t>> initialStep{prefix, "initialStep"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeRange{prefix, "lengthOfTimeRange"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeStep{prefix, "lengthOfTimeStep"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeRangeInSeconds{prefix, "lengthOfTimeRangeInSeconds"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeStepInSeconds{prefix, "lengthOfTimeStepInSeconds"};
-        static const Prefixed<KV<double>> valuesScaleFactor{prefix, "valuesScaleFactor"};
-        static const Prefixed<KV<std::vector<double>>> pv{prefix, "pv"};
-        static const Prefixed<KV<std::int64_t>> numberOfMissingValues{prefix, "numberOfMissingValues"};
-        static const Prefixed<KV<double>> valueOfMissingValues{prefix, "valueOfMissingValues"};
-        static const Prefixed<KV<std::int64_t>> typeOfEnsembleForecast{prefix, "typeOfEnsembleForecast"};
-        static const Prefixed<KV<std::int64_t>> numberOfForecastsInEnsemble{prefix, "numberOfForecastsInEnsemble"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindow{prefix, "lengthOfTimeWindow"};
-        static const Prefixed<KV<std::int64_t>> lengthOfTimeWindowInSeconds{prefix, "lengthOfTimeWindowInSeconds"};
-        static const Prefixed<KV<std::int64_t>> bitsPerValue{prefix, "bitsPerValue"};
-        static const Prefixed<KV<std::int64_t>> periodMin{prefix, "periodMin"};
-        static const Prefixed<KV<std::int64_t>> periodMax{prefix, "periodMax"};
-        static const Prefixed<KV<std::vector<double>>> waveDirections{prefix, "waveDirections"};
-        static const Prefixed<KV<std::vector<double>>> waveFrequencies{prefix, "waveFrequencies"};
-        static const Prefixed<KV<std::int64_t>> satelliteSeries{prefix, "satelliteSeries"};
-        static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};
-        static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};
-
-        // TBD - move to marse
-        static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};
-        static const Prefixed<KV<std::int64_t>> systemNumber{prefix, "systemNumber"};
-    }
-
-    template<typename Func>
-    void withParametrizationKeys(Func&& func) {
-        func(misc::tablesVersion);
-        func(misc::generatingProcessIdentifier);
-        func(misc::typeofprocesseddata);
-        func(misc::encodeStepZero);
-        func(misc::initialStep);
-        func(misc::lengthOfTimeRange);
-        func(misc::lengthOfTimeStep);
-        func(misc::lengthOfTimeRangeInSeconds);
-        func(misc::lengthOfTimeStepInSeconds);
-        func(misc::valuesScaleFactor);
-        func(misc::pv);
-        func(misc::numberOfMissingValues);
-        func(misc::valueOfMissingValues);
-        func(misc::typeOfEnsembleForecast);
-        func(misc::numberOfForecastsInEnsemble);
-        func(misc::lengthOfTimeWindow);
-        func(misc::lengthOfTimeWindowInSeconds);
-        func(misc::bitsPerValue);
-        func(misc::periodMin);
-        func(misc::periodMax);
-        func(misc::waveDirections);
-        func(misc::waveFrequencies);
-        func(misc::satelliteSeries);
-        func(misc::scaleFactorOfCentralWavenumber);
-        func(misc::scaledValueOfCentralWavenumber);
-
-        func(misc::methodNumber);
-        func(misc::systemNumber);
-    }
-
-    namespace gg {
-        static const KV<std::int64_t> truncateDegrees{"truncateDegrees"};
-        static const KV<std::int64_t> numberOfPointsAlongAMeridian{"numberOfPointsAlongAMeridian"};
-        static const KV<std::int64_t> numberOfParallelsBetweenAPoleAndTheEquator{"numberOfParallelsBetweenAPoleAndTheEquator"};
-        static const KV<double> latitudeOfFirstGridPointInDegrees{"latitudeOfFirstGridPointInDegrees"};
-        static const KV<double> longitudeOfFirstGridPointInDegrees{"longitudeOfFirstGridPointInDegrees"};
-        static const KV<double> latitudeOfLastGridPointInDegrees{"latitudeOfLastGridPointInDegrees"};
-        static const KV<double> longitudeOfLastGridPointInDegrees{"longitudeOfLastGridPointInDegrees"};
-        static const KV<std::vector<std::int64_t>> pl{"pl"};
-    }
-
-    namespace sh {
-        static const KV<std::int64_t> pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
-        static const KV<std::int64_t> pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
-        static const KV<std::int64_t> pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
-    }
-
-    template<typename Func>
-    void withGGKeys(Func&& func) {
-        func(gg::truncateDegrees);
-        func(gg::numberOfPointsAlongAMeridian);
-        func(gg::numberOfParallelsBetweenAPoleAndTheEquator);
-        func(gg::latitudeOfFirstGridPointInDegrees);
-        func(gg::longitudeOfFirstGridPointInDegrees);
-        func(gg::latitudeOfLastGridPointInDegrees);
-        func(gg::longitudeOfLastGridPointInDegrees);
-        func(gg::pl);
-    }
-
-    template<typename Func>
-    void withLLKeys(Func&& func) {
-    }
-
-    template<typename Func>
-    void withSHKeys(Func&& func) {
-        func(sh::pentagonalResolutionParameterJ);
-        func(sh::pentagonalResolutionParameterK);
-        func(sh::pentagonalResolutionParameterM);
-    }
-
-    std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& gridName);
-
-    template<typename Func>
-    void withGeometryKeys(Repres repres, Func&& func) {
-        switch (repres) {
-            case Repres::GG: {
-                withGGKeys(std::forward<Func>(func));
-                return;
-            }
-            case Repres::LL: {
-                withLLKeys(std::forward<Func>(func));
-                return;
-            }
-            case Repres::SH: {
-                withSHKeys(std::forward<Func>(func));
-                return;
-            }
-        }
-    }
-};
 
 //-----------------------------------------------------------------------------
 

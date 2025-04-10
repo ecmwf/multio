@@ -17,9 +17,9 @@
 
 #include "multio/LibMultio.h"
 #include "multio/config/PathConfiguration.h"
+#include "multio/message/Glossary.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
-#include "multio/message/Glossary.h"
 
 namespace multio::action::encode_mtg2 {
 
@@ -152,7 +152,7 @@ void MultiOMDict::set(const std::string& key, std::int64_t val) {
     ASSERT(multio_grib2_dict_set_int64(dict_, key.c_str(), val) == 0);
 }
 void MultiOMDict::set(const std::string& key, bool val) {
-    set(key, (std::int64_t) val);
+    set(key, (std::int64_t)val);
 }
 void MultiOMDict::set(const std::string& key, double val) {
     ASSERT(multio_grib2_dict_set_double(dict_, key.c_str(), val) == 0);
@@ -189,14 +189,16 @@ MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const double* data,
                                                      std::size_t len) {
     codes_handle* rawOutputCodesHandle = nullptr;
-    ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
+    ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle)
+           == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const float* data,
                                                      std::size_t len) {
     codes_handle* rawOutputCodesHandle = nullptr;
-    ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
+    ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle)
+           == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
@@ -231,90 +233,89 @@ void EncodeMtg2::executeImpl(Message msg) {
     MultiOMDict par{MultiOMDictKind::Parametrization};
 
     {
-        using namespace message::Mtg2;
-        withMarsKeys([&](const auto& kvDescr){
-            if (auto search = md.find(kvDescr); search != md.end()) {
-                mars.set(kvDescr, kvDescr.get(search->second));
+        using namespace message;
+        withKeySet<MarsKeys>([&](const auto& kvDescr) {
+            if (auto search = md.find(kvDescr.plain); search != md.end()) {
+                mars.set(kvDescr.plain, get(kvDescr.plain, search->second));
             }
         });
-        withParametrizationKeys([&](const auto& prefixedKvDescr){
+        withKeySet<MiscKeys>([&](const auto& prefixedKvDescr) {
             if (auto search = md.find(prefixedKvDescr.prefixed); search != md.end()) {
-                par.set(prefixedKvDescr.plain, prefixedKvDescr.prefixed.get(search->second));
+                par.set(prefixedKvDescr.plain, get(prefixedKvDescr.prefixed, search->second));
             }
         });
 
         // Legacy handling -- assume no grid has been passed for SH but truncation and repres are given
-        std::string grid;
-        auto searchGrid = md.find(mars::grid);
-        if (searchGrid == md.end()) {
-            auto searchRepres = md.find(marsLegacy::repres);
-            auto searchTruncation = md.find(marsLegacy::truncation);
+        // std::string grid;
+        // auto searchGrid = md.find(key<MarsKeys::GRID>().plain);
+        // if (searchGrid == md.end()) {
+        //     auto searchRepres = md.find(key<MarsKeys::REPRES>().plain);
+        //     auto searchTruncation = md.find(key<MarsKeys::TRUNCATION>().plain);
 
-            if (searchRepres != md.end() && searchTruncation != md.end()) {
-                if (searchRepres->second.get<std::string>() == "sh") {
-                    grid = std::string("TCO") + std::to_string(searchTruncation->second.get<std::int64_t>());
-                } else {
-                    throw EncodeMtg2Exception("Required a key \"grid\"",Here());
-                }
-            } else {
-                throw EncodeMtg2Exception("Required a key \"grid\"",Here());
-            }
-        } else {
-            grid = mars::grid.get(searchGrid->second);
-        }
+        //     if (searchRepres != md.end() && searchTruncation != md.end()) {
+        //         if (searchRepres->second.get<std::string>() == "sh") {
+        //             grid = std::string("TCO") + std::to_string(searchTruncation->second.get<std::int64_t>());
+        //         } else {
+        //             throw EncodeMtg2Exception("Required a key \"grid\"",Here());
+        //         }
+        //     } else {
+        //         throw EncodeMtg2Exception("Required a key \"grid\"",Here());
+        //     }
+        // } else {
+        //     grid = key<MarsKeys::GRID>().plain.get(searchGrid->second);
+        // }
 
 
-        Repres repres;
-        std::string prefix;
-        std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
+        // Repres repres;
+        // std::string prefix;
+        // std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
 
         // Legacy handling -- add repres and truncation assuming grid has been passed properly and also handles SH
         // {
         //     if (auto searchRepres = md.find(marsLegacy::repres); searchRepres != md.end()) {
         //         if (searchRepres->second.get<std::string>() != toString(repres)) {
         //             std::ostringstream oss;
-        //             oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" << toString(repres) << "\"";
-        //             throw EncodeMtg2Exception(oss.str(), Here());
+        //             oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" <<
+        //             toString(repres) << "\""; throw EncodeMtg2Exception(oss.str(), Here());
         //         }
         //     }
         //     mars.set(marsLegacy::repres, toString(repres));
-//
+        //
         //     if (repres == Repres::SH) {
         //         std::int64_t truncation = std::stol(grid.substr(3, grid.size()-1));
         //         if (auto searchTruncation = md.find(marsLegacy::truncation); searchTruncation != md.end()) {
         //             if (searchTruncation->second.get<std::int64_t>() != truncation) {
         //                 std::ostringstream oss;
-        //                 oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered truncation \"" << truncation << "\"";
-        //                 throw EncodeMtg2Exception(oss.str(), Here());
+        //                 oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered
+        //                 truncation \"" << truncation << "\""; throw EncodeMtg2Exception(oss.str(), Here());
         //             }
         //         }
         //         mars.set(marsLegacy::truncation, truncation);
         //     }
-//
+        //
         // }
-//
-        MultiOMDict geom{
-            ([&](){
-                switch (repres) {
-                    case Repres::GG:
-                        return MultiOMDictKind::ReducedGG;
-                    case Repres::LL:
-                        return MultiOMDictKind::RegularLL;
-                    case Repres::SH:
-                        return MultiOMDictKind::SH;
-                }
-                throw EncodeMtg2Exception("unkown repres", Here());
-            })()
-        };
+        //
+        // MultiOMDict geom{
+        //     ([&](){
+        //         switch (repres) {
+        //             case Repres::GG:
+        //                 return MultiOMDictKind::ReducedGG;
+        //             case Repres::LL:
+        //                 return MultiOMDictKind::RegularLL;
+        //             case Repres::SH:
+        //                 return MultiOMDictKind::SH;
+        //         }
+        //         throw EncodeMtg2Exception("unkown repres", Here());
+        //     })()
+        // };
 
-        withGeometryKeys(repres, [&](const auto& kvDescr) {
-            if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
-                geom.set(kvDescr, kvDescr.get(search->second));
-            }
-        });
+        // withGeometryKeys(repres, [&](const auto& kvDescr) {
+        //     if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
+        //         geom.set(kvDescr, kvDescr.get(search->second));
+        //     }
+        // });
 
-        par.set_geometry(geom);
-
+        // par.set_geometry(geom);
 
 
         auto& payload = msg.payload();
@@ -344,12 +345,10 @@ void EncodeMtg2::executeImpl(Message msg) {
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                            std::move(buf)};
         }));
-
     }
 
     // TODO MIVAL : to be removed
     // std::cout << "Exit encoding with metadata: " << md << std::endl;
-
 }
 
 void EncodeMtg2::print(std::ostream& os) const {

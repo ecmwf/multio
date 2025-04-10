@@ -86,7 +86,8 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
         gridType_ = *gridType;
     }
     else {
-        throw eckit::SeriousBug{"gridType metadata not present", Here()};
+        gridType_ = "not_specified";
+        // throw eckit::SeriousBug{"gridType metadata not present", Here()};
     }
     return;
 };
@@ -105,8 +106,11 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto param = md.getOpt<std::string>(glossary().param); param) {
-        param_ = *param;
+
+    using namespace message::Mtg2;
+
+    if (auto param = md.find(mars::param);param!=md.end()) {
+        param_ = std::to_string(mars::param.get(param->second));
     }
     else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
         param_ = std::to_string(*paramId);
@@ -124,10 +128,10 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
     }
     else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
         level_ = *levelist;
-    }
-    else {
-        throw eckit::SeriousBug{"Level metadata not present", Here()};
-    }
+    } // keep default as zero if not specified in metadata
+    // else {
+    //     throw eckit::SeriousBug{"Level metadata not present", Here()};
+    // }
     return;
 };
 

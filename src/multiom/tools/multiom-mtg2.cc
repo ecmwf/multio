@@ -604,7 +604,8 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
             marsDict.set("timeproc", std::to_string(stepRange));
         }
     }
-    getAndSet(marsKeys, marsDict, "truncation");
+    // ... key truncation is not given officially ??
+    getAndSet(h, marsDict, "J", "truncation");
 
     getAndSet(h, marsDict, "gridName", "grid");
 
@@ -618,6 +619,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSetDoubleArray(h, parDict, "pv", "pv");
     getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
     getAndSet(h, parDict, "valueOfMissingValues");
+    getAndSet(h, parDict, "laplacianScalingFactor");
     getAndSet(h, parDict, "systemNumber");
     getAndSet(h, parDict, "methodNumber");
 

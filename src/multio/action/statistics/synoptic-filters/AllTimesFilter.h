@@ -3,7 +3,7 @@
 #include "multio/action/statistics/synoptic-filters/Filter.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class AllTimesFilter final : public SynopticFilter {
 public:
@@ -29,4 +29,4 @@ public:
     };
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -7,7 +7,7 @@
 #include "multio/util/Substitution.h"
 
 
-namespace multio::action {
+namespace multio::action::scale {
 
 
 ScaleScaling::ScaleScaling(const config::ComponentConfiguration& compConf) : hasScaling_(false), scaleFactor_{} {
@@ -35,4 +35,4 @@ double ScaleScaling::getScalingFactor(const std::string paramID) const {
 }
 
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

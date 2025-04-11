@@ -3,7 +3,7 @@
 
 #include "multio/action/statistics/operations/Operation.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class OperationWithData : public Operation {
@@ -145,4 +145,4 @@ private:
     const T initialValue_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

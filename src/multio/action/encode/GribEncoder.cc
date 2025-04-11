@@ -40,7 +40,7 @@
 
 #define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
-namespace multio::action {
+namespace multio::action::encode {
 
 using message::glossary;
 using message::Message;
@@ -1011,4 +1011,4 @@ void GribEncoder::print(std::ostream& os) const {
     os << "GribEncoder(config=" << config_ << ")";
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::encode

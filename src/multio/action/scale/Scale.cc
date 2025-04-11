@@ -25,7 +25,7 @@
 #include "multio/action/scale/Scaling.h"
 
 
-namespace multio::action {
+namespace multio::action::scale {
 
 using message::glossary;
 
@@ -93,4 +93,4 @@ template void Scale::ScaleMessage<float>(message::Message&) const;
 template void Scale::ScaleMessage<double>(message::Message&) const;
 
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

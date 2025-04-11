@@ -9,7 +9,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class SynopticFilter {
 public:
@@ -26,4 +26,4 @@ public:
     virtual bool match(const message::Message& msg, const StatisticsConfiguration& cfg, size_t& key) const = 0;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

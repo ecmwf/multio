@@ -21,7 +21,7 @@ namespace eckit {
 class Configuration;
 }
 
-namespace multio::action {
+namespace multio::action::transport {
 
 class Transport : public Action {
 public:
@@ -34,7 +34,7 @@ private:
 
     using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
-    std::shared_ptr<transport::Transport> transport_ = nullptr;
+    std::shared_ptr<multio::transport::Transport> transport_ = nullptr;
 
     const message::Peer client_;
     const PeerList& serverPeers_;  // = transport_->serverPeers();
@@ -62,4 +62,4 @@ private:
     enum DistributionType distributionType();
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::transport

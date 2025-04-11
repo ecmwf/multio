@@ -18,7 +18,7 @@
 
 #include "multio/util/PrecisionTag.h"
 
-namespace multio::action {
+namespace multio::action::mask {
 
 namespace {
 std::set<std::string> fetch_offset_fields(const eckit::Configuration& cfg) {
@@ -136,4 +136,4 @@ void Mask::print(std::ostream& os) const {
 
 static ActionBuilder<Mask> MaskBuilder("mask");
 
-}  // namespace multio::action
+}  // namespace multio::action::mask

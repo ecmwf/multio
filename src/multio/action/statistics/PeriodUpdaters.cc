@@ -6,7 +6,7 @@
 
 #include "TimeUtils.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 void parsePeriodGrammar(std::string const& output_freq, long& span, std::string& periodKind) {
@@ -96,4 +96,4 @@ std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>
 };
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

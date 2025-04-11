@@ -12,7 +12,7 @@
 #include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 using message::glossary;
 
@@ -416,4 +416,4 @@ std::string StatisticsConfiguration::precision() const {
 const StatisticsOptions& StatisticsConfiguration::options() const {
     return opt_;
 };
-}  // namespace multio::action
+}  // namespace multio::action::statistics

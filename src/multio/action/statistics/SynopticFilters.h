@@ -14,7 +14,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 // Filters without specific yaml configuration
 std::unique_ptr<SynopticFilter> make_filter(const std::string& filterKind, const StatisticsConfiguration& cfg);
@@ -24,4 +24,4 @@ std::unique_ptr<SynopticFilter> make_filter(const std::string& filterKind, const
                                             const StatisticsConfiguration& cfg);
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

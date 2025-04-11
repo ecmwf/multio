@@ -7,7 +7,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 class StatisticsConfiguration {
@@ -134,4 +134,4 @@ public:
     bool beginningOfYear() const;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

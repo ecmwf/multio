@@ -15,7 +15,7 @@
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
 
-namespace multio::action {
+namespace multio::action::aggregate {
 
 using message::Peer;
 
@@ -112,4 +112,4 @@ void Aggregate::print(std::ostream& os) const {
 
 static ActionBuilder<Aggregate> AggregateBuilder("aggregate");
 
-}  // namespace multio::action
+}  // namespace multio::action::aggregate

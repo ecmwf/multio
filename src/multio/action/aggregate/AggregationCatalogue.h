@@ -5,7 +5,7 @@
 
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::aggregate {
 
 class AggregationCatalogue {
 public:
@@ -31,4 +31,4 @@ private:
     std::map<std::string, std::set<message::Peer>> processedParts_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::aggregate

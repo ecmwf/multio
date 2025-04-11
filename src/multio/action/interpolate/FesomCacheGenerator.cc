@@ -24,7 +24,7 @@
 
 #include "HEALPix.h"
 
-namespace multio::action::interpolateFESOM2MIR {
+namespace multio::action::interpolate::fesom2mir {
 
 namespace {
 
@@ -243,10 +243,10 @@ void Fesom2mirCacheGenerator::execute(const eckit::option::CmdArgs& args) {
 
 void Fesom2mirCacheGenerator::finish(const eckit::option::CmdArgs&) {}
 
-}  // namespace multio::action::interpolateFESOM2MIR
+}  // namespace multio::action::interpolate::fesom2mir
 
 
 int main(int argc, char** argv) {
-    multio::action::interpolateFESOM2MIR::Fesom2mirCacheGenerator tool(argc, argv);
+    multio::action::interpolate::fesom2mir::Fesom2mirCacheGenerator tool(argc, argv);
     return tool.start();
 }

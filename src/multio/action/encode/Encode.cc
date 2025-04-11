@@ -30,7 +30,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/util/Timing.h"
 
-namespace multio::action {
+namespace multio::action::encode {
 
 using config::configuration_path_name;
 
@@ -227,7 +227,7 @@ Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfigu
                                 : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
                                                       : eckit::LocalConfiguration{}))},
     encoder_{makeEncoder(encConf, compConf.multioConfig())},
-    gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
+    gridDownloader_{std::make_unique<GridDownloader>(compConf)} {}
 
 Encode::Encode(const ComponentConfiguration& compConf) : Encode(compConf, getEncodingConfiguration(compConf)) {}
 
@@ -298,4 +298,4 @@ message::Message Encode::encodeField(const message::Message& message, const std:
 
 static ActionBuilder<Encode> EncodeBuilder("encode");
 
-}  // namespace multio::action
+}  // namespace multio::action::encode

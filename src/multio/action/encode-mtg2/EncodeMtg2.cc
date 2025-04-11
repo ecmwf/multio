@@ -21,7 +21,7 @@
 #include "multio/util/PrecisionTag.h"
 #include "multio/message/Glossary.h"
 
-namespace multio::action {
+namespace multio::action::encode_mtg2 {
 
 using config::configuration_path_name;
 
@@ -363,4 +363,4 @@ void EncodeMtg2::print(std::ostream& os) const {
 
 static ActionBuilder<EncodeMtg2> EncodeMtg2Builder("encode-mtg2");
 
-}  // namespace multio::action
+}  // namespace multio::action::encode_mtg2

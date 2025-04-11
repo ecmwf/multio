@@ -1,6 +1,6 @@
 #include "TimeUtils.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {
     eckit::Date startDate{cfg.date()};
@@ -85,4 +85,4 @@ bool isBeginningOfHour(const message::Message& msg, const StatisticsConfiguratio
 }
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -185,9 +185,9 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
 };
 
 message::MetadataValue getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
-    auto searchAtlasGridKind = md.find("atlas-grid-kind");
-    if (searchAtlasGridKind != md.end()) {  // metadata has always precedence
-        return searchAtlasGridKind->second;
+    auto searchGrid = md.find("grid");  // New MTG2 name
+    if (searchGrid != md.end()) {
+        return searchGrid->second;
     }
     if (cfg.has("input")) {  // configuration file is second option
         auto res = message::tryToMetadataValue(cfg, "input");
@@ -335,6 +335,9 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         }
     }
 
+    // Remove the 'grid' keyword from the metadata to avoid inconsistency!
+    md.erase("grid");
+
     // Handle Output metadata of the interpolated fields
     if (cfg.has("grid")) {
         std::string gridKind("none");
@@ -389,6 +392,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             }
         }
         else if (gridKind == "HEALPix" || gridKind == "HEALPix_nested") {
+            // TODO: Do we need to set this metadata? Is just 'grid' enough?
             md.set(glossary().gridded, true);
             md.set(glossary().gridType, "HEALPix");
             md.set(glossary().nside, (std::int64_t)grid[0]);

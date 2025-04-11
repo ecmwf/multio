@@ -484,9 +484,9 @@ void handleReducedGGAtlas(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& 
 void handleSH(codes_handle* h, MultiOMDict& mars_dict, MultiOMDict& par_dict) {
     MultiOMDict geom{MultiOMDictKind::SH};
 
-    geom.set("pentagonalResolutionParameterJ", "pentagonal-resolution-j");
-    geom.set("pentagonalResolutionParameterK", "pentagonal-resolution-k");
-    geom.set("pentagonalResolutionParameterM", "pentagonal-resolution-m");
+    getAndSet(h, geom, "pentagonalResolutionParameterJ");
+    getAndSet(h, geom, "pentagonalResolutionParameterK");
+    getAndSet(h, geom, "pentagonalResolutionParameterM");
     mars_dict.set("repres", "sh");
 
     par_dict.set_geometry(std::move(geom));
@@ -547,9 +547,12 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(marsKeys, marsDict, "ident");
     getAndSet(marsKeys, marsDict, "instrument");
     getAndSet(marsKeys, marsDict, "channel");
+
     // getAndSet(marsKeys, marsDict, "chemId", "chem");
     getAndSet(marsKeys, marsDict, "chem");
+
     getAndSet(marsKeys, marsDict, "param");
+
     getAndSet(marsKeys, marsDict, "model");
 
     if (hasKey(h, "levtype")) {

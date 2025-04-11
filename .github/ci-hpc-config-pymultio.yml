@@ -21,3 +21,4 @@ build:
     - CTEST_PARALLEL_LEVEL=1
     - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
     - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
+    - FINDLIBS_DISABLE_PACKAGE=yes

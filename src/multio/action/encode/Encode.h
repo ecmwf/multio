@@ -21,7 +21,7 @@
 
 #include <optional>
 
-namespace multio::action {
+namespace multio::action::encode {
 
 class GridDownloader;
 
@@ -58,4 +58,4 @@ public:
 //---------------------------------------------------------------------------------------------------------------------
 
 
-}  // namespace multio::action
+}  // namespace multio::action::encode

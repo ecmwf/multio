@@ -1,6 +1,6 @@
 #include "MetadataMapping.h"
 
-namespace multio::action {
+namespace multio::action::metadata_mapping {
 
 namespace {
 std::string getMappingName(const ComponentConfiguration& compConf) {
@@ -54,4 +54,4 @@ void MetadataMapping::print(std::ostream& os) const {
 
 
 static ActionBuilder<MetadataMapping> MetadataMappingBuilder("metadata-mapping");
-}  // namespace multio::action
+}  // namespace multio::action::metadata_mapping

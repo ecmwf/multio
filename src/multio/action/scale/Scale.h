@@ -6,7 +6,7 @@
 #include "multio/action/scale/Mapping.h"
 #include "multio/action/scale/Scaling.h"
 
-namespace multio::action {
+namespace multio::action::scale {
 
 class Scale final : public ChainedAction {
 public:
@@ -25,4 +25,4 @@ private:
     void print(std::ostream&) const override;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

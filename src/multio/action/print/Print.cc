@@ -16,7 +16,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-namespace multio::action {
+namespace multio::action::print {
 
 Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
     stream_ = compConf.parsedConfig().getString("stream", "info");
@@ -57,4 +57,4 @@ void Print::print(std::ostream& os) const {
 
 static ActionBuilder<Print> PrintBuilder("print");
 
-}  // namespace multio::action
+}  // namespace multio::action::print

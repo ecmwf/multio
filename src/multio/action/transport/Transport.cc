@@ -18,11 +18,10 @@
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/Environment.h"
 
-namespace multio::action {
+namespace multio::action::transport {
 
 using message::Message;
 using message::MetadataTypes;
-using transport::TransportRegistry;
 
 namespace {
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {
@@ -35,11 +34,12 @@ std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
     }
     return std::vector<std::string>{"category", "name", "level"};
 }
+
 }  // namespace
 
 Transport::Transport(const ComponentConfiguration& compConf) :
     Action{compConf},
-    transport_{TransportRegistry::instance().get(compConf)},
+    transport_{multio::transport::TransportRegistry::instance().get(compConf)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->serverPeers()},
     serverCount_{serverPeers_.size()},
@@ -82,7 +82,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
         if (searchHashKey == metadata.end()) {
             std::ostringstream os;
             os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
-            throw transport::TransportException(os.str(), Here());
+            throw multio::transport::TransportException(os.str(), Here());
         }
         return searchHashKey->second;
     };
@@ -163,11 +163,11 @@ Transport::DistributionType Transport::distributionType() {
         std::ostringstream oss;
         oss << "Transport::distributionType(): Unsupported distribution type \"" << (*key)
             << "\" read from environment variable " << envVar << std::endl;
-        throw transport::TransportException(oss.str(), Here());
+        throw multio::transport::TransportException(oss.str(), Here());
     }
     return it->second;
 }
 
 static ActionBuilder<Transport> TransportBuilder("transport");
 
-}  // namespace multio::action
+}  // namespace multio::action::transport

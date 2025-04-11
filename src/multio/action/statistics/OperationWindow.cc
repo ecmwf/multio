@@ -8,7 +8,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/statistics/StatisticsIO.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 namespace {
 
@@ -574,4 +574,4 @@ std::ostream& operator<<(std::ostream& os, const OperationWindow& a) {
     return os;
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

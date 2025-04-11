@@ -3,7 +3,7 @@
 
 #include <regex>
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 void parse_file_name(const std::string& file, std::string& opname, std::string& precision) {
     static const std::regex operation_grammar("([a-z]+)_([a-z]+)");
@@ -72,4 +72,4 @@ std::vector<std::unique_ptr<Operation>> load_operations(std::shared_ptr<Statisti
 }
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

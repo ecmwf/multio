@@ -26,7 +26,7 @@
 #include "multio/action/ChainedAction.h"
 #include "multiom/api/c/api.h"
 
-namespace multio::action {
+namespace multio::action::encode_mtg2 {
 
 enum class MultiOMDictKind : unsigned long
 {
@@ -116,4 +116,4 @@ public:
 //---------------------------------------------------------------------------------------------------------------------
 
 
-}  // namespace multio::action
+}  // namespace multio::action::encode_mtg2

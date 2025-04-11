@@ -12,7 +12,7 @@
 #include "multio/LibMultio.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 namespace {
 
@@ -111,4 +111,4 @@ void EckitCodecIO::checkFileExist(const std::string& name) const {
 StatisticsIOBuilder<EckitCodecIO> EckitCodecIOBuilder("eckit_codec");
 StatisticsIOBuilder<EckitCodecIO> AtlasIOBuilder("atlas_io");  // Legacy name
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

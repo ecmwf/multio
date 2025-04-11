@@ -12,7 +12,7 @@
 #include "multio/action/statistics/Operations.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 namespace {
 
@@ -248,4 +248,4 @@ std::vector<std::unique_ptr<SynopticCollection>> load_collections(
 }
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

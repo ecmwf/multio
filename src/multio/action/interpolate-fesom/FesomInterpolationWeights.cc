@@ -6,7 +6,7 @@
 #include <vector>
 #include "InterpolateFesom_debug.h"
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 
 Tri::Tri() : i_{0}, j_{0}, v_{0.0} {};
@@ -209,4 +209,4 @@ void FesomInterpolationWeights::generateCacheFromTriplets(size_t NSide, ordering
     INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit generateCache<double>" << std::endl;
 }
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom

@@ -18,7 +18,7 @@
 
 #include "multio/action/Action.h"
 
-namespace multio::action {
+namespace multio::action::null {
 
 class Null : public Action {
 public:
@@ -30,4 +30,4 @@ private:
     void print(std::ostream& os) const override;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::null

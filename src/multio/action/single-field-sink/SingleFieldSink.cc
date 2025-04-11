@@ -20,7 +20,7 @@
 #include "multio/message/Glossary.h"
 #include "multio/sink/DataSink.h"
 
-namespace multio::action {
+namespace multio::action::single_field_sink {
 
 using message::glossary;
 
@@ -103,4 +103,4 @@ void SingleFieldSink::print(std::ostream& os) const {
 
 static ActionBuilder<SingleFieldSink> SinkBuilder("single-field-sink");
 
-}  // namespace multio::action
+}  // namespace multio::action::single_field_sink

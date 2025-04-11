@@ -24,7 +24,7 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/message/MetadataMatcher.h"
 
-namespace multio::action {
+namespace multio::action::select {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -48,4 +48,4 @@ private:  // members
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio::action
+}  // namespace multio::action::select

@@ -9,7 +9,7 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 uint64_t IOBuffer::checksum() const {
@@ -298,4 +298,4 @@ StatisticsIOBuilderBase::~StatisticsIOBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

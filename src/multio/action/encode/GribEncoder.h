@@ -28,7 +28,7 @@
 #include <variant>
 
 
-namespace multio::action {
+namespace multio::action::encode {
 
 using CodesScalarValue = std::variant<std::int64_t, double, std::string>;
 using CodesOverwrites = std::vector<std::pair<std::string, CodesScalarValue>>;
@@ -113,4 +113,4 @@ inline bool isOcean(const message::Metadata& metadata) {
 };
 
 
-}  // namespace multio::action
+}  // namespace multio::action::encode

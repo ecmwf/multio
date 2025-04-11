@@ -24,7 +24,7 @@
 #include "FesomInterpolationWeights.h"
 #include "InterpolateFesom.h"
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 
 namespace {
@@ -227,10 +227,10 @@ void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
 
 void FesomCacheValidator::finish(const eckit::option::CmdArgs&) {}
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom
 
 
 int main(int argc, char** argv) {
-    multio::action::interpolateFESOM::FesomCacheValidator tool(argc, argv);
+    multio::action::interpolate_fesom::FesomCacheValidator tool(argc, argv);
     return tool.start();
 }

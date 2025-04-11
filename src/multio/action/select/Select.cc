@@ -19,7 +19,7 @@
 using multio::message::Message;
 using multio::message::match::MatchReduce;
 
-namespace multio::action {
+namespace multio::action::select {
 
 //--------------------------------------------------------------------------------------------------
 
@@ -57,4 +57,4 @@ static ActionBuilder<Select> SelectBuilder("select");
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace multio::action
+}  // namespace multio::action::select

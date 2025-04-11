@@ -8,7 +8,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 /*
  * This class handle all the statistics configurations under the option keyword in the yaml
@@ -87,4 +87,4 @@ public:
     std::optional<long> valueCountThreshold() const;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -9,7 +9,7 @@
 #include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::scale {
 
 using message::glossary;
 
@@ -51,4 +51,4 @@ public:
     }
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

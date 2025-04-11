@@ -7,7 +7,7 @@
 #include "multio/message/Glossary.h"
 
 
-namespace multio::action {
+namespace multio::action::scale {
 using message::glossary;
 
 std::string extractParam(const multio::message::Metadata& md) {
@@ -24,4 +24,4 @@ std::string extractParam(const multio::message::Metadata& md) {
 
     return cparam;
 }
-}  // namespace multio::action
+}  // namespace multio::action::scale

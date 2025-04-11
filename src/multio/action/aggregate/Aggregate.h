@@ -22,7 +22,7 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/action/aggregate/AggregationCatalogue.h"
 
-namespace multio::action {
+namespace multio::action::aggregate {
 
 using message::Message;
 
@@ -49,4 +49,4 @@ private:
     std::map<std::string, std::set<message::Peer>> flushes_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::aggregate

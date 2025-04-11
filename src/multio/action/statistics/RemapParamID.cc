@@ -8,7 +8,7 @@
 #include "multio/util/Substitution.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 using message::glossary;
 
@@ -55,4 +55,4 @@ void RemapParamID::ApplyRemap(message::Metadata& md, const std::string& opname, 
     }
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

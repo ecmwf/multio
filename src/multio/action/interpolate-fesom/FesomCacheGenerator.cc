@@ -21,7 +21,7 @@
 
 #include "FesomInterpolationWeights.h"
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 namespace {
 
@@ -223,10 +223,10 @@ void FesomCacheGenerator::execute(const eckit::option::CmdArgs& args) {
 
 void FesomCacheGenerator::finish(const eckit::option::CmdArgs&) {}
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom
 
 
 int main(int argc, char** argv) {
-    multio::action::interpolateFESOM::FesomCacheGenerator tool(argc, argv);
+    multio::action::interpolate_fesom::FesomCacheGenerator tool(argc, argv);
     return tool.start();
 }

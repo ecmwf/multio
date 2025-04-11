@@ -11,7 +11,7 @@
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class TemporalStatistics {
 public:
@@ -49,4 +49,4 @@ private:
     }
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

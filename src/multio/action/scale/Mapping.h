@@ -7,7 +7,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::scale {
 
 class ScaleMapping {
 private:
@@ -19,4 +19,4 @@ public:
     void applyMapping(message::Metadata& md) const;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

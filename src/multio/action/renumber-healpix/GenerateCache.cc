@@ -35,7 +35,7 @@
 
 #include "eckit/codec/codec.h"
 
-namespace multio::action {
+namespace multio::action::renumber_healpix {
 
 namespace {
 
@@ -159,10 +159,10 @@ void CacheGenerator::execute(const eckit::option::CmdArgs& args) {
 
 void CacheGenerator::finish(const eckit::option::CmdArgs&) {}
 
-}  // namespace multio::action
+}  // namespace multio::action::renumber_healpix
 
 
 int main(int argc, char** argv) {
-    multio::action::CacheGenerator tool(argc, argv);
+    multio::action::renumber_healpix::CacheGenerator tool(argc, argv);
     return tool.start();
 }

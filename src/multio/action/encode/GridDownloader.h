@@ -22,7 +22,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::encode {
 
 /**
  * The Grid downloader may be used from different actions and should not call atlas::initialize() or atlas::finalize()
@@ -91,4 +91,4 @@ private:
 };
 
 
-}  // namespace multio::action
+}  // namespace multio::action::encode

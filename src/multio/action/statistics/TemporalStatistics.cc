@@ -8,7 +8,7 @@
 
 #include "TimeUtils.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std::vector<std::string>& operations,
@@ -77,4 +77,4 @@ void TemporalStatistics::print(std::ostream& os) const {
     os << "Temporal Statistics";
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

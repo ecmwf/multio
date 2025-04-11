@@ -5,8 +5,7 @@
 
 #include "multio/util/Timing.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class ActionStatistics : public eckit::Statistics {
 public:
@@ -17,5 +16,4 @@ public:
     void report(std::ostream& out, const std::string& type = "Action", const char* indent = "");
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

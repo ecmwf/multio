@@ -5,7 +5,7 @@
 
 #include "multio/message/Parametrization.h"
 
-namespace multio::action {
+namespace multio::action::aggregate {
 
 message::Message& AggregationCatalogue::getMessage(const std::string& key) {
     return messageMap_.at(key);
@@ -78,4 +78,4 @@ std::ostream& operator<<(std::ostream& os, const AggregationCatalogue& aggCat) {
     return os;
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::aggregate

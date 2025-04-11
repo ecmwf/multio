@@ -7,7 +7,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class RemapParamID {
 private:
@@ -19,4 +19,4 @@ public:
     void ApplyRemap(message::Metadata& md, const std::string& opname, const std::string& outputFrequency);
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

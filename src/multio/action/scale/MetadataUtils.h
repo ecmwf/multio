@@ -5,6 +5,6 @@
 #include "multio/action/scale/MetadataUtils.h"
 #include "multio/message/Metadata.h"
 
-namespace multio::action {
+namespace multio::action::scale {
 std::string extractParam(const multio::message::Metadata& md);
 }

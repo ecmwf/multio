@@ -13,7 +13,7 @@
 #include "multio/message/Message.h"
 #include "multio/util/DateTime.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 enum OperationWindowType : std::int64_t {
     FORWARD_OFFSET  = 0,
@@ -138,4 +138,4 @@ private:
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

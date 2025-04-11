@@ -29,7 +29,7 @@
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Substitution.h"
 
-namespace multio::action {
+namespace multio::action::renumber_healpix {
 
 namespace {
 std::string parseCacheFileName(const ComponentConfiguration& compConf) {
@@ -147,4 +147,4 @@ void HEALPixRingToNest::print(std::ostream& os) const {
 
 static ActionBuilder<HEALPixRingToNest> HEALPixRingToNestBuilder("renumber-healpix");
 
-}  // namespace multio::action
+}  // namespace multio::action::renumber_healpix

@@ -13,7 +13,7 @@
 
 #define nside2npix(NSIDE) (NSIDE * NSIDE * 12)
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 enum class orderingConvention_e : unsigned int
 {
@@ -165,4 +165,4 @@ public:
     }
 };
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom

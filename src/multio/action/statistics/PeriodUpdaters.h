@@ -14,10 +14,10 @@
 
 #include "OperationWindow.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 std::unique_ptr<PeriodUpdater> make_period_updater(std::string const& output_freq, const StatisticsConfiguration& cfg);
 std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>& IOmanager,
                                                    const StatisticsOptions& opt);
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -26,7 +26,7 @@
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 using message::glossary;
 
@@ -390,4 +390,4 @@ void Statistics::print(std::ostream& os) const {
 
 static ActionBuilder<Statistics> StatisticsBuilder("statistics");
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

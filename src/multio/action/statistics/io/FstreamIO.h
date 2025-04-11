@@ -5,7 +5,7 @@
 
 #include "multio/action/statistics/StatisticsIO.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class FstreamIO final : public StatisticsIO {
 public:
@@ -20,4 +20,4 @@ private:
     void checkFileSize(const std::string& fname, size_t expectedSize) const;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

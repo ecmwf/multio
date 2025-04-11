@@ -9,7 +9,7 @@
 #include "multio/util/Substitution.h"
 
 
-namespace multio::action {
+namespace multio::action::scale {
 
 using message::glossary;
 
@@ -41,4 +41,4 @@ void ScaleMapping::applyMapping(message::Metadata& md) const {
     }
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::scale

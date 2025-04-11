@@ -21,7 +21,7 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/message/MetadataMapping.h"
 
-namespace multio::action {
+namespace multio::action::metadata_mapping {
 
 class MetadataMapping : public ChainedAction {
 public:
@@ -40,4 +40,4 @@ private:
     message::MetadataMappingOptions options_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::metadata_mapping

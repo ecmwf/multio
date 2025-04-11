@@ -1,7 +1,7 @@
 
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compConf) :
@@ -300,4 +300,4 @@ void StatisticsOptions::usage() {
     // TODO: Implement this function
 }
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

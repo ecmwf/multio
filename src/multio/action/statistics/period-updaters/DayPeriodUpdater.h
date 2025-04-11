@@ -11,7 +11,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 class DayPeriodUpdater final : public PeriodUpdater {
@@ -53,4 +53,4 @@ public:
 };
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -14,7 +14,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/memory/NonCopyable.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class IOBuffer {
 private:
@@ -132,4 +132,4 @@ public:
     StatisticsIOBuilder(const std::string& name) : StatisticsIOBuilderBase(name) {}
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

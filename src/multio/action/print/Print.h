@@ -20,7 +20,7 @@
 
 #include "multio/action/ChainedAction.h"
 
-namespace multio::action {
+namespace multio::action::print {
 
 class Print : public ChainedAction {
 public:
@@ -38,4 +38,4 @@ private:
     std::string prefix_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::print

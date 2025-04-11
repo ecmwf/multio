@@ -10,7 +10,7 @@
 #include "multio/config/ComponentConfiguration.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 namespace {
@@ -133,4 +133,4 @@ public:
 };
 
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

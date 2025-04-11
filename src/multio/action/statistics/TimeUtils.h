@@ -5,7 +5,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsConfiguration& cfg);
 eckit::DateTime prevDateTime(const message::Message& msg, const StatisticsConfiguration& cfg);
@@ -19,4 +19,4 @@ bool isBeginningOfMonth(const message::Message& msg, const StatisticsConfigurati
 bool isBeginningOfDay(const message::Message& msg, const StatisticsConfiguration& cfg);
 bool isBeginningOfHour(const message::Message& msg, const StatisticsConfiguration& cfg);
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

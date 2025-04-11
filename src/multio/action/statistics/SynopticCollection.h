@@ -18,7 +18,7 @@
 #include "multio/config/ComponentConfiguration.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 // Single operation (i.e. average, stddev) but all the possible "flavours"
 // A "flavour" is a subset of the available samples
 //
@@ -76,4 +76,4 @@ std::vector<std::unique_ptr<SynopticCollection>> load_collections(
     const OperationWindow& win, const std::map<std::string, eckit::LocalConfiguration>& filterConf,
     const StatisticsConfiguration& cfg);
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

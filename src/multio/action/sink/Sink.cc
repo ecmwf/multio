@@ -18,7 +18,7 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio::action {
+namespace multio::action::sink {
 
 Sink::Sink(const ComponentConfiguration& compConf) : Action(compConf), mio_{compConf} {}
 
@@ -94,4 +94,4 @@ void Sink::print(std::ostream& os) const {
 
 static ActionBuilder<Sink> SinkBuilder("sink");
 
-}  // namespace multio::action
+}  // namespace multio::action::sink

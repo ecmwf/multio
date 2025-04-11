@@ -42,13 +42,11 @@ ecbuild_add_library(
 set_target_properties( multiom-tools-utils PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
 target_include_directories( multiom-tools-utils PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
 
+if(HAVE_MULTIO_BUILD_TOOLS)
 
 ecbuild_add_executable(
 
   TARGET multiom-feed
-
-  CONDITION
-    HAVE_MULTIO_BUILD_TOOLS
 
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_feed_prog.F90
@@ -151,12 +149,16 @@ ecbuild_add_executable(
 
 )
 
+endif()
 
 
 ecbuild_add_executable(
 
   TARGET
       grib1-to-grib2
+
+  CONDITION
+    HAVE_GRIB1_TO_GRIB2
 
   SOURCES
       multiom-mtg2.cc

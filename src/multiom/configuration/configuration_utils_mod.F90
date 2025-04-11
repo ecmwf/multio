@@ -2011,7 +2011,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_GLB_IDX_LOWER_THAN_1)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Global index lower than 1: '//TRIM(ADJUSTL(TMPSTR)) )
     CASE (ERRFLAG_GLB_IDX_BIGGER_THAN_STRING)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Global index bigger than string: '//TRIM(ADJUSTL(TMPSTR)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Global index bigger than string: '//TRIM(ADJUSTL(TMPSTR))//' (Input: '//TRIM(ADJUSTL(TMPSTR))//')' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

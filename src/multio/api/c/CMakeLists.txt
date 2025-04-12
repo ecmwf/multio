@@ -18,6 +18,7 @@ list( APPEND multio_action_plugins
     multio-action-single-field-sink
     multio-action-sink
     multio-action-statistics
+    multio-action-statistics-mtg2
     multio-action-transport
     multio-action-renumber-healpix
     multio-action-scale

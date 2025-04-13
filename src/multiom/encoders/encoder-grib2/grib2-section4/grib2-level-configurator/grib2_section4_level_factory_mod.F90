@@ -2265,9 +2265,9 @@ IMPLICIT NONE
         LEVEL_CONFIGURATOR_TYPE = 88_JPIB_K
       CASE ('abstractmultiplelevels')
         LEVEL_CONFIGURATOR_TYPE = 89_JPIB_K
-      CASE ('heightAboveSeaat10m')
+      CASE ('heightaboveseaat10m')
         LEVEL_CONFIGURATOR_TYPE = 200_JPIB_K
-      CASE ('heightAboveSeaat2m')
+      CASE ('heightaboveseaat2m')
         LEVEL_CONFIGURATOR_TYPE = 201_JPIB_K
       CASE ('heightabovegroundat10m')
         LEVEL_CONFIGURATOR_TYPE = 202_JPIB_K
@@ -2319,7 +2319,8 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_KEY_NOT_PRESENT)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key is not present' )
     CASE (ERRFLAG_KEY_IS_NOT_INTEGER)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown key' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown "typeOfLevel"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Requested "typeOfLevel": "'//TRIM(ADJUSTL(CLEVEL_CONFIGURATOR_TYPE))//'"' )
     CASE (ERRFLAG_UNABLE_TO_READ_KEY)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error calling check key' )
     CASE (ERRFLAG_READ_ERROR)

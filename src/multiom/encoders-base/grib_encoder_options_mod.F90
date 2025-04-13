@@ -53,6 +53,10 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
   ! Dimension of the time history buffer
   INTEGER(KIND=JPIB_K) :: TIME_HISTORY_CAPACITY = 100_JPIB_K
 
+  ! Verbosity
+  LOGICAL :: LOG_RULES_TREE=.FALSE.
+  LOGICAL :: LOG_RULES_FILES=.FALSE.
+
 END TYPE
 
 

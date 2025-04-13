@@ -205,15 +205,18 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_UNABLE_TO_READ_ENCODER_TYPE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read encoder type from configuration' )
     CASE (ERRFLAG_UNKNOWN_SECTION_0)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown section0 number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown encoder type number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'legend: 0=grib2, 1=grib1' )
     CASE (ERRFLAG_ALLOCATION_ERROR)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating section0 number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error allocating encoder type number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'legend: 0=grib2, 1=grib1' )
       IF ( ALLOCATED(ERRMSG) ) THEN
-        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating section0 number: '//TRIM(ADJUSTL(TMP))//' : '//TRIM(ADJUSTL(ERRMSG)) )
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating encoder type number: '//TRIM(ADJUSTL(TMP))//' : '//TRIM(ADJUSTL(ERRMSG)) )
         DEALLOCATE(ERRMSG)
       ENDIF
     CASE (ERRFLAG_INITIALIZATION_ERROR)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error initializing section0 number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error initializing encoder type number: '//TRIM(ADJUSTL(TMP)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'legend: 0=grib2, 1=grib1' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

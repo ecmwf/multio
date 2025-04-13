@@ -73,9 +73,6 @@ ecbuild_add_executable(
 
   TARGET multiom-nested-rules-reader
 
-  CONDITION
-    HAVE_MULTIO_BUILD_TOOLS
-
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_nested_rules_reader_prog.F90
 

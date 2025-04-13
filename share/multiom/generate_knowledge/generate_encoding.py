@@ -1167,7 +1167,7 @@ def main():
         fileOut.write(toYAML({"encoding-rules": allFiles}))
 
     nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
-    if len(filters) == 0:
+    if len(nestedFilterFiles) == 0:
         with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
             fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
     else:

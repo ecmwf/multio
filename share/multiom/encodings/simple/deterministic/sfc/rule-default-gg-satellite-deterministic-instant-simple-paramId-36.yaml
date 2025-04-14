@@ -13,6 +13,9 @@ filter:
       operation: has
     - type: number
       operation: lacks
+    - type: levtype
+      operation: match
+      value: sfc
     - type: param
       operation: match
       values:

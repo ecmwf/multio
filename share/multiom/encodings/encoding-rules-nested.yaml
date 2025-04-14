@@ -65,6 +65,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-wam_period-surface-default-gg-wave_period-ensemble-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-max-since-last-pp-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -97,9 +98,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-simple-paramId-36.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: al
                               encoding-rules:
@@ -155,6 +153,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-wam_period-surface-default-gg-wave_period-ensemble-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-max-since-last-pp-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -187,9 +186,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: al
                               encoding-rules:
@@ -273,6 +269,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-wam_period-surface-default-gg-wave_period-ensemble-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-max-since-last-pp-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -305,9 +302,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-simple-paramId-1.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble//rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: al
                               encoding-rules:
@@ -363,6 +357,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-wam_period-surface-default-gg-wave_period-ensemble-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-max-since-last-pp-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -395,9 +390,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble//rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: al
                               encoding-rules:
@@ -485,6 +477,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-wam_period-surface-default-gg-wave_period-deterministic-instant-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-max-since-last-pp-simple-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-simple-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-simple-paramId-36.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -517,9 +510,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-simple-paramId-36.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-36.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -571,6 +561,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-wam_period-surface-default-gg-wave_period-deterministic-instant-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-max-since-last-pp-ccsds-paramId-36.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-ccsds-paramId-36.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-ccsds-paramId-36.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -603,9 +594,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic//rule-default-gg-satellite-deterministic-instant-ccsds-paramId-36.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:
@@ -685,6 +673,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-wam_period-surface-default-gg-wave_period-deterministic-instant-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-max-since-last-pp-simple-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-simple-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -717,9 +706,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-simple-paramId-1.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic//rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
                       - operation: match
                         value: ccsds
                         nested-rules:
@@ -771,6 +757,7 @@ nested-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-wam_period-surface-default-gg-wave_period-deterministic-instant-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-max-since-last-pp-ccsds-paramId-1.yaml'
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-ccsds-paramId-1.yaml'
+                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-ccsds-paramId-1.yaml'
                             - operation: match
                               value: hl
                               encoding-rules:
@@ -803,9 +790,6 @@ nested-rules:
                               value: pv
                               encoding-rules:
                                 - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pv/rule-potentialVorticity-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                            - operation: lacks
-                              encoding-rules:
-                                - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic//rule-default-gg-satellite-deterministic-instant-ccsds-paramId-1.yaml'
                 - operation: match
                   value: spherical-harmonics
                   nested-rules:

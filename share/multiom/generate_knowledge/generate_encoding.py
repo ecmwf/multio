@@ -884,7 +884,7 @@ PARAM_LEVTYPE_SOL = [
 
 PARAM_SATELLITE = [
     partialRule(
-        [matchParam(["260510:260513"])],
+        [matchType("levtype", "sfc"), matchParam(["260510:260513"])],
         [PointInTime(), paramConfig("paramId"), SatelliteConfig()],
     ),
 ]

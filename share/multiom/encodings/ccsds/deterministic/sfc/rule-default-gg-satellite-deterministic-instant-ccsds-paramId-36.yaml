@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36
+name: rule-default-gg-satellite-deterministic-instant-ccsds-paramId-36
 
 filter:
   type: composed
@@ -12,7 +12,10 @@ filter:
     - type: anoffset
       operation: has
     - type: number
-      operation: has
+      operation: lacks
+    - type: levtype
+      operation: match
+      value: sfc
     - type: param
       operation: match
       values:
@@ -42,14 +45,12 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 33
+    template-number: 32
     point-in-time-configurator:
       type: default
     param-configurator:
       type: paramId
     model-configurator:
-      type: default
-    ensemble-configurator:
       type: default
     satellite-configurator:
       type: default

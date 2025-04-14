@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-default-gg-satellite-deterministic-instant-ccsds-paramId-1
+name: rule-default-gg-satellite-deterministic-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -13,13 +13,16 @@ filter:
       operation: lacks
     - type: number
       operation: lacks
+    - type: levtype
+      operation: match
+      value: sfc
     - type: param
       operation: match
       values:
         - "260510:260513"
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -52,4 +55,4 @@ encoder:
     satellite-configurator:
       type: default
   data-representation-section:
-    template-number: 42
+    template-number: 0

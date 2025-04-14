@@ -705,7 +705,7 @@ PARAM_LEVTYPE_HL = [
 
 PARAM_LEVTYPE_ML = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248"])],
+        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248", "260290"])],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
     partialRule(
@@ -725,7 +725,7 @@ PARAM_LEVTYPE_ML = [
 
 PARAM_LEVTYPE_ML_SH = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam([77, 129, 130, 135, 138, 152, 155])],
+        [matchType("levtype", "ml"), matchParam([77, 129, "130:132", 135, 138, 152, 155])],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
 ]

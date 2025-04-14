@@ -23,6 +23,7 @@ filter:
         - 133
         - 203
         - "246:248"
+        - 260290
     - type: packing
       operation: match
       value: ccsds

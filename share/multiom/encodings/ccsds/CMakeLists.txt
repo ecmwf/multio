@@ -7,7 +7,6 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble"
 add_subdirectory("deterministic")
 add_subdirectory("ensemble")
 
-
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}

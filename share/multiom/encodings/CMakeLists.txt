@@ -9,7 +9,6 @@ add_subdirectory("ccsds")
 add_subdirectory("complex")
 add_subdirectory("simple")
 
-
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}

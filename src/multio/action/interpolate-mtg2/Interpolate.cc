@@ -339,12 +339,12 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     md.erase("grid");
 
     // Handle Output metadata of the interpolated fields
-    if (cfg.has("grid")) {
+    if (cfg.has("output")) {
         std::string gridKind("none");
         std::vector<double> grid(2, 0.0);
 
-        if (cfg.isString("grid")) {
-            const std::string input = cfg.getString("grid");
+        if (cfg.isString("output")) {
+            const std::string input = cfg.getString("output");
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
             static const std::regex H("([h|H])([1-9][0-9]*)(_nested)?");
@@ -362,9 +362,9 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 grid[0] = std::stod(matchH[2].str());
             }
         }
-        else if (cfg.isFloatingPointList("grid")) {
+        else if (cfg.isFloatingPointList("output")) {
             gridKind = "regular_ll";
-            grid = cfg.getDoubleVector("grid");
+            grid = cfg.getDoubleVector("output");
             if (interpolationMatrix) {
                 std::ostringstream os;
                 os << " - interpolation matrix supported only for fesom -> Healpix" << std::endl;

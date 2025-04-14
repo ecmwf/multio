@@ -530,6 +530,24 @@ void handlePackingType(codes_handle* h, const std::string& packingType, MultiOMD
 };
 
 
+long mapParamId(long p) {
+    // Taken from eccodes
+    // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
+    static const std::unordered_map<long, long> paramIdMap{
+        {55, 228004},     {56, 235168},     {130232, 235135}, {151163, 262104}, {151145, 262124},
+        {172146, 235033}, {172147, 235034}, {172169, 235035}, {172175, 235036}, {172176, 235037},
+        {172177, 235038}, {172178, 235039}, {172179, 235040}, {174098, 262000}, {151175, 262118},
+        {151132, 262139}, {151131, 262140}, {72, 260087},     {73, 260097},     {172050, 235026},
+        {172145, 235032}, {172189, 235189}, {172195, 235045}, {172196, 235046}, {172197, 235047},
+    };
+
+    if (auto search = paramIdMap.find(p); search != paramIdMap.end()) {
+        return search->second;
+    }
+    return p;
+}
+
+
 void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOMDict& parDict) {
     getAndSet(marsKeys, marsDict, "stream");
     getAndSet(marsKeys, marsDict, "type");
@@ -551,7 +569,8 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     // getAndSet(marsKeys, marsDict, "chemId", "chem");
     getAndSet(marsKeys, marsDict, "chem");
 
-    getAndSet(marsKeys, marsDict, "param");
+    marsDict.set("param", mapParamId(getLong(h, "paramId")));
+
 
     getAndSet(marsKeys, marsDict, "model");
 

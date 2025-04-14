@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1
+name: rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36
 
 filter:
   type: composed
@@ -10,9 +10,12 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
+      operation: has
     - type: number
       operation: has
+    - type: levtype
+      operation: match
+      value: sfc
     - type: param
       operation: match
       values:
@@ -38,7 +41,7 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:

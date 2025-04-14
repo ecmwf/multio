@@ -1,9 +1,12 @@
 
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/al")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/hl")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/ml")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/pl")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/pt")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/pv")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/sfc")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/ensemble/sol")
 
@@ -15,7 +18,6 @@ add_subdirectory("pt")
 add_subdirectory("pv")
 add_subdirectory("sfc")
 add_subdirectory("sol")
-
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})

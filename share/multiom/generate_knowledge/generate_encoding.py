@@ -940,17 +940,23 @@ if len(duplicatedRules) > 0:
 
 
 def templateCMakeFile(dir, subDirs):
-    subDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
+    fileSubDirsStr = "\n".join([f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")' for sd in subDirs]) + ("\n" if len(subDirs) > 0 else "")
+    addSubDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
+
     return f"""
 file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
 
-{subDirsStr}
-
+{fileSubDirsStr}
+{addSubDirsStr}
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${{encoding_rules}})
     configure_file(${{CMAKE_CURRENT_SOURCE_DIR}}/${{rule}}
                    ${{CMAKE_CURRENT_BINARY_DIR}}/${{rule}}
+                   COPYONLY)
+
+    configure_file(${{CMAKE_CURRENT_SOURCE_DIR}}/${{rule}}
+                   ${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/${{rule}}
                    COPYONLY)
 endforeach()
 
@@ -1065,7 +1071,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     def recurse(fs, rls, baseDir):
         ret = applyNestedFilters(fs, rls, baseDir)
         if isinstance(ret, list):
-            return {"rules": ret}
+            return {"encoding-rules": ret}
         return {"nested-rules": ret}
 
     (filterName, filterType) = filters[0]
@@ -1083,6 +1089,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
              }
 
         case "match":
+             # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
              matchPairs = [(findMatchTypeFilter(rc.rule, filterName), rc) for rc in rules]
              valuesDict = {}
              for (val, rc) in matchPairs:
@@ -1093,7 +1100,8 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
              return {
                 "key": filterName,
                 "operations": [
-                    {"operation": "match", "value": val, **recurse(fs, rs, baseDir)} for (val, rs) in valuesDict.items()
+                    ( {"operation": "lacks", **recurse(fs, rs, baseDir)} if val is None
+                        else {"operation": "match", "value": val, **recurse(fs, rs, baseDir)})  for (val, rs) in valuesDict.items()
                 ]
              }
 
@@ -1152,7 +1160,7 @@ def main():
 
     nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
     with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
-        fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
+        fileOut.write(toYAML({("encoding-rules" if len(nestedFilterFiles) == 0 else "nested-rules"): nestedFilterFiles}))
 
 
 if __name__ == "__main__":

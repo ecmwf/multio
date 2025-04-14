@@ -958,7 +958,6 @@ if len(duplicatedRules) > 0:
 def templateCMakeFile(dir, subDirs):
     fileSubDirsStr = "\n".join([f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")' for sd in subDirs]) + ("\n" if len(subDirs) > 0 else "")
     addSubDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
-
     return f"""
 file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
 

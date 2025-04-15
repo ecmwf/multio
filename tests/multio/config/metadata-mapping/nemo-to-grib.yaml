@@ -779,6 +779,14 @@ data:
     unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
+  # Sea-ice breakup memory
+  - nemo-id : icebreak
+    param-id : 262025
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "iceLayerOnWater"
+
   #=================================
   # Assimilation increments
   #=================================

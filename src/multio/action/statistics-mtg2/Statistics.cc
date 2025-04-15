@@ -150,41 +150,100 @@ void Statistics::DumpTemporalStatistics() {
     return;
 }
 
+enum class FlushKind: std::size_t{
+    Default,FirstStep,StepAndRestart, LastStep, EndOfSimulation, CloseConnection
+};
+
+FlushKind parseFlushKind(const std::string & str) {
+    static const std::unordered_map <std::string,FlushKind> map{
+        { "first-step", FlushKind::FirstStep},
+        { "default", FlushKind::Default},
+        { "step-and-restart", FlushKind::StepAndRestart},
+        { "last-step", FlushKind::LastStep },
+        { "end-of-simulation", FlushKind::EndOfSimulation},
+        { "close-connection", FlushKind::CloseConnection}
+    };
+    if(auto search = map.find(str); search != map.end()){
+        return search->second;
+    }
+    throw message::MetadataException(std::string("Unknown FlushKind: ") + str, Here());
+}
+
+
+FlushKind parseFlushKind(std::int64_t val) {
+    static const std::unordered_map <std::int64_t,FlushKind> map{
+        { 0, FlushKind::FirstStep},
+        { 1, FlushKind::Default},
+        { 2, FlushKind::StepAndRestart},
+        { 3, FlushKind::LastStep },
+        { 4, FlushKind::EndOfSimulation},
+        { 5, FlushKind::CloseConnection}
+    };
+    if(auto search = map.find(val); search != map.end()){
+        return search->second;
+    }
+    throw message::MetadataException(std::string("Unknown FlushKind: ") + std::to_string(val), Here());
+}
+
+
 void Statistics::TryDumpRestart(const message::Message& msg) {
-    auto flushKind = msg.metadata().getOpt<std::string>("flushKind");
-    if (flushKind && opt_.writeRestart() && needRestart_) {
+
+    FlushKind flushKind{FlushKind::Default};
+    if(auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()){
+        search->second.visit(eckit::Overloaded{
+            [&](const std::string & str){
+                flushKind = parseFlushKind(str);
+            },
+            [&](const std::int64_t val){
+                flushKind = parseFlushKind(val);
+            },
+            [&](const auto &){
+                throw message::MetadataException("FlushKind needs to be either string or integer.",Here());
+            }
+        });
+    }
+
+
+    if (opt_.writeRestart() && needRestart_) {
 
         // Check the kind of flush
         // NOTE: This is a bit of a hack, in case no serverRank is provided, we
         // assume that all processors are "master" and rely on atomicity of
         // filesystem operation to avoid race conditions
         auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
-        if (*flushKind == "step-and-restart" || *flushKind == "last-step" || *flushKind == "end-of-simulation"
-            || *flushKind == "close-connection") {
+        switch(flushKind){
+            case FlushKind::StepAndRestart: 
+            case FlushKind::LastStep: 
+            case FlushKind::EndOfSimulation: 
+            case FlushKind::CloseConnection:
+            {
+                // Generate name of the main restart directory
+                std::string restartFolderName = generateRestartNameFromFlush(msg);
 
-            // Generate name of the main restart directory
-            std::string restartFolderName = generateRestartNameFromFlush(msg);
+                // Log for Dump operation
+                LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " << "Last DateTime :: " << restartFolderName << std::endl;
 
-            // Log for Dump operation
-            LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " << *flushKind
-                                     << "Last DateTime :: " << restartFolderName << std::endl;
+                // Delete the latest symlink as soon as possible
+                if (is_master) {
+                    DeleteLatestSymLink();
+                }
 
-            // Delete the latest symlink as soon as possible
-            if (is_master) {
-                DeleteLatestSymLink();
-            }
+                // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
+                CreateMainRestartDirectory(restartFolderName, is_master);
 
-            // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
-            CreateMainRestartDirectory(restartFolderName, is_master);
+                // Dump the temporal statistics restart directories
+                DumpTemporalStatistics();
 
-            // Dump the temporal statistics restart directories
-            DumpTemporalStatistics();
-
-            // Create the latest symlink to the latest restart directory
-            if (is_master) {
-                CreateLatestSymLink();
-            }
+                // Create the latest symlink to the latest restart directory
+                if (is_master) {
+                    CreateLatestSymLink();
+                }
+            } 
+            break;
+            default: {} break;
+            
         }
+
     }
     return;
 }

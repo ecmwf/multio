@@ -14,7 +14,7 @@
 
 #pragma once
 
-namespace multio::action::interpolate::fesom2mir {
+namespace multio::action::interpolate {
 
 class HEALPix {
 public:
@@ -33,4 +33,4 @@ private:
     const int k_;
 };
 
-}  // namespace multio::action::interpolate::fesom2mir
+}  // namespace multio::action::interpolate

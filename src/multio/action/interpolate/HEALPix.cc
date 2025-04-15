@@ -21,7 +21,7 @@
 #include <iostream>
 #include <tuple>
 
-namespace multio::action::interpolate::fesom2mir {
+namespace multio::action::interpolate {
 
 
 namespace {
@@ -201,4 +201,4 @@ int HEALPix::nest_to_ring(int n) const {
 }
 
 
-}  // namespace multio::action::interpolate::fesom2mir
+}  // namespace multio::action::interpolate

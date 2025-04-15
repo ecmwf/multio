@@ -82,11 +82,19 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
 };
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto gridType = md.getOpt<std::string>(glossary().gridType); gridType) {
-        gridType_ = *gridType;
+    // auto gridType = md.find("grid");  // New MTG2 name
+    using namespace message::Mtg2;
+
+    if( auto grid = md.find(mars::grid); grid != md.end()) {
+        gridType_ = mars::grid.get(grid->second);
+        return;
+    }
+    // gridType = md.find("truncation");
+    if( auto truncation = md.find("truncation"); truncation != md.end() ) {
+        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics",Here());
     }
     else {
-        throw eckit::SeriousBug{"gridType metadata not present", Here()};
+        throw eckit::SeriousBug{"grid or truncation isn't present metadata not present", Here()};
     }
     return;
 };
@@ -95,18 +103,18 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
     if (auto levType = md.getOpt<std::string>(glossary().levtype); levType) {
         levType_ = *levType;
     }
-    else if (auto category = md.getOpt<std::string>(glossary().category); category) {
-        levType_ = *category;  // TODO this needs proper handling once category is changed to levtype
-    }
     else {
-        throw eckit::SeriousBug{"LevType metadata not present", Here()};
+        throw message::MetadataException("Levtype missing in metadata",Here());
     }
+    // if none of the above metadata options are present the default levtype is kept 
     return;
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto param = md.getOpt<std::string>(glossary().param); param) {
-        param_ = *param;
+    using namespace message::Mtg2;
+
+    if (auto param = md.find(mars::param);param!=md.end()) {
+        param_ = std::to_string(mars::param.get(param->second));
     }
     else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
         param_ = std::to_string(*paramId);
@@ -125,9 +133,8 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
     else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
         level_ = *levelist;
     }
-    else {
-        throw eckit::SeriousBug{"Level metadata not present", Here()};
-    }
+    // if none of the above metadata options are present the default levtype is kept 
+
     return;
 };
 

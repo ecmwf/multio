@@ -425,10 +425,17 @@ void Statistics::executeImpl(message::Message msg) {
             eckit::Buffer payload;
             payload.resize((*it)->byte_size());
             payload.zero();
+
             std::string opname = (*it)->operation();
             std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
             md.set("operation", opname);
             md.set("operation-frequency", outputFrequency);
+
+            const std::int64_t step = ts.win().endPointInSteps();
+            const std::int64_t timespan = ts.win().timeSpanInHours();
+            md.set(glossary().step, step);
+            multio::message::Mtg2::mars::timespan.set(md, timespan);
+
             remapParamID_.ApplyRemap(md, opname, outputFrequency);
             (*it)->compute(payload, cfg);
             executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),

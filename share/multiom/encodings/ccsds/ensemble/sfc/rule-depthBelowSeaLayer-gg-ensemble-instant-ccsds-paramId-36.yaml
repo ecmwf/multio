@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-nominalTop-gg-deterministic-since-beginning-ccsds-paramId-36
+name: rule-depthBelowSeaLayer-gg-ensemble-instant-ccsds-paramId-36
 
 filter:
   type: composed
@@ -12,16 +12,14 @@ filter:
     - type: anoffset
       operation: has
     - type: number
-      operation: lacks
+      operation: has
     - type: levtype
       operation: match
       value: sfc
     - type: param
       operation: match
       values:
-        - "178:179"
-        - "208:209"
-        - 212
+        - 262118
     - type: packing
       operation: match
       value: ccsds
@@ -47,16 +45,16 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 8
-    time-statistics-configurator:
-      type: since-beginning-of-forecast
-      type-of-statistical-processing: accumul
-      encode-step-zero: true
+    template-number: 1
+    point-in-time-configurator:
+      type: default
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: nominalTop
+      type: depthBelowSeaLayer
+    ensemble-configurator:
+      type: default
   data-representation-section:
     template-number: 42

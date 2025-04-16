@@ -160,7 +160,9 @@ struct MultiOMDict {
 MultiOMDict::MultiOMDict(MultiOMDictKind kind) : kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
     void* dict = NULL;
-    ASSERT(multio_grib2_dict_create(&dict, kindStr.data()) == 0);
+    if (multio_grib2_dict_create(&dict, kindStr.data()) != 0) {
+        throw std::runtime_error(std::string("Can not create dict kind ") + kindStr);
+    }
 
     if (kind == MultiOMDictKind::Options) {
         ASSERT(multio_grib2_init_options(&dict) == 0);
@@ -530,21 +532,50 @@ void handlePackingType(codes_handle* h, const std::string& packingType, MultiOMD
 };
 
 
-long mapParamId(long p) {
+void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
     // Taken from eccodes
     // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
-    static const std::unordered_map<long, long> paramIdMap{
-        {55, 228004},     {56, 235168},     {130232, 235135}, {151163, 262104}, {151145, 262124},
-        {172146, 235033}, {172147, 235034}, {172169, 235035}, {172175, 235036}, {172176, 235037},
-        {172177, 235038}, {172178, 235039}, {172179, 235040}, {174098, 262000}, {151175, 262118},
-        {151132, 262139}, {151131, 262140}, {72, 260087},     {73, 260097},     {172050, 235026},
-        {172145, 235032}, {172189, 235189}, {172195, 235045}, {172196, 235046}, {172197, 235047},
+    static const std::unordered_map<long, std::tuple<long, Map>> paramIdMap{
+        {55, {228004, {{"timeproc", 24l}}}},
+        {56, {235168, {}}},
+        {130232, {235135, {}}},
+        {151163, {262104, {}}},
+        {151145, {262124, {}}},
+        {172146, {235033, {}}},
+        {172147, {235034, {}}},
+        {172169, {235035, {}}},
+        {172175, {235036, {}}},
+        {172176, {235037, {}}},
+        {172177, {235038, {}}},
+        {172178, {235039, {}}},
+        {172179, {235040, {}}},
+        {174098, {262000, {}}},
+        {151175, {262118, {}}},
+        {151132, {262139, {}}},
+        {151131, {262140, {}}},
+        {72, {260087, {}}},
+        {73, {260097, {}}},
+        {172050, {235026, {}}},
+        {172145, {235032, {}}},
+        {172189, {235189, {}}},
+        {172195, {235045, {}}},
+        {172196, {235046, {}}},
+        {172197, {235047, {}}},
     };
 
-    if (auto search = paramIdMap.find(p); search != paramIdMap.end()) {
-        return search->second;
+
+    long initParamId = getLong(h, "paramId");
+
+    if (auto search = paramIdMap.find(initParamId); search != paramIdMap.end()) {
+        marsDict.set("param", std::get<0>(search->second));
+
+        for (const auto& pair : std::get<1>(search->second)) {
+            std::visit([&](const auto& val) { marsDict.set(pair.first, val); }, pair.second);
+        }
     }
-    return p;
+    else {
+        marsDict.set("param", initParamId);
+    }
 }
 
 
@@ -569,7 +600,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     // getAndSet(marsKeys, marsDict, "chemId", "chem");
     getAndSet(marsKeys, marsDict, "chem");
 
-    marsDict.set("param", mapParamId(getLong(h, "paramId")));
+    handleParamId(h, marsDict);
 
 
     getAndSet(marsKeys, marsDict, "model");
@@ -642,23 +673,26 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(h, parDict, "systemNumber");
     getAndSet(h, parDict, "methodNumber");
 
-    if (marsKeys.find("number") != marsKeys.end()) {
-        getAndSet(marsKeys, marsDict, "number");
-        if (hasKey(h, "typeOfEnsembleForecast")) {
-            getAndSet(h, parDict, "typeOfEnsembleForecast");
-        }
-        else if (hasKey(h, "eps")) {
-            getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
-        }
-
-        if (!hasKey(h, "numberOfForecastsInEnsemble")) {
-            throw std::runtime_error("Expected a key numberOfForecastsInEnsemble");
-        }
+    if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end()) {
         long numForecasts = getLong(h, "numberOfForecastsInEnsemble");
-        if (numForecasts == 0) {
-            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+        long number = std::get<long>(searchNumber->second);
+
+        // If both are 0 it is likely a control forecast or no ensemble...
+        if (number != 0 && numForecasts != 0) {
+            marsDict.set("number", number);
+
+            if (hasKey(h, "typeOfEnsembleForecast")) {
+                getAndSet(h, parDict, "typeOfEnsembleForecast");
+            }
+            else if (hasKey(h, "eps")) {
+                getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
+            }
+
+            if (numForecasts == 0) {
+                throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+            }
+            parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
         }
-        parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
     }
 
 

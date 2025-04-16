@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-nominalTop-gg-ensemble-since-beginning-simple-paramId-36
+name: rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-1
 
 filter:
   type: composed
@@ -10,7 +10,7 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
       operation: has
     - type: levtype
@@ -43,7 +43,7 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:

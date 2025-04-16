@@ -8,17 +8,22 @@
 
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 
-# TODO migrate this to python/pymultio once the ci action is modular enough. Don't forget to update relative `license` and 
+# TODO migrate this to python/pymultio once the ci action is modular enough. Don't forget to update paths in:
+# - license-files (symlink two dirs above)
+# - testpaths (remove python/)
+# - package-dir (remove python/)
+# - version_file (remove python/)
+# as well as .github/workflows/cd-pypi.yaml `working-directory` to point to python/pymultio (instead of default ./)
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-vv -s"
 testpaths = [
-    "pymultio/tests"
+    "python/pymultio/tests"
 ]
 
 [build-system]
-requires = [ "setuptools>=60", "setuptools-scm>=8" ]
+requires = [ "setuptools>=65", "setuptools-scm>=8" ]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -26,7 +31,8 @@ name = "pymultio"
 readme = "README.md"
 description = "A Python interface to multio."
 keywords = [ "multio", "multiopython", "tools" ]
-license = { file = "./LICENSE" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
   { name = "European Centre for Medium-Range Weather Forecasts (ECMWF)", email = "software.support@ecmwf.int" },
 ]
@@ -36,7 +42,6 @@ requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",

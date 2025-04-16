@@ -356,6 +356,12 @@ void Statistics::executeImpl(message::Message msg) {
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
         TryDumpRestart(msg);
+
+        FlushKind flushKind = parseFlushKind(msg);
+        if (parseFlushKind(msg) == FlushKind::LastStep) {
+            emitAllStatistics(msg.source(), msg.destination());
+        }
+
         executeNext(msg);
         return;
     }
@@ -422,38 +428,59 @@ void Statistics::executeImpl(message::Message msg) {
         throw eckit::SeriousBug(os.str(), Here());
     }
 
-    // Update data
-    ts.updateData(msg, cfg);
-
     // Decide to emit statistics
-    if (ts.isEndOfWindow(msg, cfg)) {
-        auto md = outputMetadata(msg.metadata(), cfg, key);
-        for (auto it = ts.begin(); it != ts.end(); ++it) {
-            eckit::Buffer payload;
-            payload.resize((*it)->byte_size());
-            payload.zero();
-
-            std::string opname = (*it)->operation();
-            std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
-            md.set("operation", opname);
-            md.set("operation-frequency", outputFrequency);
-
-            const std::int64_t step = ts.win().endPointInSteps();
-            const std::int64_t timespan = ts.win().timeSpanInHours();
-            md.set(glossary().step, step);
-            multio::message::Mtg2::mars::timespan.set(md, timespan);
-
-            remapParamID_.ApplyRemap(md, opname, outputFrequency);
-            (*it)->compute(payload, cfg);
-            executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
-                                                                  msg.destination(), message::Metadata{md}},
-                                         std::move(payload)});
-        }
-
+    if (ts.isOutsideWindow(msg, cfg)) {
+        emitStatistics(ts, msg.source(), msg.destination());
         ts.updateWindow(msg, cfg);
     }
 
+    // Update data
+    ts.updateData(msg, cfg);
+
     return;
+}
+
+void Statistics::emitAllStatistics(message::Peer source, message::Peer destination) {
+    for (auto& [key, ts] : fieldStats_) {
+        emitStatistics(*ts, source, destination);
+    }
+}
+
+
+void Statistics::emitStatistics(TemporalStatistics& ts,
+                                message::Peer source, message::Peer destination) {
+    for (auto it = ts.begin(); it != ts.end(); ++it) {
+        eckit::Buffer payload;
+        payload.resize((*it)->byte_size());
+        payload.zero();
+
+        auto cfg = ts.config();
+        auto md = ts.metadata();
+
+        const std::string opname = (*it)->operation();
+        const std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
+        md.set("operation", opname);
+        md.set("operation-frequency", outputFrequency);
+
+        const std::int64_t step = ts.win().endPointInSteps();
+        const std::int64_t timespan = ts.win().timeSpanInHours();
+        md.set(glossary().step, step);
+        multio::message::Mtg2::mars::timespan.set(md, timespan);
+
+        // remapParamID_.ApplyRemap(md, opname, outputFrequency);
+        (*it)->compute(payload, cfg);
+
+        executeNext(
+            message::Message{
+                message::Message::Header{
+                    message::Message::Tag::Field,
+                    source, destination,
+                    std::move(md)
+                },
+                std::move(payload)
+            }
+        );
+    }
 }
 
 

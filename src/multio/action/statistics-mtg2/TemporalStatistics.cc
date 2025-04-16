@@ -16,8 +16,11 @@ TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std
                                        const StatisticsConfiguration& cfg) :
     periodUpdater_{make_period_updater(output_freq, cfg)},
     window_{make_window(periodUpdater_, cfg)},
-    statistics_{make_operations(operations, msg, IOmanager, window_, cfg)} {}
+    statistics_{make_operations(operations, msg, IOmanager, window_, cfg)},
+    config_{cfg},
+    metadata_{msg.metadata()} {}
 
+// TODO: Dump and load the (relevant) metadata as well!
 TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
     periodUpdater_{load_period_updater(IOmanager, opt)},
     window_{load_window(IOmanager, opt)},
@@ -64,9 +67,9 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
     return;
 }
 
-bool TemporalStatistics::isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check end of Window " << std::endl;
-    return !window_.isWithin(nextDateTime(msg, cfg));
+bool TemporalStatistics::isOutsideWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check outside Window " << std::endl;
+    return !window_.isWithin(currentDateTime(msg, cfg));
 }
 
 const OperationWindow& TemporalStatistics::cwin() const {
@@ -75,6 +78,20 @@ const OperationWindow& TemporalStatistics::cwin() const {
 
 OperationWindow& TemporalStatistics::win() {
     return window_;
+}
+
+StatisticsConfiguration& TemporalStatistics::config() {
+    if (config_) {
+        return *config_;
+    }
+    throw eckit::SeriousBug("Configuration is not set!", Here());
+}
+
+message::Metadata& TemporalStatistics::metadata() {
+    if (metadata_) {
+        return *metadata_;
+    }
+    throw eckit::SeriousBug("Metadata is not set!", Here());
 }
 
 void TemporalStatistics::print(std::ostream& os) const {

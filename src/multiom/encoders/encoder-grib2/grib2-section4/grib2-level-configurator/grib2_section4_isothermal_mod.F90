@@ -1,9 +1,9 @@
 !>
-!> @file grib2_section4_depthbelowland_mod.F90
+!> @file grib2_section4_isothermal_mod.F90
 !>
 !> @brief Module for managing GRIB2 Section 4 level configuration operations.
 !>
-!> The `G2S4_DEPTHBELOWLAND_MOD` module contains procedures to initialize, allocate,
+!> The `G2S4_ISOTHERMAL_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 4 level configuration objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see G2S4_DEPTHBELOWLAND_INIT
-!>   - @see G2S4_DEPTHBELOWLAND_ALLOC
-!>   - @see G2S4_DEPTHBELOWLAND_PRESET
-!>   - @see G2S4_DEPTHBELOWLAND_RT
-!>   - @see G2S4_DEPTHBELOWLAND_TBE
-!>   - @see G2S4_DEPTHBELOWLAND_FREE
+!>   - @see G2S4_ISOTHERMAL_INIT
+!>   - @see G2S4_ISOTHERMAL_ALLOC
+!>   - @see G2S4_ISOTHERMAL_PRESET
+!>   - @see G2S4_ISOTHERMAL_RT
+!>   - @see G2S4_ISOTHERMAL_TBE
+!>   - @see G2S4_ISOTHERMAL_FREE
 !>
 !> @section dependencies
 !>
@@ -52,12 +52,13 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_section4_depthbelowland_mod.F90'
+#define PP_FILE_NAME 'grib2_section4_isothermal_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION4_DEPTHBELOWLAND_MOD'
-MODULE GRIB2_SECTION4_DEPTHBELOWLAND_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION4_ISOTHERMAL_MOD'
+MODULE GRIB2_SECTION4_ISOTHERMAL_MOD
 
   !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
   USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
 
 IMPLICIT NONE
@@ -66,10 +67,15 @@ IMPLICIT NONE
 !> Default symbols visibility
 PRIVATE
 
+!> Definition of the typeOfLevel
+CHARACTER(LEN=*), PARAMETER :: TYPE_OF_LEVEL = 'isothermal'
+INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_FIRST_FIXED_SURFACE = 20_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_SECOND_FIXED_SURFACE = 255_JPIB_K
+
 !>
 !> @brief Type definition for GRIB2 Section 4 level configuration handler.
 !>
-!> The `GRIB2_SECTION4_DEPTHBELOWLAND_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `GRIB2_SECTION4_ISOTHERMAL_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runlevel,
 !> encoding checks, and cleanup operations for GRIB2 Section 4 level configuration objects.
 !>
@@ -77,7 +83,7 @@ PRIVATE
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_DEPTHBELOWLAND_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION4_ISOTHERMAL_T
 
   !> Default symbols visibility
   PRIVATE
@@ -92,7 +98,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_DEPTHBELOWLAND_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_ISOTHERMAL_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 4 level configuration object.
@@ -102,7 +108,7 @@ CONTAINS
   !> The preocedure starts from a message and from the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_DEPTHBELOWLAND_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_ISOTHERMAL_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 4 level configuration object.
@@ -110,7 +116,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_DEPTHBELOWLAND_ALLOC
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_ISOTHERMAL_ALLOC
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 4 level configuration object.
@@ -118,7 +124,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runlevel execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_DEPTHBELOWLAND_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_ISOTHERMAL_PRESET
 
   !>
   !> @brief Manages the runlevel execution of GRIB2 Section 4 level configuration operations.
@@ -126,7 +132,7 @@ CONTAINS
   !> This procedure handles operations and computations during runlevel,
   !> making use of level and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_DEPTHBELOWLAND_RT
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_ISOTHERMAL_RT
 
   !>
   !> @brief Determines if the GRIB2 Section 4 level configuration object needs to be encoded.
@@ -134,7 +140,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_DEPTHBELOWLAND_TBE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_ISOTHERMAL_TBE
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 4 level configuration object.
@@ -142,23 +148,28 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_DEPTHBELOWLAND_FREE
-
-
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_ISOTHERMAL_FREE
 
   !>
   !> @brief Set Levels for this object
   !>
   !> This procedure set in the grib header all the variables needed to configure a specific level
   !>
-  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_DEPTHBELOWLAND_SET_LEVELS
+  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_ISOTHERMAL_SET_LEVELS
+
+  !>
+  !> @brief Check metadatafor this object
+  !>
+  !> This procedure scheck the level metadata in the grib header
+  !>
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: CHECK => G2S4_ISOTHERMAL_CHECK
 
 END TYPE
 
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: GRIB2_SECTION4_DEPTHBELOWLAND_T
+PUBLIC :: GRIB2_SECTION4_ISOTHERMAL_T
 
 CONTAINS
 
@@ -170,7 +181,7 @@ CONTAINS
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -192,16 +203,16 @@ CONTAINS
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_INIT_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -222,7 +233,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -248,7 +259,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'CONFIGURATOR'
   THIS%SUBTYPE_ = 'LEVEL'
-  THIS%KIND_   = 'DEPTHBELOWLAND'
+  THIS%KIND_   = 'ISOTHERMAL'
 
   ! Time, level and paramId subcomponents of the section
 
@@ -292,7 +303,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_INIT_CFG
+END FUNCTION G2S4_ISOTHERMAL_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -304,7 +315,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -327,16 +338,16 @@ END FUNCTION G2S4_DEPTHBELOWLAND_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -358,7 +369,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -385,7 +396,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'CONFIGURATOR'
   THIS%SUBTYPE_ = 'LEVEL'
-  THIS%KIND_   = 'DEPTHBELOWLAND'
+  THIS%KIND_   = 'ISOTHERMAL'
 
 
   ! Trace end of procedure (on success)
@@ -428,7 +439,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_INIT_LAZY
+END FUNCTION G2S4_ISOTHERMAL_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -442,7 +453,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -467,16 +478,16 @@ END FUNCTION G2S4_DEPTHBELOWLAND_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_ALLOC'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_ALLOC( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_ALLOC'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_ALLOC( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -486,7 +497,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_ALLOC( THIS, &
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: ENUMERATORS_MOD,          ONLY: LEVTYPE_ML_E
+  USE :: LEVELS_UTILS_MOD,         ONLY: BAD_INIT_LEVELS
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -500,7 +511,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_ALLOC( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -515,7 +526,7 @@ IMPLICIT NONE
 
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PV_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BAD_INIT=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -533,12 +544,13 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Allocate the section
-  IF ( MSG%LEVTYPE .EQ. LEVTYPE_ML_E )   THEN
-    PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(PAR%LEVELS%PV), ERRFLAG_PV_NOT_ASSOCIATED )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'PVPresent', .TRUE. )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pv', PAR%LEVELS%PV )
-  END IF
+  ! Logging
+  PP_LOG_DEVELOP_STR( 'Allocate: isothermal' )
+
+  ! Initialize the levels
+  IF ( OPT%BAD_INIT_TYPE_OF_LEVEL ) THEN
+    PP_TRYCALL(ERRFLAG_BAD_INIT) BAD_INIT_LEVELS( METADATA, HOOKS )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -565,8 +577,8 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
-    CASE (ERRFLAG_PV_NOT_ASSOCIATED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'pv array not associated in the parametrization' )
+    CASE (ERRFLAG_BAD_INIT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error initializing levels' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -585,7 +597,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_ALLOC
+END FUNCTION G2S4_ISOTHERMAL_ALLOC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -598,7 +610,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_ALLOC
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -623,16 +635,16 @@ END FUNCTION G2S4_DEPTHBELOWLAND_ALLOC
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_PRESET'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -656,7 +668,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -687,10 +699,11 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .EQ. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
-  ENDIF
+
+  PP_LOG_DEVELOP_STR( 'Preset: isothermal' )
+
+  ! Preset the type of level
+  PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS );
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -737,7 +750,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_PRESET
+END FUNCTION G2S4_ISOTHERMAL_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -751,7 +764,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_PRESET
 !> the success or failure of the runlevel operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section for runlevel execution.
+!>   @param [in]    THIS      An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section for runlevel execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -780,16 +793,16 @@ END FUNCTION G2S4_DEPTHBELOWLAND_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_RT'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_RT( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_RT'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_RT( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -815,7 +828,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_RT( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -830,6 +843,7 @@ IMPLICIT NONE
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHECK_RT=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -847,10 +861,16 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .NE. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
+  ! Logging
+  PP_LOG_DEVELOP_STR( 'Runtime: isothermal' )
+
+  ! Check if level has been overriden
+  IF ( OPT%CHECK_TYPE_OF_LEVEL_RT ) THEN
+    PP_TRYCALL(ERRFLAG_CHECK_RT) THIS%CHECK( MSG, PAR, OPT, METADATA, HOOKS )
   ENDIF
+
+  ! Set the level
+  PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS );
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -879,6 +899,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
+    CASE ( ERRFLAG_CHECK_RT )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error checking runtime' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -897,7 +919,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_RT
+END FUNCTION G2S4_ISOTHERMAL_RT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -911,7 +933,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_RT
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical level data.
@@ -939,16 +961,16 @@ END FUNCTION G2S4_DEPTHBELOWLAND_RT
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_FREE
+!> @see G2S4_ISOTHERMAL_TBE
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_TBE'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_TBE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_TBE'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_TBE( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -972,7 +994,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_TBE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1042,7 +1064,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_TBE
+END FUNCTION G2S4_ISOTHERMAL_TBE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1055,7 +1077,7 @@ END FUNCTION G2S4_DEPTHBELOWLAND_TBE
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION4_ISOTHERMAL_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1071,15 +1093,15 @@ END FUNCTION G2S4_DEPTHBELOWLAND_TBE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
+!> @see G2S4_ISOTHERMAL_INIT
+!> @see G2S4_ISOTHERMAL_ALLOC
+!> @see G2S4_ISOTHERMAL_PRESET
+!> @see G2S4_ISOTHERMAL_RT
+!> @see G2S4_ISOTHERMAL_TBE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_FREE'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1098,7 +1120,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1160,54 +1182,15 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_FREE
+END FUNCTION G2S4_ISOTHERMAL_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
-!>
-!> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
-!>
-!> This function presets a GRIB2 Section 4 level configuration object (`THIS`) using the provided model parameters (`PARAMS`),
-!> message structure (`MSG`), to set the metadata (`METADATA`).
-!>
-!> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION4_DEPTHBELOWLAND_T` representing the GRIB section to be preset.
-!>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
-!>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
-!>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
-!>   @param [inout] METADATA A pointer to the metadata object of type `METADATA_BASE_A` used for presetting the section.
-!>   @param [inout] HOOKS    A structure of type `HOOKS_T` that contains hooks for the preset operation.
-!>
-!> @return Integer error code (`RET`) indicating success or failure:
-!>         - `0`: Success
-!>         - `1`: Failure
-!>
-!> @section dependencies
-!>
-!> @subsection local dependencies
-!>
-!>   - @dependency [TYPE] OM_DATA_TYPES_MOD::MODEL_PAR_T
-!>   - @dependency [TYPE] OM_DATA_TYPES_MOD::MESSAGE_T
-!>   - @dependency [TYPE] METADATA_BASE_MOD::METADATA_BASE_A
-!>
-!> @subsection special dependencies
-!>
-!>   - @dependency [*] PP_DEBUG_USE_VARS::*
-!>   - @dependency [*] PP_LOG_USE_VARS::*
-!>   - @dependency [*] PP_TRACE_USE_VARS::*
-!>
-!> @see G2S4_DEPTHBELOWLAND_PRESET
-!> @see G2S4_DEPTHBELOWLAND_ALLOC
-!> @see G2S4_DEPTHBELOWLAND_INIT
-!> @see G2S4_DEPTHBELOWLAND_RT
-!> @see G2S4_DEPTHBELOWLAND_TBE
-!> @see G2S4_DEPTHBELOWLAND_FREE
-!>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_DEPTHBELOWLAND_SET_LEVELS'
-PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_SET_LEVELS( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_SET_LEVELS'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_SET_LEVELS( THIS, &
 &  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1217,6 +1200,7 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_SET_LEVELS( THIS, &
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: LEVELS_UTILS_MOD,         ONLY: CHECK_LEVELS
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1230,19 +1214,23 @@ PP_THREAD_SAFE FUNCTION G2S4_DEPTHBELOWLAND_SET_LEVELS( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_DEPTHBELOWLAND_T),     INTENT(INOUT) :: THIS
-  TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
-  TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
-  TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
-  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
-  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T), INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),               INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),               INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T),          INTENT(IN)    :: OPT
+  CLASS(METADATA_BASE_A), POINTER,       INTENT(INOUT) :: METADATA
+  TYPE(HOOKS_T),                         INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: LEVEL
+
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHECK_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1261,21 +1249,39 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Compute the level
+  LEVEL = MSG%LEVELIST
+
   ! According to the options decide where to set the levels (preset or runlevel)
-  PP_LOG_INFO( 'TypeOfLevel: depthBelowLand' )
+  PP_LOG_INFO( 'TypeOfLevel: isothermal' )
   IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'depthBelowLand' )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', TYPE_OF_LEVEL )
+    ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', LEVEL )
   ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 106_JPIB_K )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', depth in metres (sv1))
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', depth in metres (sf1))
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', TYPE_OF_FIRST_FIXED_SURFACE )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', TYPE_OF_SECOND_FIXED_SURFACE )
+    ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface', LEVEL )
+    ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface', 0_JPIB_K )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
+    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfSecondFixedSurface' )
   ENDIF
 
 
+  ! Check the levels
+  IF ( OPT%CHECK_TYPE_OF_LEVEL ) THEN
+!    PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
+!&       METADATA,    &
+!&       'isothermal', &
+!&       100_JPIB_K,    &
+!&       255_JPIB_K,  &
+!&       HOOKS, &
+!&       SCALED_VALUE_OF_FIRST_FIXED_SURFACES = LEVEL, &
+!&       SCALE_FACTOR_OF_FIRST_FIXED_SURFACES = LEVEL, &
+!&       LEVEL = LEVEL )
+    PP_TRYCALL(ERRFLAG_CHECK_FAILED) THIS%CHECK( MSG, PAR, OPT, METADATA, HOOKS )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -1304,6 +1310,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
     CASE ( ERRFLAG_SETLEVELS )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
+    CASE ( ERRFLAG_CHECK_FAILED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error checking levels' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -1322,12 +1330,169 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_DEPTHBELOWLAND_SET_LEVELS
+END FUNCTION G2S4_ISOTHERMAL_SET_LEVELS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
-END MODULE GRIB2_SECTION4_DEPTHBELOWLAND_MOD
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_ISOTHERMAL_CHECK'
+PP_THREAD_SAFE FUNCTION G2S4_ISOTHERMAL_CHECK( THIS, &
+&  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
+  USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: LEVELS_UTILS_MOD,         ONLY: CHECK_LEVELS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(GRIB2_SECTION4_ISOTHERMAL_T), INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),               INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),               INTENT(IN)    :: PAR
+  TYPE(GRIB_ENCODER_OPTIONS_T),          INTENT(IN)    :: OPT
+  CLASS(METADATA_BASE_A), POINTER,       INTENT(INOUT) :: METADATA
+  TYPE(HOOKS_T),                         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: LEVEL
+  CHARACTER(LEN=:), ALLOCATABLE :: JSON
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHECK_FAILED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_TO_JSON=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE=5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA, ERRFLAG_METADATA )
+
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Compute the level
+  LEVEL = MSG%LEVELIST
+
+  ! According to the options decide where to set the levels (preset or runlevel)
+  PP_LOG_INFO( 'check typeOfLevel: isothermal' )
+  PP_TRYCALL(ERRFLAG_MARS_TO_JSON) MSG%TO_JSON( JSON, HOOKS )
+
+
+  ! Check the levels
+  IF ( OPT%CHECK_TYPE_OF_LEVEL ) THEN
+    PP_TRYCALL(ERRFLAG_CHECK_FAILED) CHECK_LEVELS( &
+&       METADATA,    &
+&       TYPE_OF_LEVEL, &
+&       TYPE_OF_FIRST_FIXED_SURFACE,    &
+&       TYPE_OF_SECOND_FIXED_SURFACE,  &
+&       HOOKS, &
+&       SCALED_VALUE_OF_FIRST_FIXED_SURFACES = LEVEL, &
+&       SCALE_FACTOR_OF_FIRST_FIXED_SURFACES = 0_JPIB_K, &
+&       LEVEL = LEVEL )
+  ENDIF
+
+  ! Free json if checks passed
+  IF ( ALLOCATED(JSON) ) THEN
+    DEALLOCATE( JSON, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_METADATA )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
+    CASE ( ERRFLAG_SETLEVELS )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
+    CASE ( ERRFLAG_CHECK_FAILED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error checking levels' )
+      IF ( ALLOCATED(JSON) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'mars: ' // TRIM(JSON) )
+        DEALLOCATE( JSON, STAT=STAT )
+      ENDIF
+    CASE ( ERRFLAG_MARS_TO_JSON )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error converting mars to json' )
+    CASE ( ERRFLAG_UNABLE_TO_DEALLOCATE )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to deallocate json' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE( ERRMSG, STAT=STAT )
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION G2S4_ISOTHERMAL_CHECK
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+END MODULE GRIB2_SECTION4_ISOTHERMAL_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

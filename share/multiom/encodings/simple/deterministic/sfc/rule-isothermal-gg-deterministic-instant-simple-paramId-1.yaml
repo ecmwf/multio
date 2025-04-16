@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-nominalTop-gg-deterministic-since-beginning-simple-paramId-36
+name: rule-isothermal-gg-deterministic-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -10,7 +10,7 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
       operation: lacks
     - type: levtype
@@ -19,9 +19,7 @@ filter:
     - type: param
       operation: match
       values:
-        - "178:179"
-        - "208:209"
-        - 212
+        - 262104
     - type: packing
       operation: match
       value: simple
@@ -43,20 +41,18 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 8
-    time-statistics-configurator:
-      type: since-beginning-of-forecast
-      type-of-statistical-processing: accumul
-      encode-step-zero: true
+    template-number: 0
+    point-in-time-configurator:
+      type: default
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: nominalTop
+      type: isothermal
   data-representation-section:
     template-number: 0

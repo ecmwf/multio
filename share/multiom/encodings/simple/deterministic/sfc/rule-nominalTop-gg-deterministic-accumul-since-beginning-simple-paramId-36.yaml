@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-nominalTop-gg-ensemble-since-beginning-simple-paramId-1
+name: rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-36
 
 filter:
   type: composed
@@ -10,9 +10,9 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
-    - type: number
       operation: has
+    - type: number
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
@@ -43,11 +43,11 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 11
+    template-number: 8
     time-statistics-configurator:
       type: since-beginning-of-forecast
       type-of-statistical-processing: accumul
@@ -58,7 +58,5 @@ encoder:
       type: default
     level-configurator:
       type: nominalTop
-    ensemble-configurator:
-      type: default
   data-representation-section:
     template-number: 0

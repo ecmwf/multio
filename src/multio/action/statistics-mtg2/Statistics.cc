@@ -212,9 +212,9 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
         // filesystem operation to avoid race conditions
         auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
         switch(flushKind){
-            case FlushKind::StepAndRestart: 
-            case FlushKind::LastStep: 
-            case FlushKind::EndOfSimulation: 
+            case FlushKind::StepAndRestart:
+            case FlushKind::LastStep:
+            case FlushKind::EndOfSimulation:
             case FlushKind::CloseConnection:
             {
                 // Generate name of the main restart directory
@@ -238,10 +238,10 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
                 if (is_master) {
                     CreateLatestSymLink();
                 }
-            } 
+            }
             break;
             default: {} break;
-            
+
         }
 
     }

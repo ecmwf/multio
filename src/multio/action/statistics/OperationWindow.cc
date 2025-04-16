@@ -15,8 +15,9 @@ namespace {
 std::int64_t lastDayOfTheMonth(std::int64_t y, std::int64_t m) {
     // month must be base 0
     std::int64_t i = m - 1;
-    return 31 - std::max(0L, i % 6 - i / 6) % 2
-         - std::max(0L, 2 - i * (i % 2)) % 2 * (y % 4 == 0 ? y % 100 == 0 ? y % 400 == 0 ? 1 : 2 : 1 : 2);
+    auto zero = static_cast<std::int64_t>(0L);
+    return 31 - std::max(zero, i % 6 - i / 6) % 2
+         - std::max(zero, 2 - i * (i % 2)) % 2 * (y % 4 == 0 ? y % 100 == 0 ? y % 400 == 0 ? 1 : 2 : 1 : 2);
 }
 
 void yyyymmdd2ymd(std::int64_t yyyymmdd, std::int64_t& y, std::int64_t& m, std::int64_t& d) {

@@ -14,7 +14,6 @@ public:
     using OperationWithData<T>::values_;
     using OperationWithData<T>::win_;
     using OperationWithData<T>::checkSize;
-    using OperationWithData<T>::checkTimeInterval;
 
 
     Minimum(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
@@ -25,7 +24,6 @@ public:
         OperationWithData<T>{name, "minimum", true, win, IOmanager, opt, std::numeric_limits<T>::max()} {};
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
-        checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);

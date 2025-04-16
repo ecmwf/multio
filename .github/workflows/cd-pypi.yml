@@ -6,6 +6,15 @@ on:
     - '**'
 
 jobs:
+  # NOTE the dependency between deploy and python-wrapper-wheel is indirect -- the latter
+  # would presumably succeed if the former fails, but that would mean unsatisfiable wheel
+  # released
+  # TODO check that tag equals VERSION -- otherwise we risk mismatch
+  python-wrapper-wheel:
+    uses: ./.github/workflows/build-wheel-wrapper.yml
+    secrets: inherit
   deploy:
     uses: ecmwf/reusable-workflows/.github/workflows/cd-pypi.yml@v2
     secrets: inherit
+    needs:
+      - python-wrapper-wheel

@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-nominalTop-gg-ensemble-since-beginning-ccsds-paramId-36
+name: rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-36
 
 filter:
   type: composed
@@ -19,9 +19,8 @@ filter:
     - type: param
       operation: match
       values:
-        - "178:179"
-        - "208:209"
-        - 212
+        - 235039
+        - 235040
     - type: packing
       operation: match
       value: ccsds
@@ -49,9 +48,8 @@ encoder:
   product-definition-section:
     template-number: 11
     time-statistics-configurator:
-      type: since-beginning-of-forecast
-      type-of-statistical-processing: accumul
-      encode-step-zero: true
+      type: since-last-post-processing-step
+      type-of-statistical-processing: average
     param-configurator:
       type: paramId
     model-configurator:

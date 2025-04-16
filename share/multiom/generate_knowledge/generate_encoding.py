@@ -201,6 +201,18 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228004])],
+        [
+            levelConfig("heightAboveGround"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="average-since-last-pp",
+            ),
+        ],
+    ),
     # heightAboveGround - point in time
     partialRule(
         [
@@ -247,7 +259,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # iceLayerOnWater - point in time
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228014])],
+        [matchType("levtype", "sfc"), matchParam([228014, 262000])],
         [PointInTime(), levelConfig("iceLayerOnWater")],
     ),
     # iceTopOnWater - point in time
@@ -265,6 +277,14 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam([151])],
         [PointInTime(), levelConfig("meanSea")],
     ),
+    # depthBelowSeaLayer - point in time
+    partialRule(
+        [
+            matchType("levtype", "sfc"),
+            matchParam([262118]),
+        ],
+        [PointInTime(), levelConfig("depthBelowSeaLayer")],
+    ),
     # mixedLayerParcel - point in time
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["228231:228234"])],
@@ -280,7 +300,7 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam(["228235:228237"])],
         [PointInTime(), levelConfig("mostUnstableParcel")],
     ),
-    # nominalTop - point in time
+    # nominalTop - accumul since beginning
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["178:179", "208:209", 212])],
         [
@@ -288,7 +308,20 @@ PARAM_LEVTYPE_SFC = [
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="since-beginning",
+                descriptiveName="accumul-since-beginning",
+            ),
+            levelConfig("nominalTop"),
+        ],
+    ),
+    # nominalTop - time-mean
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([235039, 235040])],
+        [
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                # encodeStepZero=True,
+                descriptiveName="average-since-last-pp",
             ),
             levelConfig("nominalTop"),
         ],
@@ -480,6 +513,19 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
+    # surface - time-mean
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam(["235033:235038", 235189])],
+        [
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                # encodeStepZero=True,
+                descriptiveName="average-since-last-pp",
+            ),
+            levelConfig("surface"),
+        ],
+    ),
     # TODO - paramID is duplacted here ?
     # surface - min over last 3h
     # partialRule(
@@ -638,6 +684,7 @@ PARAM_LEVTYPE_SFC = [
                     262140,
                     260289,
                     260509,
+                    262124
                 ]
             ),
         ],
@@ -698,6 +745,14 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [matchType("levtype", "sfc"), matchParam([140251])],
         [PointInTime(), paramConfig("paramId"), DirectionsFrequenciesConfig()],
+    ),
+    # isothermal
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([262104])],
+        [
+            PointInTime(),
+            levelConfig("isothermal"),
+        ],
     ),
 ]
 

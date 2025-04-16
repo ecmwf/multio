@@ -58,7 +58,7 @@ dependencies = [
   "pyyaml",
   "numpy",
   "findlibs",
-  "multiolib",
+  "multiolib", # TODO we need to make this dynamic, effectively pin to the exact version
 ]
 
 optional-dependencies.all = [ "pymultio" ]
@@ -71,13 +71,16 @@ urls.Repository = "https://github.com/ecmwf/multio/"
 
 
 [tool.setuptools]
-packages = ["multio"]
-package-dir = { "multio" = "./python/pymultio/src/multio" }
 include-package-data = true
 zip-safe = true
 
+[tool.setuptools.packages.find]
+include = ["multio*"]
+where = ["./python/pymultio/src"]
+
 [tool.setuptools_scm]
 version_file = "./python/pymultio/src/multio/_version.py"
+local_scheme = "no-local-version"
 
 [tool.setuptools.package-data]
 multio = ["*.h"]

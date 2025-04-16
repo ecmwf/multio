@@ -13,10 +13,8 @@ on:
   # Trigger the workflow manually
   workflow_dispatch: ~
 
-  # Allow to be called from another workflow
+  # Allow to be called from another workflow -- currently from cd-pypi
   workflow_call: ~
-
-  # TODO automation trigger
 
 jobs:
   python-wrapper-wheel:

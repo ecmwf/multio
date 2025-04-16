@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include "multio/message/Message.h"
 
@@ -26,7 +27,7 @@ public:
 
     TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
-    bool isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg);
+    bool isOutsideWindow(message::Message& msg, const StatisticsConfiguration& cfg);
 
     void updateData(message::Message& msg, const StatisticsConfiguration& cfg);
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg);
@@ -36,12 +37,17 @@ public:
     const OperationWindow& cwin() const;
     OperationWindow& win();
 
+    StatisticsConfiguration& config();
+    message::Metadata& metadata();
+
     void print(std::ostream& os) const;
 
 private:
     std::unique_ptr<PeriodUpdater> periodUpdater_;
     OperationWindow window_;
     std::vector<std::unique_ptr<Operation>> statistics_;
+    std::optional<StatisticsConfiguration> config_;
+    std::optional<message::Metadata> metadata_;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {
         a.print(os);

@@ -15,7 +15,6 @@ public:
     using OperationWithDeaccumulatedData<T>::values_;
     using OperationWithDeaccumulatedData<T>::win_;
     using OperationWithDeaccumulatedData<T>::checkSize;
-    using OperationWithDeaccumulatedData<T>::checkTimeInterval;
 
 
     InverseDifference(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
@@ -26,7 +25,6 @@ public:
         OperationWithDeaccumulatedData<T>{name, "inverse-difference", true, win, IOmanager, opt} {};
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
-        checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);

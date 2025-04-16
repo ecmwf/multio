@@ -7,6 +7,7 @@ doc/latex
 .*.sw*
 .*un~
 build/*
+dist/*
 docs/_build
 **/.ccls-cache
 __pycache__

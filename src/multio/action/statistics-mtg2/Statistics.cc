@@ -185,9 +185,10 @@ FlushKind parseFlushKind(std::int64_t val) {
     throw message::MetadataException(std::string("Unknown FlushKind: ") + std::to_string(val), Here());
 }
 
-
-void Statistics::TryDumpRestart(const message::Message& msg) {
-
+FlushKind parseFlushKind(const message::Message& msg) {
+    if (msg.tag() != message::Message::Tag::Flush) {
+        throw message::MetadataException("Message is not a flush.", Here());
+    }
     FlushKind flushKind{FlushKind::Default};
     if(auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()){
         search->second.visit(eckit::Overloaded{
@@ -198,11 +199,17 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
                 flushKind = parseFlushKind(val);
             },
             [&](const auto &){
-                throw message::MetadataException("FlushKind needs to be either string or integer.",Here());
+                throw message::MetadataException("FlushKind needs to be either string or integer.", Here());
             }
         });
     }
+    return flushKind;
+}
 
+
+void Statistics::TryDumpRestart(const message::Message& msg) {
+
+    FlushKind flushKind = parseFlushKind(msg);
 
     if (opt_.writeRestart() && needRestart_) {
 

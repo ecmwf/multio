@@ -20,7 +20,6 @@ private:
     long time_;
     long level_;
     long timeStep_;
-    long stepFreq_;
     long step_;
 
     std::string param_;
@@ -65,12 +64,8 @@ private:
 
     eckit::DateTime computeEpoch() const;
     eckit::DateTime getEpoch() const;
-    eckit::DateTime computePrev() const;
-    eckit::DateTime getPrev() const;
     eckit::DateTime computeCurr() const;
     eckit::DateTime getCurr() const;
-    eckit::DateTime computeNext() const;
-    eckit::DateTime getNext() const;
     eckit::DateTime computeWinStart() const;
     eckit::DateTime getWinStart() const;
 
@@ -94,7 +89,6 @@ private:
     void readStartDate(const message::Metadata& md, const StatisticsOptions& opt);
     void readStep(const message::Metadata& md, const StatisticsOptions& opt);
     void readTimeStep(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStepFrequency(const message::Metadata& md, const StatisticsOptions& opt);
     void readMissingValue(const message::Metadata& md, const StatisticsOptions& opt);
 
 
@@ -108,7 +102,6 @@ public:
     long time() const;
     long level() const;
     long timeStep() const;
-    long stepFreq() const;
     long step() const;
 
     std::string param() const;
@@ -123,9 +116,7 @@ public:
 
 
     eckit::DateTime epoch() const;
-    eckit::DateTime prev() const;
     eckit::DateTime curr() const;
-    eckit::DateTime next() const;
     eckit::DateTime winStart() const;
 
     bool beginningOfHour() const;

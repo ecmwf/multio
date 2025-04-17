@@ -13,6 +13,8 @@ filter:
       operation: has
     - type: number
       operation: has
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
       value: pt

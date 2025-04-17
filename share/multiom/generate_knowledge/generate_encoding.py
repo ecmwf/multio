@@ -29,7 +29,9 @@ from GenerateEncoding import (
     levelConfig,
     paramConfig,
     ParamConfig,
-    EnsembleConfig,
+    ProcessTypeConfig,
+    ProcessTypes,
+    ProcessSubTypes,
     RandomPatternsConfig,
     TimeConfig,
     TablesConfig,
@@ -90,12 +92,13 @@ LOCALSECTION = [
 ]
 
 PROCESSTYPES = [
-    partialRule([lacksType("number")], []),
-    partialRule([hasType("number")], [EnsembleConfig()]),
+    partialRule([lacksType("number"), lacksType("hdate")], []),
+    partialRule([hasType("number"), lacksType("hdate")], [ProcessTypeConfig(subType=ProcessSubTypes.ensemble)]),
+    partialRule([hasType("number"), hasType("hdate")], [ProcessTypeConfig(type=ProcessTypes.reforecast, subType=ProcessSubTypes.ensemble)]),
 ]
 
 PROCESSTYPES_AL = [
-    partialRule([hasType("number")], [EnsembleConfig(largeEnsemble=True)]),
+    partialRule([hasType("number")], [ProcessTypeConfig(subType=ProcessSubTypes.largeEnsemble)]),
 ]
 
 
@@ -1095,38 +1098,41 @@ def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
     )
 
     marsType = None if rule.encode.identification.marsType is None else rule.encode.identification.marsType.type
-
-    ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
+    process = (lambda pt: "_".join( ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]))(rule.encode.product.processType)
     packing = rule.encode.dataRepres.descriptiveName
 
     return RuleContext(
-        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
-        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,ensemble,marsType,levtype])),
+        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": process},
+        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,process,marsType,levtype])),
         fname = f"{rule.name}.yaml",
         rule = rule,
     )
 
 
-def findMatchTypeFilter(rule: EncodeRule, type: str):
-    if not isinstance(rule.filter, RuleFilter):
+def findMatchTypeFilter(filter: RuleFilter, type: str):
+    if not isinstance(filter, RuleFilter):
         return None
-    if not isinstance(rule.filter.filter, ComposeAll):
+    if not isinstance(filter.filter, ComposeAll):
         return None
-    for r in rule.filter.filter.filters:
+    for r in filter.filter.filters:
         if isinstance(r.filter, MatchType) and r.filter.type == type:
             return r.filter.value
+        # Look recursively
+        if isinstance(r.filter, ComposeAll):
+            return findMatchTypeFilter(r, type)
     return None
 
-def findHasOrLacksFilter(rule: EncodeRule, type: str):
-    if not isinstance(rule.filter, RuleFilter):
+def findHasOrLacksFilter(filter: RuleFilter, type: str):
+    if not isinstance(filter.filter, ComposeAll):
         return None
-    if not isinstance(rule.filter.filter, ComposeAll):
-        return None
-    for r in rule.filter.filter.filters:
+    for r in filter.filter.filters:
         if isinstance(r.filter, HasType) and r.filter.type == type:
             return "has"
         if isinstance(r.filter, LacksType) and r.filter.type == type:
             return "lacks"
+        # Look recursively
+        if isinstance(r.filter, ComposeAll):
+            return findHasOrLacksFilter(r, type)
     return None
 
 
@@ -1148,8 +1154,8 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     fs = filters[1:]
     match filterType:
         case "has/lacks":
-             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "has"]
-             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "lacks"]
+             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "has"]
+             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "lacks"]
              return {
                 "key": filterName,
                 "operations": [
@@ -1160,7 +1166,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
 
         case "match":
              # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
-             matchPairs = [(findMatchTypeFilter(rc.rule, filterName), rc) for rc in rules]
+             matchPairs = [(findMatchTypeFilter(rc.rule.filter, filterName), rc) for rc in rules]
              valuesDict = {}
              for (val, rc) in matchPairs:
                 if val not in valuesDict.keys():
@@ -1184,7 +1190,7 @@ BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
 ENCODING_RULES_SPLIT = ["packing", "process"]
 
 # Filters are has/lacks
-NESTED_FILTERS = [("number", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
+NESTED_FILTERS = [("number", "has/lacks"), ("hdate", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
 
 REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
 

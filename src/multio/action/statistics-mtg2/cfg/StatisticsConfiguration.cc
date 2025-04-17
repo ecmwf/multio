@@ -22,7 +22,6 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
     time_{0},
     level_{0},
     timeStep_{opt.timeStep()},
-    stepFreq_{opt.stepFreq()},
     step_{0},
     param_{"none"},
     levType_{"none"},
@@ -35,9 +34,7 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
 
     // Associate local procedure pointers
     computeEpoch_ = std::bind(&StatisticsConfiguration::computeEpoch, this);
-    computePrev_ = std::bind(&StatisticsConfiguration::computePrev, this);
     computeCurr_ = std::bind(&StatisticsConfiguration::computeCurr, this);
-    computeNext_ = std::bind(&StatisticsConfiguration::computeNext, this);
     computeWinStart_ = std::bind(&StatisticsConfiguration::computeWinStart, this);
     computeBeginningOfHour_ = std::bind(&StatisticsConfiguration::computeBeginningOfHour, this);
     computeBeginningOfDay_ = std::bind(&StatisticsConfiguration::computeBeginningOfDay, this);
@@ -52,7 +49,6 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
     readStartTime(md, opt);
     readStep(md, opt);
     readTimeStep(md, opt);
-    readStepFrequency(md, opt);
     readLevel(md, opt);
     readParam(md, opt);
     readLevType(md, opt);
@@ -106,7 +102,7 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
     else {
         throw message::MetadataException("Levtype missing in metadata",Here());
     }
-    // if none of the above metadata options are present the default levtype is kept 
+    // if none of the above metadata options are present the default levtype is kept
     return;
 };
 
@@ -133,7 +129,7 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
     else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
         level_ = *levelist;
     }
-    // if none of the above metadata options are present the default levtype is kept 
+    // if none of the above metadata options are present the default levtype is kept
 
     return;
 };
@@ -184,11 +180,6 @@ void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const St
     return;
 };
 
-void StatisticsConfiguration::readStepFrequency(const message::Metadata& md, const StatisticsOptions& opt) {
-    stepFreq_ = md.getOpt<std::int64_t>(glossary().stepFrequency).value_or(stepFreq_);
-    return;
-};
-
 
 void StatisticsConfiguration::readMissingValue(const message::Metadata& md, const StatisticsOptions& opt) {
     const auto missingVal = md.getOpt<double>(glossary().missingValue);
@@ -216,19 +207,9 @@ eckit::DateTime StatisticsConfiguration::epoch() const {
     return epoch_;
 };
 
-eckit::DateTime StatisticsConfiguration::prev() const {
-    prev_ = computePrev_();
-    return prev_;
-};
-
 eckit::DateTime StatisticsConfiguration::curr() const {
     curr_ = computeCurr_();
     return curr_;
-};
-
-eckit::DateTime StatisticsConfiguration::next() const {
-    next_ = computeNext_();
-    return next_;
 };
 
 eckit::DateTime StatisticsConfiguration::winStart() const {
@@ -271,17 +252,6 @@ eckit::DateTime StatisticsConfiguration::getEpoch() const {
 };
 
 
-eckit::DateTime StatisticsConfiguration::computePrev() const {
-    prev_ = epoch() + static_cast<eckit::Second>(std::max((step_ - stepFreq_), 0L) * timeStep_);
-    computePrev_ = std::bind(&StatisticsConfiguration::getPrev, this);
-    return prev_;
-};
-
-eckit::DateTime StatisticsConfiguration::getPrev() const {
-    return prev_;
-};
-
-
 eckit::DateTime StatisticsConfiguration::computeCurr() const {
     curr_ = epoch() + static_cast<eckit::Second>(std::max((step_), 0L) * timeStep_);
     computeCurr_ = std::bind(&StatisticsConfiguration::getCurr, this);
@@ -293,19 +263,9 @@ eckit::DateTime StatisticsConfiguration::getCurr() const {
 };
 
 
-eckit::DateTime StatisticsConfiguration::computeNext() const {
-    next_ = epoch() + static_cast<eckit::Second>((step_ + stepFreq_) * timeStep_);
-    computeNext_ = std::bind(&StatisticsConfiguration::getNext, this);
-    return next_;
-};
-
-eckit::DateTime StatisticsConfiguration::getNext() const {
-    return next_;
-};
-
-
 eckit::DateTime StatisticsConfiguration::computeWinStart() const {
-    winStart_ = opt_.solver_send_initial_condition() ? curr() : prev();
+    ASSERT(opt_.solver_send_initial_condition());
+    winStart_ = curr();
     computeWinStart_ = std::bind(&StatisticsConfiguration::getWinStart, this);
     return winStart_;
 };
@@ -400,9 +360,6 @@ long StatisticsConfiguration::level() const {
 };
 long StatisticsConfiguration::timeStep() const {
     return timeStep_;
-};
-long StatisticsConfiguration::stepFreq() const {
-    return stepFreq_;
 };
 long StatisticsConfiguration::step() const {
     return step_;

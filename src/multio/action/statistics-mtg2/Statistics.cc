@@ -325,7 +325,6 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
 
     md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
     md.set(glossary().startTime, win.epochPoint().time().hhmmss());
-    md.set(glossary().stepFrequency, win.timeSpanInSteps());
 
     md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
     md.set(glossary().previousTime, win.creationPoint().time().hhmmss());

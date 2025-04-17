@@ -5,7 +5,6 @@ namespace multio::action::statistics_mtg2 {
 
 
 StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compConf) :
-    stepFreq_{1},
     timeStep_{3600},
     solverSendInitStep_{false},
     readRestart_{false},
@@ -32,7 +31,6 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     if (compConf.parsedConfig().has("options")) {
         const auto& options = compConf.parsedConfig().getSubConfiguration("options");
         parseUseDateTime(options);
-        parseStepFrequency(options);
         parseTimeStep(options);
         parseInitialConditionPresent(options);
         parseWriteRestart(options);
@@ -60,12 +58,6 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
 void StatisticsOptions::parseUseDateTime(const eckit::LocalConfiguration& cfg) {
     // Distance in steps between two messages
     useDateTime_ = cfg.getLong("use-current-time", false);
-    return;
-};
-
-void StatisticsOptions::parseStepFrequency(const eckit::LocalConfiguration& cfg) {
-    // Distance in steps between two messages
-    stepFreq_ = cfg.getLong("step-frequency", 1L);
     return;
 };
 
@@ -237,11 +229,6 @@ void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfigur
 
 const std::string& StatisticsOptions::logPrefix() const {
     return logPrefix_;
-};
-
-
-long StatisticsOptions::stepFreq() const {
-    return stepFreq_;
 };
 
 

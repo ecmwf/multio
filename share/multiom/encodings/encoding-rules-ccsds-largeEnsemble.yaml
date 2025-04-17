@@ -1,0 +1,3 @@
+encoding-rules:
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-ccsds-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-ccsds-paramId-36.yaml'

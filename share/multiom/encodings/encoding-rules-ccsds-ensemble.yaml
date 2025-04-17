@@ -129,5 +129,3 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pt/rule-theta-gg-ensemble-std-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-ccsds-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-ccsds-paramId-36.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-ccsds-paramId-1.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-ccsds-paramId-36.yaml'

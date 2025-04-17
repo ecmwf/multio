@@ -1,7 +1,6 @@
 
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/al")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/hl")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/ml")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/pl")
@@ -10,7 +9,6 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/sfc")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/simple/ensemble/sol")
 
-add_subdirectory("al")
 add_subdirectory("hl")
 add_subdirectory("ml")
 add_subdirectory("pl")

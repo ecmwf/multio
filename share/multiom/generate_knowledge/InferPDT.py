@@ -25,7 +25,7 @@ def inferPDT(catValuePairs: Dict[str, str], matcher: MatchPDTType) -> int:
             if cat not in catValuePairs.keys():
                 if matcher.default:
                     return inferPDT(catValuePairs, matcher.default)
-                raise ValueError(f"Category {cat} is not available in dict {catValuePairs}")
+                raise ValueError(f"Category {cat} is not available in dict {catValuePairs}. Matcher {matcher}")
             catVal = catValuePairs[cat]
 
             if catVal not in matcher.subMatch.keys():

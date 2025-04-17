@@ -673,12 +673,18 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(h, parDict, "systemNumber");
     getAndSet(h, parDict, "methodNumber");
 
-    if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end()) {
+    // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
+    // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
+    // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end()) {
+    if (hasKey(h, "number")) {
         long numForecasts = getLong(h, "numberOfForecastsInEnsemble");
-        long number = std::get<long>(searchNumber->second);
+        long number = getLong(h, "number");
 
         // If both are 0 it is likely a control forecast or no ensemble...
-        if (number != 0 && numForecasts != 0) {
+        if (number != 0 && numForecasts == 0) {
+            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+        }
+        if (numForecasts != 0) {
             marsDict.set("number", number);
 
             if (hasKey(h, "typeOfEnsembleForecast")) {
@@ -688,9 +694,6 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
                 getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
             }
 
-            if (numForecasts == 0) {
-                throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
-            }
             parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
         }
     }

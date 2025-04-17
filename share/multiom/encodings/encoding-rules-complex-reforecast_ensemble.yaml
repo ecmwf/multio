@@ -1,0 +1,7 @@
+encoding-rules:
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/ml/rule-hybrid-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/ml/rule-hybrid-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'

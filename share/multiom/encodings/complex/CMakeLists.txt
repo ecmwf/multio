@@ -3,9 +3,11 @@ file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/deterministic")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/ensemble")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/reforecast_ensemble")
 
 add_subdirectory("deterministic")
 add_subdirectory("ensemble")
+add_subdirectory("reforecast_ensemble")
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})

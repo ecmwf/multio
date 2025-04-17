@@ -295,9 +295,21 @@ def levelConfig(t: str) -> LevelConfig:
     return LevelConfig(type=t)
 
 
-class EnsembleConfig(BaseModel):
-    type: str = "default"
-    largeEnsemble: bool = False
+class ProcessTypes(str, Enum):
+    default = 'default'
+    reforecast = 'reforecast'
+    derivedForecast = 'derivedForecast'
+    # Add more according to the categorization
+
+class ProcessSubTypes(str, Enum):
+    deterministic = 'deterministic'
+    ensemble = 'ensemble'
+    largeEnsemble = 'largeEnsemble'
+    # Add more according to the categorization
+
+class ProcessTypeConfig(BaseModel):
+    type: ProcessTypes = ProcessTypes.default
+    subType: ProcessSubTypes = ProcessSubTypes.deterministic
 
 class RandomPatternsConfig(BaseModel):
     type: str = "default"
@@ -354,8 +366,8 @@ class ProductDefinition(BaseModel):
     modelConfig: ModelConfig = ModelConfig()
     timeConfig: TimeConfig = timeConfig(PointInTime())
     param: ParamConfig = ParamConfig()
+    processType: ProcessTypeConfig = ProcessTypeConfig()
     level: Optional[LevelConfig] = None
-    ensemble: Optional[EnsembleConfig] = None
     randomPatterns: Optional[RandomPatternsConfig] = None
     chemical: Optional[ChemConfig] = None
     directionsFrequencies: Optional[DirectionsFrequenciesConfig] = None
@@ -404,7 +416,7 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
     levelWaveStr = "-".join([l for l in [level, wave, periodRange, satellite] if l is not None])
 
     grid = encode.grid.shortName
-    ensemble = "ensemble" if encode.product.ensemble else "deterministic"
+    process = (lambda pt: "-".join( ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]))(encode.product.processType)
     time = encode.product.timeConfig.config.descriptiveName
     packing = encode.dataRepres.descriptiveName
     paramConfig = encode.product.param.type
@@ -429,7 +441,7 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
 
     pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
-    return f"rule{pref}-{levelWaveStr}-{grid}{product}-{ensemble}-{time}-{packing}-{paramConfig}{dataset}-{local}"
+    return f"rule{pref}-{levelWaveStr}-{grid}{product}-{process}-{time}-{packing}-{paramConfig}{dataset}-{local}"
 
 
 class EncodeRule(BaseModel):
@@ -517,10 +529,13 @@ def toDictRepres(val):
                     else {}
                 ),
                 **(
-                    {"ensemble-configurator": toDictRepres(val.ensemble)}
-                    if val.ensemble is not None
+                    {"ensemble-configurator": {"type": "default"}}
+                    if val.processType.subType == ProcessSubTypes.ensemble or val.processType.subType == ProcessSubTypes.largeEnsemble
                     else {}
                 ),
+                # **(
+                #     {"process-configurator": {"type": "" + val.processType.type}}
+                # ),
                 **(
                     {"random-patterns-configurator": toDictRepres(val.randomPatterns)}
                     if val.randomPatterns is not None
@@ -609,8 +624,6 @@ def toDictRepres(val):
             return {"type": val.type}
         case LevelConfig():
             return {"type": val.type}
-        case EnsembleConfig():
-            return {"type": val.type}
         case RandomPatternsConfig():
             return {"type": val.type}
         case ChemConfig():
@@ -653,7 +666,7 @@ Section4Part: TypeAlias = Union[
     TimeRange,
     ParamConfig,
     LevelConfig,
-    EnsembleConfig,
+    ProcessTypeConfig,
     RandomPatternsConfig,
     ChemConfig,
     DirectionsFrequenciesConfig,
@@ -685,7 +698,7 @@ EncodePart: TypeAlias = Union[
     TimeRange,
     ParamConfig,
     LevelConfig,
-    EnsembleConfig,
+    ProcessTypeConfig,
     RandomPatternsConfig,
     ChemConfig,
     DirectionsFrequenciesConfig,
@@ -724,8 +737,15 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                     yield pdtCatPair("timeExtent", "timeRange")
                 case ChemConfig():
                     yield pdtCatPair("productCategory", "chemical")
-                case EnsembleConfig():
-                    yield pdtCatPair("processSubType", "largeEnsemble" if crumb.largeEnsemble else "ensemble")
+                case ProcessTypeConfig():
+                    if crumb.type != ProcessTypes.default:
+                        yield pdtCatPair("processType", crumb.type )
+                    if crumb.subType != ProcessSubTypes.deterministic:
+                        yield pdtCatPair("processSubType", crumb.subType)
+
+                    # # Reforecast templates require ensemble information... although it may not be used
+                    # if crumb.type == ProcessTypes.reforecast and crumb.subType == ProcessSubTypes.deterministic:
+                    #     yield pdtCatPair("processSubType", ProcessSubTypes.ensemble)
                 case RandomPatternsConfig():
                     yield pdtCatPair("spatialExtent", "randomPatterns") # Todo may change
                 case PeriodConfig():
@@ -800,7 +820,7 @@ def buildProductDefiniton(crumbs: List[EncodePart]):
         **toArgDict("timeConfig", buildTimeConfig(pdtCrumbs)),
         **toArgDict("param", getCrumb(ParamConfig, pdtCrumbs)),
         **toArgDict("level", getCrumb(LevelConfig, pdtCrumbs)),
-        **toArgDict("ensemble", getCrumb(EnsembleConfig, pdtCrumbs)),
+        **toArgDict("processType", getCrumb(ProcessTypeConfig, pdtCrumbs)),
         **toArgDict("randomPatterns", getCrumb(RandomPatternsConfig, pdtCrumbs)),
         **toArgDict("chemical", getCrumb(ChemConfig, pdtCrumbs)),
         **toArgDict(

@@ -125,5 +125,3 @@ encoding-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pt/rule-theta-gg-ensemble-std-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pv/rule-potentialVorticity-gg-ensemble-instant-simple-paramId-36.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-simple-paramId-36.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-1.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/al/rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-36.yaml'

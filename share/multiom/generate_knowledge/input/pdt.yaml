@@ -55,14 +55,12 @@ categories:
           groups: [reforecast]
           categories:
             processSubType:
-                - null
                 - ensemble: [individualEnsembleForecast]
 
         - name: derivedForecast
           groups: [derivedForecast]
           categories:
             processSubType:
-                - null
                 - ensemble: [derivedEnsembleForecast]
 
         - name: probability
@@ -581,16 +579,16 @@ groups:
         - temporalVicinityUnit
         - temporalVicinityTowardsPast
         - temporalVicinityTowardsFuture
-    
+
     randomPatterns:
         - randomFieldNumber
         - totalNumberOfRandomFields
         - spatioTemporalScaleNumber
-        - totalNumberOfSpatioTemporalScales 
-        - scaledValueOfSpatialScale 
-        - scaleFactorOfSpatialScale 
+        - totalNumberOfSpatioTemporalScales
+        - scaledValueOfSpatialScale
+        - scaleFactorOfSpatialScale
         - scaledValueOfTemporalScale
-        - scaleFactorOfTemporalScale 
+        - scaleFactorOfTemporalScale
 
 
 
@@ -4501,11 +4499,11 @@ pdt:
             - randomFieldNumber
             - totalNumberOfRandomFields
             - spatioTemporalScaleNumber
-            - totalNumberOfSpatioTemporalScales 
-            - scaledValueOfSpatialScale 
-            - scaleFactorOfSpatialScale 
+            - totalNumberOfSpatioTemporalScales
+            - scaledValueOfSpatialScale
+            - scaleFactorOfSpatialScale
             - scaledValueOfTemporalScale
-            - scaleFactorOfTemporalScale 
+            - scaleFactorOfTemporalScale
             - typeOfFirstFixedSurface
             - scaleFactorOfFirstFixedSurface
             - scaledValueOfFirstFixedSurface

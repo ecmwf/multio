@@ -16,7 +16,7 @@ namespace multio::action::statistics_mtg2 {
 
 using message::glossary;
 
-StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
+StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src, const StatisticsOptions& opt) :
     opt_{opt},
     date_{0},
     time_{0},
@@ -41,9 +41,6 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
     computeBeginningOfMonth_ = std::bind(&StatisticsConfiguration::computeBeginningOfMonth, this);
     computeBeginningOfYear_ = std::bind(&StatisticsConfiguration::computeBeginningOfYear, this);
 
-    // Extraact message metadata
-    const auto& md = msg.metadata();
-
     // Read the metadata
     readStartDate(md, opt);
     readStartTime(md, opt);
@@ -57,10 +54,13 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, co
     readMissingValue(md, opt);
 
     // Generate Key
-    generateKey(md, std::to_string(std::hash<std::string>{}(msg.source())));
+    generateKey(md, src);
 
     return;
 };
+
+StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
+    StatisticsConfiguration(msg.metadata(), msg.source(), opt) {};
 
 
 const std::string& StatisticsConfiguration::key() const {
@@ -191,14 +191,10 @@ void StatisticsConfiguration::readMissingValue(const message::Metadata& md, cons
 };
 
 
-void StatisticsConfiguration::generateKey(const message::Metadata& md, const std::string& src) {
-
+void StatisticsConfiguration::generateKey(const message::Metadata& md, const message::Peer& src) {
     std::ostringstream os;
-    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src;
+    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src.group() << "_" << src.id();
     key_ = os.str();
-
-    // Exit point
-    return;
 };
 
 

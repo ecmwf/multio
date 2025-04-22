@@ -453,8 +453,8 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
         payload.resize((*it)->byte_size());
         payload.zero();
 
-        auto cfg = ts.config();
         auto md = ts.metadata();
+        auto cfg = StatisticsConfiguration(md, source, opt_);
 
         const std::string opname = (*it)->operation();
         const std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
@@ -466,7 +466,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
         md.set(glossary().step, step);
         multio::message::Mtg2::mars::timespan.set(md, timespan);
 
-        // remapParamID_.ApplyRemap(md, opname, outputFrequency);
+        remapParamID_.ApplyRemap(md, opname, outputFrequency);
         (*it)->compute(payload, cfg);
 
         executeNext(

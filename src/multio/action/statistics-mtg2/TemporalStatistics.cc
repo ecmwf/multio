@@ -17,7 +17,6 @@ TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std
     periodUpdater_{make_period_updater(output_freq, cfg)},
     window_{make_window(periodUpdater_, cfg)},
     statistics_{make_operations(operations, msg, IOmanager, window_, cfg)},
-    config_{cfg},
     metadata_{msg.metadata()} {}
 
 // TODO: Dump and load the (relevant) metadata as well!
@@ -78,13 +77,6 @@ const OperationWindow& TemporalStatistics::cwin() const {
 
 OperationWindow& TemporalStatistics::win() {
     return window_;
-}
-
-StatisticsConfiguration& TemporalStatistics::config() {
-    if (config_) {
-        return *config_;
-    }
-    throw eckit::SeriousBug("Configuration is not set!", Here());
 }
 
 message::Metadata& TemporalStatistics::metadata() {

@@ -78,7 +78,7 @@ private:
     bool computeBeginningOfYear() const;
     bool isBeginningOfYear() const;
 
-    void generateKey(const message::Metadata& md, const std::string& src);
+    void generateKey(const message::Metadata& md, const message::Peer& src);
 
     void readPrecision(const message::Metadata& md, const StatisticsOptions& opt);
     void readGridType(const message::Metadata& md, const StatisticsOptions& opt);
@@ -93,6 +93,7 @@ private:
 
 
 public:
+    StatisticsConfiguration(const message::Metadata& md, const message::Peer& src, const StatisticsOptions& opt);
     StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt);
 
     const StatisticsOptions& options() const;

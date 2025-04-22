@@ -37,7 +37,6 @@ public:
     const OperationWindow& cwin() const;
     OperationWindow& win();
 
-    StatisticsConfiguration& config();
     message::Metadata& metadata();
 
     void print(std::ostream& os) const;
@@ -46,7 +45,6 @@ private:
     std::unique_ptr<PeriodUpdater> periodUpdater_;
     OperationWindow window_;
     std::vector<std::unique_ptr<Operation>> statistics_;
-    std::optional<StatisticsConfiguration> config_;
     std::optional<message::Metadata> metadata_;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {

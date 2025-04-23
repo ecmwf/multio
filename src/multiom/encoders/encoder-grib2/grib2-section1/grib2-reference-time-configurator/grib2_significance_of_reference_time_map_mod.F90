@@ -295,9 +295,9 @@ IMPLICIT NONE
   CASE( TYPE_BF_E )
     ! Bias-corrected forecast
     SORT = 1_JPIB_K
-  ! CASE( TYPE_CD_E )
-  !   ! Climate distribution
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_CD_E )
+    ! Climate distribution
+    SORT = 1_JPIB_K
   CASE( TYPE_4I_E )
     ! 4D analysis increments
     SORT = 0_JPIB_K

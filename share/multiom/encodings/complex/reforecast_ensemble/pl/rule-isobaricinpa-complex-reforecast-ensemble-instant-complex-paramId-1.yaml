@@ -25,9 +25,7 @@ filter:
       operation: match
       values:
         - 2
-        - 129
-        - 130
-        - 135
+        - "129:135"
         - 138
         - 152
         - 155

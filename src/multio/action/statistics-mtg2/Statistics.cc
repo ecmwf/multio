@@ -208,51 +208,42 @@ FlushKind parseFlushKind(const message::Message& msg) {
 
 
 void Statistics::TryDumpRestart(const message::Message& msg) {
-
-    FlushKind flushKind = parseFlushKind(msg);
-
-    if (opt_.writeRestart() && needRestart_) {
-
-        // Check the kind of flush
-        // NOTE: This is a bit of a hack, in case no serverRank is provided, we
-        // assume that all processors are "master" and rely on atomicity of
-        // filesystem operation to avoid race conditions
-        auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
-        switch(flushKind){
-            case FlushKind::StepAndRestart: 
-            case FlushKind::LastStep: 
-            case FlushKind::EndOfSimulation: 
-            case FlushKind::CloseConnection:
-            {
-                // Generate name of the main restart directory
-                std::string restartFolderName = generateRestartNameFromFlush(msg);
-
-                // Log for Dump operation
-                LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " << "Last DateTime :: " << restartFolderName << std::endl;
-
-                // Delete the latest symlink as soon as possible
-                if (is_master) {
-                    DeleteLatestSymLink();
-                }
-
-                // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
-                CreateMainRestartDirectory(restartFolderName, is_master);
-
-                // Dump the temporal statistics restart directories
-                DumpTemporalStatistics();
-
-                // Create the latest symlink to the latest restart directory
-                if (is_master) {
-                    CreateLatestSymLink();
-                }
-            } 
-            break;
-            default: {} break;
-            
-        }
-
+    if (parseFlushKind(msg) != FlushKind::StepAndRestart) {
+        return;
     }
-    return;
+
+    // TODO: Remove this? The model already explicitly asked for a restart!
+    if (!opt_.writeRestart() || !needRestart_) {
+        return;
+    }
+
+    // Check the kind of flush
+    // NOTE: This is a bit of a hack, in case no serverRank is provided, we
+    // assume that all processors are "master" and rely on atomicity of
+    // filesystem operation to avoid race conditions
+    auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
+
+    // Generate name of the main restart directory
+    std::string restartFolderName = generateRestartNameFromFlush(msg);
+
+    // Log for Dump operation
+    LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Writing to " << restartFolderName << std::endl;
+
+    // Delete the latest symlink as soon as possible
+    if (is_master) {
+        DeleteLatestSymLink();
+    }
+
+    // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
+    CreateMainRestartDirectory(restartFolderName, is_master);
+
+    // Dump the temporal statistics restart directories
+    DumpTemporalStatistics();
+
+    // Create the latest symlink to the latest restart directory
+    if (is_master) {
+        CreateLatestSymLink();
+    }
 }
 
 void Statistics::DeleteLatestSymLink() {

@@ -113,7 +113,7 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
     }
 }
 
-MultiOMDict::MultiOMDict(MultiOMDictKind kind): dict_{NULL},kind_{kind} {
+MultiOMDict::MultiOMDict(MultiOMDictKind kind): dict_{nullptr}, kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
     ASSERT(multio_grib2_dict_create(&dict_, kindStr.data()) == 0);
 

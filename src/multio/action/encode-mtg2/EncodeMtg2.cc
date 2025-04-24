@@ -182,7 +182,7 @@ void* MultiOMDict::get() {
 }
 
 
-MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
+MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) : encoder_{nullptr} {
     ASSERT(multio_grib2_encoder_open(options.get(), &encoder_) == 0);
 }
 

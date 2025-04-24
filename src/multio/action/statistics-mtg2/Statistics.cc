@@ -91,6 +91,15 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
         folderName = tmp.str();
     }
 
+    // Restart flush provides the step
+    else if (step) {
+        std::int64_t flushStep = *step;
+        std::ostringstream tmp;
+        tmp << lastDateTime_ << "-";
+        tmp << std::setw(6) << std::setfill('0') << flushStep;
+        folderName = tmp.str();
+    }
+
     // Restart flush does not provide anything (Fallback)
     else {
         folderName = lastDateTime_;

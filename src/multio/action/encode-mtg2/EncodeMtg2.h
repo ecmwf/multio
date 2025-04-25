@@ -73,7 +73,7 @@ struct MultiOMDict {
     void* get();
 
     MultiOMDictKind kind_;
-    void* dict_;
+    void* dict_ = std::nullptr;
 };
 
 
@@ -85,7 +85,7 @@ struct MultiOMEncoder {
 
     ~MultiOMEncoder();
 
-    void* encoder_;
+    void* encoder_ = std::nullptr;
 };
 
 

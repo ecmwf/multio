@@ -113,7 +113,7 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
     }
 }
 
-MultiOMDict::MultiOMDict(MultiOMDictKind kind): dict_{nullptr}, kind_{kind} {
+MultiOMDict::MultiOMDict(MultiOMDictKind kind) : kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
     ASSERT(multio_grib2_dict_create(&dict_, kindStr.data()) == 0);
 
@@ -182,20 +182,20 @@ void* MultiOMDict::get() {
 }
 
 
-MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) : encoder_{nullptr} {
+MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
     ASSERT(multio_grib2_encoder_open(options.get(), &encoder_) == 0);
 }
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const double* data,
                                                      std::size_t len) {
-    codes_handle* rawOutputCodesHandle = nullptr;
+    codes_handle* rawOutputCodesHandle = std::nullptr;
     ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const float* data,
                                                      std::size_t len) {
-    codes_handle* rawOutputCodesHandle = nullptr;
+    codes_handle* rawOutputCodesHandle = std::nullptr;
     ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }

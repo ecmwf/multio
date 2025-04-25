@@ -188,14 +188,14 @@ MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const double* data,
                                                      std::size_t len) {
-    codes_handle* rawOutputCodesHandle = std::nullptr;
+    codes_handle* rawOutputCodesHandle = nullptr;
     ASSERT(multio_grib2_encoder_encode64(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }
 
 std::unique_ptr<codes_handle> MultiOMEncoder::encode(MultiOMDict& mars, MultiOMDict& par, const float* data,
                                                      std::size_t len) {
-    codes_handle* rawOutputCodesHandle = std::nullptr;
+    codes_handle* rawOutputCodesHandle = nullptr;
     ASSERT(multio_grib2_encoder_encode32(encoder_, mars.get(), par.get(), data, len, (void**)&rawOutputCodesHandle) == 0);
     return std::unique_ptr<codes_handle>{rawOutputCodesHandle};
 }

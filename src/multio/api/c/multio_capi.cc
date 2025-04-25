@@ -739,8 +739,8 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             ASSERT(md);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
-            md->md.modify().set("precision", "single");
-            md->md.modify().set("format", "raw");
+            md->md.modify().set("misc-precision", "single");
+            md->md.modify().set("misc-format", "raw");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float), false};
             multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
@@ -762,8 +762,8 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             ASSERT(md);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
-            md->md.modify().set("precision", "double");
-            md->md.modify().set("format", "raw");
+            md->md.modify().set("misc-precision", "double");
+            md->md.modify().set("misc-format", "raw");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double),
             // false};
@@ -788,13 +788,13 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
             ASSERT(d);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
-            md->md.modify().set("format", "raw");
+            md->md.modify().set("misc-format", "raw");
 
             if (byte_size == 4) {
-                md->md.modify().set("precision", "single");
+                md->md.modify().set("misc-precision", "single");
             }
             else if (byte_size == 8) {
-                md->md.modify().set("precision", "double");
+                md->md.modify().set("misc-precision", "double");
             }
             else {
                 ASSERT(false);
@@ -820,7 +820,7 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
 
             multio::message::Metadata md;
             // md.acquire();  // Make sure metadata is not stored in a stateful container from last write
-            md.set("format", "grib");
+            md.set("misc-format", "grib");
 
             mio->dispatch(std::move(md), eckit::Buffer{gribdata, gribsize * sizeof(char)}, Message::Tag::Field);
         },

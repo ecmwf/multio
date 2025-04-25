@@ -18,6 +18,7 @@ add_subdirectory(grib2-ensemble-configurator)
 add_subdirectory(grib2-dirfreq-configurator)
 add_subdirectory(grib2-period-configurator)
 add_subdirectory(grib2-satellite-configurator)
+add_subdirectory(grib2-random-patterns-configurator)
 
 # Collect source files in module2
 set( MULTIOM_ENCODER_GRIB2_SECTION4_MAIN_SOURCES
@@ -26,7 +27,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_MAIN_SOURCES
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_008_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_011_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_032_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_033_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_033_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_040_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_041_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_042_mod.F90
@@ -48,6 +49,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_107_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_108_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_109_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_143_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_DIR}/grib2_section4_factory_mod.F90
 )
 
@@ -64,6 +66,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_SOURCES
   ${MULTIOM_ENCODER_GRIB2_SECTION4_DIRFREQ_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_PERIOD_SOURCES}
   ${MULTIOM_ENCODER_GRIB2_SECTION4_SATELLITE_SOURCES}
+  ${MULTIOM_ENCODER_GRIB2_SECTION4_RANDOM_PATTERNS_SOURCES}
   CACHE INTERNAL "List of all sources in encoders directory"
 )
 

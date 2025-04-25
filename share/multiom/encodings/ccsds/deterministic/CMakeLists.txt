@@ -1,17 +1,30 @@
 
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/hl")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/ml")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/pl")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/pt")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/pv")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/sfc")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/sol")
+
 add_subdirectory("hl")
 add_subdirectory("ml")
 add_subdirectory("pl")
+add_subdirectory("pt")
+add_subdirectory("pv")
 add_subdirectory("sfc")
 add_subdirectory("sol")
-
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
                    ${CMAKE_CURRENT_BINARY_DIR}/${rule}
+                   COPYONLY)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
+                   ${CMAKE_BINARY_DIR}/share/multiom/encodings/ccsds/deterministic/${rule}
                    COPYONLY)
 endforeach()
 

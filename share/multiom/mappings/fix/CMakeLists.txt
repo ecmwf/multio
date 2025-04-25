@@ -6,6 +6,10 @@ foreach(rule ${mapping_rules})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
                    ${CMAKE_CURRENT_BINARY_DIR}/${rule}
                    COPYONLY)
+
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${rule}
+                   ${CMAKE_BINARY_DIR}/share/multiom/mappings/fix/${rule}
+                   COPYONLY)
 endforeach()
 
 

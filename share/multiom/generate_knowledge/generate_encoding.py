@@ -15,6 +15,7 @@ from GenerateEncoding import (
     buildRule,
     matchType,
     matchParam,
+    pdtCatPair,
     typeGE,
     typeGT,
     typeLE,
@@ -29,9 +30,11 @@ from GenerateEncoding import (
     paramConfig,
     ParamConfig,
     EnsembleConfig,
+    RandomPatternsConfig,
     TimeConfig,
     TablesConfig,
     DirectionsFrequenciesConfig,
+    SatelliteConfig,
     hasType,
     lacksType,
     matchType,
@@ -89,6 +92,10 @@ LOCALSECTION = [
 PROCESSTYPES = [
     partialRule([lacksType("number")], []),
     partialRule([hasType("number")], [EnsembleConfig()]),
+]
+
+PROCESSTYPES_AL = [
+    partialRule([hasType("number")], [EnsembleConfig(largeEnsemble=True)]),
 ]
 
 
@@ -784,6 +791,77 @@ PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
 )
 
 
+# # PT
+# # TODO discuss - in era6 it contains typeOfStatisticalProcessing 0 (average), for WMO not
+
+PARAM_LEVTYPE_PT = [
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([53, 54, 60, 131, 132, 133, 138, 155, 203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            PointInTime(),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([235203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="average",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([237203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="max",
+                descriptiveName="max",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([238203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="min",
+                descriptiveName="min",
+            ),
+        ]
+    ),
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([239203])],
+        [levelConfig("theta"), paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="stddev",
+                descriptiveName="std",
+            ),
+        ]
+    )
+]
+
+PARAM_LEVTYPE_PV = [
+    partialRule(
+        [matchType("levtype", "pv"), matchParam([3, 54, 129, 131, 132, 133, 203])],
+        [levelConfig("potentialVorticity"), paramConfig("paramId"),
+            PointInTime(),
+        ]
+    ),
+]
+
+PARAM_LEVTYPE_AL = [
+    partialRule(
+        [matchType("levtype", "al"), matchParam(["213101:213160"])],
+        [levelConfig("abstractSingleLevel"), paramConfig("paramId"),
+            PointInTime(), RandomPatternsConfig(), # this may change
+        ]
+    ),
+]
+
+
 # SOIL
 
 PARAM_LEVTYPE_SOL = [
@@ -802,6 +880,17 @@ PARAM_LEVTYPE_SOL = [
 ]
 
 
+# Satellite
+
+PARAM_SATELLITE = [
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam(["260510:260513"])],
+        [PointInTime(), paramConfig("paramId"), SatelliteConfig()],
+    ),
+]
+
+
+
 # Combine all param levtype configurations
 
 PARAM_LEVTYPE = (
@@ -810,6 +899,9 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_ML
     + PARAM_LEVTYPE_PL
     + PARAM_LEVTYPE_SOL
+    + PARAM_LEVTYPE_PT
+    + PARAM_LEVTYPE_PV
+    + PARAM_SATELLITE
 )
 PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH
 
@@ -843,8 +935,14 @@ rules_sh = list(
         [TYPES, GRIDS_SH, LOCALSECTION, PROCESSTYPES, PARAM_LEVTYPE_SH, PACKING_SH]
     )
 )
+rules_al = list(
+    combinePartialRules(
+        [TYPES, GRIDS, LOCALSECTION, PROCESSTYPES_AL, PARAM_LEVTYPE_AL, PACKING]
+    )
+)
+all_rules = rules + rules_sh + rules_al
 
-encodedRules = [buildRule(mergePartialRules(rl)) for rl in rules + rules_sh]
+encodedRules = [buildRule(mergePartialRules(rl)) for rl in all_rules]
 
 encodedRulesDict = {e.name: [] for e in encodedRules}
 for rule in encodedRules:
@@ -858,17 +956,23 @@ if len(duplicatedRules) > 0:
 
 
 def templateCMakeFile(dir, subDirs):
-    subDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
+    fileSubDirsStr = "\n".join([f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")' for sd in subDirs]) + ("\n" if len(subDirs) > 0 else "")
+    addSubDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
+
     return f"""
 file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
 
-{subDirsStr}
-
+{fileSubDirsStr}
+{addSubDirsStr}
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${{encoding_rules}})
     configure_file(${{CMAKE_CURRENT_SOURCE_DIR}}/${{rule}}
                    ${{CMAKE_CURRENT_BINARY_DIR}}/${{rule}}
+                   COPYONLY)
+
+    configure_file(${{CMAKE_CURRENT_SOURCE_DIR}}/${{rule}}
+                   ${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/${{rule}}
                    COPYONLY)
 endforeach()
 
@@ -983,7 +1087,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     def recurse(fs, rls, baseDir):
         ret = applyNestedFilters(fs, rls, baseDir)
         if isinstance(ret, list):
-            return {"rules": ret}
+            return {"encoding-rules": ret}
         return {"nested-rules": ret}
 
     (filterName, filterType) = filters[0]
@@ -1001,6 +1105,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
              }
 
         case "match":
+             # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
              matchPairs = [(findMatchTypeFilter(rc.rule, filterName), rc) for rc in rules]
              valuesDict = {}
              for (val, rc) in matchPairs:
@@ -1011,7 +1116,8 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
              return {
                 "key": filterName,
                 "operations": [
-                    {"operation": "match", "value": val, **recurse(fs, rs, baseDir)} for (val, rs) in valuesDict.items()
+                    ( {"operation": "lacks", **recurse(fs, rs, baseDir)} if val is None
+                        else {"operation": "match", "value": val, **recurse(fs, rs, baseDir)})  for (val, rs) in valuesDict.items()
                 ]
              }
 
@@ -1070,7 +1176,7 @@ def main():
 
     nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
     with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
-        fileOut.write(toYAML({"encoding-rules": nestedFilterFiles}))
+        fileOut.write(toYAML({("encoding-rules" if len(nestedFilterFiles) == 0 else "nested-rules"): nestedFilterFiles}))
 
 
 if __name__ == "__main__":

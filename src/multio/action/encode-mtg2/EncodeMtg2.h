@@ -33,7 +33,10 @@ enum class MultiOMDictKind : unsigned long
     Options,
     MARS,
     Parametrization,
-    Geometry,
+    // Geometry dicts
+    ReducedGG,
+    RegularLL,
+    SH,
 };
 
 struct EncodeMultiOMOptions {
@@ -53,35 +56,49 @@ struct MultiOMDict {
     void set(const char* key, const char* val);
     void set(const std::string& key, const std::string& val);
 
+    // Typed setters
+    void set(const std::string& key, std::int64_t val);
+    void set(const std::string& key, double val);
+    void set(const std::string& key, bool val);
+    void set(const std::string& key, const std::int64_t* val, std::size_t len);
+    void set(const std::string& key, const double* val, std::size_t len);
+    void set(const std::string& key, const std::vector<std::int64_t>& val);
+    void set(const std::string& key, const std::vector<double>& val);
+
+    // Set geoemtry on parametrization
+    void set_geometry(MultiOMDict& geom);
+
     ~MultiOMDict();
 
     void* get();
 
-    void* dict_;
+    MultiOMDictKind kind_;
+    void* dict_ = nullptr;
 };
 
 
 struct MultiOMEncoder {
     MultiOMEncoder(MultiOMDict& options);
 
-    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, double* data, std::size_t len);
+    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, const double* data, std::size_t len);
+    std::unique_ptr<codes_handle> encode(MultiOMDict& mars, MultiOMDict& par, const float* data, std::size_t len);
 
     ~MultiOMEncoder();
 
-    void* encoder_;
+    void* encoder_ = nullptr;
 };
 
 
-class EncodeGrib2 : public ChainedAction {
+class EncodeMtg2 : public ChainedAction {
 public:
-    explicit EncodeGrib2(const ComponentConfiguration& compConf);
+    explicit EncodeMtg2(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
 private:
     // Internal constructor delegate with prepared configuration for specific
     // encoder
-    explicit EncodeGrib2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
+    explicit EncodeMtg2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
 
     void print(std::ostream& os) const override;
 
@@ -91,9 +108,9 @@ private:
 
 //---------------------------------------------------------------------------------------------------------------------
 
-class EncodeGrib2Exception : public eckit::Exception {
+class EncodeMtg2Exception : public eckit::Exception {
 public:
-    EncodeGrib2Exception(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
+    EncodeMtg2Exception(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
 };
 
 //---------------------------------------------------------------------------------------------------------------------

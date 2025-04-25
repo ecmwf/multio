@@ -70,7 +70,7 @@ multio::message::Message createStatisticsMessage(long step, std::vector<double> 
                                         {"level", 0},
                                         {"levtype", "none"},
                                         {"gridType", "none"},
-                                        {"precision", "double"},
+                                        {"misc-precision", "double"},
                                         {"startDate", 0},
                                         {"startTime", 0},
                                         {"step", step},

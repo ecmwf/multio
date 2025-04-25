@@ -12,6 +12,8 @@ set( MULTIOM_OUTPUT_MANAGER_MAIN_SOURCES
   ${MULTIOM_OUTPUT_MANAGER_DIR}/output_manager_factory_mod.F90
   ${MULTIOM_OUTPUT_MANAGER_DIR}/noop_mod.F90
   ${MULTIOM_OUTPUT_MANAGER_DIR}/dump_mod.F90
+  ${MULTIOM_OUTPUT_MANAGER_DIR}/model_data2multio_mod.F90
+  ${MULTIOM_OUTPUT_MANAGER_DIR}/multio_utils_mod.F90
   ${MULTIOM_OUTPUT_MANAGER_DIR}/grib_header2multio_mod.F90
 )
 

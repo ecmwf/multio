@@ -12,7 +12,9 @@ size_t decodePrecisionSize(const std::string& tagStr) {
 
 PrecisionTag decodePrecisionTag(const std::string& tagStr) {
     const static std::map<std::string, PrecisionTag> str2tag{{"single", PrecisionTag::Float},
-                                                             {"double", PrecisionTag::Double}};
+                                                             {"double", PrecisionTag::Double},
+                                                             {"misc-single", PrecisionTag::Float},
+                                                             {"misc-double", PrecisionTag::Double}};
     return str2tag.at(tagStr);
 }
 

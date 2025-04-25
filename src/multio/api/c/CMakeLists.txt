@@ -35,9 +35,9 @@ if ( HAVE_ECKIT_CODEC )
     )
 endif()
 
-if( HAVE_MULTIOM )
+if( BUILD_MULTIOM )
     list( APPEND multio_action_plugins
-        multio-action-encode-grib2
+        multio-action-encode-mtg2
     )
 endif()
 

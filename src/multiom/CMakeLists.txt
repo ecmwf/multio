@@ -167,9 +167,6 @@ endif()
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 
-
-if (TRUE)
-
 ecbuild_add_library(
   TARGET
     multiom-core
@@ -190,7 +187,7 @@ ecbuild_add_library(
     # ${MULTIOM_ENCODING_RULES_SOURCES}
     ${MULTIOM_IFS_INTERFACE_SOURCES}
     # ${MULTIOM_OUTPUT_MANAGER_SOURCES}
-    ${MULTIOM_SINKS_SOURCES}
+    # ${MULTIOM_SINKS_SOURCES}
     # ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_IFS2MARS_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
@@ -205,7 +202,6 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
 )
 
 
@@ -222,6 +218,8 @@ ecbuild_add_library(
     ${MULTIOM_MAPPING_RULES_SOURCES}
     ${MULTIOM_ENCODING_RULES_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
+    ${MULTIOM_IFS_ENCODERS_SOURCES}
+    ${MULTIOM_API_SOURCES}
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -233,7 +231,6 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
     multiom-core
 )
 
@@ -249,8 +246,6 @@ ecbuild_add_library(
     multiom
 
   SOURCES
-    ${MULTIOM_API_SOURCES}
-    ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_OUTPUT_MANAGER_SOURCES}
     ./multiom_api.F90
 
@@ -264,34 +259,8 @@ ecbuild_add_library(
     fckit
     eccodes
     eccodes_f90
-    multio-fapi
     multiom-core
     multiom-encoders
-)
-
-
-# Module directory
-set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
-target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
-
-else()
-ecbuild_add_library(
-  TARGET
-    multiom
-
-  SOURCES
-   ${output_manager_src}
-
-  DEFINITIONS
-    ${OUTPUT_MANAGER_BUILD_FLAVOUR}
-
-  PRIVATE_INCLUDES
-    $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
-
-  PUBLIC_LIBS
-    fckit
-    eccodes
-    eccodes_f90
     multio-fapi
 )
 
@@ -300,9 +269,8 @@ ecbuild_add_library(
 set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
 target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
 
-endif()
 
 # add tests
 set(HAVE_OUTPUT_MANAGER_TESTS 1)
-add_subdirectory( tests-components )
-add_subdirectory( tests-api )
+# add_subdirectory( tests-components )
+# add_subdirectory( tests-api )

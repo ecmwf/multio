@@ -43,9 +43,9 @@ void Print::executeImpl(message::Message msg) {
     bool doOutput = onlyFields_ ? (msg.tag() == message::Message::Tag::Field) : true;
     if (doOutput) {
         if (!prefix_.empty()) {
-            (*os_) << prefix_ << ": ";
+            std::cout << prefix_ << ": ";
         }
-        (*os_) << msg << std::endl;
+        std::cout << msg << std::endl;
     }
     executeNext(std::move(msg));
 }

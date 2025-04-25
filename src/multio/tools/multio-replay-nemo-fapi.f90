@@ -378,7 +378,7 @@ implicit none
 
     cerr = md%set_string("category", "ocean-2d")
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 20
-    cerr = md%set_int("globalSize", global_size)
+    cerr = md%set_int("misc-globalSize", global_size)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 21
     cerr = md%set_int("level", level)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 22

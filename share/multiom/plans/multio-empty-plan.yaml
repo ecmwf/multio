@@ -5,8 +5,10 @@ plans:
     actions:
 
       - type: print
-        stream: out
+        stream: cout
         prefix: "MultIO debug plan:"
+
+      - type: encode-mtg2
 
       - type: sink
         sinks: []

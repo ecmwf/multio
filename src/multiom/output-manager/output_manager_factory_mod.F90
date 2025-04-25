@@ -73,6 +73,10 @@ PP_THREAD_SAFE FUNCTION IS_VALID_OUTPUT_MANAGER( OMTYPE, IS_VALID, HOOKS ) RESUL
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OMNAME
 
+
+  USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OUTPUT_MANAGER_T
+  USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OMNAME
+
 #if 0
   USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OUTPUT_MANAGER_T
   USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T
@@ -152,6 +156,11 @@ IMPLICIT NONE
   CASE ( DUMP_OMNAME )
     IS_VALID = .TRUE.
 
+  ! ------------------------------------------------------------------------------------------------
+  ! A dump output manager. Used to dump all the data arrived to the IOserver
+  CASE ( MODEL_DATA2MULTIO_OMNAME )
+    IS_VALID = .TRUE.
+
 
 #if 0
   ! ------------------------------------------------------------------------------------------------
@@ -169,7 +178,6 @@ IMPLICIT NONE
     ALLOCATE( GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 #endif
-
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager utilizing multIO as a sink. Binary-encoded
   ! grib files are transformed into multIO metadata and a raw data array.
@@ -305,6 +313,9 @@ PP_THREAD_SAFE FUNCTION MAKE_OUTPUT_MANAGER( OMTYPE, PROCESSOR_TOPO, &
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T
   USE :: GRIB_HEADER2MULTIO_MOD,   ONLY: GRIB_HEADER2MULTIO_OMNAME
 
+  USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OUTPUT_MANAGER_T
+  USE :: MODEL_DATA2MULTIO_MOD,   ONLY: MODEL_DATA2MULTIO_OMNAME
+
 #if 0
   USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OUTPUT_MANAGER_T
   USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T
@@ -391,6 +402,13 @@ IMPLICIT NONE
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE )
 
 
+  ! ------------------------------------------------------------------------------------------------
+  ! A dump output manager. Used to dump all the data arrived to the IOserver
+  CASE ( MODEL_DATA2MULTIO_OMNAME )
+    ALLOCATE( MODEL_DATA2MULTIO_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE )
+
+
 #if 0
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager utilizing grib functionalities as a sink,
@@ -416,6 +434,7 @@ IMPLICIT NONE
   CASE ( GRIB_HEADER2MULTIO_OMNAME )
     ALLOCATE( GRIB_HEADER2MULTIO_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE )
+
 
 
 #if 0

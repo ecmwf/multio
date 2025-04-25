@@ -297,6 +297,10 @@ def levelConfig(t: str) -> LevelConfig:
 
 class EnsembleConfig(BaseModel):
     type: str = "default"
+    largeEnsemble: bool = False
+
+class RandomPatternsConfig(BaseModel):
+    type: str = "default"
 
 
 class ChemConfig(BaseModel):
@@ -304,6 +308,9 @@ class ChemConfig(BaseModel):
 
 
 class DirectionsFrequenciesConfig(BaseModel):
+    type: str = "default"
+
+class SatelliteConfig(BaseModel):
     type: str = "default"
 
 
@@ -349,9 +356,11 @@ class ProductDefinition(BaseModel):
     param: ParamConfig = ParamConfig()
     level: Optional[LevelConfig] = None
     ensemble: Optional[EnsembleConfig] = None
+    randomPatterns: Optional[RandomPatternsConfig] = None
     chemical: Optional[ChemConfig] = None
     directionsFrequencies: Optional[DirectionsFrequenciesConfig] = None
     periodRange: Optional[PeriodConfig] = None
+    satellite: Optional[SatelliteConfig] = None
 
 
 # Section 5
@@ -386,8 +395,13 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         if encode.product.periodRange is not None
         else None
     )
+    satellite = (
+        encode.product.satellite.type
+        if encode.product.satellite is not None
+        else None
+    )
 
-    levelWaveStr = "-".join([l for l in [level, wave, periodRange] if l is not None])
+    levelWaveStr = "-".join([l for l in [level, wave, periodRange, satellite] if l is not None])
 
     grid = encode.grid.shortName
     ensemble = "ensemble" if encode.product.ensemble else "deterministic"
@@ -410,8 +424,8 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         product += "-wave_spec"
     if encode.product.periodRange is not None:
         product += "-wave_period"
-    # if encode.product.satelite is not None:
-    #     product+="-satelite"
+    if encode.product.satellite is not None:
+        product += "-satellite"
 
     pref = "" if additionalPrefix is None else f"-{additionalPrefix}"
 
@@ -508,6 +522,11 @@ def toDictRepres(val):
                     else {}
                 ),
                 **(
+                    {"random-patterns-configurator": toDictRepres(val.randomPatterns)}
+                    if val.randomPatterns is not None
+                    else {}
+                ),
+                **(
                     {"chemistry-configurator": toDictRepres(val.chemical)}
                     if val.chemical is not None
                     else {}
@@ -524,6 +543,15 @@ def toDictRepres(val):
                 **(
                     {"period-configurator": toDictRepres(val.periodRange)}
                     if val.periodRange is not None
+                    else {}
+                ),
+                **(
+                    {
+                        "satellite-configurator": toDictRepres(
+                            val.satellite
+                        )
+                    }
+                    if val.satellite is not None
                     else {}
                 ),
             }
@@ -583,9 +611,13 @@ def toDictRepres(val):
             return {"type": val.type}
         case EnsembleConfig():
             return {"type": val.type}
+        case RandomPatternsConfig():
+            return {"type": val.type}
         case ChemConfig():
             return {"type": val.type}
         case DirectionsFrequenciesConfig():
+            return {"type": val.type}
+        case SatelliteConfig():
             return {"type": val.type}
         case PeriodConfig():
             return {"type": val.type}
@@ -615,16 +647,18 @@ Section1Part: TypeAlias = Union[
 
 Section4Part: TypeAlias = Union[
     PDT,
-    # PDTCategoryPair,
+    PDTCategoryPair,
     TimeConfig,
     PointInTime,
     TimeRange,
     ParamConfig,
     LevelConfig,
     EnsembleConfig,
+    RandomPatternsConfig,
     ChemConfig,
     DirectionsFrequenciesConfig,
     PeriodConfig,
+    SatelliteConfig,
 ]
 
 
@@ -645,16 +679,18 @@ EncodePart: TypeAlias = Union[
     GridDefinition,
     # Section 4
     PDT,
-    # PDTCategoryPair,  # Moved out of the list here because it is mapped from the configs
+    PDTCategoryPair,  # Moved out of the list here because it is mapped from the configs
     TimeConfig,
     PointInTime,
     TimeRange,
     ParamConfig,
     LevelConfig,
     EnsembleConfig,
+    RandomPatternsConfig,
     ChemConfig,
     DirectionsFrequenciesConfig,
     PeriodConfig,
+    SatelliteConfig,
     ProductDefinition,
     # Section 5
     DataRepresentation,
@@ -689,13 +725,19 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                 case ChemConfig():
                     yield pdtCatPair("productCategory", "chemical")
                 case EnsembleConfig():
-                    yield pdtCatPair("processSubType", "ensemble")
+                    yield pdtCatPair("processSubType", "largeEnsemble" if crumb.largeEnsemble else "ensemble")
+                case RandomPatternsConfig():
+                    yield pdtCatPair("spatialExtent", "randomPatterns") # Todo may change
                 case PeriodConfig():
                     yield pdtCatPair("productCategory", "wave")
                     yield pdtCatPair("productSubCategory", "periodRange")
                 case DirectionsFrequenciesConfig():
                     yield pdtCatPair("productCategory", "wave")
                     yield pdtCatPair("productSubCategory", "spectraList")
+                case SatelliteConfig():
+                    yield pdtCatPair("productCategory", "satellite")
+                case PDTCategoryPair():
+                    yield crumb
                 case _:
                     pass
 
@@ -759,11 +801,15 @@ def buildProductDefiniton(crumbs: List[EncodePart]):
         **toArgDict("param", getCrumb(ParamConfig, pdtCrumbs)),
         **toArgDict("level", getCrumb(LevelConfig, pdtCrumbs)),
         **toArgDict("ensemble", getCrumb(EnsembleConfig, pdtCrumbs)),
+        **toArgDict("randomPatterns", getCrumb(RandomPatternsConfig, pdtCrumbs)),
         **toArgDict("chemical", getCrumb(ChemConfig, pdtCrumbs)),
         **toArgDict(
             "directionsFrequencies", getCrumb(DirectionsFrequenciesConfig, pdtCrumbs)
         ),
         **toArgDict("periodRange", getCrumb(PeriodConfig, pdtCrumbs)),
+        **toArgDict(
+            "satellite", getCrumb(SatelliteConfig, pdtCrumbs)
+        ),
     }
     try:
         return ProductDefinition(**args)

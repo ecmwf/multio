@@ -13,6 +13,8 @@ filter:
       operation: has
     - type: number
       operation: has
+    - type: hdate
+      operation: lacks
     - type: levelist
       operation: greater-equal
       treshold: 100
@@ -22,9 +24,8 @@ filter:
     - type: param
       operation: match
       values:
-        - 129
-        - 130
-        - 135
+        - 2
+        - "129:135"
         - 138
         - 152
         - 155

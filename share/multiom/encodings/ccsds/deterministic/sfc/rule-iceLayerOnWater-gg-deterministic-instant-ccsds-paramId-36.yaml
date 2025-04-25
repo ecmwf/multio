@@ -13,6 +13,8 @@ filter:
       operation: has
     - type: number
       operation: lacks
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
@@ -20,6 +22,7 @@ filter:
       operation: match
       values:
         - 228014
+        - 262000
     - type: packing
       operation: match
       value: ccsds

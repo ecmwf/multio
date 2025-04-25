@@ -1,7 +1,6 @@
 #include "api.h"
 #include <cstring>
 #include <string>
-// #include "metkit/mars/Param.h"
 
 extern "C" {
 
@@ -15,10 +14,10 @@ int multio_grib2_dict_set_real64_array_f(void* dict, const char* key, int klen, 
 int multio_grib2_dict_get_f(void* dict, const char* key, int klen, char** value);
 int multio_grib2_dict_has_f(void* dict, const char* key, int klen, int* has);
 int multio_grib2_dict_to_yaml_f(void* dict, const char* fname, int len);
+int multio_grib2_dict_to_json_f(void* dict, char** value);
 
 
 int multio_grib2_dict_create(void** dict, char* dict_type) {
-
     int len = std::strlen(dict_type);
     return multio_grib2_dict_create_f(dict, dict_type, len);
 };
@@ -38,16 +37,9 @@ int multio_grib2_dict_set(void* dict, const char* key, const char* value) {
     }
 };
 
-int multio_grib2_dict_set_int64(void* dict, const char* key, int64_t value ) {
-    // if (std::strcmp(key, "param") == 0) {
-    //     int64_t val; // = metkit::Param(std::to_string(value).c_str()).paramId();
-    //     int klen = std::strlen(key);
-    //     return multio_grib2_dict_set_int64_f(dict, key, klen, val);
-    // }
-    // else {
+int multio_grib2_dict_set_int64(void* dict, const char* key, int64_t value) {
     int klen = std::strlen(key);
     return multio_grib2_dict_set_int64_f(dict, key, klen, value);
-    // }
 };
 
 int multio_grib2_dict_set_double(void* dict, const char* key, double value) {
@@ -84,5 +76,9 @@ int multio_grib2_dict_has(void* dict, const char* key, int* has) {
 int multio_grib2_dict_to_yaml(void* dict, const char* fname) {
     int len = std::strlen(fname);
     return multio_grib2_dict_to_yaml_f(dict, fname, len);
+};
+
+int multio_grib2_dict_to_json(void* dict, char** value) {
+    return multio_grib2_dict_to_json_f(dict, value);
 };
 }

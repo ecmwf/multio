@@ -85,8 +85,9 @@ GRIDS_SH = [
 ]
 
 LOCALSECTION = [
-    partialRule([lacksType("anoffset")], [localUse(1)]),
-    partialRule([hasType("anoffset")], [localUse(36)]),
+    partialRule([lacksType("anoffset"), lacksType("dataset")], [localUse(1)]),
+    partialRule([lacksType("anoffset"), hasType("dataset")], [localUse(201)]),
+    partialRule([hasType("anoffset"), lacksType("dataset")], [localUse(36)]),
 ]
 
 PROCESSTYPES = [
@@ -1130,7 +1131,7 @@ BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
 ENCODING_RULES_SPLIT = ["packing", "process"]
 
 # Filters are has/lacks
-NESTED_FILTERS = [("number", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
+NESTED_FILTERS = [("number", "has/lacks"), ("anoffset", "has/lacks"), ("dataset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
 
 REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
 

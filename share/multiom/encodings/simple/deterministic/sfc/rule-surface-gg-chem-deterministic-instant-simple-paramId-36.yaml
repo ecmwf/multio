@@ -11,6 +11,8 @@ filter:
       value: gaussian-grid
     - type: anoffset
       operation: has
+    - type: dataset
+      operation: lacks
     - type: number
       operation: lacks
     - type: composed

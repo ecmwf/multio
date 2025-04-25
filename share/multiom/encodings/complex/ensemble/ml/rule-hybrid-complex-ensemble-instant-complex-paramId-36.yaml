@@ -11,6 +11,8 @@ filter:
       value: spherical-harmonics
     - type: anoffset
       operation: has
+    - type: dataset
+      operation: lacks
     - type: number
       operation: has
     - type: levtype

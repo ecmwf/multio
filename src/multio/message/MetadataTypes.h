@@ -56,6 +56,29 @@ constexpr bool operator!=(Null, Null) noexcept {
 std::ostream& operator<<(std::ostream& os, const Null&);
 eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 
+}  // namespace multio::message
+
+
+namespace multio {
+
+template <>
+struct util::TypeToString<multio::message::Null> {
+    std::string operator()() const { return std::string("Null"); };
+};
+template <>
+struct util::TypeToString<multio::message::BaseMetadata> {
+    std::string operator()() const { return std::string("BaseMetadata"); };
+};
+template <>
+struct util::TypeToString<multio::message::Metadata> {
+    std::string operator()() const { return std::string("Metadata"); };
+};
+
+}  // namespace multio
+
+
+namespace multio::message {
+
 
 //-----------------------------------------------------------------------------
 

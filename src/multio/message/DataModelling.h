@@ -55,7 +55,11 @@
 // By default values are referenced and not copied. To create values, either directly use `readValue` or call `acquire`
 // on a `KeyValueSet`.
 //
-// TBD: There is a experimental `validate` function which is ment to be extended in the future.
+// TBD: 
+//  * There is a experimental `validate` function which is ment to be extended in the future.
+//  * add (default) validation/initalization to KeySets that can post process across keys or throw on inconsistencies
+//  * move to data/Modelling.h and mars keys to data/Models.h
+//  * implement KeyValueReader/KeyValueWriter for eckit::LocalConfiguration and use keysets to parse and validate action configurations
 
 
 namespace multio::message {

@@ -193,6 +193,7 @@ std::size_t std::hash<multio::message::MetadataValue>::operator()(const multio::
         else {
             return std::hash<T>{}(v);
         }
+        return 0;  // Unreachable, avoid compiler warning
     });
 }
 

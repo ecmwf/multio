@@ -24,7 +24,23 @@
 #include "eccodes.h"
 #include "metkit/codes/CodesHandleDeleter.h"
 #include "multio/action/ChainedAction.h"
+#include "multio/message/DataModelling.h"
+#include "multio/message/Glossary.h"
 #include "multiom/api/c/api.h"
+
+namespace multio::action::encode_mtg2 {
+struct ForeignDictType;
+}
+
+template <>
+class std::default_delete<multio::action::encode_mtg2::ForeignDictType> {
+public:
+    void operator()(multio::action::encode_mtg2::ForeignDictType* ptr) const {
+        void* p = static_cast<void*>(ptr);
+        ASSERT(multio_grib2_dict_destroy(&p) == 0);
+    }
+};
+
 
 namespace multio::action::encode_mtg2 {
 
@@ -50,6 +66,10 @@ std::string multiOMDictKindString(MultiOMDictKind kind);
 
 struct MultiOMDict {
     MultiOMDict(MultiOMDictKind kind);
+    ~MultiOMDict() = default;
+
+    MultiOMDict(MultiOMDict&&) noexcept = default;
+    MultiOMDict& operator=(MultiOMDict&&) noexcept = default;
 
     void toYAML(const std::string& file = "stdout");
 
@@ -66,16 +86,43 @@ struct MultiOMDict {
     void set(const std::string& key, const std::vector<double>& val);
 
     // Set geoemtry on parametrization
-    void set_geometry(MultiOMDict& geom);
-
-    ~MultiOMDict();
+    void set_geometry(MultiOMDict&& geom);
 
     void* get();
 
     MultiOMDictKind kind_;
-    void* dict_ = nullptr;
+    std::unique_ptr<ForeignDictType> dict_;
+    std::unique_ptr<MultiOMDict> geom_;
 };
 
+}  // namespace multio::action::encode_mtg2
+
+
+namespace multio {
+
+template <>
+struct message::KeyValueWriter<action::MultiOMDict> {
+    template <typename KVD, typename KV_,
+              std::enable_if_t<(IsKeyValueDescription_v<std::decay_t<KVD>> && IsKeyValue_v<std::decay_t<KV_>>), bool>
+              = true>
+    static void set(const KVD& kvd, KV_&& kv, action::MultiOMDict& md) {
+        using KV = std::decay_t<KV_>;
+        if constexpr (KVD::hasMapper) {
+            std::forward<KV_>(kv).visit(
+                eckit::Overloaded{[&](MissingValue v) {},
+                                  [&](auto&& v) { md.set(kvd.key, kvd.mapper.write(std::forward<decltype(v)>(v))); }});
+        }
+        else {
+            std::forward<KV_>(kv).visit(eckit::Overloaded{
+                [&](MissingValue v) {}, [&](auto&& v) { md.set(kvd.key, std::forward<decltype(v)>(v)); }});
+        }
+    }
+};
+
+}  // namespace multio
+
+
+namespace multio::action {
 
 struct MultiOMEncoder {
     MultiOMEncoder(MultiOMDict& options);

@@ -19,7 +19,7 @@ namespace multio::util {
 
 //-----------------------------------------------------------------------------
 
-std::size_t hash_combine_args(std::size_t lhs) noexcept {
+std::size_t hashCombineArgs(std::size_t lhs) noexcept {
     return lhs;
 }
 

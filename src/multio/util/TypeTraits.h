@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>  // unique_ptr
 #include <optional>
 #include <tuple>
@@ -332,6 +333,48 @@ template <typename T>
 inline constexpr bool IsTuple_v = IsTuple<T>::value;
 
 
+// Apply a function for each element in a tuple
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    (func(std::get<I>(std::forward<Tup>(tup))), ...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup) {
+    forEach(std::forward<Func>(func), std::forward<Tup>(tup),
+            std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    return std::make_tuple(func(std::get<I>(std::forward<Tup>(tup)))...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup) {
+    return map(std::forward<Func>(func), std::forward<Tup>(tup),
+               std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsReferenceWrapper {
+    static constexpr bool value = false;
+};
+template <class T>
+struct IsReferenceWrapper<std::reference_wrapper<T>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsReferenceWrapper_v = IsReferenceWrapper<T>::value;
+
+
 //-----------------------------------------------------------------------------
 
 template <typename, class = void>
@@ -345,6 +388,139 @@ template <typename T>
 inline constexpr bool HasVariantBaseType_v = HasVariantBaseType<T>::value;
 
 //-----------------------------------------------------------------------------
+
+// Helper to stringify types
+// Instead of using a constexpr string_view, a call operator is used at runtime.
+// This is because this information is usally needed at runtime for proper error or logging descriptions
+// and on this way it is easier to concatenate typenames for templated types like variant or tuple
+//
+// With C++20 all could be written with constexpr strings
+
+template <typename T>
+struct TypeToString;
+
+template <typename T>
+std::string typeToString() {
+    return TypeToString<T>{}();
+}
+
+template <typename T>
+struct TypeToString<const T> {
+    std::string operator()() const { return std::string("const ") + typeToString<std::remove_cv_t<T>>(); };
+};
+
+template <typename T>
+struct TypeToString<T&> {
+    std::string operator()() const { return typeToString<std::remove_reference_t<T>>() + std::string("&"); };
+};
+template <typename T>
+struct TypeToString<T&&> {
+    std::string operator()() const { return typeToString<std::remove_reference_t<T>>() + std::string("&&"); };
+};
+
+
+template <>
+struct TypeToString<std::string> {
+    std::string operator()() const { return "std::string"; };
+};
+
+template <>
+struct TypeToString<char> {
+    std::string operator()() const { return "char"; };
+};
+template <>
+struct TypeToString<bool> {
+    std::string operator()() const { return "bool"; };
+};
+template <>
+struct TypeToString<double> {
+    std::string operator()() const { return "double"; };
+};
+template <>
+struct TypeToString<float> {
+    std::string operator()() const { return "float"; };
+};
+template <>
+struct TypeToString<std::int64_t> {
+    std::string operator()() const { return "std::int64_t"; };
+};
+template <>
+struct TypeToString<std::int32_t> {
+    std::string operator()() const { return "std::int32_t"; };
+};
+template <>
+struct TypeToString<std::int16_t> {
+    std::string operator()() const { return "std::int16_t"; };
+};
+template <>
+struct TypeToString<std::int8_t> {
+    std::string operator()() const { return "std::int8_t"; };
+};
+template <>
+struct TypeToString<std::uint64_t> {
+    std::string operator()() const { return "std::uint64_t"; };
+};
+template <>
+struct TypeToString<std::uint32_t> {
+    std::string operator()() const { return "std::uint32_t"; };
+};
+template <>
+struct TypeToString<std::uint16_t> {
+    std::string operator()() const { return "std::uint16_t"; };
+};
+template <>
+struct TypeToString<std::uint8_t> {
+    std::string operator()() const { return "std::uint8_t"; };
+};
+
+
+template <typename T>
+struct TypeToString<std::optional<T>> {
+    std::string operator()() const { return std::string("std::optional<") + typeToString<T>() + std::string(">"); };
+};
+
+// TODO handle allocator to string?...
+template <typename T, typename Alloc>
+struct TypeToString<std::vector<T, Alloc>> {
+    std::string operator()() const { return std::string("std::vector<") + typeToString<T>() + std::string(">"); };
+};
+
+
+template <typename... T>
+struct TypeToString<std::tuple<T...>> {
+    std::string operator()() const {
+        return std::string("std::tuple<") + (typeToString<T>() + std::string(", ")) + ... + std::string(">");
+    };
+};
+
+template <typename... T>
+struct TypeToString<std::variant<T...>> {
+    std::string operator()() const {
+        return std::string("std::variant<") + (typeToString<T>() + std::string(", ")) + ... + std::string(">");
+    };
+};
+
+template <typename T>
+struct TypeToString<std::reference_wrapper<T>> {
+    std::string operator()() const {
+        return std::string("std::reference_wrapper<") + typeToString<T>() + std::string(">");
+    };
+};
+
+template <typename T, typename Deleter>
+struct TypeToString<std::unique_ptr<T, Deleter>> {
+    std::string operator()() const {
+        return std::string("std::unique_ptr<") + typeToString<T>() + std::string(", Deleter>");
+    };
+};
+
+template <typename T>
+struct TypeToString<std::shared_ptr<T>> {
+    std::string operator()() const { return std::string("std::shared_ptr<") + typeToString<T>() + std::string(">"); };
+};
+
+//-----------------------------------------------------------------------------
+
 
 }  // namespace multio::util
 

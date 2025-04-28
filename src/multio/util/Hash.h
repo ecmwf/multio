@@ -29,7 +29,7 @@ auto hash(const T& t) noexcept(noexcept(std::hash<T>{}(t))) {
     return std::hash<T>{}(t);
 }
 
-// std is lacking a hash_combine mechanism. Hence one is provided here following
+// std is lacking a hashCombine mechanism. Hence one is provided here following
 // the common approach of Fibonacci-Hashing with golden ratio.
 // Readup:
 //  * https://asecuritysite.com/hash/smh_fib
@@ -39,7 +39,7 @@ template <typename IntType,
           std::enable_if_t<
               std::is_integral<IntType>::value && std::is_unsigned<IntType>::value && (sizeof(IntType) == 8), bool>
           = true>
-constexpr IntType hash_append(IntType lhs, IntType rhs) noexcept {
+constexpr IntType hashAppend(IntType lhs, IntType rhs) noexcept {
     return lhs ^ (rhs + 0x9e3779b97f4a7c15LLU + (lhs << 12) + (lhs >> 4));
 }
 
@@ -47,23 +47,23 @@ template <typename IntType,
           std::enable_if_t<
               std::is_integral<IntType>::value && std::is_unsigned<IntType>::value && (sizeof(IntType) == 4), bool>
           = true>
-constexpr IntType hash_append(IntType lhs, IntType rhs) noexcept {
+constexpr IntType hashAppend(IntType lhs, IntType rhs) noexcept {
     return lhs ^ (rhs + 0x9e3779b9U + (rhs << 6) + (rhs >> 2));
 }
 
 
-std::size_t hash_combine_args(std::size_t lhs) noexcept;
+std::size_t hashCombineArgs(std::size_t lhs) noexcept;
 
 template <typename T, typename... More>
-std::size_t hash_combine_args(std::size_t lhs, const T& t,
-                              const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
-    return hash_combine_args(hash_append(lhs, hash(t)), more...);
+std::size_t hashCombineArgs(std::size_t lhs, const T& t,
+                            const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
+    return hashCombineArgs(hashAppend(lhs, hash(t)), more...);
 }
 
 
 template <typename T, typename... More>
-std::size_t hash_combine(const T& t, const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
-    return hash_combine_args(hash(t), more...);
+std::size_t hashCombine(const T& t, const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
+    return hashCombineArgs(hash(t), more...);
 }
 
 
@@ -117,8 +117,8 @@ struct HashableTuple {
 template <typename... T>
 struct std::hash<multio::util::HashableTuple<T...>> {
     std::size_t operator()(const std::tuple<T...>& t) const
-        noexcept(noexcept(multio::util::hash_combine(std::declval<const T&>()...))) {
-        return std::apply([](const auto&... args) { return multio::util::hash_combine(args...); }, t);
+        noexcept(noexcept(multio::util::hashCombine(std::declval<const T&>()...))) {
+        return std::apply([](const auto&... args) { return multio::util::hashCombine(args...); }, t);
     }
 };
 

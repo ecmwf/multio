@@ -115,32 +115,41 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
 
 MultiOMDict::MultiOMDict(MultiOMDictKind kind) : kind_{kind} {
     std::string kindStr = multiOMDictKindString(kind);
-    ASSERT(multio_grib2_dict_create(&dict_, kindStr.data()) == 0);
+    void* dict = NULL;
+    if (multio_grib2_dict_create(&dict, kindStr.data()) != 0) {
+        throw EncodeMtg2Exception(std::string("Can not create dict kind ") + kindStr, Here());
+    }
 
     if (kind == MultiOMDictKind::Options) {
-        ASSERT(multio_grib2_init_options(&dict_) == 0);
+        ASSERT(multio_grib2_init_options(&dict) == 0);
     }
+    dict_.reset(static_cast<ForeignDictType*>(dict));
 }
 
 void MultiOMDict::toYAML(const std::string& file) {
-    multio_grib2_dict_to_yaml(dict_, "stdout");
+    multio_grib2_dict_to_yaml(get(), "stdout");
 }
 
 void MultiOMDict::set(const char* key, const char* val) {
-    ASSERT(multio_grib2_dict_set(dict_, key, val) == 0);
+    if (multio_grib2_dict_set(get(), key, val) != 0) {
+        throw EncodeMtg2Exception(
+            std::string("Can not set key ") + std::string(key) + std::string(" with value ") + std::string(val),
+            Here());
+    }
 }
 
 void MultiOMDict::set(const std::string& key, const std::string& val) {
     set(key.c_str(), val.c_str());
 }
 
-void MultiOMDict::set_geometry(MultiOMDict& geom) {
+void MultiOMDict::set_geometry(MultiOMDict&& geom) {
     ASSERT(kind_ == MultiOMDictKind::Parametrization);
     switch (geom.kind_) {
         case MultiOMDictKind::ReducedGG:
         case MultiOMDictKind::RegularLL:
         case MultiOMDictKind::SH:
-            ASSERT(multio_grib2_dict_set_geometry(dict_, geom.dict_) == 0);
+            geom_ = std::make_unique<MultiOMDict>(std::move(geom));
+            ASSERT(multio_grib2_dict_set_geometry(get(), geom_->get()) == 0);
             break;
         default:
             throw EncodeMtg2Exception("Passed dict is not a geometry dict", Here());
@@ -149,19 +158,33 @@ void MultiOMDict::set_geometry(MultiOMDict& geom) {
 
 
 void MultiOMDict::set(const std::string& key, std::int64_t val) {
-    ASSERT(multio_grib2_dict_set_int64(dict_, key.c_str(), val) == 0);
+    if (multio_grib2_dict_set_int64(get(), key.c_str(), val) != 0) {
+        throw EncodeMtg2Exception(std::string("Can not set key ") + std::string(key) + std::string(" with int64 value ")
+                                      + std::to_string(val),
+                                  Here());
+    }
 }
 void MultiOMDict::set(const std::string& key, bool val) {
     set(key, (std::int64_t)val);
 }
 void MultiOMDict::set(const std::string& key, double val) {
-    ASSERT(multio_grib2_dict_set_double(dict_, key.c_str(), val) == 0);
+    if (multio_grib2_dict_set_double(get(), key.c_str(), val) == 0) {
+        throw EncodeMtg2Exception(std::string("Can not set key ") + std::string(key)
+                                      + std::string(" with double value ") + std::to_string(val),
+                                  Here());
+    }
 }
 void MultiOMDict::set(const std::string& key, const std::int64_t* val, std::size_t len) {
-    ASSERT(multio_grib2_dict_set_int64_array(dict_, key.c_str(), val, len) == 0);
+    if (multio_grib2_dict_set_int64_array(get(), key.c_str(), val, len) != 0) {
+        throw EncodeMtg2Exception(std::string("Can not set key ") + std::string(key) + std::string(" with int64 array"),
+                                  Here());
+    }
 }
 void MultiOMDict::set(const std::string& key, const double* val, std::size_t len) {
-    ASSERT(multio_grib2_dict_set_double_array(dict_, key.c_str(), val, len) == 0);
+    if (multio_grib2_dict_set_double_array(get(), key.c_str(), val, len) != 0) {
+        throw EncodeMtg2Exception(
+            std::string("Can not set key ") + std::string(key) + std::string(" with double array"), Here());
+    }
 }
 void MultiOMDict::set(const std::string& key, const std::vector<std::int64_t>& val) {
     set(key, val.data(), val.size());
@@ -171,14 +194,8 @@ void MultiOMDict::set(const std::string& key, const std::vector<double>& val) {
 }
 
 
-MultiOMDict::~MultiOMDict() {
-    // TODO MIVAL : to be removed
-    // std::cout << "Destroying dict: " << multiOMDictKindString(kind_) << std::endl;
-    ASSERT(multio_grib2_dict_destroy(&dict_) == 0);
-}
-
 void* MultiOMDict::get() {
-    return dict_;
+    return static_cast<void*>(dict_.get());
 }
 
 
@@ -234,97 +251,36 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     {
         using namespace message;
-        withKeySet<MarsKeys>([&](const auto& kvDescr) {
-            if (auto search = md.find(kvDescr.plain); search != md.end()) {
-                mars.set(kvDescr.plain, get(kvDescr.plain, search->second));
-            }
+        // Read and set unscoped mars keys
+        auto marsKeys = read(keySet<MarsKeys>().unscoped(), md);
+        write(marsKeys, mars);
+
+        // Read scoped misc keys
+        auto miscKeys = read(keySet<MiscKeys>().scoped(), md);
+        // Write unscoped misc keys
+        miscKeys.keySet.unscoped();
+        write(miscKeys, par);
+
+        // Handle geometry
+        withScopedGeometryKeySet(marsKeys, [&](GridType gridType, auto geoKeySet) {
+            MultiOMDict geom{([&]() {
+                switch (gridType) {
+                    case GridType::GG:
+                        return MultiOMDictKind::ReducedGG;
+                    case GridType::LL:
+                        return MultiOMDictKind::RegularLL;
+                    case GridType::SH:
+                        return MultiOMDictKind::SH;
+                }
+                throw EncodeMtg2Exception("unkown gridType", Here());
+            })()};
+
+            auto geoKeys = read(geoKeySet, md);
+            write(geoKeys.unscoped(), geom);
+            par.set_geometry(std::move(geom));
         });
-        withKeySet<MiscKeys>([&](const auto& prefixedKvDescr) {
-            if (auto search = md.find(prefixedKvDescr.prefixed); search != md.end()) {
-                par.set(prefixedKvDescr.plain, get(prefixedKvDescr.prefixed, search->second));
-            }
-        });
-
-        // Legacy handling -- assume no grid has been passed for SH but truncation and repres are given
-        // std::string grid;
-        // auto searchGrid = md.find(key<MarsKeys::GRID>().plain);
-        // if (searchGrid == md.end()) {
-        //     auto searchRepres = md.find(key<MarsKeys::REPRES>().plain);
-        //     auto searchTruncation = md.find(key<MarsKeys::TRUNCATION>().plain);
-
-        //     if (searchRepres != md.end() && searchTruncation != md.end()) {
-        //         if (searchRepres->second.get<std::string>() == "sh") {
-        //             grid = std::string("TCO") + std::to_string(searchTruncation->second.get<std::int64_t>());
-        //         } else {
-        //             throw EncodeMtg2Exception("Required a key \"grid\"",Here());
-        //         }
-        //     } else {
-        //         throw EncodeMtg2Exception("Required a key \"grid\"",Here());
-        //     }
-        // } else {
-        //     grid = key<MarsKeys::GRID>().plain.get(searchGrid->second);
-        // }
-
-
-        // Repres repres;
-        // std::string prefix;
-        // std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
-
-        // Legacy handling -- add repres and truncation assuming grid has been passed properly and also handles SH
-        // {
-        //     if (auto searchRepres = md.find(marsLegacy::repres); searchRepres != md.end()) {
-        //         if (searchRepres->second.get<std::string>() != toString(repres)) {
-        //             std::ostringstream oss;
-        //             oss << "Passed repres \"" << searchRepres->second << "\" is different from infered repres \"" <<
-        //             toString(repres) << "\""; throw EncodeMtg2Exception(oss.str(), Here());
-        //         }
-        //     }
-        //     mars.set(marsLegacy::repres, toString(repres));
-        //
-        //     if (repres == Repres::SH) {
-        //         std::int64_t truncation = std::stol(grid.substr(3, grid.size()-1));
-        //         if (auto searchTruncation = md.find(marsLegacy::truncation); searchTruncation != md.end()) {
-        //             if (searchTruncation->second.get<std::int64_t>() != truncation) {
-        //                 std::ostringstream oss;
-        //                 oss << "Passed truncation \"" << searchTruncation->second << "\" is different from infered
-        //                 truncation \"" << truncation << "\""; throw EncodeMtg2Exception(oss.str(), Here());
-        //             }
-        //         }
-        //         mars.set(marsLegacy::truncation, truncation);
-        //     }
-        //
-        // }
-        //
-        // MultiOMDict geom{
-        //     ([&](){
-        //         switch (repres) {
-        //             case Repres::GG:
-        //                 return MultiOMDictKind::ReducedGG;
-        //             case Repres::LL:
-        //                 return MultiOMDictKind::RegularLL;
-        //             case Repres::SH:
-        //                 return MultiOMDictKind::SH;
-        //         }
-        //         throw EncodeMtg2Exception("unkown repres", Here());
-        //     })()
-        // };
-
-        // withGeometryKeys(repres, [&](const auto& kvDescr) {
-        //     if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
-        //         geom.set(kvDescr, kvDescr.get(search->second));
-        //     }
-        // });
-
-        // par.set_geometry(geom);
-
 
         auto& payload = msg.payload();
-
-        // auto beg = reinterpret_cast<const T*>(msg.payload().data());
-        // this->setDataValues(beg, msg.globalSize());
-
-        // msg.header().acquireMetadata();
-        // const auto& metadata = msg.metadata();
 
         executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
             using Precision = typename decltype(pt)::type;
@@ -339,8 +295,6 @@ void EncodeMtg2::executeImpl(Message msg) {
             eckit::Buffer buf{gribHandle.length()};
             gribHandle.write(buf);
 
-            // TODO MIVAL : to be removed
-            // std::cout << "Encoded message size: " << buf.size() << std::endl;
 
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                            std::move(buf)};

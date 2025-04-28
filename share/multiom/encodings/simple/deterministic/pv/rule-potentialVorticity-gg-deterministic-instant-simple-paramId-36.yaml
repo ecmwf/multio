@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-abstractSingleLevel-gg-ensemble-instant-ccsds-paramId-1
+name: rule-potentialVorticity-gg-deterministic-instant-simple-paramId-36
 
 filter:
   type: composed
@@ -10,19 +10,27 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
-    - type: number
       operation: has
+    - type: number
+      operation: lacks
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
-      value: al
+      value: pv
     - type: param
       operation: match
       values:
-        - "213101:213160"
+        - 3
+        - 54
+        - 129
+        - 131
+        - 132
+        - 133
+        - 203
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -41,11 +49,11 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 143
+    template-number: 0
     point-in-time-configurator:
       type: default
     param-configurator:
@@ -53,10 +61,6 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: abstractSingleLevel
-    ensemble-configurator:
-      type: default
-    random-patterns-configurator:
-      type: default
+      type: potentialVorticity
   data-representation-section:
-    template-number: 42
+    template-number: 0

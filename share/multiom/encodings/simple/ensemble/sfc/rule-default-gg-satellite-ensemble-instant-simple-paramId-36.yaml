@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveSea-gg-reforecast-ensemble-instant-simple-paramId-1
+name: rule-default-gg-satellite-ensemble-instant-simple-paramId-36
 
 filter:
   type: composed
@@ -10,20 +10,18 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
+      operation: has
     - type: number
       operation: has
     - type: hdate
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
     - type: param
       operation: match
       values:
-        - 140245
-        - 140249
-        - 140233
+        - "260510:260513"
     - type: packing
       operation: match
       value: simple
@@ -45,20 +43,20 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 60
+    template-number: 33
     point-in-time-configurator:
       type: default
     param-configurator:
       type: paramId
     model-configurator:
       type: default
-    level-configurator:
-      type: heightAboveSea
     ensemble-configurator:
+      type: default
+    satellite-configurator:
       type: default
   data-representation-section:
     template-number: 0

@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-1
+name: rule-theta-gg-ensemble-min-ccsds-paramId-1
 
 filter:
   type: composed
@@ -13,16 +13,18 @@ filter:
       operation: lacks
     - type: number
       operation: has
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
-      value: al
+      value: pt
     - type: param
       operation: match
       values:
-        - "213101:213160"
+        - 238203
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -45,18 +47,17 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 143
-    point-in-time-configurator:
-      type: default
+    template-number: 11
+    time-statistics-configurator:
+      type: since-last-post-processing-step
+      type-of-statistical-processing: min
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: abstractSingleLevel
+      type: theta
     ensemble-configurator:
       type: default
-    random-patterns-configurator:
-      type: default
   data-representation-section:
-    template-number: 0
+    template-number: 42

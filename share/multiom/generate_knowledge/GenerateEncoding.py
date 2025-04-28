@@ -313,10 +313,6 @@ class ProcessTypeConfig(BaseModel):
 
 class RandomPatternsConfig(BaseModel):
     type: str = "default"
-    largeEnsemble: bool = False
-
-class RandomPatternsConfig(BaseModel):
-    type: str = "default"
 
 
 class ChemConfig(BaseModel):
@@ -372,7 +368,6 @@ class ProductDefinition(BaseModel):
     param: ParamConfig = ParamConfig()
     processType: ProcessTypeConfig = ProcessTypeConfig()
     level: Optional[LevelConfig] = None
-    ensemble: Optional[EnsembleConfig] = None
     randomPatterns: Optional[RandomPatternsConfig] = None
     chemical: Optional[ChemConfig] = None
     directionsFrequencies: Optional[DirectionsFrequenciesConfig] = None
@@ -547,11 +542,6 @@ def toDictRepres(val):
                     else {}
                 ),
                 **(
-                    {"random-patterns-configurator": toDictRepres(val.randomPatterns)}
-                    if val.randomPatterns is not None
-                    else {}
-                ),
-                **(
                     {"chemistry-configurator": toDictRepres(val.chemical)}
                     if val.chemical is not None
                     else {}
@@ -636,8 +626,6 @@ def toDictRepres(val):
             return {"type": val.type}
         case RandomPatternsConfig():
             return {"type": val.type}
-        case RandomPatternsConfig():
-            return {"type": val.type}
         case ChemConfig():
             return {"type": val.type}
         case DirectionsFrequenciesConfig():
@@ -678,7 +666,6 @@ Section4Part: TypeAlias = Union[
     TimeRange,
     ParamConfig,
     LevelConfig,
-    EnsembleConfig,
     ProcessTypeConfig,
     RandomPatternsConfig,
     ChemConfig,
@@ -711,7 +698,6 @@ EncodePart: TypeAlias = Union[
     TimeRange,
     ParamConfig,
     LevelConfig,
-    EnsembleConfig,
     ProcessTypeConfig,
     RandomPatternsConfig,
     ChemConfig,
@@ -751,8 +737,6 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                     yield pdtCatPair("timeExtent", "timeRange")
                 case ChemConfig():
                     yield pdtCatPair("productCategory", "chemical")
-                case EnsembleConfig():
-                    yield pdtCatPair("processSubType", "ensemble")
                 case ProcessTypeConfig():
                     if crumb.type != ProcessTypes.default:
                         yield pdtCatPair("processType", crumb.type )
@@ -836,7 +820,6 @@ def buildProductDefiniton(crumbs: List[EncodePart]):
         **toArgDict("timeConfig", buildTimeConfig(pdtCrumbs)),
         **toArgDict("param", getCrumb(ParamConfig, pdtCrumbs)),
         **toArgDict("level", getCrumb(LevelConfig, pdtCrumbs)),
-        **toArgDict("ensemble", getCrumb(EnsembleConfig, pdtCrumbs)),
         **toArgDict("processType", getCrumb(ProcessTypeConfig, pdtCrumbs)),
         **toArgDict("randomPatterns", getCrumb(RandomPatternsConfig, pdtCrumbs)),
         **toArgDict("chemical", getCrumb(ChemConfig, pdtCrumbs)),

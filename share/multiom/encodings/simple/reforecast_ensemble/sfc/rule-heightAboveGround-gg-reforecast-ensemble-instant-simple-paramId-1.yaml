@@ -21,7 +21,6 @@ filter:
     - type: param
       operation: match
       values:
-        - "165:168"
         - 207
         - 174096
         - 129172

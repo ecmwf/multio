@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-abstractSingleLevel-gg-ensemble-instant-simple-paramId-36
+name: rule-heightAboveSeaAt10m-gg-reforecast-ensemble-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -10,16 +10,20 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
+      operation: has
+    - type: hdate
       operation: has
     - type: levtype
       operation: match
-      value: al
+      value: sfc
     - type: param
       operation: match
       values:
-        - "213101:213160"
+        - 140245
+        - 140249
+        - 140233
     - type: packing
       operation: match
       value: simple
@@ -41,11 +45,11 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 143
+    template-number: 60
     point-in-time-configurator:
       type: default
     param-configurator:
@@ -53,10 +57,8 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: abstractSingleLevel
+      type: heightAboveSeaAt10m
     ensemble-configurator:
-      type: default
-    random-patterns-configurator:
       type: default
   data-representation-section:
     template-number: 0

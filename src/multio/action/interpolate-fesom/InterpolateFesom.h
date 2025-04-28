@@ -29,7 +29,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/ChainedAction.h"
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 template <typename MatrixType, typename = std::enable_if_t<std::is_floating_point<MatrixType>::value>>
 class Fesom2HEALPix {
@@ -273,4 +273,4 @@ private:
 };
 
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom

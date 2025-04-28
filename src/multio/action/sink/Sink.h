@@ -21,11 +21,7 @@
 #include "multio/action/Action.h"
 #include "multio/sink/MultIO.h"
 
-namespace multio {
-
-class DataSink;
-
-namespace action {
+namespace multio::action::sink {
 
 using message::Message;
 
@@ -33,7 +29,7 @@ class Sink : public Action {
 public:
     explicit Sink(const ComponentConfiguration& compConf);
 
-    void executeImpl(message::Message msg) override;
+    void executeImpl(Message msg) override;
 
 private:
     void print(std::ostream& os) const override;
@@ -44,8 +40,7 @@ private:
 
     void trigger(const Message& msg);
 
-    sink::MultIO mio_;
+    multio::sink::MultIO mio_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action::sink

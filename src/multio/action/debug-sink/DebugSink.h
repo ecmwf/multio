@@ -19,9 +19,7 @@
 
 #include <queue>
 
-namespace multio {
-
-namespace action {
+namespace multio::action::debug_sink {
 
 using message::Message;
 
@@ -37,5 +35,4 @@ private:
     std::queue<message::Message>& debugSink_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action::debug_sink

@@ -1,8 +1,7 @@
 
 #include "ActionStatistics.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 ActionStatistics::ActionStatistics() {}
 
@@ -11,5 +10,4 @@ void ActionStatistics::report(std::ostream& out, const std::string& type, const 
     reportTime(out, str.c_str(), actionTiming_, indent);
 }
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

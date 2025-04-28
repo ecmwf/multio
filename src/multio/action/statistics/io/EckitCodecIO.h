@@ -8,7 +8,7 @@
 
 #include "multio/action/statistics/StatisticsIO.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 static eckit::LocalConfiguration no_compression = [] {
     eckit::LocalConfiguration c;
@@ -30,4 +30,4 @@ private:
     void checkFileSize(const std::string& fname, size_t expectedSize) const;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

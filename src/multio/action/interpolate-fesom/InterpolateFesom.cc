@@ -29,7 +29,7 @@
 #include "multio/util/Substitution.h"
 
 
-namespace multio::action::interpolateFESOM {
+namespace multio::action::interpolate_fesom {
 
 namespace {
 
@@ -205,4 +205,4 @@ static ActionBuilder<InterpolateFesom<float>> InterpolateFesomBuilderSP("interpo
 static ActionBuilder<InterpolateFesom<double>> InterpolateFesomBuilderDP("interpolate-fesom-double");
 
 
-}  // namespace multio::action::interpolateFESOM
+}  // namespace multio::action::interpolate_fesom

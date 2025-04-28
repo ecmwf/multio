@@ -14,7 +14,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio::action {
+namespace multio::action::null {
 
 Null::Null(const ComponentConfiguration& compConf) : Action(compConf) {}
 
@@ -26,4 +26,4 @@ void Null::print(std::ostream& os) const {
 
 static ActionBuilder<Null> NullBuilder("null");
 
-}  // namespace multio::action
+}  // namespace multio::action::null

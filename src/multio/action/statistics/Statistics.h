@@ -26,7 +26,7 @@ namespace eckit {
 class Configuration;
 }
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class TemporalStatistics;
 
@@ -60,4 +60,4 @@ private:
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

@@ -13,7 +13,7 @@
 #include "multio/action/statistics/synoptic-filters/DailyCustomFilter.h"
 #include "multio/action/statistics/synoptic-filters/DailyHoursFilter.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 
 // Filters without specific yaml configuration
@@ -46,4 +46,4 @@ std::unique_ptr<SynopticFilter> make_filter(const std::string& filterKind, const
     throw eckit::UserError(os.str(), Here());
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

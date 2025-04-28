@@ -9,7 +9,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class PeriodUpdater {
 public:
@@ -84,4 +84,4 @@ private:
     }
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

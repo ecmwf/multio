@@ -8,7 +8,7 @@
 #include "multio/message/Message.h"
 
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class MonthPeriodUpdater final : public PeriodUpdater {
 public:
@@ -51,4 +51,4 @@ public:
     };
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

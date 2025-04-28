@@ -20,7 +20,7 @@
 #include "multio/message/Glossary.h"
 #include "multio/sink/DataSink.h"
 
-namespace multio::action {
+namespace multio::action::debug_sink {
 
 using message::glossary;
 
@@ -37,4 +37,4 @@ void DebugSink::print(std::ostream& os) const {
 
 static ActionBuilder<DebugSink> DebugSinkBuilder("debug-sink");
 
-}  // namespace multio::action
+}  // namespace multio::action::debug_sink

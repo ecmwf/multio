@@ -22,7 +22,7 @@
 #include "multio/domain/Domain.h"
 #include "multio/domain/Mask.h"
 
-namespace multio::action {
+namespace multio::action::mask {
 
 
 class Mask : public ChainedAction {
@@ -49,4 +49,4 @@ private:
     double offsetValue_;
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::mask

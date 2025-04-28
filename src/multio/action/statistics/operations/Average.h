@@ -4,7 +4,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/statistics/operations/OperationWithData.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 class Average final : public OperationWithData<T> {
@@ -85,4 +85,4 @@ private:
     void print(std::ostream& os) const override { os << logHeader_; }
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

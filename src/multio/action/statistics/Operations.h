@@ -30,7 +30,7 @@
 #include "multio/action/statistics/operations/DeAccumulate.h"
 #include "multio/action/statistics/operations/FixedWindowFluxAverage.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 template <typename Precision>
 std::unique_ptr<Operation> make_operation(const std::string& opname, std::size_t size, std::shared_ptr<StatisticsIO>& IOmanager,
@@ -120,4 +120,4 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
 std::vector<std::unique_ptr<Operation>> load_operations(std::shared_ptr<StatisticsIO>& IOmanager,
                                                         const OperationWindow& win, const StatisticsOptions& opt);
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

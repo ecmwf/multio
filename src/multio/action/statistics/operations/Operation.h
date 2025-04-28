@@ -8,7 +8,7 @@
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 class Operation {
 public:
@@ -51,4 +51,4 @@ protected:
     }
 };
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

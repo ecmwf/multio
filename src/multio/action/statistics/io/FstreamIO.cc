@@ -6,7 +6,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
 
-namespace multio::action {
+namespace multio::action::statistics {
 
 FstreamIO::FstreamIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "fstreamIO"} {};
 
@@ -73,4 +73,4 @@ void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) cons
 
 StatisticsIOBuilder<FstreamIO> FstreamBuilder("fstream_io");
 
-}  // namespace multio::action
+}  // namespace multio::action::statistics

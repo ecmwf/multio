@@ -123,7 +123,7 @@ MultiOMDict::MultiOMDict(MultiOMDictKind kind) : kind_{kind} {
 }
 
 void MultiOMDict::toYAML(const std::string& file) {
-    multio_grib2_dict_to_yaml(dict_, "stdout");
+//    multio_grib2_dict_to_yaml(dict_, "stdout");
 }
 
 void MultiOMDict::set(const char* key, const char* val) {

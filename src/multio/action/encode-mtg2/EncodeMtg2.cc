@@ -80,10 +80,24 @@ MultiOMEncoder makeEncoder(const EncodeMultiOMOptions& opts, const ComponentConf
         optDict.set("mapping-rules", opts.mappingFile->c_str());
     }
 
-    // TODO -- in the tool we used to set IFS_INSTALL_DIR ... now we expect the user to set it
-    // setenv("IFS_INSTALL_DIR", knowledgeRoot_.c_str(), 0);
-
     return MultiOMEncoder(optDict);
+}
+
+
+EncoderCache makeEncoderCache(const EncodeMultiOMOptions& opts, const ComponentConfiguration& conf) {
+    MultiOMDict optDict(MultiOMDictKind::Options);
+    if (opts.samplesPath) {
+        optDict.set("samples-path", opts.samplesPath->c_str());
+    }
+    if (opts.encodingFile) {
+        optDict.set("encoding-rules", opts.encodingFile->c_str());
+    }
+    if (opts.mappingFile) {
+        optDict.set("mapping-rules", opts.mappingFile->c_str());
+    }
+
+    // TODO read kind from options???
+    return EncoderCache(MultiOMEncoderKind::Cached, std::move(optDict));
 }
 
 std::string encodingExceptionReason(const std::string& r) {
@@ -108,6 +122,18 @@ std::string multiOMDictKindString(MultiOMDictKind kind) {
             return "regular-ll";
         case MultiOMDictKind::SH:
             return "sh";
+        default:
+            NOTIMP;
+    }
+}
+
+
+std::string multiOMEncoderKindString(MultiOMEncoderKind kind) {
+    switch (kind) {
+        case MultiOMEncoderKind::Simple:
+            return "simple";
+        case MultiOMEncoderKind::Cached:
+            return "cached";
         default:
             NOTIMP;
     }
@@ -199,6 +225,37 @@ void* MultiOMDict::get() {
 }
 
 
+MultiOMRawEncoder::MultiOMRawEncoder(MultiOMEncoderKind kind, MultiOMDict& options, MultiOMDict& mars) : kind_{kind} {
+    std::string kindStr = multiOMEncoderKindString(kind);
+    void* encoder = NULL;
+    // @Mirco TO BE DONE
+    // if (multio_grib2_encoder_create(&encoder, kindStr.data()) != 0) {
+    //     throw EncodeMtg2Exception(std::string("Can not create encoder kind ") + kindStr, Here());
+    // }
+
+    encoder_.reset(static_cast<ForeignEncoderType*>(encoder));
+}
+
+void* MultiOMRawEncoder::get() {
+    return static_cast<void*>(encoder_.get());
+}
+
+EncoderCache::EncoderCache(MultiOMEncoderKind kind, MultiOMDict&& options) :
+    kind_{kind}, options_{std::move(options)} {}
+
+MultiOMRawEncoder& EncoderCache::getEncoder(const message::MarsKeyValueSet& marsKeys, MultiOMDict& mars) {
+    using namespace multio::message;
+    // TODO prehash by wrapping in custom type with custom hash that returns prehashed
+    auto cacheKeySet = getEncoderCacheKeys(marsKeys);
+
+    if (auto search = cache_.find(cacheKeySet); search != cache_.end()) {
+        return search->second;
+    }
+
+    return cache_.emplace(cacheKeySet, MultiOMRawEncoder(kind_, options_, mars)).first->second;
+}
+
+
 MultiOMEncoder::MultiOMEncoder(MultiOMDict& options) {
     ASSERT(multio_grib2_encoder_open(options.get(), &encoder_) == 0);
 }
@@ -230,7 +287,10 @@ EncodeMtg2Exception::EncodeMtg2Exception(const std::string& r, const eckit::Code
 
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, options_{parseOptions(compConf)}, encoder_{makeEncoder(options_, compConf)} {}
+    ChainedAction{compConf},
+    options_{parseOptions(compConf)},
+    encoder_{makeEncoder(options_, compConf)},
+    cache_{makeEncoderCache(options_, compConf)} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {
@@ -280,11 +340,16 @@ void EncodeMtg2::executeImpl(Message msg) {
             par.set_geometry(std::move(geom));
         });
 
+
+        // @Mirco here we get the cached raw encoder
+        MultiOMRawEncoder& rawEncoder = cache_.getEncoder(marsKeys, mars);
+
         auto& payload = msg.payload();
 
         executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
             using Precision = typename decltype(pt)::type;
 
+            // @Mirco here we would call the rawEncoder
             auto rawGrib2Handle = encoder_.encode(mars, par, static_cast<const Precision*>(payload.data()),
                                                   payload.size() / sizeof(Precision));
 

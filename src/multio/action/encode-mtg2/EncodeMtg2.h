@@ -43,6 +43,29 @@ public:
 
 
 namespace multio::action::encode_mtg2 {
+struct ForeignEncoderType;
+}
+
+template <>
+class std::default_delete<multio::action::encode_mtg2::ForeignEncoderType> {
+public:
+    void operator()(multio::action::encode_mtg2::ForeignEncoderType* ptr) const {
+        void* p = static_cast<void*>(ptr);
+        // TODO uncomment with new function
+        // ASSERT(multio_grib2_encoder_close(&p) == 0);
+    }
+};
+
+
+namespace multio::action::encode_mtg2 {
+
+enum class MultiOMEncoderKind : unsigned long
+{
+    Simple,
+    Cached,
+};
+
+std::string multiOMEncoderKindString(MultiOMEncoderKind kind);
 
 enum class MultiOMDictKind : unsigned long
 {
@@ -136,6 +159,33 @@ struct MultiOMEncoder {
 };
 
 
+// New encoder for caching
+struct MultiOMRawEncoder {
+    MultiOMRawEncoder(MultiOMEncoderKind kind, MultiOMDict& options, MultiOMDict& mars);
+    ~MultiOMRawEncoder() = default;
+
+    MultiOMRawEncoder(MultiOMRawEncoder&&) noexcept = default;
+    MultiOMRawEncoder& operator=(MultiOMRawEncoder&&) noexcept = default;
+
+    void* get();
+
+    MultiOMEncoderKind kind_;
+    std::unique_ptr<ForeignEncoderType> encoder_;
+};
+
+class EncoderCache {
+public:
+    EncoderCache(MultiOMEncoderKind kind, MultiOMDict&& options);
+    MultiOMRawEncoder& getEncoder(const message::MarsKeyValueSet& marsKeys, MultiOMDict& marsDict);
+
+
+private:
+    MultiOMEncoderKind kind_;
+    MultiOMDict options_;
+    std::unordered_map<message::EncoderCacheMarsKeyValueSet, MultiOMRawEncoder> cache_{};
+};
+
+
 class EncodeMtg2 : public ChainedAction {
 public:
     explicit EncodeMtg2(const ComponentConfiguration& compConf);
@@ -150,7 +200,8 @@ private:
     void print(std::ostream& os) const override;
 
     EncodeMultiOMOptions options_;
-    MultiOMEncoder encoder_;
+    MultiOMEncoder encoder_;  // @Mirco this may be removed or used optionally
+    EncoderCache cache_;
 };
 
 //---------------------------------------------------------------------------------------------------------------------

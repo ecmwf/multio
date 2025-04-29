@@ -220,7 +220,7 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam(["129172", "228239:228241"]),
+            matchParam([207, 174096, 129172, 228029, 228037, "228131:228132", "228239:228241"]),
         ],
         [PointInTime(), levelConfig("heightAboveGround")],
     ),

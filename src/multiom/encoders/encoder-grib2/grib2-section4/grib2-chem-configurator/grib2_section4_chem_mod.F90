@@ -679,15 +679,15 @@ IMPLICIT NONE
         PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'aerosolType', MSG%CHEM )
     ENDIF
   ENDIF
-  
+
   ! IF ( MSG%WAVELENGTH(1) .NE. UNDEF_PARAM_E .OR. MSG%WAVELENGTH(2) .NE. UNDEF_PARAM_E ) THEN
   !   ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavelengthInterval', ??? )
-    
+
   !   IF ( MSG%WAVELENGTH(1) .NE. UNDEF_PARAM_E ) THEN
   !       ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstWavelength',  )
   !       ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstWavelength',  )
   !   ENDIF
-    
+
   !   IF ( MSG%WAVELENGTH(1) .NE. UNDEF_PARAM_E ) THEN
   !       ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfSecondWavelength',  )
   !       ! PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondWavelength',  )

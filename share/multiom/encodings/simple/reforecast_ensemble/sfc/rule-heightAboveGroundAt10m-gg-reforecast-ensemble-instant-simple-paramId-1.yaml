@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveGroundAt10m-gg-ensemble-instant-simple-paramId-1
+name: rule-heightAboveGroundAt10m-gg-reforecast-ensemble-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -14,7 +14,7 @@ filter:
     - type: number
       operation: has
     - type: hdate
-      operation: lacks
+      operation: has
     - type: levtype
       operation: match
       value: sfc
@@ -50,7 +50,7 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 1
+    template-number: 60
     point-in-time-configurator:
       type: default
     param-configurator:

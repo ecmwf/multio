@@ -10,31 +10,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "atlas/grid.h"
-#include "atlas/library.h"
-#include "atlas/parallel/mpi/mpi.h"
 
 #include "c/api.h"
 #include "eccodes.h"
 
 namespace {
-
-atlas::Grid readGrid(const std::string& name) {
-    atlas::mpi::Scope mpi_scope("self");
-    return atlas::Grid{name};
-}
-
-template <class GridType>
-GridType createGrid(const std::string& atlasNamedGrid) {
-    const atlas::Grid grid = readGrid(atlasNamedGrid);
-    auto structuredGrid = atlas::StructuredGrid(grid);
-    return GridType(structuredGrid);
-}
-
-
 bool hasKey(codes_handle* handle, const char* key) {
-    int err;
-    return codes_is_defined(handle, key) != 0 && codes_is_missing(handle, key, &err) == 0;
+    return codes_is_defined(handle, key) != 0;
 }
 
 std::string getString(codes_handle* handle, const char* key) {
@@ -210,10 +192,8 @@ std::string arrayToJSONString(const std::vector<T>& arr) {
 
 int getAndSetDoubleArray(codes_handle* h, void* dict, const char* key, const char* setName = NULL) {
     if (hasKey(h, key)) {
-        // int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName,
-        //                                 arrayToJSONString(getDoubleArray(h, key)).data());
-        auto data = getDoubleArray(h, key);
-        int ret = multio_grib2_dict_set_double_array(dict, setName == NULL ? key : setName, data.data(), data.size());
+        int ret = multio_grib2_dict_set(dict, setName == NULL ? key : setName,
+                                        arrayToJSONString(getDoubleArray(h, key)).data());
         if (ret != 0) {
             return ret;
         }
@@ -288,68 +268,6 @@ int handleReducedGG(codes_handle* h, void* mars_dict, void* par_dict) {
     return multio_grib2_dict_set_geometry(par_dict, geom);
 }
 
-int handleReducedGGAtlas(codes_handle* h, void* mars_dict, void* par_dict) {
-    void* geom = NULL;
-    int ret = multio_grib2_dict_create(&geom, "reduced-gg");
-    
-    std::string gridName = getString(h, "gridName");
-    
-    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
-    
-
-
-    ret = getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
-    if (ret != 0)
-        return ret;
-        
-    ret = multio_grib2_dict_set(geom, "numberOfParallelsBetweenAPoleAndTheEquator", std::to_string(gaussianGrid.N()).c_str());
-    if (ret != 0)
-        return ret;
-
-    ret = getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
-    if (ret != 0)
-        return ret;
-
-
-    {
-        auto it = gaussianGrid.lonlat().begin();
-        
-        ret = multio_grib2_dict_set(geom, "latitudeOfFirstGridPointInDegrees", std::to_string((*it)[1]).data());
-        if (ret != 0)
-            return ret;
-            
-        ret = multio_grib2_dict_set(geom, "longitudeOfFirstGridPointInDegrees", std::to_string((*it)[0]).data());
-        if (ret != 0)
-            return ret;
-            
-        it += gaussianGrid.size() - 1;
-        ret = multio_grib2_dict_set(geom, "latitudeOfLastGridPointInDegrees", std::to_string((*it)[1]).data());
-        if (ret != 0)
-            return ret;
-            
-        const auto equator = gaussianGrid.N();
-        const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-        ret = multio_grib2_dict_set(geom, "longitudeOfLastGridPointInDegrees", std::to_string(maxLongitude).data());
-    }
-
-    {
-        auto tmp = gaussianGrid.nx();
-        std::vector<long> pl(tmp.size(), 0);
-        for (int i = 0; i < tmp.size(); ++i) {
-            pl[i] = long(tmp[i]);
-        }
-        ret = multio_grib2_dict_set(geom, "pl", arrayToJSONString(pl).data());
-        if (ret != 0)
-            return ret;
-    }
-
-    ret = multio_grib2_dict_set(mars_dict, "repres", "gg");
-    if (ret != 0)
-        return ret;
-
-    return multio_grib2_dict_set_geometry(par_dict, geom);
-}
-
 int handleSH(codes_handle* h, void* mars_dict, void* par_dict) {
     void* geom = NULL;
     int ret = multio_grib2_dict_create(&geom, "sh");
@@ -395,7 +313,7 @@ int handleLL(codes_handle* h, void* mars_dict, void* par_dict) {
 
 int handleGridType(codes_handle* h, const std::string& gridType, void* mars_dict, void* par_dict) {
     const static std::unordered_map<std::string, GridTypeFunction> gridMap{
-        {"reduced_gg", &handleReducedGGAtlas},
+        {"reduced_gg", &handleReducedGG},
         {"regular_ll", &handleLL},
         {"sh", &handleSH},
     };
@@ -574,14 +492,8 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    ret = getAndSet(h, *mars_dict, "hdate");
-    if (ret != 0) {
-        return ret;
-    }
-
     // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
     {
-        // TODO - this will cause problems with referenceDate/time in grib2....
         long hh = getLong(h, "hour");
         long mm = getLong(h, "minute");
         long ss = getLong(h, "second");
@@ -597,23 +509,6 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
     ret = getAndSet(h, *mars_dict, "step", "step", {"0"});
     if (ret != 0) {
         return ret;
-    }
-
-    if (hasKey(h, "endStep")) {
-        long endStep = getLong(h, "endStep");
-        long startStep = getLong(h, "startStep");
-
-        ret = multio_grib2_dict_set(*mars_dict, "step", std::to_string(endStep).c_str());
-        if (ret != 0) {
-            return ret;
-        }
-        long stepRange = endStep - startStep;
-        if (stepRange > 0) {
-            ret = multio_grib2_dict_set(*mars_dict, "timeproc", std::to_string(stepRange).c_str());
-            if (ret != 0) {
-                return ret;
-            }
-        }
     }
 
     ret = getAndSet(h, *mars_dict, "truncation");
@@ -673,7 +568,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    ret = getAndSetDoubleArray(h, *par_dict, "pv", "pv");
+    ret = getAndSet(h, *par_dict, "pv");
     if (ret != 0) {
         return ret;
     }
@@ -739,12 +634,12 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    ret = getAndSetLongArray(h, *par_dict, "scaledValuesOfWaveDirections", "waveDirections");
+    ret = getAndSet(h, *par_dict, "waveDirections");
     if (ret != 0) {
         return ret;
     }
 
-    ret = getAndSetLongArray(h, *par_dict, "scaledValuesOfWaveFrequencies", "waveFrequencies");
+    ret = getAndSet(h, *par_dict, "waveFrequencies");
     if (ret != 0) {
         return ret;
     }

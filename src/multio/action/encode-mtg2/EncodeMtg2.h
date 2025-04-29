@@ -51,8 +51,6 @@ std::string multiOMDictKindString(MultiOMDictKind kind);
 struct MultiOMDict {
     MultiOMDict(MultiOMDictKind kind);
 
-    void toYAML(const std::string& file = "stdout");
-
     void set(const char* key, const char* val);
     void set(const std::string& key, const std::string& val);
 

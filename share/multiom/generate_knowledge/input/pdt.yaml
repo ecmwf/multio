@@ -590,6 +590,16 @@ groups:
         - scaledValueOfTemporalScale
         - scaleFactorOfTemporalScale
 
+    randomPatterns:
+        - randomFieldNumber
+        - totalNumberOfRandomFields
+        - spatioTemporalScaleNumber
+        - totalNumberOfSpatioTemporalScales
+        - scaledValueOfSpatialScale
+        - scaleFactorOfSpatialScale
+        - scaledValueOfTemporalScale
+        - scaleFactorOfTemporalScale
+
 
 
 # Keys interfering with other sections:

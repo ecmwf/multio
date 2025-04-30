@@ -29,7 +29,9 @@ from GenerateEncoding import (
     levelConfig,
     paramConfig,
     ParamConfig,
-    EnsembleConfig,
+    ProcessTypeConfig,
+    ProcessTypes,
+    ProcessSubTypes,
     RandomPatternsConfig,
     TimeConfig,
     TablesConfig,
@@ -90,12 +92,13 @@ LOCALSECTION = [
 ]
 
 PROCESSTYPES = [
-    partialRule([lacksType("number")], []),
-    partialRule([hasType("number")], [EnsembleConfig()]),
+    partialRule([lacksType("number"), lacksType("hdate")], []),
+    partialRule([hasType("number"), lacksType("hdate")], [ProcessTypeConfig(subType=ProcessSubTypes.ensemble)]),
+    partialRule([hasType("number"), hasType("hdate")], [ProcessTypeConfig(type=ProcessTypes.reforecast, subType=ProcessSubTypes.ensemble)]),
 ]
 
 PROCESSTYPES_AL = [
-    partialRule([hasType("number")], [EnsembleConfig(largeEnsemble=True)]),
+    partialRule([hasType("number")], [ProcessTypeConfig(subType=ProcessSubTypes.largeEnsemble)]),
 ]
 
 
@@ -201,11 +204,23 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228004])],
+        [
+            levelConfig("heightAboveGround"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="average-since-last-pp",
+            ),
+        ],
+    ),
     # heightAboveGround - point in time
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam(["129172", "228239:228241"]),
+            matchParam([207, 174096, 129172, 228029, 228037, "228131:228132", "228239:228241"]),
         ],
         [PointInTime(), levelConfig("heightAboveGround")],
     ),
@@ -247,7 +262,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # iceLayerOnWater - point in time
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228014])],
+        [matchType("levtype", "sfc"), matchParam([228014, 262000])],
         [PointInTime(), levelConfig("iceLayerOnWater")],
     ),
     # iceTopOnWater - point in time
@@ -265,6 +280,14 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam([151])],
         [PointInTime(), levelConfig("meanSea")],
     ),
+    # depthBelowSeaLayer - point in time
+    partialRule(
+        [
+            matchType("levtype", "sfc"),
+            matchParam([262118]),
+        ],
+        [PointInTime(), levelConfig("depthBelowSeaLayer")],
+    ),
     # mixedLayerParcel - point in time
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["228231:228234"])],
@@ -280,7 +303,7 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam(["228235:228237"])],
         [PointInTime(), levelConfig("mostUnstableParcel")],
     ),
-    # nominalTop - point in time
+    # nominalTop - accumul since beginning
     partialRule(
         [matchType("levtype", "sfc"), matchParam(["178:179", "208:209", 212])],
         [
@@ -288,7 +311,20 @@ PARAM_LEVTYPE_SFC = [
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="since-beginning",
+                descriptiveName="accumul-since-beginning",
+            ),
+            levelConfig("nominalTop"),
+        ],
+    ),
+    # nominalTop - time-mean
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([235039, 235040])],
+        [
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                # encodeStepZero=True,
+                descriptiveName="average-since-last-pp",
             ),
             levelConfig("nominalTop"),
         ],
@@ -480,6 +516,19 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
+    # surface - time-mean
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam(["235033:235038", 235189])],
+        [
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                # encodeStepZero=True,
+                descriptiveName="average-since-last-pp",
+            ),
+            levelConfig("surface"),
+        ],
+    ),
     # TODO - paramID is duplacted here ?
     # surface - min over last 3h
     # partialRule(
@@ -638,6 +687,7 @@ PARAM_LEVTYPE_SFC = [
                     262140,
                     260289,
                     260509,
+                    262124
                 ]
             ),
         ],
@@ -699,6 +749,14 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam([140251])],
         [PointInTime(), paramConfig("paramId"), DirectionsFrequenciesConfig()],
     ),
+    # isothermal
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([262104])],
+        [
+            PointInTime(),
+            levelConfig("isothermal"),
+        ],
+    ),
 ]
 
 
@@ -721,7 +779,7 @@ PARAM_LEVTYPE_HL = [
 
 PARAM_LEVTYPE_ML = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248"])],
+        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248", "260290"])],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
     partialRule(
@@ -741,7 +799,7 @@ PARAM_LEVTYPE_ML = [
 
 PARAM_LEVTYPE_ML_SH = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam([77, 129, 130, 135, 138, 152, 155])],
+        [matchType("levtype", "ml"), matchParam([77, 129, "130:132", 135, 138, 152, 155])],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
 ]
@@ -782,7 +840,7 @@ PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
             partialRule(
                 [
                     matchType("levtype", "pl"),
-                    matchParam([129, 130, 135, 138, 152, 155, 157]),
+                    matchParam([2, "129:135", 138, 152, 155, 157]),
                 ],
                 [PointInTime(), paramConfig("paramId")],
             ),
@@ -958,7 +1016,6 @@ if len(duplicatedRules) > 0:
 def templateCMakeFile(dir, subDirs):
     fileSubDirsStr = "\n".join([f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")' for sd in subDirs]) + ("\n" if len(subDirs) > 0 else "")
     addSubDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
-
     return f"""
 file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
 
@@ -1041,38 +1098,41 @@ def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
     )
 
     marsType = None if rule.encode.identification.marsType is None else rule.encode.identification.marsType.type
-
-    ensemble = "ensemble" if rule.encode.product.ensemble else "deterministic"
+    process = (lambda pt: "_".join( ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]))(rule.encode.product.processType)
     packing = rule.encode.dataRepres.descriptiveName
 
     return RuleContext(
-        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": ensemble},
-        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,ensemble,marsType,levtype])),
+        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": process},
+        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,process,marsType,levtype])),
         fname = f"{rule.name}.yaml",
         rule = rule,
     )
 
 
-def findMatchTypeFilter(rule: EncodeRule, type: str):
-    if not isinstance(rule.filter, RuleFilter):
+def findMatchTypeFilter(filter: RuleFilter, type: str):
+    if not isinstance(filter, RuleFilter):
         return None
-    if not isinstance(rule.filter.filter, ComposeAll):
+    if not isinstance(filter.filter, ComposeAll):
         return None
-    for r in rule.filter.filter.filters:
+    for r in filter.filter.filters:
         if isinstance(r.filter, MatchType) and r.filter.type == type:
             return r.filter.value
+        # Look recursively
+        if isinstance(r.filter, ComposeAll):
+            return findMatchTypeFilter(r, type)
     return None
 
-def findHasOrLacksFilter(rule: EncodeRule, type: str):
-    if not isinstance(rule.filter, RuleFilter):
+def findHasOrLacksFilter(filter: RuleFilter, type: str):
+    if not isinstance(filter.filter, ComposeAll):
         return None
-    if not isinstance(rule.filter.filter, ComposeAll):
-        return None
-    for r in rule.filter.filter.filters:
+    for r in filter.filter.filters:
         if isinstance(r.filter, HasType) and r.filter.type == type:
             return "has"
         if isinstance(r.filter, LacksType) and r.filter.type == type:
             return "lacks"
+        # Look recursively
+        if isinstance(r.filter, ComposeAll):
+            return findHasOrLacksFilter(r, type)
     return None
 
 
@@ -1094,8 +1154,8 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     fs = filters[1:]
     match filterType:
         case "has/lacks":
-             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "has"]
-             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule, filterName) == "lacks"]
+             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "has"]
+             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "lacks"]
              return {
                 "key": filterName,
                 "operations": [
@@ -1106,7 +1166,7 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
 
         case "match":
              # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
-             matchPairs = [(findMatchTypeFilter(rc.rule, filterName), rc) for rc in rules]
+             matchPairs = [(findMatchTypeFilter(rc.rule.filter, filterName), rc) for rc in rules]
              valuesDict = {}
              for (val, rc) in matchPairs:
                 if val not in valuesDict.keys():
@@ -1130,7 +1190,7 @@ BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
 ENCODING_RULES_SPLIT = ["packing", "process"]
 
 # Filters are has/lacks
-NESTED_FILTERS = [("number", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
+NESTED_FILTERS = [("number", "has/lacks"), ("hdate", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
 
 REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
 

@@ -13,6 +13,8 @@ filter:
       operation: lacks
     - type: number
       operation: has
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
       value: ml
@@ -21,7 +23,7 @@ filter:
       values:
         - 77
         - 129
-        - 130
+        - "130:132"
         - 135
         - 138
         - 152

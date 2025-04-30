@@ -1,0 +1,75 @@
+tag: grib2
+
+name: rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-1
+
+filter:
+  type: composed
+  operation: all
+  filters:
+    - type: repres
+      operation: match
+      value: gaussian-grid
+    - type: anoffset
+      operation: lacks
+    - type: number
+      operation: has
+    - type: hdate
+      operation: has
+    - type: levtype
+      operation: match
+      value: sfc
+    - type: param
+      operation: match
+      values:
+        - 59
+        - "78:79"
+        - "136:137"
+        - 164
+        - 206
+        - "162059:162063"
+        - "162071:162072"
+        - 162093
+        - 228044
+        - 228050
+        - 228052
+        - "228088:228090"
+        - 228164
+        - 260132
+    - type: packing
+      operation: match
+      value: ccsds
+
+encoder:
+  type: grib2
+  indicator-section:
+    template-number: 0
+  identification-section:
+    template-number: 0
+    origin-configurator:
+      type: default
+      sub-centre: 0
+    data-type-configurator:
+      type: default
+    reference-time-configurator:
+      type: default
+    tables-configurator:
+      type: default
+      local-tables-version: 0
+  local-use-section:
+    template-number: 1
+  grid-definition-section:
+    template-number: 40
+  product-definition-section:
+    template-number: 60
+    point-in-time-configurator:
+      type: default
+    param-configurator:
+      type: paramId
+    model-configurator:
+      type: default
+    level-configurator:
+      type: entireAtmosphere
+    ensemble-configurator:
+      type: default
+  data-representation-section:
+    template-number: 42

@@ -13,6 +13,8 @@ filter:
       operation: has
     - type: number
       operation: lacks
+    - type: hdate
+      operation: lacks
     - type: levtype
       operation: match
       value: ml
@@ -23,6 +25,7 @@ filter:
         - 133
         - 203
         - "246:248"
+        - 260290
     - type: packing
       operation: match
       value: simple

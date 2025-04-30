@@ -27,7 +27,7 @@ TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager,
 
     // Read the metadata from disk!
     IOmanager->pushDir("metadata");
-    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.json";
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.yml";
     std::ifstream mdFile(mdFilename);
     std::stringstream buffer;
     buffer << mdFile.rdbuf();
@@ -59,7 +59,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
     // Write the metadata to disk!
     IOmanager->pushDir("metadata");
     IOmanager->createCurrentDir();
-    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.json";
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.yml";
     std::ofstream mdFile(mdFilename);
     mdFile << *metadata_;
     mdFile.close();

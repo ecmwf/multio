@@ -8,6 +8,14 @@
 #include <iostream>
 #include "eccodes.h"
 
+typedef struct {
+    long long object_id;
+    long long buf_size;
+    long long obj_size;
+    long long hash;
+    int8_t* bytes;
+} f_c_wrapper;
+
 extern "C" {
 
 int convert_int8_to_cstring(const void* intvar, char** cstring) {
@@ -510,4 +518,103 @@ int copy_f_buf_to_c_buf_c(const char* val, int len, void** location) {
     memcpy(*location, val, len);
     return 0;
 }
+
+int c_allocate_bytes( void** mem, size_t size ){
+
+  *mem = (void*) malloc( size );
+  if (*mem == NULL) {
+    return 1;
+  }
+  memset(*mem, 0, size);
+  return 0;
+}
+
+int c_free_bytes( void** mem ){
+
+  // Check if the pointer is NULL
+  if (*mem == NULL) {
+      return 1;
+  }
+
+  free( *mem );
+  *mem = NULL;
+
+  // Exit point on success
+  return 0;
+}
+
+int c_allocate_wrapper( void** mem, size_t size ){
+
+  // Check if the pointer is NULL
+  if (*mem != NULL) {
+      return 1;
+  }
+
+  // Compute the size of the buffer
+  size_t sz = sizeof(f_c_wrapper);
+
+  // Compare the size with the requested size
+  if ( size != sz) {
+    return 1;
+  }
+
+  // Allocate the memory
+  *mem = (void*) malloc( sz );
+  if (*mem == NULL) {
+    return 1;
+  }
+
+  // Initialize the object
+  f_c_wrapper* wrapper = (f_c_wrapper*)*mem;
+  wrapper->object_id = 0;
+  wrapper->buf_size = size;
+  wrapper->obj_size = 0;
+  wrapper->hash = 0;
+  wrapper->bytes = NULL;
+
+  // Exit point on success
+  return 0;
+}
+
+int c_free_wrapper( void** mem ){
+
+  // Check if the pointer is NULL
+  if (*mem == NULL) {
+      return 1;
+  }
+
+  // Free the memory
+  free( *mem );
+
+  // Reset the pointer
+  *mem = NULL;
+
+  // Exit point on success
+  return 0;
+}
+
+
+int c_wrapper_get_info( void* mem, size_t* obj_id, size_t* obj_sz, size_t* buf_sz, size_t* hash ){
+
+  // Initialize the object
+  f_c_wrapper* wrapper = (f_c_wrapper*)mem;
+  *obj_id = (size_t)wrapper->object_id;
+  *obj_sz = (size_t)wrapper->buf_size;
+  *buf_sz = (size_t)wrapper->obj_size;
+  *hash   = (size_t)wrapper->hash;
+
+  // Exit point on success
+  return 0;
+}
+
+
+void hash_int8_array(const int8_t* data, size_t len, size_t* hash ) {
+    *hash = 14695981039346656037ull; // FNV offset basis
+    for (size_t i = 0; i < len; ++i) {
+        *hash ^= (uint8_t)data[i];          // cast to uint8_t for consistency
+        *hash *= 1099511628211ull;          // FNV prime
+    }
+    return;
+}
+
 }

@@ -1,6 +1,8 @@
 set(MULTIOM_API_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Add subdirectories
 add_subdirectory( c )
+add_subdirectory( wrappers )
 
 # Enter in the module
 message("${OFFSET} + API sources: ${MULTIOM_API_DIR}")
@@ -27,6 +29,8 @@ configure_file(  ${MULTIOM_TEMPLATES_DIR}/map_pkey_mod.F90 ${CMAKE_CURRENT_BINAR
 # Collect source files in module2
 set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/c/api.cc
+  ${MULTIOM_API_DIR}/api_f_c_wrapper_mod.F90
+  ${MULTIOM_API_DIR}/api_wrapper_utils_mod.F90
   ${MULTIOM_API_DIR}/api_options_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_mars_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_par_dictionary_utils_mod.F90
@@ -37,6 +41,7 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_general_utils_c.cc
   ${MULTIOM_API_DIR}/api_shared_data_mod.F90
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
+  ${MULTIOM_API_DIR}/api_encoder_wrapper_mod-02.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_encode_c.cc
   ${CMAKE_CURRENT_BINARY_DIR}/map_int64_opt_dict_mod.F90
@@ -45,6 +50,7 @@ set( MULTIOM_API_MAIN_SOURCES
 # Collect source files in module2
 set( MULTIOM_API_SOURCES
   ${MULTIOM_API_MAIN_SOURCES}
+  ${MULTIOM_API_WRAPPER_SOURCES}
   CACHE INTERNAL "List of all sources in API directory"
 )
 

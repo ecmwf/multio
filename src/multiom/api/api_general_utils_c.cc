@@ -10,9 +10,9 @@
 
 typedef struct {
     long long object_id;
-    long long buf_size;
-    long long obj_size;
-    long long hash;
+    size_t buf_size;
+    size_t obj_size;
+    size_t hash;
     int8_t* bytes;
 } f_c_wrapper;
 
@@ -555,6 +555,7 @@ int c_allocate_wrapper( void** mem, size_t size ){
 
   // Compare the size with the requested size
   if ( size != sz) {
+    printf("Error: requested size %zu does not match expected size %zu\n", size, sz);
     return 1;
   }
 

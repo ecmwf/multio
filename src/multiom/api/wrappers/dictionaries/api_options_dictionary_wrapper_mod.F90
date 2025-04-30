@@ -149,9 +149,9 @@ IMPLICIT NONE
   ELSE
 
     !> Default file names when no options are provided
-    OPTIONS%ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/encodings/encoding-rules.yaml'
-    OPTIONS%MAPPING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/mappings/mapping-rules.yaml'
-    OPTIONS%SAMPLES_PATH   = '{MULTIO_INSTALL_DIR}/samples/'
+    OPTIONS%ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/share/multiom/encodings/encoding-rules.yaml'
+    OPTIONS%MAPPING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/share/multiom/mappings/mapping-rules.yaml'
+    OPTIONS%SAMPLES_PATH   = '{MULTIO_INSTALL_DIR}/share/multiom/samples/'
     OPTIONS%SAMPLE_FNAME  = 'sample'
 
   ENDIF

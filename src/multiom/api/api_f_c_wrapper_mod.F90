@@ -151,8 +151,11 @@ IMPLICIT NONE
   ! Compute size of the wrapper
   SZ = INT( STORAGE_SIZE(DUMMY_WRAPPER), KIND=C_SIZE_T )
   PP_DEBUG_CRITICAL_COND_THROW( SZ.LT.1_C_SIZE_T, ERRFLAG_WRONG_WRAPPER_SIZE )
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(SZ,8).NE.0, ERRFLAG_WRONG_WRAPPER_SIZE )
+  SZ = SZ/8_C_SIZE_T
 
   ! Allocate wrapper (needs to be done using c routines because in this way it can be deallocated from c)
+  MEMORY_WRAPPER = C_NULL_PTR
   PP_TRYCALL(ERRFLA_C_ALLOCATE_WRAPPER) C_ALLOCATE_WRAPPER( MEMORY_WRAPPER, SZ )
 
   ! Get the fortran pointer to the c-object

@@ -24,6 +24,17 @@ TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager,
     periodUpdater_{load_period_updater(IOmanager, opt)},
     window_{load_window(IOmanager, opt)},
     statistics_{load_operations(IOmanager, window_, opt)} {
+
+    // Read the metadata from disk!
+    IOmanager->pushDir("metadata");
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.json";
+    std::ifstream mdFile(mdFilename);
+    std::stringstream buffer;
+    buffer << mdFile.rdbuf();
+    metadata_ = multio::message::metadataFromYAML(buffer.str());
+    mdFile.close();
+    IOmanager->popDir();
+
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Load restart files" << std::endl;
 }
 
@@ -43,6 +54,15 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, opt);
     }
+    IOmanager->popDir();
+
+    // Write the metadata to disk!
+    IOmanager->pushDir("metadata");
+    IOmanager->createCurrentDir();
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.json";
+    std::ofstream mdFile(mdFilename);
+    mdFile << *metadata_;
+    mdFile.close();
     IOmanager->popDir();
     return;
 }

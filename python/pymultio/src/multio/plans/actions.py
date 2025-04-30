@@ -33,6 +33,14 @@ class Action(BaseModel):
 
     type: str = Field(str, description="Action type")
 
+class Null(Action):
+    """Null Action.
+
+    Does nothing.
+    """
+
+    type: Literal["null"] = Field("null", init=False)
+
 
 class Select(Action):
     """Select Action.
@@ -110,6 +118,10 @@ class Encode(Action):
             raise ValueError("template is required for grib format")
         return v
 
+class EncodeMTG(Action):
+    """Encode-mtg2 Action"""
+    type: Literal["encode-mtg2"] = Field("encode-mtg2", init=False)
+
 
 class Sink(Action):
     """Sink Action.
@@ -135,6 +147,6 @@ class SingleField(Action):
     type: Literal["single-field-sink"] = Field("single-field-sink", init=False)
 
 
-ACTIONS = Union[Select, Statistics, Transport, Aggregation, Interpolate, Print, Mask, Encode, Sink, SingleField]
+ACTIONS = Union[Select, Statistics, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
 
-__all__ = ["ACTIONS", "Action", "Select", "Statistics", "Transport", "Aggregation", "Print", "Mask", "Encode", "Sink"]
+__all__ = ["ACTIONS", "Action", "Select", "Statistics", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]

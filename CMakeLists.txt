@@ -109,8 +109,14 @@ ecbuild_add_option( FEATURE MULTIO_BUILD_TOOLS
                     DEFAULT ${_default_multio_tools}
                     DESCRIPTION "Build the command line MULTIO tools" )
 
+if(HAVE_MULTIO_BUILD_TOOLS)
+    set(_default_grib1_to_grib2 ON)
+else()
+    set(_default_grib1_to_grib2 OFF)
+endif()
+
 ecbuild_add_option( FEATURE GRIB1_TO_GRIB2
-                    DEFAULT ${_default_multio_tools}
+                    DEFAULT ${_default_grib1_to_grib2}
                     DESCRIPTION "Build the command line GRIB1-to-GRIB2 converter tool" )
 
 

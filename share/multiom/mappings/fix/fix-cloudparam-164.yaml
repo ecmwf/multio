@@ -1,0 +1,27 @@
+name: 'map the total cloud cover param to new param'
+
+tag: 'total cloud cover param'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 164 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'parametrization-float'
+          name: 'scale-factor'
+          expression:
+            type: 'constant'
+            value: 100.0
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 228164

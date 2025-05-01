@@ -1,0 +1,27 @@
+name: 'map the convective precip param to new param'
+
+tag: 'convective precip param'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 143 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'parametrization-float'
+          name: 'scale-factor'
+          expression:
+            type: 'constant'
+            value: 1000.0
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 228143

@@ -1128,6 +1128,8 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) : multio::MultioTool{argc, argv}
     options_.push_back(new eckit::option::SimpleOption<bool>("help", "Print help"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "all", "If specified also grib2 messages will reencoded instead of copied"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "wmo-units", "If specified params with local units will be mapped to params with WMO units"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("knowledge-root",
                                                      "Path to knowledege root dir containing grib2 sample, encoding "
@@ -1198,6 +1200,12 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
     args.get("mappingFile_", mappingFile_);
     if (mappingFile_.empty()) {
         mappingFile_ = knowledgeRoot_ + "/share/multiom/mappings/mapping-rules.yaml";
+    }
+
+    bool wmo = false;
+    args.get("wmo-units", wmo);
+    if (wmo) {
+        mappingFile_ = knowledgeRoot_ + "/share/multiom/mappings/mapping-rules-wmo.yaml";
     }
 
     if (verbosity_ > 1) {

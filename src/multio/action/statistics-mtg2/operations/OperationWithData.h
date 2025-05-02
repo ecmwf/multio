@@ -127,14 +127,6 @@ protected:
         }
     };
 
-    void checkTimeInterval(const StatisticsConfiguration& cfg) {
-        long sec = win_.count() * cfg.stepFreq() * cfg.timeStep();
-        if (sec == 0) {
-            throw eckit::SeriousBug{logHeader_ + " :: Divide by zero", Here()};
-        }
-        return;
-    };
-
     size_t restartSize() const { return values_.size() + 1; }
     std::vector<T> values_;
 

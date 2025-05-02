@@ -91,6 +91,15 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
         folderName = tmp.str();
     }
 
+    // Restart flush provides the step
+    else if (step) {
+        std::int64_t flushStep = *step;
+        std::ostringstream tmp;
+        tmp << lastDateTime_ << "-";
+        tmp << std::setw(6) << std::setfill('0') << flushStep;
+        folderName = tmp.str();
+    }
+
     // Restart flush does not provide anything (Fallback)
     else {
         folderName = lastDateTime_;
@@ -185,9 +194,10 @@ FlushKind parseFlushKind(std::int64_t val) {
     throw message::MetadataException(std::string("Unknown FlushKind: ") + std::to_string(val), Here());
 }
 
-
-void Statistics::TryDumpRestart(const message::Message& msg) {
-
+FlushKind parseFlushKind(const message::Message& msg) {
+    if (msg.tag() != message::Message::Tag::Flush) {
+        throw message::MetadataException("Message is not a flush.", Here());
+    }
     FlushKind flushKind{FlushKind::Default};
     if(auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()){
         search->second.visit(eckit::Overloaded{
@@ -198,54 +208,51 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
                 flushKind = parseFlushKind(val);
             },
             [&](const auto &){
-                throw message::MetadataException("FlushKind needs to be either string or integer.",Here());
+                throw message::MetadataException("FlushKind needs to be either string or integer.", Here());
             }
         });
     }
+    return flushKind;
+}
 
 
-    if (opt_.writeRestart() && needRestart_) {
-
-        // Check the kind of flush
-        // NOTE: This is a bit of a hack, in case no serverRank is provided, we
-        // assume that all processors are "master" and rely on atomicity of
-        // filesystem operation to avoid race conditions
-        auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
-        switch(flushKind){
-            case FlushKind::StepAndRestart: 
-            case FlushKind::LastStep: 
-            case FlushKind::EndOfSimulation: 
-            case FlushKind::CloseConnection:
-            {
-                // Generate name of the main restart directory
-                std::string restartFolderName = generateRestartNameFromFlush(msg);
-
-                // Log for Dump operation
-                LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " << "Last DateTime :: " << restartFolderName << std::endl;
-
-                // Delete the latest symlink as soon as possible
-                if (is_master) {
-                    DeleteLatestSymLink();
-                }
-
-                // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
-                CreateMainRestartDirectory(restartFolderName, is_master);
-
-                // Dump the temporal statistics restart directories
-                DumpTemporalStatistics();
-
-                // Create the latest symlink to the latest restart directory
-                if (is_master) {
-                    CreateLatestSymLink();
-                }
-            } 
-            break;
-            default: {} break;
-            
-        }
-
+void Statistics::TryDumpRestart(const message::Message& msg) {
+    if (parseFlushKind(msg) != FlushKind::StepAndRestart) {
+        return;
     }
-    return;
+
+    // TODO: Remove this? The model already explicitly asked for a restart!
+    if (!opt_.writeRestart() || !needRestart_) {
+        return;
+    }
+
+    // Check the kind of flush
+    // NOTE: This is a bit of a hack, in case no serverRank is provided, we
+    // assume that all processors are "master" and rely on atomicity of
+    // filesystem operation to avoid race conditions
+    auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
+
+    // Generate name of the main restart directory
+    std::string restartFolderName = generateRestartNameFromFlush(msg);
+
+    // Log for Dump operation
+    LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Writing to " << restartFolderName << std::endl;
+
+    // Delete the latest symlink as soon as possible
+    if (is_master) {
+        DeleteLatestSymLink();
+    }
+
+    // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
+    CreateMainRestartDirectory(restartFolderName, is_master);
+
+    // Dump the temporal statistics restart directories
+    DumpTemporalStatistics();
+
+    // Create the latest symlink to the latest restart directory
+    if (is_master) {
+        CreateLatestSymLink();
+    }
 }
 
 void Statistics::DeleteLatestSymLink() {
@@ -318,7 +325,6 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
 
     md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
     md.set(glossary().startTime, win.epochPoint().time().hhmmss());
-    md.set(glossary().stepFrequency, win.timeSpanInSteps());
 
     md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
     md.set(glossary().previousTime, win.creationPoint().time().hhmmss());
@@ -349,6 +355,12 @@ void Statistics::executeImpl(message::Message msg) {
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
         TryDumpRestart(msg);
+
+        FlushKind flushKind = parseFlushKind(msg);
+        if (parseFlushKind(msg) == FlushKind::LastStep) {
+            emitAllStatistics(msg.source(), msg.destination());
+        }
+
         executeNext(msg);
         return;
     }
@@ -415,38 +427,59 @@ void Statistics::executeImpl(message::Message msg) {
         throw eckit::SeriousBug(os.str(), Here());
     }
 
-    // Update data
-    ts.updateData(msg, cfg);
-
     // Decide to emit statistics
-    if (ts.isEndOfWindow(msg, cfg)) {
-        auto md = outputMetadata(msg.metadata(), cfg, key);
-        for (auto it = ts.begin(); it != ts.end(); ++it) {
-            eckit::Buffer payload;
-            payload.resize((*it)->byte_size());
-            payload.zero();
-
-            std::string opname = (*it)->operation();
-            std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
-            md.set("operation", opname);
-            md.set("operation-frequency", outputFrequency);
-
-            const std::int64_t step = ts.win().endPointInSteps();
-            const std::int64_t timespan = ts.win().timeSpanInHours();
-            md.set(glossary().step, step);
-            multio::message::Mtg2::mars::timespan.set(md, timespan);
-
-            remapParamID_.ApplyRemap(md, opname, outputFrequency);
-            (*it)->compute(payload, cfg);
-            executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
-                                                                  msg.destination(), message::Metadata{md}},
-                                         std::move(payload)});
-        }
-
+    if (ts.isOutsideWindow(msg, cfg)) {
+        emitStatistics(ts, msg.source(), msg.destination());
         ts.updateWindow(msg, cfg);
     }
 
+    // Update data
+    ts.updateData(msg, cfg);
+
     return;
+}
+
+void Statistics::emitAllStatistics(message::Peer source, message::Peer destination) {
+    for (auto& [key, ts] : fieldStats_) {
+        emitStatistics(*ts, source, destination);
+    }
+}
+
+
+void Statistics::emitStatistics(TemporalStatistics& ts,
+                                message::Peer source, message::Peer destination) {
+    for (auto it = ts.begin(); it != ts.end(); ++it) {
+        eckit::Buffer payload;
+        payload.resize((*it)->byte_size());
+        payload.zero();
+
+        auto md = ts.metadata();
+        auto cfg = StatisticsConfiguration(md, source, opt_);
+
+        const std::string opname = (*it)->operation();
+        const std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
+        md.set("operation", opname);
+        md.set("operation-frequency", outputFrequency);
+
+        const std::int64_t step = ts.win().endPointInSteps();
+        const std::int64_t timespan = ts.win().timeSpanInHours();
+        md.set(glossary().step, step);
+        multio::message::Mtg2::mars::timespan.set(md, timespan);
+
+        remapParamID_.ApplyRemap(md, opname, outputFrequency);
+        (*it)->compute(payload, cfg);
+
+        executeNext(
+            message::Message{
+                message::Message::Header{
+                    message::Message::Tag::Field,
+                    source, destination,
+                    std::move(md)
+                },
+                std::move(payload)
+            }
+        );
+    }
 }
 
 

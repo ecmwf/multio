@@ -16,7 +16,6 @@ namespace multio::action::statistics_mtg2 {
 class StatisticsOptions {
 private:
     // Default values for configurations
-    long stepFreq_;
     long timeStep_;
     bool solverSendInitStep_;
     bool readRestart_;
@@ -38,7 +37,6 @@ private:
 private:
     void parseUseDateTime(const eckit::LocalConfiguration& cfg);
     void parseCheckMissingValues(const eckit::LocalConfiguration& cfg);
-    void parseStepFrequency(const eckit::LocalConfiguration& cfg);
     void parseTimeStep(const eckit::LocalConfiguration& cfg);
     void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
     void parseWriteRestart(const eckit::LocalConfiguration& cfg);
@@ -70,7 +68,6 @@ public:
     const std::string& missingValueKey() const;
 
     // Default values
-    long stepFreq() const;
     long timeStep() const;
     bool solver_send_initial_condition() const;
     bool readRestart() const;

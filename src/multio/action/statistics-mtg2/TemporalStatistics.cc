@@ -16,12 +16,25 @@ TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std
                                        const StatisticsConfiguration& cfg) :
     periodUpdater_{make_period_updater(output_freq, cfg)},
     window_{make_window(periodUpdater_, cfg)},
-    statistics_{make_operations(operations, msg, IOmanager, window_, cfg)} {}
+    statistics_{make_operations(operations, msg, IOmanager, window_, cfg)},
+    metadata_{msg.metadata()} {}
 
+// TODO: Dump and load the (relevant) metadata as well!
 TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
     periodUpdater_{load_period_updater(IOmanager, opt)},
     window_{load_window(IOmanager, opt)},
     statistics_{load_operations(IOmanager, window_, opt)} {
+
+    // Read the metadata from disk!
+    IOmanager->pushDir("metadata");
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.yml";
+    std::ifstream mdFile(mdFilename);
+    std::stringstream buffer;
+    buffer << mdFile.rdbuf();
+    metadata_ = multio::message::metadataFromYAML(buffer.str());
+    mdFile.close();
+    IOmanager->popDir();
+
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Load restart files" << std::endl;
 }
 
@@ -41,6 +54,15 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, opt);
     }
+    IOmanager->popDir();
+
+    // Write the metadata to disk!
+    IOmanager->pushDir("metadata");
+    IOmanager->createCurrentDir();
+    std::string mdFilename = IOmanager->getCurrentDir() + "/metadata.yml";
+    std::ofstream mdFile(mdFilename);
+    mdFile << *metadata_;
+    mdFile.close();
     IOmanager->popDir();
     return;
 }
@@ -64,9 +86,9 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
     return;
 }
 
-bool TemporalStatistics::isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check end of Window " << std::endl;
-    return !window_.isWithin(nextDateTime(msg, cfg));
+bool TemporalStatistics::isOutsideWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check outside Window " << std::endl;
+    return !window_.isWithin(currentDateTime(msg, cfg));
 }
 
 const OperationWindow& TemporalStatistics::cwin() const {
@@ -75,6 +97,13 @@ const OperationWindow& TemporalStatistics::cwin() const {
 
 OperationWindow& TemporalStatistics::win() {
     return window_;
+}
+
+message::Metadata& TemporalStatistics::metadata() {
+    if (metadata_) {
+        return *metadata_;
+    }
+    throw eckit::SeriousBug("Metadata is not set!", Here());
 }
 
 void TemporalStatistics::print(std::ostream& os) const {

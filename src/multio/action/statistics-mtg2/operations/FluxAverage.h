@@ -14,7 +14,6 @@ public:
     using OperationWithData<T>::values_;
     using OperationWithData<T>::win_;
     using OperationWithData<T>::checkSize;
-    using OperationWithData<T>::checkTimeInterval;
 
     FluxAverage(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "average", sz, true, win, cfg} {}
@@ -24,7 +23,6 @@ public:
         OperationWithData<T>{name, "average", true, win, IOmanager, opt} {};
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
-        checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);
@@ -42,13 +40,13 @@ public:
 private:
     void computeWithMissing(T* buf, const StatisticsConfiguration& cfg) {
         const double m = cfg.missingValue();
-        const double c = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg.stepFreq() * cfg.timeStep());
+        const double c = static_cast<double>(1.0) / static_cast<double>(win_.timeSpanInSeconds());
         std::transform(values_.begin(), values_.end(), buf, [c, m](T v) { return static_cast<T>(m == v ? m : v * c); });
         return;
     }
 
     void computeWithoutMissing(T* buf, const StatisticsConfiguration& cfg) {
-        const double c = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg.stepFreq() * cfg.timeStep());
+        const double c = static_cast<double>(1.0) / static_cast<double>(win_.timeSpanInSeconds());
         std::transform(values_.begin(), values_.end(), buf, [c](T v) { return static_cast<T>(v * c); });
         return;
     }

@@ -58,6 +58,12 @@ private:
     std::shared_ptr<StatisticsIO> IOmanager_;
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
+
+    void emitAllStatistics(
+        message::Peer source, message::Peer destination);
+    void emitStatistics(
+        TemporalStatistics& ts,
+        message::Peer source, message::Peer destination);
 };
 
 }  // namespace multio::action::statistics_mtg2

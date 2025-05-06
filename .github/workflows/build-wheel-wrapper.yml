@@ -17,9 +17,27 @@ on:
   workflow_call: ~
 
 jobs:
-  python-wrapper-wheel:
-    name: Python Wrapper Wheel
-    uses: ecmwf/reusable-workflows/.github/workflows/python-wrapper-wheel.yml@main
-    with:
-      wheel_directory: python/multiolib
-    secrets: inherit
+  # python-wrapper-wheel:
+  #   name: Python Wrapper Wheel
+  #   uses: ecmwf/reusable-workflows/.github/workflows/python-wrapper-wheel.yml@main
+  #   with:
+  #     wheel_directory: python/multiolib
+  #   secrets: inherit
+  multirelease-nightly:
+    name: Multirelease Nightly
+    runs-on: [self-hosted, Linux, platform-builder-Rocky-8.6]
+    container:
+      image: eccr.ecmwf.int/wheelmaker/2_28:multirelease
+      options: --user github-actions
+      credentials:
+        username: ${{ secrets.ECMWF_DOCKER_REGISTRY_USERNAME }}
+        password: ${{ secrets.ECMWF_DOCKER_REGISTRY_ACCESS_TOKEN }}
+    steps:
+      - run: |
+          /buildscripts/multirelease.sh 3.11 /venv/ prod "eckit eccodes atlas metkit fdb mir fckit multio odc"
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_PASSWORD_PROD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_PASSWORD_TEST: ${{ secrets.PYPI_TEST_API_TOKEN }}
+

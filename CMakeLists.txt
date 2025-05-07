@@ -145,6 +145,7 @@ ecbuild_add_option( FEATURE MULTIO_CLIENT_MEMORY_PROFILE
                     DESCRIPTION "Enable multio client memory profiling" )
 
 ### export package info
+set( MULTIO_SHARE_DIR      share )
 set( MULTIO_CONFIG_DIR     share/multio/config )
 set( MULTIOM_CONFIG_DIR    share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )

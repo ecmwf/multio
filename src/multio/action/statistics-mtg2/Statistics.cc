@@ -24,6 +24,7 @@
 #include "multio/util/Timing.h"
 
 #include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
+#include "multio/action/statistics-mtg2/StatisticsParamMapping.h"
 
 
 namespace multio::action::statistics_mtg2 {
@@ -37,7 +38,6 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     opt_{compConf},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
-    remapParamID_{compConf},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
 std::string Statistics::generateRestartNameFromFlush(const message::Message& msg) const {
@@ -212,9 +212,9 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
         // filesystem operation to avoid race conditions
         auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
         switch(flushKind){
-            case FlushKind::StepAndRestart: 
-            case FlushKind::LastStep: 
-            case FlushKind::EndOfSimulation: 
+            case FlushKind::StepAndRestart:
+            case FlushKind::LastStep:
+            case FlushKind::EndOfSimulation:
             case FlushKind::CloseConnection:
             {
                 // Generate name of the main restart directory
@@ -238,10 +238,10 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
                 if (is_master) {
                     CreateLatestSymLink();
                 }
-            } 
+            }
             break;
             default: {} break;
-            
+
         }
 
     }
@@ -436,7 +436,7 @@ void Statistics::executeImpl(message::Message msg) {
             md.set(glossary().step, step);
             multio::message::Mtg2::mars::timespan.set(md, timespan);
 
-            remapParamID_.ApplyRemap(md, opname, outputFrequency);
+            paramMapping()->applyMapping(md, opname);
             (*it)->compute(payload, cfg);
             executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
                                                                   msg.destination(), message::Metadata{md}},

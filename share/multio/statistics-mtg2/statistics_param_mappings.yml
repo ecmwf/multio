@@ -1,0 +1,4123 @@
+- paramIn: 3
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235269
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237269
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238269
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239269
+- paramIn: 10
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235097
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237097
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238097
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239097
+- paramIn: 27
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235081
+- paramIn: 28
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235082
+- paramIn: 31
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235083
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237083
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238083
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239083
+- paramIn: 33
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235080
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237080
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238080
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239080
+- paramIn: 34
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235084
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237084
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238084
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239084
+- paramIn: 53
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235286
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237286
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238286
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239286
+- paramIn: 54
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235098
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237098
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238098
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239098
+- paramIn: 59
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235287
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238287
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239287
+- paramIn: 60
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235100
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237100
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238100
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239100
+- paramIn: 66
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235085
+- paramIn: 67
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235086
+- paramIn: 75
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235101
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237101
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238101
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239101
+- paramIn: 76
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235102
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237102
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238102
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239102
+- paramIn: 77
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235103
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237103
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238103
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239103
+- paramIn: 78
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235087
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237087
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238087
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239087
+- paramIn: 79
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235088
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237088
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238088
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239088
+- paramIn: 129
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235129
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237129
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238129
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239129
+- paramIn: 130
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235130
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237130
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238130
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239130
+- paramIn: 131
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235131
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237131
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238131
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239131
+- paramIn: 132
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235132
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237132
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238132
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239132
+- paramIn: 133
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235133
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237133
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238133
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239133
+- paramIn: 134
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235134
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237134
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238134
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239134
+- paramIn: 135
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235135
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237135
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238135
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239135
+- paramIn: 136
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235136
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237136
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238136
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239136
+- paramIn: 137
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235137
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237137
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238137
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239137
+- paramIn: 138
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235138
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237138
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238138
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239138
+- paramIn: 148
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235099
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237099
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238099
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239099
+- paramIn: 151
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235151
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237151
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238151
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239151
+- paramIn: 152
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235152
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237152
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238152
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239152
+- paramIn: 155
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235155
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237155
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238155
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239155
+- paramIn: 157
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235157
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237157
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238157
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239157
+- paramIn: 159
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235159
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237159
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238159
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239159
+- paramIn: 165
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235165
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237165
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238165
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239165
+- paramIn: 166
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235166
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237166
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238166
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239166
+- paramIn: 167
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 228004
+  - typeOfStatisticalProcessing: 2
+    paramOut: 201
+  - typeOfStatisticalProcessing: 3
+    paramOut: 202
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239167
+- paramIn: 168
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235168
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237168
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238168
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239168
+- paramIn: 173
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235244
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237244
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238244
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239244
+- paramIn: 203
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235203
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237203
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238203
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239203
+- paramIn: 207
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 228005
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237207
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238207
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239207
+- paramIn: 229
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235041
+  - typeOfStatisticalProcessing: 1
+    paramOut: 180
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237041
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238041
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239041
+- paramIn: 230
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235042
+  - typeOfStatisticalProcessing: 1
+    paramOut: 181
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237042
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238042
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239042
+- paramIn: 231
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235033
+  - typeOfStatisticalProcessing: 1
+    paramOut: 146
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237033
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238033
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239033
+- paramIn: 232
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235043
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260259
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237043
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238043
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239043
+- paramIn: 235
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235079
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237079
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238079
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239079
+- paramIn: 238
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235238
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237238
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238238
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239238
+- paramIn: 244
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235244
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237244
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238244
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239244
+- paramIn: 245
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235245
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237245
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238245
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239245
+- paramIn: 246
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235246
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237246
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238246
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239246
+- paramIn: 247
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235247
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237247
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238247
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239247
+- paramIn: 248
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235248
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237248
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238248
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239248
+- paramIn: 3020
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235105
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237105
+  - typeOfStatisticalProcessing: 3
+    paramOut: 231043
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239105
+- paramIn: 3031
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235106
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237106
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238106
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239106
+- paramIn: 3073
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235108
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237108
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238108
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239108
+- paramIn: 3074
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235109
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237109
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238109
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239109
+- paramIn: 3075
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235110
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237110
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238110
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239110
+- paramIn: 140098
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141098
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143098
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144098
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145098
+- paramIn: 140099
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141099
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143099
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144099
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145099
+- paramIn: 140100
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141100
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143100
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144100
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145100
+- paramIn: 140101
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141101
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143101
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144101
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145101
+- paramIn: 140102
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141102
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143102
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144102
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145102
+- paramIn: 140103
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141103
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143103
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144103
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145103
+- paramIn: 140104
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141104
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143104
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144104
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145104
+- paramIn: 140105
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141105
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143105
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144105
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145105
+- paramIn: 140106
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141106
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143106
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144106
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145106
+- paramIn: 140107
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141107
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143107
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144107
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145107
+- paramIn: 140108
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141108
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143108
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144108
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145108
+- paramIn: 140109
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141109
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143109
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144109
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145109
+- paramIn: 140110
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141110
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143110
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144110
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145110
+- paramIn: 140111
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141111
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143111
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144111
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145111
+- paramIn: 140112
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141112
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143112
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144112
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145112
+- paramIn: 140113
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141113
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143113
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144113
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145113
+- paramIn: 140114
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141114
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143114
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144114
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145114
+- paramIn: 140115
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141115
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143115
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144115
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145115
+- paramIn: 140116
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141116
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143116
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144116
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145116
+- paramIn: 140117
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141117
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143117
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144117
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145117
+- paramIn: 140118
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141118
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143118
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144118
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145118
+- paramIn: 140119
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141119
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143119
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144119
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145119
+- paramIn: 140120
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141120
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143120
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144120
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145120
+- paramIn: 140121
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141121
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143121
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144121
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145121
+- paramIn: 140122
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141122
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143122
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144122
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145122
+- paramIn: 140123
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141123
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143123
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144123
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145123
+- paramIn: 140124
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141124
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143124
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144124
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145124
+- paramIn: 140125
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141125
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143125
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144125
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145125
+- paramIn: 140126
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141126
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143126
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144126
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145126
+- paramIn: 140127
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141127
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143127
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144127
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145127
+- paramIn: 140128
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141128
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143128
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144128
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145128
+- paramIn: 140129
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141129
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143129
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144129
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145129
+- paramIn: 140131
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141131
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143131
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144131
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145131
+- paramIn: 140132
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141132
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143132
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144132
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145132
+- paramIn: 140133
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141133
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143133
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144133
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145133
+- paramIn: 140134
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141134
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143134
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144134
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145134
+- paramIn: 140135
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141135
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143135
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144135
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145135
+- paramIn: 140136
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141136
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143136
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144136
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145136
+- paramIn: 140137
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141137
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143137
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144137
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145137
+- paramIn: 140138
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141138
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143138
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144138
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145138
+- paramIn: 140139
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141139
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143139
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144139
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145139
+- paramIn: 140140
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141140
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143140
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144140
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145140
+- paramIn: 140141
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141141
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143141
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144141
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145141
+- paramIn: 140142
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141142
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143142
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144142
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145142
+- paramIn: 140143
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141143
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143143
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144143
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145143
+- paramIn: 140144
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141144
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143144
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144144
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145144
+- paramIn: 140145
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141145
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143145
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144145
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145145
+- paramIn: 140146
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141146
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143146
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144146
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145146
+- paramIn: 140147
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141147
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143147
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144147
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145147
+- paramIn: 140148
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141148
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143148
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144148
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145148
+- paramIn: 140149
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141149
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143149
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144149
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145149
+- paramIn: 140150
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141150
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143150
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144150
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145150
+- paramIn: 140207
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141207
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143207
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144207
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145207
+- paramIn: 140208
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141208
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143208
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144208
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145208
+- paramIn: 140209
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141209
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143209
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144209
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145209
+- paramIn: 140211
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141211
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143211
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144211
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145211
+- paramIn: 140212
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141212
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143212
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144212
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145212
+- paramIn: 140214
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141214
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143214
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144214
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145214
+- paramIn: 140215
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141215
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143215
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144215
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145215
+- paramIn: 140216
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141216
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143216
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144216
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145216
+- paramIn: 140217
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141217
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143217
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144217
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145217
+- paramIn: 140218
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141218
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143218
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144218
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145218
+- paramIn: 140220
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141220
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143220
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144220
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145220
+- paramIn: 140221
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141221
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143221
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144221
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145221
+- paramIn: 140222
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141222
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143222
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144222
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145222
+- paramIn: 140223
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141223
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143223
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144223
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145223
+- paramIn: 140224
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141224
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143224
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144224
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145224
+- paramIn: 140225
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141225
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143225
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144225
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145225
+- paramIn: 140226
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141226
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143226
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144226
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145226
+- paramIn: 140227
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141227
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143227
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144227
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145227
+- paramIn: 140228
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141228
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143228
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144228
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145228
+- paramIn: 140229
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141229
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143229
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144229
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145229
+- paramIn: 140230
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141230
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143230
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144230
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145230
+- paramIn: 140231
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141231
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143231
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144231
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145231
+- paramIn: 140232
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141232
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143232
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144232
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145232
+- paramIn: 140233
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141233
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143233
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144233
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145233
+- paramIn: 140234
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141234
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143234
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144234
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145234
+- paramIn: 140235
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141235
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143235
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144235
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145235
+- paramIn: 140236
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141236
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143236
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144236
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145236
+- paramIn: 140237
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141237
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143237
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144237
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145237
+- paramIn: 140238
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141238
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143238
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144238
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145238
+- paramIn: 140239
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141239
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143239
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144239
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145239
+- paramIn: 140244
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141244
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143244
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144244
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145244
+- paramIn: 140245
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141245
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143245
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144245
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145245
+- paramIn: 140249
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141249
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143249
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144249
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145249
+- paramIn: 140252
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141252
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143252
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144252
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145252
+- paramIn: 140253
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141253
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143253
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144253
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145253
+- paramIn: 140254
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 141254
+  - typeOfStatisticalProcessing: 2
+    paramOut: 143254
+  - typeOfStatisticalProcessing: 3
+    paramOut: 144254
+  - typeOfStatisticalProcessing: 6
+    paramOut: 145254
+- paramIn: 160198
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235289
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237289
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238289
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239289
+- paramIn: 162031
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235344
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233002
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237344
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238344
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239344
+- paramIn: 162032
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235346
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233004
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237346
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238346
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239346
+- paramIn: 162033
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235347
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233005
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237347
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238347
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239347
+- paramIn: 162034
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235352
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233010
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237352
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238352
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239352
+- paramIn: 162035
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235355
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233013
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237355
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238355
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239355
+- paramIn: 162036
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235359
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233017
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237359
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238359
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239359
+- paramIn: 162037
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235360
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233018
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237360
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238360
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239360
+- paramIn: 162038
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235361
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233019
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237361
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238361
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239361
+- paramIn: 162039
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235362
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233020
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237362
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238362
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239362
+- paramIn: 162040
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235363
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233021
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237363
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238363
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239363
+- paramIn: 162041
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235366
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233024
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237366
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238366
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239366
+- paramIn: 162042
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235367
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233025
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237367
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238367
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239367
+- paramIn: 162043
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235368
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233026
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237368
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238368
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239368
+- paramIn: 162044
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235369
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233027
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237369
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238369
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239369
+- paramIn: 162046
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235370
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233028
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237370
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238370
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239370
+- paramIn: 162047
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235371
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233029
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237371
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238371
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239371
+- paramIn: 162048
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235372
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233030
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237372
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238372
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239372
+- paramIn: 162049
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235373
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233031
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237373
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238373
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239373
+- paramIn: 162050
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235377
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233035
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237377
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238377
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239377
+- paramIn: 162059
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235291
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237291
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238291
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239291
+- paramIn: 162060
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235292
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237292
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238292
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239292
+- paramIn: 162061
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235293
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237293
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238293
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239293
+- paramIn: 162062
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235294
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237294
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238294
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239294
+- paramIn: 162063
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235295
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237295
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238295
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239295
+- paramIn: 162065
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235357
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233015
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237357
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238357
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239357
+- paramIn: 162066
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235358
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233016
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237358
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238358
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239358
+- paramIn: 162067
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235348
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233006
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237348
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238348
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239348
+- paramIn: 162068
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235349
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233007
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237349
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238349
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239349
+- paramIn: 162071
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235364
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233022
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237364
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238364
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239364
+- paramIn: 162072
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235365
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233023
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237365
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238365
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239365
+- paramIn: 162073
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235342
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233000
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237342
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238342
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239342
+- paramIn: 162074
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235343
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233001
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237343
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238343
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239343
+- paramIn: 162075
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235350
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233008
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237350
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238350
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239350
+- paramIn: 162076
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235351
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233009
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237351
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238351
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239351
+- paramIn: 162077
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235374
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233032
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237374
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238374
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239374
+- paramIn: 162078
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235375
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233033
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237375
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238375
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239375
+- paramIn: 162081
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235356
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233014
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237356
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238356
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239356
+- paramIn: 162082
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235353
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233011
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237353
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238353
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239353
+- paramIn: 162084
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 213
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237054
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238054
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239054
+- paramIn: 162085
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235345
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233003
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237345
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238345
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239345
+- paramIn: 162086
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235354
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233012
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237354
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238354
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239354
+- paramIn: 162087
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235376
+  - typeOfStatisticalProcessing: 1
+    paramOut: 233034
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237376
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238376
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239376
+- paramIn: 162093
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235296
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237296
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238296
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239296
+- paramIn: 162150
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235001
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162100
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237001
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238001
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239001
+- paramIn: 162151
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235002
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162101
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237002
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238002
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239002
+- paramIn: 162152
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235003
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162102
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237003
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238003
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239003
+- paramIn: 162153
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235004
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162103
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237004
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238004
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239004
+- paramIn: 162154
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235009
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162104
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237009
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238009
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239009
+- paramIn: 162155
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235010
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162105
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237010
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238010
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239010
+- paramIn: 162156
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235011
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162106
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237011
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238011
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239011
+- paramIn: 162157
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235012
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162107
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237012
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238012
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239012
+- paramIn: 162158
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235013
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162108
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237013
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238013
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239013
+- paramIn: 162159
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235014
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162109
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237014
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238014
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239014
+- paramIn: 162160
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235005
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162110
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237005
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238005
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239005
+- paramIn: 162161
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235006
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162111
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237006
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238006
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239006
+- paramIn: 162162
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235007
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162112
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237007
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238007
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239007
+- paramIn: 162163
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235008
+  - typeOfStatisticalProcessing: 1
+    paramOut: 162113
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237008
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238008
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239008
+- paramIn: 174096
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235089
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237089
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238089
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239089
+- paramIn: 210198
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235282
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237282
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238282
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239282
+- paramIn: 210199
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235281
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237281
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238281
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239281
+- paramIn: 210200
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235299
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237299
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238299
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239299
+- paramIn: 210201
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235297
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237297
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238297
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239297
+- paramIn: 210202
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235298
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237298
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238298
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239298
+- paramIn: 210260
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235284
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237284
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238284
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239284
+- paramIn: 210261
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235283
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237283
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238283
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239283
+- paramIn: 210262
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235302
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237302
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238302
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239302
+- paramIn: 210263
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235300
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237300
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238300
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239300
+- paramIn: 210264
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235301
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237301
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238301
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239301
+- paramIn: 214001
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235340
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237340
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238340
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239340
+- paramIn: 228001
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235303
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237303
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238303
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239303
+- paramIn: 228003
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235304
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237304
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238304
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239304
+- paramIn: 228008
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235090
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237090
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238090
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239090
+- paramIn: 228009
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235091
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237091
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238091
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239091
+- paramIn: 228010
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235305
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237305
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238305
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239305
+- paramIn: 228011
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235306
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237306
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238306
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239306
+- paramIn: 228012
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235307
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237307
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238307
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239307
+- paramIn: 228013
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235308
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237308
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238308
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239308
+- paramIn: 228014
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235309
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237309
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238309
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239309
+- paramIn: 228015
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235310
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237310
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238310
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239310
+- paramIn: 228016
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235311
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237311
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238311
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239311
+- paramIn: 228017
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235312
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237312
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238312
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239312
+- paramIn: 228018
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235313
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237313
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238313
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239313
+- paramIn: 228019
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235314
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237314
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238314
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239314
+- paramIn: 228020
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235315
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237315
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238315
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239315
+- paramIn: 228023
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235316
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237316
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238316
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239316
+- paramIn: 228024
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235317
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237317
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238317
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239317
+- paramIn: 228029
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235318
+  - typeOfStatisticalProcessing: 2
+    paramOut: 49
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238318
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239318
+- paramIn: 228030
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235319
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237319
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238319
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239319
+- paramIn: 228032
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235285
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237285
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238285
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239285
+- paramIn: 228037
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235320
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237320
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238320
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239320
+- paramIn: 228044
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235321
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238321
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239321
+- paramIn: 228045
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235322
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237322
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238322
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239322
+- paramIn: 228046
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235323
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237323
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238323
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239323
+- paramIn: 228047
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235324
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237324
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238324
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239324
+- paramIn: 228048
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235325
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237325
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238325
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239325
+- paramIn: 228050
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231041
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237326
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238326
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239326
+- paramIn: 228083
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235062
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228080
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237062
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238062
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239062
+- paramIn: 228084
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235063
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228081
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237063
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238063
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239063
+- paramIn: 228085
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235064
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228082
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237064
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238064
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239064
+- paramIn: 228086
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235113
+- paramIn: 228087
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235114
+- paramIn: 228088
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235327
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237327
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238327
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239327
+- paramIn: 228089
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235111
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237111
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238111
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239111
+- paramIn: 228090
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235107
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237107
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238107
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239107
+- paramIn: 228095
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235115
+- paramIn: 228096
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235116
+- paramIn: 228104
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228109
+- paramIn: 228131
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235328
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237328
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238328
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239328
+- paramIn: 228132
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235329
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237329
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238329
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239329
+- paramIn: 228141
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235078
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237078
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238078
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239078
+- paramIn: 228164
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235288
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237288
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238288
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239288
+- paramIn: 228217
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235026
+  - typeOfStatisticalProcessing: 1
+    paramOut: 50
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237026
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238026
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239026
+- paramIn: 228218
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235330
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237330
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238330
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239330
+- paramIn: 228219
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235331
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237331
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238331
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239331
+- paramIn: 228220
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235056
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231057
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237056
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238056
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239056
+- paramIn: 228221
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235057
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231058
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237057
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238057
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239057
+- paramIn: 228231
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235332
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237332
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238332
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239332
+- paramIn: 228232
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235333
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237333
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238333
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239333
+- paramIn: 228233
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235334
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237334
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238334
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239334
+- paramIn: 228234
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235335
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237335
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238335
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239335
+- paramIn: 228235
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235117
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237117
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238117
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239117
+- paramIn: 228237
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235336
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237336
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238336
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239336
+- paramIn: 228239
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235131
+- paramIn: 228240
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235132
+- paramIn: 228246
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235131
+- paramIn: 228247
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235132
+- paramIn: 231004
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235070
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231005
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237070
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238070
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239070
+- paramIn: 231009
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235020
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231010
+- paramIn: 231011
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235021
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231012
+- paramIn: 231018
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235149
+  - typeOfStatisticalProcessing: 1
+    paramOut: 149
+- paramIn: 231019
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 231020
+  - typeOfStatisticalProcessing: 1
+    paramOut: 150
+- paramIn: 231025
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235271
+- paramIn: 231026
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235272
+- paramIn: 231027
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235273
+- paramIn: 231032
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231033
+- paramIn: 231035
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231036
+- paramIn: 231038
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231039
+- paramIn: 231049
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235397
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237397
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238397
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239397
+- paramIn: 231063
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235395
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237395
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238395
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239395
+- paramIn: 231065
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235023
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231003
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237023
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238023
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239023
+- paramIn: 231068
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235382
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237382
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238382
+- paramIn: 231069
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235390
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237390
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238390
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239390
+- paramIn: 231070
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235391
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237391
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238391
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239391
+- paramIn: 231071
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235392
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237392
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238392
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239392
+- paramIn: 240013
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235270
+- paramIn: 240014
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235398
+- paramIn: 240015
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235399
+- paramIn: 240031
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235400
+- paramIn: 240032
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235401
+- paramIn: 240033
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235402
+- paramIn: 240034
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235403
+- paramIn: 240035
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235274
+- paramIn: 240036
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235275
+- paramIn: 240037
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235276
+- paramIn: 240038
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235277
+- paramIn: 240039
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235278
+- paramIn: 240040
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235279
+- paramIn: 240041
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235280
+- paramIn: 260001
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235120
+  - typeOfStatisticalProcessing: 2
+    paramOut: 231042
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238120
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239120
+- paramIn: 260002
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235034
+  - typeOfStatisticalProcessing: 1
+    paramOut: 147
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237034
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238034
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239034
+- paramIn: 260033
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235030
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228143
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237030
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238030
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239030
+- paramIn: 260048
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235055
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228228
+  - typeOfStatisticalProcessing: 2
+    paramOut: 228226
+  - typeOfStatisticalProcessing: 3
+    paramOut: 228227
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239055
+- paramIn: 260049
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235031
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228144
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237031
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238031
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239031
+- paramIn: 260050
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235029
+  - typeOfStatisticalProcessing: 1
+    paramOut: 3062
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237029
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238029
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239029
+- paramIn: 260057
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235137
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237137
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238137
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239137
+- paramIn: 260060
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235341
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231001
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237341
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238341
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239341
+- paramIn: 260081
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235045
+  - typeOfStatisticalProcessing: 1
+    paramOut: 195
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237045
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238045
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239045
+- paramIn: 260082
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235046
+  - typeOfStatisticalProcessing: 1
+    paramOut: 196
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237046
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238046
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239046
+- paramIn: 260087
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235035
+  - typeOfStatisticalProcessing: 1
+    paramOut: 169
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237035
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238035
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239035
+- paramIn: 260089
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235037
+  - typeOfStatisticalProcessing: 1
+    paramOut: 176
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237037
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238037
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239037
+- paramIn: 260090
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235028
+  - typeOfStatisticalProcessing: 1
+    paramOut: 58
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237028
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238028
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239028
+- paramIn: 260091
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235051
+  - typeOfStatisticalProcessing: 1
+    paramOut: 210
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237051
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238051
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239051
+- paramIn: 260092
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235027
+  - typeOfStatisticalProcessing: 1
+    paramOut: 57
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237027
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238027
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239027
+- paramIn: 260097
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235036
+  - typeOfStatisticalProcessing: 1
+    paramOut: 175
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237036
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238036
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239036
+- paramIn: 260099
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235038
+  - typeOfStatisticalProcessing: 1
+    paramOut: 177
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237038
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238038
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239038
+- paramIn: 260100
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235052
+  - typeOfStatisticalProcessing: 1
+    paramOut: 211
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237052
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238052
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239052
+- paramIn: 260109
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235337
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237337
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238337
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239337
+- paramIn: 260119
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235189
+  - typeOfStatisticalProcessing: 1
+    paramOut: 189
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237189
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238189
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239189
+- paramIn: 260121
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235257
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237257
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238257
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239257
+- paramIn: 260123
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235258
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237258
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238258
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239258
+- paramIn: 260132
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235290
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237290
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238290
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239290
+- paramIn: 260180
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235393
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237393
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238393
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239393
+- paramIn: 260199
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235077
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237077
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238077
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239077
+- paramIn: 260242
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235092
+  - typeOfStatisticalProcessing: 2
+    paramOut: 231061
+  - typeOfStatisticalProcessing: 3
+    paramOut: 231062
+- paramIn: 260260
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235261
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237261
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238261
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239261
+- paramIn: 260262
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235058
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228021
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237058
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238058
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239058
+- paramIn: 260263
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235060
+- paramIn: 260289
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235093
+- paramIn: 260290
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235262
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237262
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238262
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239262
+- paramIn: 260360
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235094
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237094
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238094
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239094
+- paramIn: 260361
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235068
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228129
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237068
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238068
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239068
+- paramIn: 260362
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260427
+- paramIn: 260363
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235069
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228130
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237069
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238069
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239069
+- paramIn: 260373
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235394
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237394
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238394
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239394
+- paramIn: 260433
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235074
+- paramIn: 260436
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235076
+  - typeOfStatisticalProcessing: 1
+    paramOut: 235075
+- paramIn: 260443
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235048
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231002
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237048
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238048
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239048
+- paramIn: 260475
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235024
+  - typeOfStatisticalProcessing: 1
+    paramOut: 3099
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237024
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238024
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239024
+- paramIn: 260509
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235263
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237263
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238263
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239263
+- paramIn: 260649
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263006
+- paramIn: 260657
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235338
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237338
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238338
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239338
+- paramIn: 260665
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235118
+- paramIn: 260666
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235119
+- paramIn: 260667
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235022
+  - typeOfStatisticalProcessing: 1
+    paramOut: 20
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237022
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238022
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239022
+- paramIn: 260668
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235339
+  - typeOfStatisticalProcessing: 1
+    paramOut: 47
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237339
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238339
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239339
+- paramIn: 260669
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235025
+  - typeOfStatisticalProcessing: 1
+    paramOut: 48
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237025
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238025
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239025
+- paramIn: 260670
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235032
+  - typeOfStatisticalProcessing: 1
+    paramOut: 145
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237032
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238032
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239032
+- paramIn: 260671
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235039
+  - typeOfStatisticalProcessing: 1
+    paramOut: 178
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237039
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238039
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239039
+- paramIn: 260672
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235040
+  - typeOfStatisticalProcessing: 1
+    paramOut: 179
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237040
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238040
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239040
+- paramIn: 260673
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235047
+  - typeOfStatisticalProcessing: 1
+    paramOut: 197
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237047
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238047
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239047
+- paramIn: 260674
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235049
+  - typeOfStatisticalProcessing: 1
+    paramOut: 208
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237049
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238049
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239049
+- paramIn: 260675
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235050
+  - typeOfStatisticalProcessing: 1
+    paramOut: 209
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237050
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238050
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239050
+- paramIn: 260676
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235053
+  - typeOfStatisticalProcessing: 1
+    paramOut: 212
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237053
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238053
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239053
+- paramIn: 260677
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235059
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228022
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237059
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238059
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239059
+- paramIn: 260678
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235378
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260652
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237378
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238378
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239378
+- paramIn: 260679
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235379
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260653
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237379
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238379
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239379
+- paramIn: 260680
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235380
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260654
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237380
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238380
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239380
+- paramIn: 260681
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235381
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260655
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237381
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238381
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239381
+- paramIn: 260684
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235386
+  - typeOfStatisticalProcessing: 1
+    paramOut: 236386
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237386
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238386
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239386
+- paramIn: 260685
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235387
+  - typeOfStatisticalProcessing: 1
+    paramOut: 236387
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237387
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238387
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239387
+- paramIn: 260686
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235388
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237388
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238388
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239388
+- paramIn: 260687
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235389
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237389
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238389
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239389
+- paramIn: 260688
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235396
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237396
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238396
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239396
+- paramIn: 260689
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260138
+- paramIn: 260692
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260693
+- paramIn: 260694
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235404
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237404
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238404
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239404
+- paramIn: 262000
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263000
+- paramIn: 262001
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263001
+- paramIn: 262002
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263002
+- paramIn: 262003
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263003
+- paramIn: 262004
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263004
+- paramIn: 262005
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263005
+- paramIn: 262006
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263006
+- paramIn: 262007
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263007
+- paramIn: 262008
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263008
+- paramIn: 262009
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263009
+- paramIn: 262010
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263010
+- paramIn: 262011
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263011
+- paramIn: 262012
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263012
+- paramIn: 262013
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263013
+- paramIn: 262014
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263014
+- paramIn: 262015
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263015
+- paramIn: 262016
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263016
+- paramIn: 262017
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263017
+- paramIn: 262018
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263018
+- paramIn: 262019
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263019
+- paramIn: 262020
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263020
+- paramIn: 262021
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263021
+- paramIn: 262022
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263022
+- paramIn: 262023
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263023
+- paramIn: 262024
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263024
+  - typeOfStatisticalProcessing: 2
+    paramOut: 265024
+  - typeOfStatisticalProcessing: 3
+    paramOut: 266024
+  - typeOfStatisticalProcessing: 6
+    paramOut: 267024
+- paramIn: 262025
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263025
+- paramIn: 262100
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263100
+- paramIn: 262101
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263101
+- paramIn: 262102
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263102
+- paramIn: 262103
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263103
+- paramIn: 262104
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263104
+- paramIn: 262105
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263105
+- paramIn: 262106
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263106
+- paramIn: 262107
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263107
+- paramIn: 262108
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263108
+- paramIn: 262109
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263109
+- paramIn: 262110
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263110
+- paramIn: 262111
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263111
+- paramIn: 262112
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263112
+- paramIn: 262113
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263113
+- paramIn: 262114
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263114
+- paramIn: 262115
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263115
+- paramIn: 262116
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263116
+- paramIn: 262117
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263117
+- paramIn: 262118
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263118
+- paramIn: 262119
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263119
+- paramIn: 262120
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263120
+- paramIn: 262121
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263121
+- paramIn: 262122
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263122
+- paramIn: 262123
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263123
+- paramIn: 262124
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263124
+- paramIn: 262125
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263125
+- paramIn: 262126
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263126
+- paramIn: 262127
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263127
+- paramIn: 262128
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263128
+- paramIn: 262129
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263129
+- paramIn: 262130
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263130
+- paramIn: 262131
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263131
+- paramIn: 262132
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263132
+- paramIn: 262133
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263133
+- paramIn: 262134
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263134
+- paramIn: 262135
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263135
+- paramIn: 262136
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263136
+- paramIn: 262137
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263137
+- paramIn: 262138
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263138
+- paramIn: 262139
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263139
+- paramIn: 262140
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263140
+- paramIn: 262141
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263141
+- paramIn: 262142
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263142
+- paramIn: 262143
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263143
+- paramIn: 262144
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263144
+- paramIn: 262145
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263145
+- paramIn: 262146
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263146
+- paramIn: 262147
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263147
+- paramIn: 262148
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263148
+- paramIn: 262149
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263149
+- paramIn: 262500
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263500
+- paramIn: 262501
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263501
+- paramIn: 262502
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263502
+- paramIn: 262503
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263503
+- paramIn: 262504
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263504
+- paramIn: 262505
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263505
+- paramIn: 262506
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263506
+- paramIn: 262507
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263507
+- paramIn: 262508
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263508
+- paramIn: 262509
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263509
+- paramIn: 262510
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263510
+- paramIn: 262511
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263511
+- paramIn: 262512
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263512
+- paramIn: 262513
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263513
+- paramIn: 262514
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263514
+- paramIn: 262515
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263515
+- paramIn: 262516
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263516
+- paramIn: 262517
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263517
+- paramIn: 262518
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263518
+- paramIn: 262519
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263519
+  - typeOfStatisticalProcessing: 2
+    paramOut: 265519
+  - typeOfStatisticalProcessing: 3
+    paramOut: 266519
+  - typeOfStatisticalProcessing: 6
+    paramOut: 267519
+- paramIn: 262520
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263520
+- paramIn: 262521
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263521
+- paramIn: 262522
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263522
+- paramIn: 262900
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263900
+  - typeOfStatisticalProcessing: 1
+    paramOut: 264900
+- paramIn: 262901
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263901
+- paramIn: 262902
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263902
+- paramIn: 262903
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263903
+- paramIn: 262904
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263904
+  - typeOfStatisticalProcessing: 1
+    paramOut: 264904
+- paramIn: 262905
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263905
+  - typeOfStatisticalProcessing: 1
+    paramOut: 264905
+- paramIn: 262906
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263906
+- paramIn: 262907
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263907
+- paramIn: 262908
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263908
+- paramIn: 262909
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 263909
+- paramIn: 405000
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 444000
+- paramIn: 406000
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 445000
+- paramIn: 435000
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 435001
+  - typeOfStatisticalProcessing: 1
+    paramOut: 435002
+- paramIn: 436000
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 436001
+  - typeOfStatisticalProcessing: 1
+    paramOut: 436002
+- paramIn: 437000
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 437001
+  - typeOfStatisticalProcessing: 1
+    paramOut: 437002
+

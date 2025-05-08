@@ -21,13 +21,7 @@ filter:
     - type: param
       operation: match
       values:
-        - 207
-        - 174096
         - 129172
-        - 228029
-        - 228037
-        - "228131:228132"
-        - "228239:228241"
     - type: packing
       operation: match
       value: ccsds

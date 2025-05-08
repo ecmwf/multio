@@ -35,6 +35,8 @@ private:
 
     std::optional<long> valueCountThreshold_;
 
+    std::vector<std::pair<std::string, std::string>> setMetadata_;
+
 private:
     void parseUseDateTime(const eckit::LocalConfiguration& cfg);
     void parseCheckMissingValues(const eckit::LocalConfiguration& cfg);
@@ -54,6 +56,7 @@ private:
     void parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
                                            const eckit::LocalConfiguration& cfg);
     void parseValueCountThreshold(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseSetMetadata(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
 
     void dumpOptions();
     void usage();
@@ -85,6 +88,8 @@ public:
     const std::string& solverResetAccumulatedFields() const;
 
     std::optional<long> valueCountThreshold() const;
+
+    const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

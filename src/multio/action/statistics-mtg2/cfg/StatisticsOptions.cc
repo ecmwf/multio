@@ -20,7 +20,8 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     logPrefix_{"Plan"},
     windowType_{"forward-offset"},
     accumulatedFieldsResetFreqency_{"month"},
-    valueCountThreshold_{} {
+    valueCountThreshold_{},
+    setMetadata_{} {
     // Dump usage
     if (compConf.parsedConfig().has("help")) {
         usage();
@@ -47,6 +48,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
         parseWindowType(compConf, options);
         parseSolverResetAccumulatedFields(compConf, options);
         parseValueCountThreshold(compConf, options);
+        parseSetMetadata(compConf, options);
     }
 
 
@@ -234,6 +236,19 @@ void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfigur
     throw eckit::UserError(os.str(), Here());
 }
 
+void StatisticsOptions::parseSetMetadata(const config::ComponentConfiguration& compConf,
+                                         const eckit::LocalConfiguration& cfg) {
+    if (!cfg.has("set-metadata")) {
+        return;
+    }
+
+    auto subCfg = cfg.getSubConfiguration("set-metadata");
+    for (auto key : subCfg.keys()) {
+        auto value = subCfg.getString(key);
+        setMetadata_.emplace_back(std::pair<std::string, std::string>(key, value));
+    }
+}
+
 
 const std::string& StatisticsOptions::logPrefix() const {
     return logPrefix_;
@@ -305,6 +320,11 @@ const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
 
 std::optional<long> StatisticsOptions::valueCountThreshold() const {
     return valueCountThreshold_;
+}
+
+
+const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {
+    return setMetadata_;
 }
 
 

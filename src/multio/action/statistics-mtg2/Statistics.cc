@@ -437,6 +437,10 @@ void Statistics::executeImpl(message::Message msg) {
             multio::message::Mtg2::mars::timespan.set(md, timespan);
 
             paramMapping()->applyMapping(md, opname);
+            for (const auto& kv : opt_.setMetadata()) {
+                md.set(kv.first, kv.second);
+            }
+
             (*it)->compute(payload, cfg);
             executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
                                                                   msg.destination(), message::Metadata{md}},

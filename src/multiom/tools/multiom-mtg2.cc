@@ -578,6 +578,11 @@ void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
     }
 }
 
+void handleMissingValue(codes_handle* h, MultiOMDict& parDict) {
+    double missingValue = 9999.0;
+    CODES_CHECK(codes_set_double(h, "missingValue", missingValue), nullptr);
+    parDict.set("valueOfMissingValues", "9999");
+}
 
 void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOMDict& parDict) {
     getAndSet(marsKeys, marsDict, "stream");
@@ -668,7 +673,9 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
     getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
-    getAndSet(h, parDict, "valueOfMissingValues");
+
+    handleMissingValue(h, parDict);
+
     getAndSet(h, parDict, "laplacianScalingFactor");
     getAndSet(h, parDict, "systemNumber");
     getAndSet(h, parDict, "methodNumber");
@@ -1289,7 +1296,7 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
             bool ret = matches(msg, *excludeMap_, verbosity_);
             if (ret) {
                 if (verbosity_ >= 2) {
-                    std::cout << "exclude map  matched... skipping message" << std::endl;
+                    std::cout << "exclude map matched... skipping message" << std::endl;
                 }
                 continue;
             }

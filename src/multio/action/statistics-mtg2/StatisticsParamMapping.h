@@ -24,29 +24,24 @@ namespace {
             return a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2));
         }
     };
+
+    using ParamTypeOfStatisticalProcessingToParamMap
+        = std::unordered_map<ParamTypeOfStatisticalProcessingPair, std::int64_t, ParamTypeOfStatisticalProcessingPairHash>;
 }
 
 class StatisticsParamMapping {
-
 public:
-    StatisticsParamMapping(StatisticsParamMapping& other) = delete;
-    void operator=(const StatisticsParamMapping&) = delete;
+    static StatisticsParamMapping makeStatisticsParamMapping();
 
-    static StatisticsParamMapping* instance();
-
-    std::int64_t getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing);
-    void applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing);
-    void applyMapping(message::Metadata& metadata, const std::string& opname);
+    std::int64_t getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing) const;
+    void applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing) const;
+    void applyMapping(message::Metadata& metadata, const std::string& opname) const;
 
 private:
-    StatisticsParamMapping();
+    StatisticsParamMapping(ParamTypeOfStatisticalProcessingToParamMap paramMappings);
 
-    static StatisticsParamMapping* instance_;
-
-    std::unordered_map<ParamTypeOfStatisticalProcessingPair, std::int64_t, ParamTypeOfStatisticalProcessingPairHash> mapping_;
+    const ParamTypeOfStatisticalProcessingToParamMap paramMappings_;
 };
-
-StatisticsParamMapping* paramMapping();
 
 
 }  // namespace multio::action::statistics_mtg2

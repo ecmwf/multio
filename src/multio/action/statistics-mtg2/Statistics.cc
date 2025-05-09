@@ -24,7 +24,6 @@
 #include "multio/util/Timing.h"
 
 #include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
-#include "multio/action/statistics-mtg2/StatisticsParamMapping.h"
 
 
 namespace multio::action::statistics_mtg2 {
@@ -38,6 +37,7 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     opt_{compConf},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
+    paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
 std::string Statistics::generateRestartNameFromFlush(const message::Message& msg) const {
@@ -436,7 +436,7 @@ void Statistics::executeImpl(message::Message msg) {
             md.set(glossary().step, step);
             multio::message::Mtg2::mars::timespan.set(md, timespan);
 
-            paramMapping()->applyMapping(md, opname);
+            paramMapping_.applyMapping(md, opname);
             for (const auto& kv : opt_.setMetadata()) {
                 md.set(kv.first, kv.second);
             }

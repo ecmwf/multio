@@ -1,4 +1,3 @@
 import importlib.metadata
 
-__version__ = importlib.metadata.version("pymetkit")
-
+__version__ = importlib.metadata.version("pymultio")

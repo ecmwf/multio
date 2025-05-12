@@ -672,7 +672,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     // getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
-    getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
+    getAndSet(h, parDict, "numberOfMissingValues");
 
     handleMissingValue(h, parDict);
 

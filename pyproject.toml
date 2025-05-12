@@ -23,7 +23,7 @@ testpaths = [
 ]
 
 [build-system]
-requires = [ "setuptools>=65", "setuptools-scm>=8" ]
+requires = [ "setuptools>=80" ]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -74,13 +74,12 @@ urls.Repository = "https://github.com/ecmwf/multio/"
 include-package-data = true
 zip-safe = true
 
+[tool.setuptools.dynamic]
+version = { file = ["VERSION"] }
+
 [tool.setuptools.packages.find]
 include = ["multio*"]
 where = ["./python/pymultio/src"]
-
-[tool.setuptools_scm]
-version_file = "./python/pymultio/src/multio/_version.py"
-local_scheme = "no-local-version"
 
 [tool.setuptools.package-data]
 multio = ["*.h"]

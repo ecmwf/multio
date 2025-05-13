@@ -460,20 +460,6 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
-    # surface - average over last 1d
-    partialRule(
-        [matchType("levtype", "sfc"), matchParam([235087])],
-        [
-            levelConfig("surface"),
-            paramConfig("paramId"),
-            TimeRange(
-                type="fixed-timerange",
-                typeOfStatisticalProcessing="average",
-                overallLengthOfTimeRange="1d",
-                descriptiveName="average-over-last-1d",
-            ),
-        ],
-    ),
     # surface - max over last 3h - paramIdECMF
     partialRule(
         [matchType("levtype", "sfc"), matchParam([228026])],

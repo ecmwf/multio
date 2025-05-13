@@ -2359,9 +2359,9 @@ PP_THREAD_SAFE FUNCTION COPY_F_BUFFER_TO_C_BUFFER( F_BUF, C_BUF, HOOKS ) RESULT(
 IMPLICIT NONE
 
   ! Dummy arguments
-  CHARACTER(LEN=1, KIND=C_CHAR), DIMENSION(:), INTENT(IN)    :: F_BUF
-  TYPE(C_PTR),                                 INTENT(OUT)   :: C_BUF
-  TYPE(HOOKS_T),                               INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=1, KIND=C_CHAR), TARGET, DIMENSION(:), INTENT(IN)    :: F_BUF
+  TYPE(C_PTR),                                         INTENT(OUT)   :: C_BUF
+  TYPE(HOOKS_T),                                       INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET

@@ -316,6 +316,7 @@ enum class SetDefault : unsigned long
 };
 
 using OptVal = std::optional<std::string>;
+
 void getAndSet(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
                SetDefault defPolicy = SetDefault::IfKeyGiven) {
     if (hasKey(h, key)) {
@@ -331,10 +332,12 @@ void getAndSet(codes_handle* h, MultiOMDict& dict, const char* key, const char* 
         }
     }
 }
+
 void getAndSet(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
                SetDefault defPolicy = SetDefault::IfKeyGiven) {
     getAndSet(h, dict, key, NULL, defaultVal, defPolicy);
 }
+
 void getAndSetIfNonZero(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL) {
     if (hasKey(h, key)) {
         std::string val = getString(h, key);
@@ -343,7 +346,6 @@ void getAndSetIfNonZero(codes_handle* h, MultiOMDict& dict, const char* key, con
         }
     }
 }
-
 
 void getAndSet(const Map& map, MultiOMDict& dict, const char* key, const char* setName = NULL, OptVal defaultVal = {},
                SetDefault defPolicy = SetDefault::IfKeyGiven) {
@@ -361,7 +363,6 @@ void getAndSet(const Map& map, MultiOMDict& dict, const char* key, OptVal defaul
     getAndSet(map, dict, key, NULL, defaultVal, defPolicy);
 }
 
-
 void getAndSetDouble(codes_handle* h, MultiOMDict& dict, const char* key, const char* setName = NULL,
                      OptVal defaultVal = {}, SetDefault defPolicy = SetDefault::IfKeyGiven) {
     if (hasKey(h, key)) {
@@ -374,6 +375,7 @@ void getAndSetDouble(codes_handle* h, MultiOMDict& dict, const char* key, const 
         }
     }
 }
+
 void getAndSetDouble(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
                      SetDefault defPolicy = SetDefault::IfKeyGiven) {
     getAndSetDouble(h, dict, key, NULL, defaultVal, defPolicy);
@@ -392,6 +394,7 @@ void getAndSetLong(codes_handle* h, MultiOMDict& dict, const char* key, const ch
         }
     }
 }
+
 void getAndSetLong(codes_handle* h, MultiOMDict& dict, const char* key, OptVal defaultVal,
                    SetDefault defPolicy = SetDefault::IfKeyGiven) {
     getAndSetLong(h, dict, key, NULL, defaultVal, defPolicy);
@@ -672,7 +675,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     // getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
-    getAndSet(h, parDict, "numberOfMissingValues");
+    getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
 
     handleMissingValue(h, parDict);
 

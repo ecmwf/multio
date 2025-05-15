@@ -17,7 +17,7 @@ import os
 
 import cffi
 import findlibs
-from pkg_resources import parse_version
+from packaging.version import Version
 
 __multio_version__ = "1.9.0"
 
@@ -76,7 +76,7 @@ class PatchedLib:
         self.multio_version(tmp_str)
         versionstr = ffi.string(tmp_str[0]).decode("utf-8")
 
-        if parse_version(versionstr) < parse_version(__multio_version__):
+        if Version(versionstr) < Version(__multio_version__):
             raise RuntimeError("Version of libmultio found is too old. {} < {}".format(versionstr, __multio_version__))
 
     def __read_header(self):

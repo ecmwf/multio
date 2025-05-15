@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-heightAboveGroundAt2m-gg-ensemble-instant-simple-paramId-1
+name: rule-potentialVorticity-complex-reforecast-ensemble-instant-complex-paramId-1
 
 filter:
   type: composed
@@ -8,26 +8,25 @@ filter:
   filters:
     - type: repres
       operation: match
-      value: gaussian-grid
+      value: spherical-harmonics
     - type: anoffset
       operation: lacks
     - type: number
       operation: has
     - type: hdate
-      operation: lacks
+      operation: has
     - type: levtype
       operation: match
-      value: sfc
+      value: pv
     - type: param
       operation: match
       values:
-        - "167:168"
-        - 174096
-        - 228037
-        - 260242
+        - 3
+        - 54
+        - 129
     - type: packing
       operation: match
-      value: simple
+      value: complex
 
 encoder:
   type: grib2
@@ -48,9 +47,9 @@ encoder:
   local-use-section:
     template-number: 1
   grid-definition-section:
-    template-number: 40
+    template-number: 50
   product-definition-section:
-    template-number: 1
+    template-number: 60
     point-in-time-configurator:
       type: default
     param-configurator:
@@ -58,8 +57,8 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: heightAboveGroundAt2m
+      type: potentialVorticity
     ensemble-configurator:
       type: default
   data-representation-section:
-    template-number: 0
+    template-number: 51

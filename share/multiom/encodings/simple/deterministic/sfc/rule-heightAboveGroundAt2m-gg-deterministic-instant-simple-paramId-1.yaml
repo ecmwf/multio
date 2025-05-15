@@ -24,6 +24,7 @@ filter:
         - "167:168"
         - 174096
         - 228037
+        - 260242
     - type: packing
       operation: match
       value: simple

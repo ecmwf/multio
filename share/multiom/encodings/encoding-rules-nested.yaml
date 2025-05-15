@@ -228,6 +228,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pv/rule-potentialVorticity-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -447,6 +451,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pv/rule-potentialVorticity-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
           - operation: lacks
             nested-rules:
               key: anoffset
@@ -670,6 +678,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pv/rule-potentialVorticity-complex-ensemble-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -889,6 +901,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pv/rule-potentialVorticity-complex-ensemble-instant-complex-paramId-1.yaml'
     - operation: lacks
       nested-rules:
         key: hdate
@@ -1128,6 +1144,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pv/rule-potentialVorticity-complex-deterministic-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -1347,3 +1367,7 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pv
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pv/rule-potentialVorticity-complex-deterministic-instant-complex-paramId-1.yaml'

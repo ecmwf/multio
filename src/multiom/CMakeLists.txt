@@ -273,4 +273,5 @@ target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}
 # add tests
 set(HAVE_OUTPUT_MANAGER_TESTS 1)
 # add_subdirectory( tests-components )
-# add_subdirectory( tests-api )
+add_subdirectory( tests-api )
+

@@ -104,6 +104,16 @@ int main() {
     free(readVal);
     readVal = NULL;
 
+    // provide option to set boolean or let eecodes compute this value and compare/assert
+    ret = multio_grib2_dict_has(dictionary_01, "numberofmissingvalues", &has1);
+    ret = multio_grib2_dict_set(dictionary_01, "numberOfMissingValues", "1027");
+    ret = multio_grib2_dict_has(dictionary_01, "numberofmissingvalues", &has2);
+    ret = multio_grib2_dict_get(dictionary_01, "number-of-missing-values", &readVal);
+    printf("numberofmissingvalues: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    assert(strcmp(readVal, "1027") == 0);
+    free(readVal);
+    readVal = NULL;
+
     ret = multio_grib2_dict_has(dictionary_01, "valueofmissingvalues", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "valueofmissingvalues", "99.99");
     ret = multio_grib2_dict_has(dictionary_01, "valueofmissingvalues", &has2);

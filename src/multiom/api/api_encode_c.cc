@@ -64,14 +64,15 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
 
     char* missingValuesCount = "0";
     ret = multio_grib2_dict_get(par_dict, "number-of-missing-values", &missingValuesCount);
-    long bitmapPresent = static_cast<long>(static_cast<bool>(std::stol(missingValuesCount)));
+    std::cout << "missingValuesCount: " << missingValuesCount << std::endl;
+    long bitmapPresent = static_cast<long>(static_cast<bool>(std::stol(std::string(missingValuesCount))));
     CODES_CHECK(codes_set_long((codes_handle*)*out_handle, "bitmapPresent", bitmapPresent),
                 "Error setting bitmapPresent");
 
     if (bitmapPresent) {
         char* missingValue;
         ret = multio_grib2_dict_get(par_dict, "value-of-missing-values", &missingValue);
-        CODES_CHECK(codes_set_double((codes_handle*)*out_handle, "missingValue", std::stod(missingValue)),
+        CODES_CHECK(codes_set_double((codes_handle*)*out_handle, "missingValue", std::stod(std::string(missingValue))),
                     "Error setting missingValue");
     }
 

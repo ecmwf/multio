@@ -909,9 +909,14 @@ PARAM_LEVTYPE_PT = [
 PARAM_LEVTYPE_PV = [
     partialRule(
         [matchType("levtype", "pv"), matchParam([3, 54, 129, 131, 132, 133, 203])],
-        [levelConfig("potentialVorticity"), paramConfig("paramId"),
-            PointInTime(),
-        ]
+        [PointInTime(), levelConfig("potentialVorticity"), paramConfig("paramId")],
+    ),
+]
+
+PARAM_LEVTYPE_PV_SH = [
+    partialRule(
+        [matchType("levtype", "pv"), matchParam([3, 54, 129])],
+        [PointInTime(), levelConfig("potentialVorticity"), paramConfig("paramId")],
     ),
 ]
 
@@ -966,7 +971,7 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_PV
     + PARAM_SATELLITE
 )
-PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH
+PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH + PARAM_LEVTYPE_PV_SH
 
 PACKING = [
     partialRule(

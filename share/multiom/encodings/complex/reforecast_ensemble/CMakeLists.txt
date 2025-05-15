@@ -3,9 +3,11 @@ file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/reforecast_ensemble/ml")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pv")
 
 add_subdirectory("ml")
 add_subdirectory("pl")
+add_subdirectory("pv")
 
 # Loop through each entry and add it as a subdirectory if it's a directory
 foreach(rule ${encoding_rules})

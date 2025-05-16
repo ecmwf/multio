@@ -701,7 +701,6 @@ PARAM_LEVTYPE_SFC = [
                     "228046:228048",
                     228141,
                     "228217:228221",
-                    228227,
                     260004,
                     260005,
                     260015,
@@ -765,7 +764,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - max since last pp
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228226])],
+        [matchType("levtype", "sfc"), matchParam([228226, 237055])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -776,6 +775,20 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
         # namePrefix="max_since_last_pp",
+    ),
+    # surface - min since last pp
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228227, 238055])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="min",
+                descriptiveName="min-since-last-pp",
+            ),
+        ],
+        # namePrefix="min_since_last_pp",
     ),
     # sfc wam spec instant
     partialRule(

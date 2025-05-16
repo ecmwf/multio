@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-deterministic-max-since-last-pp-ccsds-paramId-36
+name: rule-surface-gg-deterministic-min-since-last-pp-ccsds-paramId-36
 
 filter:
   type: composed
@@ -21,8 +21,8 @@ filter:
     - type: param
       operation: match
       values:
-        - 228226
-        - 237055
+        - 228227
+        - 238055
     - type: packing
       operation: match
       value: ccsds
@@ -51,7 +51,7 @@ encoder:
     template-number: 8
     time-statistics-configurator:
       type: since-last-post-processing-step
-      type-of-statistical-processing: max
+      type-of-statistical-processing: min
     param-configurator:
       type: paramId
     model-configurator:

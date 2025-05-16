@@ -1,6 +1,6 @@
 name: 'modify levelist for parameter 123'
 
-tag: 'fix-change-123--levelist-to-10'
+tag: 'fix-change-123-levelist-to-10'
 
 filter:
   type: 'composed'

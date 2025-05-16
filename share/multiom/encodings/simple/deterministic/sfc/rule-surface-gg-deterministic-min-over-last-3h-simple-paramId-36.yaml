@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-reforecast-ensemble-max-over-last-3h-ccsds-paramId-1
+name: rule-surface-gg-deterministic-min-over-last-3h-simple-paramId-36
 
 filter:
   type: composed
@@ -10,22 +10,21 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
+      operation: has
     - type: number
-      operation: has
+      operation: lacks
     - type: hdate
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sfc
     - type: param
       operation: match
       values:
-        - 228028
-        - 228222
+        - 228223
     - type: packing
       operation: match
-      value: ccsds
+      value: simple
 
 encoder:
   type: grib2
@@ -44,14 +43,14 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 61
+    template-number: 8
     time-statistics-configurator:
       type: fixed-timerange
-      type-of-statistical-processing: max
+      type-of-statistical-processing: min
       overall-length-of-timerange: 3h
     param-configurator:
       type: paramId
@@ -59,7 +58,5 @@ encoder:
       type: default
     level-configurator:
       type: surface
-    ensemble-configurator:
-      type: default
   data-representation-section:
-    template-number: 42
+    template-number: 0

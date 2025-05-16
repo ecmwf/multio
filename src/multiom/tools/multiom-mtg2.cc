@@ -534,6 +534,16 @@ void handlePackingType(codes_handle* h, const std::string& packingType, MultiOMD
     mars_dict.set("packing", packingTypeVal->second.c_str());
 };
 
+void handleChemId(codes_handle* h, MultiOMDict& marsDict) {
+    const static std::unordered_map<long, long> chemIdMap{
+        {228080, 3}, {228081, 3}, {228082, 3}, {228083, 3}, {228084, 3}, {228085, 3}
+    };
+
+    long paramId = getLong(h, "paramId");
+    if (auto search = chemIdMap.find(paramId); search != chemIdMap.end()) {
+        marsDict.set("chem", search->second);
+    }
+}
 
 void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
     // Taken from eccodes
@@ -605,11 +615,10 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
     getAndSet(marsKeys, marsDict, "instrument");
     getAndSet(marsKeys, marsDict, "channel");
 
-    // getAndSet(marsKeys, marsDict, "chemId", "chem");
     getAndSet(marsKeys, marsDict, "chem");
 
     handleParamId(h, marsDict);
-
+    handleChemId(h, marsDict);
 
     getAndSet(marsKeys, marsDict, "model");
 

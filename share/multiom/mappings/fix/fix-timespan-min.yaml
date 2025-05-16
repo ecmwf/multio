@@ -1,0 +1,22 @@
+name: 'map fixed-range-min param to generic param'
+
+tag: 'fixed-range min'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 228223, 228225 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 228227

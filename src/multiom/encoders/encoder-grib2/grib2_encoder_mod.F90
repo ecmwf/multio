@@ -514,16 +514,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_ENCODER_INIT_LAZY( THIS, &
   USE :: GRIB_SECTION_BASE_MOD,    ONLY: GRIB_SECTION_FACTORY_T
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
 
-#if 0
-  !> Import the factories
-  USE :: GRIB2_SECTION0_FACTORY_MOD, ONLY: MAKE_GRIB2_SECTION0
-  USE :: GRIB2_SECTION1_FACTORY_MOD, ONLY: READ_GRIB2_SECTION1
-  USE :: GRIB2_SECTION2_FACTORY_MOD, ONLY: READ_GRIB2_SECTION2
-  USE :: GRIB2_SECTION3_FACTORY_MOD, ONLY: READ_GRIB2_SECTION3
-  USE :: GRIB2_SECTION4_FACTORY_MOD, ONLY: READ_GRIB2_SECTION4
-  USE :: GRIB2_SECTION5_FACTORY_MOD, ONLY: READ_GRIB2_SECTION5
-  USE :: GRIB2_SECTION6_FACTORY_MOD, ONLY: READ_GRIB2_SECTION6
-#endif
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
 
@@ -1705,186 +1695,6 @@ END FUNCTION GRIB2_ENCODER_BUILD_DATA_REPRESENTATION_SECTION
 #undef PP_PROCEDURE_TYPE
 
 
-#if 0
-!>
-!> @brief Build the bitmap section of a GRIB2 message.
-!>
-!> This function builds the bitmap section (Section 6) of a GRIB2 message based on the provided
-!> YAML configuration, options, and hooks. It reads the necessary parameters from the configuration,
-!> creates the bitmap section, and integrates it into the GRIB2 encoder object.
-!>
-!> @pre This function assumes that the GRIB2 encoder object (`THIS`) has been properly initialized.
-!> It also expects the configuration (`ENCODER_CFG`) to contain the necessary keys for
-!> building the bitmap section.
-!>
-!> @param [inout] THIS         The GRIB2 encoder object that holds the current state of the GRIB2 message being encoded.
-!> @param [in]    OPT          The GRIB encoder options that influence the encoding process.
-!> @param [in]    ENCODER_CFG  The YAML configuration object containing the settings for building the bitmap section.
-!> @param [inout] HOOKS        A structure that contains hooks for managing external dependencies or callbacks during encoding.
-!>
-!> @return Integer error code (`RET`) indicating success or failure of the operation.
-!>         - `0`: Success
-!>         - `1`: Failure
-!>
-!> @section dependencies Dependencies of this function:
-!> - @dependency [PROCEDURE] YAML_CONFIGURATION_HAS_KEY
-!> - @dependency [PROCEDURE] YAML_GET_SUBCONFIGURATION
-!> - @dependency [PROCEDURE] YAML_DELETE_CONFIGURATION
-!> - @dependency [PROCEDURE] READ_GRIB2_SECTION6_TYPE
-!> - @dependency [PROCEDURE] MAKE_GRIB2_SECTION6
-!>
-!> @section special dependencies:
-!>   - @dependency [*] PP_DEBUG_USE_VARS
-!>   - @dependency [*] PP_LOG_USE_VARS
-!>   - @dependency [*] PP_TRACE_USE_VARS
-!>
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_ENCODER_BUILD_BITMAP_SECTION'
-PP_THREAD_SAFE FUNCTION GRIB2_ENCODER_BUILD_BITMAP_SECTION( THIS, &
-&               ENCODER_CFG, ENCODER_OPT, HOOKS ) RESULT(RET)
-
-  !> Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,          ONLY: JPIB_K
-  USE :: GRIB_ENCODER_OPTIONS_MOD,   ONLY: GRIB_ENCODER_OPTIONS_T
-  USE :: YAML_CORE_UTILS_MOD,        ONLY: YAML_CONFIGURATION_T
-  USE :: HOOKS_MOD,                  ONLY: HOOKS_T
-  USE :: YAML_CORE_UTILS_MOD,        ONLY: YAML_CONFIGURATION_HAS_KEY
-  USE :: YAML_CORE_UTILS_MOD,        ONLY: YAML_GET_SUBCONFIGURATION
-  USE :: YAML_CORE_UTILS_MOD,        ONLY: YAML_DELETE_CONFIGURATION
-  USE :: GRIB2_SECTION6_FACTORY_MOD, ONLY: READ_GRIB2_SECTION6_TYPE
-  USE :: GRIB2_SECTION6_FACTORY_MOD, ONLY: MAKE_GRIB2_SECTION6
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  !> Dummy arguments
-  CLASS(GRIB2_ENCODER_T),       INTENT(INOUT) :: THIS
-  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: ENCODER_OPT
-  TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: ENCODER_CFG
-  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
-
-  !> Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  !> Local variables
-  LOGICAL :: CFG_HAS_BITMAP_SECTION
-  INTEGER(KIND=JPIB_K) :: BITMAP_SECTION_TYPE
-  TYPE(YAML_CONFIGURATION_T) :: BITMAP_SECTION_CFG
-
-  !> Local parameters
-  CHARACTER(LEN=*), PARAMETER :: BITMAP_SECTION_NAME = 'bitmap-section'
-
-  !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG = 1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_SUBCFG = 2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_SEC6 = 3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECTION_DEALLOCATION_ERROR = 4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SEC6_ALREADY_ASSOCIATED = 5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_SEC6_TYPE = 6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG_FOR_SEC6 = 7_JPIB_K
-
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  !> Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%BITMAP_SECTION_), ERRFLAG_SEC6_ALREADY_ASSOCIATED )
-
-  !> Check if a configuration for the bitmap-section-section is available
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( ENCODER_CFG, BITMAP_SECTION_NAME, CFG_HAS_BITMAP_SECTION, HOOKS )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CFG_HAS_BITMAP_SECTION, ERRFLAG_UNABLE_TO_READ_CFG_FOR_SEC6 )
-
-  !> Read the subconfiguration for the bitmap-section-section
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SUBCFG) YAML_GET_SUBCONFIGURATION( ENCODER_CFG, BITMAP_SECTION_NAME, BITMAP_SECTION_CFG, HOOKS )
-
-  !> Read the bitmap-section-section type
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SEC6_TYPE) READ_GRIB2_SECTION6_TYPE( BITMAP_SECTION_CFG, BITMAP_SECTION_TYPE, HOOKS )
-
-  !> Make the bitmap-section-section
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_SEC6) MAKE_GRIB2_SECTION6( THIS%BITMAP_SECTION_, BITMAP_SECTION_TYPE, BITMAP_SECTION_CFG, ENCODER_OPT, HOOKS )
-
-  !> Deallocate the bitmap-section-section configuration
-  PP_TRYCALL( ERRFLAG_SECTION_DEALLOCATION_ERROR ) YAML_DELETE_CONFIGURATION( BITMAP_SECTION_CFG, HOOKS )
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (On success)
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ! Initialization of bad path return value
-  PP_SET_ERR_FAILURE( RET )
-
-#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
-!$omp critical(ERROR_HANDLER)
-
-  BLOCK
-
-    ! Error handling variables
-    PP_DEBUG_PUSH_FRAME()
-
-    ! Handle different errors
-    SELECT CASE(ERRIDX)
-    CASE(ERRFLAG_UNABLE_TO_READ_CFG)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read configuration for bitmap-section-section' )
-    CASE(ERRFLAG_UNABLE_TO_READ_SUBCFG)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read subconfigurations for bitmap-section-section' )
-    CASE(ERRFLAG_UNABLE_TO_MAKE_SEC6)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to make bitmap-section-section' )
-    CASE(ERRFLAG_SECTION_DEALLOCATION_ERROR)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error deallocating bitmap-section-section configuration' )
-    CASE (ERRFLAG_SEC6_ALREADY_ASSOCIATED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'bitmap-section-section already associated' )
-    CASE (ERRFLAG_UNABLE_TO_READ_SEC6_TYPE)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read bitmap-section-section' )
-    CASE (ERRFLAG_UNABLE_TO_READ_CFG_FOR_SEC6)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read configuration for bitmap-section-section' )
-    CASE DEFAULT
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT
-
-  END BLOCK
-
-!$omp end critical(ERROR_HANDLER)
-#endif
-
-  ! Exit point (on error)
-  RETURN
-
-END FUNCTION GRIB2_ENCODER_BUILD_BITMAP_SECTION
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-#endif
-
 !>
 !> @brief Allocates resources for GRIB2 Encoder using the provided parameters.
 !>
@@ -2756,21 +2566,13 @@ END FUNCTION GRIB2_ENCODER_TO_BE_ENCODED
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'GRIB2_ENCODER_FREE'
-PP_THREAD_SAFE FUNCTION GRIB2_ENCODER_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION GRIB2_ENCODER_FREE( THIS, OPT, DESTRUCTORS, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,          ONLY: JPIB_K
   USE :: HOOKS_MOD,                  ONLY: HOOKS_T
   USE :: GRIB_ENCODER_OPTIONS_MOD,   ONLY: GRIB_ENCODER_OPTIONS_T
-  USE :: GRIB2_SECTION0_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION0
-  USE :: GRIB2_SECTION1_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION1
-  USE :: GRIB2_SECTION2_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION2
-  USE :: GRIB2_SECTION3_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION3
-  USE :: GRIB2_SECTION4_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION4
-  USE :: GRIB2_SECTION5_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION5
-#if 0
-  USE :: GRIB2_SECTION6_FACTORY_MOD, ONLY: DESTROY_GRIB2_SECTION6
-#endif
+  USE :: GRIB_SECTION_BASE_MOD,      ONLY: GRIB_SECTION_DESTRUCTOR_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2784,9 +2586,10 @@ PP_THREAD_SAFE FUNCTION GRIB2_ENCODER_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_ENCODER_T),       INTENT(INOUT) :: THIS
-  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
-  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+  CLASS(GRIB2_ENCODER_T),          INTENT(INOUT) :: THIS
+  TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
+  TYPE(GRIB_SECTION_DESTRUCTOR_T), INTENT(IN)    :: DESTRUCTORS
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -2834,12 +2637,12 @@ IMPLICIT NONE
 #endif
 
   ! Allocate the sections
-  PP_TRYCALL(ERRFLAG_CALL_SEC0_DESTRUCTOR)  DESTROY_GRIB2_SECTION0( THIS%INDICATOR_SECTION_, OPT, HOOKS )
-  PP_TRYCALL(EERRFLAG_CALL_SEC1_DESTRUCTOR) DESTROY_GRIB2_SECTION1( THIS%IDENTIFICATION_SECTION_, OPT, HOOKS )
-  PP_TRYCALL(EERRFLAG_CALL_SEC2_DESTRUCTOR) DESTROY_GRIB2_SECTION2( THIS%LOCAL_USE_SECTION_, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_CALL_SEC3_DESTRUCTOR)  DESTROY_GRIB2_SECTION3( THIS%GRID_DEFINITION_SECTION_, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_CALL_SEC4_DESTRUCTOR)  DESTROY_GRIB2_SECTION4( THIS%PRODUCT_DEFINITION_SECTION_, OPT, HOOKS )
-  PP_TRYCALL(ERRFLAG_CALL_SEC5_DESTRUCTOR)  DESTROY_GRIB2_SECTION5( THIS%DATA_REPRESENTATION_SECTION_, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_CALL_SEC0_DESTRUCTOR)  DESTRUCTORS%DESTROY_GRIB2_SECTION0( THIS%INDICATOR_SECTION_, OPT, DESTRUCTORS, HOOKS )
+  PP_TRYCALL(EERRFLAG_CALL_SEC1_DESTRUCTOR) DESTRUCTORS%DESTROY_GRIB2_SECTION1( THIS%IDENTIFICATION_SECTION_, OPT, DESTRUCTORS, HOOKS )
+  PP_TRYCALL(EERRFLAG_CALL_SEC2_DESTRUCTOR) DESTRUCTORS%DESTROY_GRIB2_SECTION2( THIS%LOCAL_USE_SECTION_, OPT, DESTRUCTORS, HOOKS )
+  PP_TRYCALL(ERRFLAG_CALL_SEC3_DESTRUCTOR)  DESTRUCTORS%DESTROY_GRIB2_SECTION3( THIS%GRID_DEFINITION_SECTION_, OPT, DESTRUCTORS, HOOKS )
+  PP_TRYCALL(ERRFLAG_CALL_SEC4_DESTRUCTOR)  DESTRUCTORS%DESTROY_GRIB2_SECTION4( THIS%PRODUCT_DEFINITION_SECTION_, OPT, DESTRUCTORS, HOOKS )
+  PP_TRYCALL(ERRFLAG_CALL_SEC5_DESTRUCTOR)  DESTRUCTORS%DESTROY_GRIB2_SECTION5( THIS%DATA_REPRESENTATION_SECTION_, OPT, DESTRUCTORS, HOOKS )
 #if 0
   PP_TRYCALL(ERRFLAG_CALL_SEC6_DESTRUCTOR)  DESTROY_GRIB2_SECTION6( THIS%BITMAP_SECTION_, OPT, HOOKS )
 #endif

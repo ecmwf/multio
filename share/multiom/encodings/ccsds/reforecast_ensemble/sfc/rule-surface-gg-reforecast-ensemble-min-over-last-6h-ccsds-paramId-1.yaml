@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-reforecast-ensemble-max-over-last-3h-ccsds-paramId-1
+name: rule-surface-gg-reforecast-ensemble-min-over-last-6h-ccsds-paramId-1
 
 filter:
   type: composed
@@ -21,8 +21,7 @@ filter:
     - type: param
       operation: match
       values:
-        - 228028
-        - 228222
+        - 228225
     - type: packing
       operation: match
       value: ccsds
@@ -51,8 +50,8 @@ encoder:
     template-number: 61
     time-statistics-configurator:
       type: fixed-timerange
-      type-of-statistical-processing: max
-      overall-length-of-timerange: 3h
+      type-of-statistical-processing: min
+      overall-length-of-timerange: 6h
     param-configurator:
       type: paramId
     model-configurator:

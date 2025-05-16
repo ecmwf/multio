@@ -476,7 +476,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - max over last 3h
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228028])],
+        [matchType("levtype", "sfc"), matchParam([228028, 228222])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -513,6 +513,34 @@ PARAM_LEVTYPE_SFC = [
                 typeOfStatisticalProcessing="min",
                 overallLengthOfTimeRange="3h",
                 descriptiveName="min-over-last-3h",
+            ),
+        ],
+    ),
+    # surface - min over last 3h
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228223])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="fixed-timerange",
+                typeOfStatisticalProcessing="min",
+                overallLengthOfTimeRange="3h",
+                descriptiveName="min-over-last-3h",
+            ),
+        ],
+    ),
+    # surface - min over last 6h
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228225])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="fixed-timerange",
+                typeOfStatisticalProcessing="min",
+                overallLengthOfTimeRange="6h",
+                descriptiveName="min-over-last-6h",
             ),
         ],
     ),

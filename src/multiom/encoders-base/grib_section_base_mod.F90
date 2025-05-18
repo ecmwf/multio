@@ -112,16 +112,7 @@ CONTAINS
 
   !>
   !> @brief Initializes the section
-  PROCEDURE(GRIB_SECTION_INIT_CFG_IF), DEFERRED, PASS, PUBLIC :: INIT_CFG
-
-  !>
-  !> @brief Initializes the section
-  PROCEDURE(GRIB_SECTION_INIT_LAZY_IF), DEFERRED, PASS, PUBLIC :: INIT_LAZY
-
-  !>
-  !> @brief Initializes the section
-  GENERIC :: INIT => INIT_CFG
-  GENERIC :: INIT => INIT_LAZY
+  PROCEDURE(GRIB_SECTION_INIT_CFG_IF), DEFERRED, PASS, PUBLIC :: INIT
 
   !>
   !> @brief Allocates resources for the section
@@ -134,10 +125,6 @@ CONTAINS
   !>
   !> @brief Manages the runtime execution of section
   PROCEDURE(GRIB_SECTION_RUNTIME_IF), DEFERRED, PASS, PUBLIC :: RUNTIME
-
-  !>
-  !> @brief Determines if the grib message needs to be encoded.
-  PROCEDURE(GRIB_SECTION_TO_BE_ENCODED_IF), DEFERRED, PASS, PUBLIC :: TO_BE_ENCODED
 
   !>
   !> @brief Frees resources allocated for the section
@@ -677,15 +664,13 @@ END FUNCTION GRIB_SECTION_PRESET_IF
 !>   - `1`: Failure during runtime execution.
 !>
 PP_THREAD_SAFE FUNCTION GRIB_SECTION_RUNTIME_IF( THIS, &
-&  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
+&  MSG, PAR, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
   USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
-  USE :: TIME_UTILS_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TIME_UTILS_MOD,           ONLY: CURR_TIME_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
 
@@ -698,8 +683,6 @@ IMPLICIT NONE
   CLASS(GRIB_SECTION_BASE_A),      INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
-  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
-  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
   CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
   TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
@@ -708,77 +691,6 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
 END FUNCTION GRIB_SECTION_RUNTIME_IF
-
-
-!>
-!> @brief Determines if a GRIB section should be encoded based on the current parameters and time.
-!>
-!> The `GRIB_SECTION_TO_BE_ENCODED_IF` function assesses whether the GRIB section represented by `THIS`
-!> is ready to be encoded. This decision is made based on the provided parametrization, current time,
-!> time history, and hooks. The result is stored in the logical `TO_BE_ENCODED` flag, which indicates
-!> if encoding should proceed. This function is thread-safe.
-!>
-!> @section interface
-!>   @param [inout] THIS          An object of type `GRIB_SECTION_BASE_A` representing the GRIB section being checked.
-!>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
-!>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
-!>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical time data.
-!>   @param [in]    CURR_TIME     The current time object of type `CURR_TIME_T` for time-based encoding decisions.
-!>   @param [in]    OPT           The encoder options structure of type `ENCODER_OPTIONS_T`.
-!>   @param [out]   TO_BE_ENCODED Logical flag indicating if the GRIB section should be encoded.
-!>   @param [inout] HOOKS         A structure of type `HOOKS_T` that contains hooks for managing encoding-related operations.
-!>   @return Integer error code (`RET`) indicating success (`0`) or failure (`1`).
-!>
-!> @section local dependencies
-!>   - @dependency [PARAMETER] DATAKINDS_DEF_MOD::JPIB_K
-!>   - @dependency [TYPE] PARAMETRIZATION_MOD::PARAMETRIZATION_T
-!>   - @dependency [TYPE] FORTRAN_MESSAGE_MOD::FORTRAN_MESSAGE_T
-!>   - @dependency [TYPE] TIME_UTILS_MOD::TIME_HISTORY_T
-!>   - @dependency [TYPE] TIME_UTILS_MOD::CURR_TIME_T
-!>   - @dependency [TYPE] METADATA_BASE_MOD::METADATA_BASE_A
-!>   - @dependency [TYPE] HOOKS_MOD::HOOKS_T
-!>
-!> @section special dependencies
-!>   - @dependency [*] PP_DEBUG_USE_VARS::*
-!>
-!> @section intrinsic dependencies
-!>   None.
-!>
-!> @section Error codes
-!>   - `0`: Success, encoding decision made.
-!>   - `1`: Failure in determining encoding status.
-!>
-PP_THREAD_SAFE FUNCTION GRIB_SECTION_TO_BE_ENCODED_IF( THIS, &
-&  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
-
-  !> Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
-  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
-  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
-  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
-  USE :: TIME_UTILS_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TIME_UTILS_MOD,           ONLY: CURR_TIME_T
-  USE :: HOOKS_MOD,                ONLY: HOOKS_T
-
-  ! Imported abstract class
-  IMPORT :: GRIB_SECTION_BASE_A
-
-IMPLICIT NONE
-
-  !> Dummy arguments
-  CLASS(GRIB_SECTION_BASE_A),      INTENT(INOUT) :: THIS
-  TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
-  TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
-  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
-  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
-  TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
-  LOGICAL,                         INTENT(OUT)   :: TO_BE_ENCODED
-  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
-
-  !> Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-END FUNCTION GRIB_SECTION_TO_BE_ENCODED_IF
 
 
 !>
@@ -1078,10 +990,6 @@ PP_THREAD_SAFE FUNCTION ENCODERS_REGISTER_MAKE( THIS, GRIB_SECTION, ID, CFG, OPT
   ! Symbols imported by the preprocessor for tracing purposes
   PP_TRACE_USE_VARS
 
-  ! Imported abstract class
-  IMPORT :: GRIB_SECTION_BASE_A
-  IMPORT :: GRIB_SECTION_FACTORY_T
-
 IMPLICIT NONE
 
   !> Dummy arguments
@@ -1140,10 +1048,6 @@ PP_THREAD_SAFE FUNCTION ENCODERS_REGISTER_DESTROY( THIS, GRIB_SECTION, OPT, HOOK
 
   ! Symbols imported by the preprocessor for tracing purposes
   PP_TRACE_USE_VARS
-
-  ! Imported abstract class
-  IMPORT :: GRIB_SECTION_BASE_A
-  IMPORT :: GRIB_SECTION_FACTORY_T
 
 IMPLICIT NONE
 

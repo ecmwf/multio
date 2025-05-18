@@ -107,7 +107,7 @@ add_subdirectory( data-structures )
 add_subdirectory( hooks )
 add_subdirectory( filters )
 add_subdirectory( encoders-base )
-add_subdirectory( encoders )
+# add_subdirectory( encoders )
 add_subdirectory( metadata )
 add_subdirectory( operations )
 add_subdirectory( mapping-rules )
@@ -117,7 +117,7 @@ add_subdirectory( output-manager )
 add_subdirectory( sinks )
 add_subdirectory( ifs-encoders )
 add_subdirectory( ifs2mars )
-add_subdirectory( tools )
+# add_subdirectory( tools )
 add_subdirectory( api )
 
 #
@@ -176,20 +176,19 @@ ecbuild_add_library(
     ${MULTIOM_COMMON_SOURCES}
     ${MULTIOM_CONFIGURATION_SOURCES}
     ${MULTIOM_CONTAINERS_SOURCES}
-    ${MULTIOM_DATA_STRUCTURES_SOURCES}
     ${MULTIOM_HOOKS_SOURCES}
-    ${MULTIOM_FILTERS_SOURCES}
-    ${MULTIOM_ENCODERS_BASE_SOURCES}
+    # ${MULTIOM_FILTERS_SOURCES}
+    # ${MULTIOM_ENCODERS_BASE_SOURCES}
     # ${MULTIOM_ENCODERS_SOURCES}
-    ${MULTIOM_METADATA_SOURCES}
-    ${MULTIOM_OPERATIONS_SOURCES}
+    # ${MULTIOM_METADATA_SOURCES}
+    # ${MULTIOM_OPERATIONS_SOURCES}
     # ${MULTIOM_MAPPING_RULES_SOURCES}
     # ${MULTIOM_ENCODING_RULES_SOURCES}
-    ${MULTIOM_IFS_INTERFACE_SOURCES}
+    # ${MULTIOM_IFS_INTERFACE_SOURCES}
     # ${MULTIOM_OUTPUT_MANAGER_SOURCES}
     # ${MULTIOM_SINKS_SOURCES}
     # ${MULTIOM_IFS_ENCODERS_SOURCES}
-    ${MULTIOM_IFS2MARS_SOURCES}
+    # ${MULTIOM_IFS2MARS_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
 
   DEFINITIONS
@@ -204,7 +203,6 @@ ecbuild_add_library(
     eccodes_f90
 )
 
-
 # Module directory
 set_target_properties( multiom-core PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
 target_include_directories( multiom-core PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
@@ -212,15 +210,11 @@ target_include_directories( multiom-core PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY
 
 ecbuild_add_library(
   TARGET
-    multiom-encoders
+    multiom-dictionaries
 
   SOURCES
-    ${MULTIOM_MAPPING_RULES_SOURCES}
-    ${MULTIOM_ENCODING_RULES_SOURCES}
-    ${MULTIOM_ENCODERS_SOURCES}
-    ${MULTIOM_IFS_ENCODERS_SOURCES}
-    ${MULTIOM_API_SOURCES}
-
+    ${MULTIOM_DATA_STRUCTURES_SOURCES}
+    ${MULTIOM_METADATA_SOURCES}
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 
@@ -234,20 +228,17 @@ ecbuild_add_library(
     multiom-core
 )
 
-
 # Module directory
-set_target_properties( multiom-encoders PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
-target_include_directories( multiom-encoders PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
-
+set_target_properties( multiom-dictionaries PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
+target_include_directories( multiom-dictionaries PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
 
 
 ecbuild_add_library(
   TARGET
-    multiom
+    multiom-encoders-base
 
   SOURCES
-    ${MULTIOM_OUTPUT_MANAGER_SOURCES}
-    ./multiom_api.F90
+    ${MULTIOM_ENCODERS_BASE_SOURCES}
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -260,18 +251,110 @@ ecbuild_add_library(
     eccodes
     eccodes_f90
     multiom-core
-    multiom-encoders
-    multio-fapi
+    multiom-dictionaries
 )
 
-
 # Module directory
-set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
-target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
+set_target_properties( multiom-encoders-base PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
+target_include_directories( multiom-encoders-base PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
 
 
-# add tests
-set(HAVE_OUTPUT_MANAGER_TESTS 1)
-# add_subdirectory( tests-components )
-add_subdirectory( tests-api )
+#
+# + BUILD OUTPUT MANAGER ENCODERS LIBRARIES
+add_subdirectory( encoders )
+
+
+
+#ecbuild_add_library(
+#  TARGET
+#    multiom-dictionaries-utils
+#
+#  SOURCES
+#    ${MULTIOM_FILTERS_SOURCES}
+#    # ${MULTIOM_OPERATIONS_SOURCES}
+#    # ${MULTIOM_MAPPING_RULES_SOURCES}
+#    # ${MULTIOM_ENCODING_RULES_SOURCES}
+#  DEFINITIONS
+#    ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+#
+#  PRIVATE_INCLUDES
+#    $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+#
+#  PUBLIC_LIBS
+#    fckit
+#    eccodes
+#    eccodes_f90
+#    multiom-core
+#    multiom-dictionaries
+#)
+#
+## Module directory
+#set_target_properties( multiom-dictionaries-utils PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
+#target_include_directories( multiom-dictionaries-utils PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
+
+
+# ecbuild_add_library(
+#   TARGET
+#     multiom-encoders
+#
+#   SOURCES
+#     ${MULTIOM_MAPPING_RULES_SOURCES}
+#     ${MULTIOM_ENCODING_RULES_SOURCES}
+# #    ${MULTIOM_ENCODERS_SOURCES}
+# #    ${MULTIOM_IFS_ENCODERS_SOURCES}
+# #    ${MULTIOM_API_SOURCES}
+#
+#   DEFINITIONS
+#     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+#
+#   PRIVATE_INCLUDES
+#     $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+#
+#   PUBLIC_LIBS
+#     fckit
+#     eccodes
+#     eccodes_f90
+#     multiom-core
+# )
+#
+# # # Module directory
+# set_target_properties( multiom-encoders PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
+# target_include_directories( multiom-encoders PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
+
+
+# add_subdirectory( encoders )
+
+# ecbuild_add_library(
+#   TARGET
+#     multiom
+#
+#   SOURCES
+#     ${MULTIOM_OUTPUT_MANAGER_SOURCES}
+#     ./multiom_api.F90
+#
+#   DEFINITIONS
+#     ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+#
+#   PRIVATE_INCLUDES
+#     $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+#
+#   PUBLIC_LIBS
+#     fckit
+#     eccodes
+#     eccodes_f90
+#     multiom-core
+#     multiom-encoders
+#     multio-fapi
+# )
+#
+#
+# # Module directory
+# set_target_properties( multiom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/multiom )
+# target_include_directories( multiom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/multiom> )
+#
+#
+# # add tests
+# set(HAVE_OUTPUT_MANAGER_TESTS 1)
+# # add_subdirectory( tests-components )
+# add_subdirectory( tests-api )
 

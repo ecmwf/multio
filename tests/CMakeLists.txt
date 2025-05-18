@@ -5,6 +5,6 @@ add_subdirectory(ecom)
 
 
 if ( BUILD_MULTIOM )
-    add_subdirectory(multiom)
-    add_subdirectory(multio/action/encode-mtg2)
+#    add_subdirectory(multiom)
+#    add_subdirectory(multio/action/encode-mtg2)
 endif()

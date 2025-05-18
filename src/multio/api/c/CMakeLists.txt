@@ -35,11 +35,11 @@ if ( HAVE_ECKIT_CODEC )
     )
 endif()
 
-if( BUILD_MULTIOM )
-    list( APPEND multio_action_plugins
-        multio-action-encode-mtg2
-    )
-endif()
+# if( BUILD_MULTIOM )
+#     list( APPEND multio_action_plugins
+#         multio-action-encode-mtg2
+#     )
+# endif()
 
 # Source files
 list( APPEND multio_capi_srcs

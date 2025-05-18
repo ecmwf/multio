@@ -13,9 +13,12 @@ add_subdirectory(parametrization)
 
 # Collect source files in data-structures
 set( MULTIOM_DATA_STRUCTURES_MAIN_SOURCES
-  ${MULTIOM_DATA_STRUCTURES_DIR}/time_utils_mod.F90
+#  ${MULTIOM_DATA_STRUCTURES_DIR}/time_utils_mod.F90
   ${MULTIOM_DATA_STRUCTURES_DIR}/cache_utils_mod.F90
   ${MULTIOM_DATA_STRUCTURES_DIR}/multiom_debug_mod.F90
+  ${MULTIOM_DATA_STRUCTURES_DIR}/grib_encoder_options_mod.F90
+  ${MULTIOM_DATA_STRUCTURES_DIR}/mapping_options_mod.F90
+  ${MULTIOM_DATA_STRUCTURES_DIR}/filter_options_mod.F90
 )
 
 

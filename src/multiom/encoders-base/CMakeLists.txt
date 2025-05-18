@@ -9,12 +9,12 @@ set(OFFSET ${OFFSET}${DOFFSET})
 # Collect source files in module2
 set( MULTIOM_ENCODERS_BASE_MAIN_SOURCES
   ${MULTIOM_ENCODERS_BASE_DIR}/grib_section_base_mod.F90
-  ${MULTIOM_ENCODERS_BASE_DIR}/grib_encoder_options_mod.F90
+#  ${MULTIOM_ENCODERS_BASE_DIR}/grib_encoder_options_mod.F90
   ${MULTIOM_ENCODERS_BASE_DIR}/grib_encoder_register_mod.F90
   ${MULTIOM_ENCODERS_BASE_DIR}/grib_encoder_tunneling_mod.F90
   ${MULTIOM_ENCODERS_BASE_DIR}/grib_encoder_lazy_rules_mod.F90
-  ${MULTIOM_ENCODERS_BASE_DIR}/mapping_options_mod.F90
-  ${MULTIOM_ENCODERS_BASE_DIR}/filter_options_mod.F90
+#  ${MULTIOM_ENCODERS_BASE_DIR}/mapping_options_mod.F90
+#  ${MULTIOM_ENCODERS_BASE_DIR}/filter_options_mod.F90
 )
 
 # Collect source files in module2

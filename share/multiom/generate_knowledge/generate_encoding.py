@@ -886,7 +886,7 @@ PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
             partialRule(
                 [
                     matchType("levtype", "pl"),
-                    matchParam([2, "129:135", 138, 152, 155, 157]),
+                    matchParam([1, 2, "129:135", 138, 152, 155, 157]),
                 ],
                 [PointInTime(), paramConfig("paramId")],
             ),
@@ -945,6 +945,13 @@ PARAM_LEVTYPE_PT = [
             ),
         ]
     )
+]
+
+PARAM_LEVTYPE_PT_SH = [
+    partialRule(
+        [matchType("levtype", "pt"), matchParam([54, 131, 132, 133, 138, 155])],
+        [PointInTime(), levelConfig("theta"), paramConfig("paramId")],
+    ),
 ]
 
 PARAM_LEVTYPE_PV = [
@@ -1012,7 +1019,7 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_PV
     + PARAM_SATELLITE
 )
-PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH + PARAM_LEVTYPE_PV_SH
+PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH + PARAM_LEVTYPE_PV_SH + PARAM_LEVTYPE_PT_SH
 
 PACKING = [
     partialRule(

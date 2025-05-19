@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-isobaricinpa-complex-deterministic-instant-complex-paramId-36
+name: rule-theta-complex-reforecast-ensemble-instant-complex-paramId-1
 
 filter:
   type: composed
@@ -10,27 +10,23 @@ filter:
       operation: match
       value: spherical-harmonics
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
-      operation: lacks
+      operation: has
     - type: hdate
-      operation: lacks
-    - type: levelist
-      operation: lower-than
-      treshold: 100
+      operation: has
     - type: levtype
       operation: match
-      value: pl
+      value: pt
     - type: param
       operation: match
       values:
-        - 1
-        - 2
-        - "129:135"
+        - 54
+        - 131
+        - 132
+        - 133
         - 138
-        - 152
         - 155
-        - 157
     - type: packing
       operation: match
       value: complex
@@ -52,11 +48,11 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 50
   product-definition-section:
-    template-number: 0
+    template-number: 60
     point-in-time-configurator:
       type: default
     param-configurator:
@@ -64,6 +60,8 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: isobaricinpa
+      type: theta
+    ensemble-configurator:
+      type: default
   data-representation-section:
     template-number: 51

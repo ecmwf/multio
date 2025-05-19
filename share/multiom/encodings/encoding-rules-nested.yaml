@@ -238,6 +238,10 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pv/rule-potentialVorticity-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pt/rule-theta-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -467,6 +471,10 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pv/rule-potentialVorticity-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pt/rule-theta-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
           - operation: lacks
             nested-rules:
               key: anoffset
@@ -700,6 +708,10 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pv/rule-potentialVorticity-complex-ensemble-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pt/rule-theta-complex-ensemble-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -929,6 +941,10 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pv/rule-potentialVorticity-complex-ensemble-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pt/rule-theta-complex-ensemble-instant-complex-paramId-1.yaml'
     - operation: lacks
       nested-rules:
         key: hdate
@@ -1178,6 +1194,10 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pv/rule-potentialVorticity-complex-deterministic-instant-complex-paramId-36.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pt/rule-theta-complex-deterministic-instant-complex-paramId-36.yaml'
                 - operation: lacks
                   nested-rules:
                     key: repres
@@ -1407,3 +1427,7 @@ nested-rules:
                                     value: pv
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pv/rule-potentialVorticity-complex-deterministic-instant-complex-paramId-1.yaml'
+                                  - operation: match
+                                    value: pt
+                                    encoding-rules:
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pt/rule-theta-complex-deterministic-instant-complex-paramId-1.yaml'

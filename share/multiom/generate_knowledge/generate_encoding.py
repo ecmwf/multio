@@ -1068,7 +1068,7 @@ duplicatedRules = {key: val for (key, val) in encodedRulesDict.items() if len(va
 
 
 if len(duplicatedRules) > 0:
-    raise ValueError(f"Not all rule names are unique")
+    raise ValueError(f"Not all rule names are unique, detected {len(duplicatedRules)} duplications.")
 
 
 def templateCMakeFile(dir, subDirs):

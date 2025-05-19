@@ -205,14 +205,77 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228004])],
+        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288])],
         [
-            levelConfig("heightAboveGround"),
+            levelConfig("entireAtmosphere"),
             paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
-                descriptiveName="average-since-last-pp",
+                descriptiveName="avg-since-last-pp-entireAtmosphere",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228004, 235168])],
+        [
+            levelConfig("heightAboveGroundAt2m"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-heightAboveGroundAt2m",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228005, 235165, 235166])],
+        [
+            levelConfig("heightAboveGroundAt10m"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-heightAboveGroundAt10m",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([235151])],
+        [
+            levelConfig("meanSea"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-meanSea",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([235039, 235040, 235049, 235050, 235053])],
+        [
+            levelConfig("nominalTop"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-nominalTop",
+            ),
+        ],
+    ),
+    partialRule(
+        [
+            matchType("levtype", "sfc"),
+            matchParam([235020, 235021, 235031, "235033:235038", "235041:235043",
+                        235051, 235052, 235055, 235078, 235079, 235134])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-surface",
             ),
         ],
     ),
@@ -818,6 +881,18 @@ PARAM_LEVTYPE_HL = [
         ],
         namePrefix="hl",
     ),
+    partialRule(
+        [matchType("levtype", "hl"), matchParam([235131, 235132])],
+        [
+            levelConfig("heightAboveGround"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp",
+            ),
+        ],
+    ),
 ]
 
 
@@ -874,6 +949,20 @@ PARAM_LEVTYPE_PL = combineAndMergePartialRules(
                     matchParam([60, "75:76", "129:135", 203, "246:248",157, 260290]),
                 ],
                 [PointInTime(), paramConfig("paramId")],
+            ),
+            partialRule(
+                [
+                    matchType("levtype", "pl"),
+                    matchParam([235100, "235129:235133", 235135, 235157, 235246])
+                ],
+                [
+                    paramConfig("paramId"),
+                    TimeRange(
+                        type="since-last-post-processing-step",
+                        typeOfStatisticalProcessing="average",
+                        descriptiveName="avg-since-last-pp",
+                    ),
+                ],
             ),
         ],
     ]
@@ -993,6 +1082,130 @@ PARAM_LEVTYPE_SOL = [
         [matchType("levtype", "sol"), matchParam([260360, 260199, 183])],
         [PointInTime(), levelConfig("soilLayer"), paramConfig("paramId")],
     ),
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([235077])],
+        [
+            levelConfig("soilLayer"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-soilLayer",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([235078])],
+        [
+            levelConfig("snowLayer"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="average",
+                descriptiveName="avg-since-last-pp-snow",
+            ),
+        ],
+    ),
+]
+
+
+# OCEAN
+
+PARAM_LEVTYPE_O2D = [
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o2d"), matchParam([263121, 263122])],
+    #     [
+    #         levelConfig("depthBelowSeaLayer"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-depthBelowSeaLayer",
+    #         ),
+    #     ],
+    # ),
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o2d"), matchParam([263000, 263001, 263003, 263004, 263008])],
+    #     [
+    #         levelConfig("iceLayerOnWater"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-iceLayerOnWater",
+    #         ),
+    #     ],
+    # ),
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o2d"), matchParam([263100, 263101, 263124])],
+    #     [
+    #         levelConfig("oceanSurface"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-oceanSurface",
+    #         ),
+    #     ],
+    # ),
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o2d"), matchParam([263123])],
+    #     [
+    #         levelConfig("oceanSurfaceToBottom"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-oceanSurfaceToBottom",
+    #         ),
+    #     ],
+    # ),
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o2d"), matchParam([263009])],
+    #     [
+    #         levelConfig("snowLayerOverIceOnWater"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-snowLayerOverIceOnWater",
+    #         ),
+    #     ],
+    # ),
+]
+
+PARAM_LEVTYPE_O3D = [
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o3d"), matchParam([263507])],
+    #     [
+    #         levelConfig("oceanModel"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-oceanModel",
+    #         ),
+    #     ],
+    # ),
+    # TODO - ClimateDT Phase 2
+    # partialRule(
+    #     [matchType("levtype", "o3d"), matchParam([263500, 263501, 263505, 263506])],
+    #     [
+    #         levelConfig("oceanModelLayer"),
+    #         paramConfig("paramId"),
+    #         TimeRange(
+    #             type="since-last-post-processing-step",
+    #             typeOfStatisticalProcessing="average",
+    #             descriptiveName="avg-since-last-pp-oceanModelLayer",
+    #         ),
+    #     ],
+    # ),
 ]
 
 
@@ -1017,6 +1230,8 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_SOL
     + PARAM_LEVTYPE_PT
     + PARAM_LEVTYPE_PV
+    + PARAM_LEVTYPE_O2D
+    + PARAM_LEVTYPE_O3D
     + PARAM_SATELLITE
 )
 PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH + PARAM_LEVTYPE_PV_SH + PARAM_LEVTYPE_PT_SH

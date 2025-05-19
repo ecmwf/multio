@@ -36,7 +36,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-6h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-3h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-since-last-pp-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-avg-since-last-pp-entireAtmosphere-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-meanSea-gg-reforecast-ensemble-avg-since-last-pp-meanSea-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-avg-since-last-pp-nominalTop-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-avg-since-last-pp-surface-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
@@ -84,6 +89,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/hl/rule-hl-heightAboveGround-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/hl/rule-heightAboveGround-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -93,13 +99,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -130,7 +140,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-3h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-since-last-pp-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-avg-since-last-pp-entireAtmosphere-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-meanSea-gg-reforecast-ensemble-avg-since-last-pp-meanSea-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-avg-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-avg-since-last-pp-surface-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
@@ -178,6 +193,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/hl/rule-hl-heightAboveGround-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/hl/rule-heightAboveGround-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -187,13 +203,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -273,7 +293,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-6h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-3h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-since-last-pp-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-avg-since-last-pp-entireAtmosphere-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-meanSea-gg-reforecast-ensemble-avg-since-last-pp-meanSea-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-avg-since-last-pp-nominalTop-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-avg-since-last-pp-surface-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
@@ -321,6 +346,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/hl/rule-hl-heightAboveGround-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/hl/rule-heightAboveGround-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -330,13 +356,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -367,7 +397,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-over-last-3h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-max-since-last-pp-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-avg-since-last-pp-entireAtmosphere-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-meanSea-gg-reforecast-ensemble-avg-since-last-pp-meanSea-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-avg-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-avg-since-last-pp-surface-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGround-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt10m-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
@@ -415,6 +450,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/hl/rule-hl-heightAboveGround-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/hl/rule-heightAboveGround-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -424,13 +460,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -514,7 +554,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-6h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-3h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-since-last-pp-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGround-gg-ensemble-average-since-last-pp-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-avg-since-last-pp-entireAtmosphere-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-meanSea-gg-ensemble-avg-since-last-pp-meanSea-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-avg-since-last-pp-nominalTop-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-avg-since-last-pp-surface-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGround-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-instant-simple-paramId-36.yaml'
@@ -562,6 +607,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-heightAboveGround-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -571,13 +617,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -608,7 +658,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-6h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-3h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-since-last-pp-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGround-gg-ensemble-average-since-last-pp-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-avg-since-last-pp-entireAtmosphere-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-meanSea-gg-ensemble-avg-since-last-pp-meanSea-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-avg-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-avg-since-last-pp-surface-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGround-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-instant-ccsds-paramId-36.yaml'
@@ -656,6 +711,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-heightAboveGround-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -665,13 +721,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -751,7 +811,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-6h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-3h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-since-last-pp-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGround-gg-ensemble-average-since-last-pp-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-avg-since-last-pp-entireAtmosphere-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-meanSea-gg-ensemble-avg-since-last-pp-meanSea-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-avg-since-last-pp-nominalTop-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-avg-since-last-pp-surface-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGround-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-instant-simple-paramId-1.yaml'
@@ -799,6 +864,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/hl/rule-heightAboveGround-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -808,13 +874,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -845,7 +915,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-6h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-over-last-3h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-max-since-last-pp-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGround-gg-ensemble-average-since-last-pp-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-avg-since-last-pp-entireAtmosphere-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-meanSea-gg-ensemble-avg-since-last-pp-meanSea-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-avg-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-avg-since-last-pp-surface-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGround-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt10m-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-instant-ccsds-paramId-1.yaml'
@@ -893,6 +968,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-hl-heightAboveGround-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/hl/rule-heightAboveGround-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -902,13 +978,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1008,7 +1088,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-6h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-3h-simple-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-since-last-pp-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGround-gg-deterministic-average-since-last-pp-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-avg-since-last-pp-entireAtmosphere-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-meanSea-gg-deterministic-avg-since-last-pp-meanSea-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-avg-since-last-pp-nominalTop-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-avg-since-last-pp-surface-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGround-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-instant-simple-paramId-36.yaml'
@@ -1056,6 +1141,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-heightAboveGround-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -1065,13 +1151,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1102,7 +1192,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-6h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-3h-ccsds-paramIdECMF-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-since-last-pp-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGround-gg-deterministic-average-since-last-pp-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-avg-since-last-pp-entireAtmosphere-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-meanSea-gg-deterministic-avg-since-last-pp-meanSea-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-avg-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-avg-since-last-pp-surface-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGround-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-instant-ccsds-paramId-36.yaml'
@@ -1150,6 +1245,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-heightAboveGround-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -1159,13 +1255,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1245,7 +1345,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-6h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-3h-simple-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-since-last-pp-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGround-gg-deterministic-average-since-last-pp-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-avg-since-last-pp-entireAtmosphere-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt2m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt10m-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-meanSea-gg-deterministic-avg-since-last-pp-meanSea-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-avg-since-last-pp-nominalTop-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-avg-since-last-pp-surface-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGround-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-instant-simple-paramId-1.yaml'
@@ -1293,6 +1398,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/hl/rule-heightAboveGround-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -1302,13 +1408,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1339,7 +1449,12 @@ nested-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-6h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-over-last-3h-ccsds-paramIdECMF-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-max-since-last-pp-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGround-gg-deterministic-average-since-last-pp-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-avg-since-last-pp-entireAtmosphere-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt2m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-avg-since-last-pp-heightAboveGroundAt10m-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-meanSea-gg-deterministic-avg-since-last-pp-meanSea-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-avg-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-avg-since-last-pp-surface-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGround-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt10m-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-instant-ccsds-paramId-1.yaml'
@@ -1387,6 +1502,7 @@ nested-rules:
                                     value: hl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-hl-heightAboveGround-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/hl/rule-heightAboveGround-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: ml
                                     encoding-rules:
@@ -1396,13 +1512,17 @@ nested-rules:
                                     value: pl
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: sol
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:

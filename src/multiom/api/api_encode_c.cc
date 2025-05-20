@@ -54,25 +54,29 @@ int multio_grib2_encoder_encode64(void* multio_grib2, void* mars_dict, void* par
         free(scaleFactorCStr);
     }
 
-    std::vector<double> scaledValues;
-    if (scaleFactor && (*scaleFactor != 1.0)) {
-        scaledValues.reserve(data_len);
-        std::transform(data, data + data_len, std::back_inserter(scaledValues),
-                       [&scaleFactor](const double& v) { return v * (*scaleFactor); });
-        data = scaledValues.data();
-    }
-
     char* missingValuesCount = "0";
     ret = multio_grib2_dict_get(par_dict, "number-of-missing-values", &missingValuesCount);
     long bitmapPresent = static_cast<long>(static_cast<bool>(std::stol(missingValuesCount)));
     CODES_CHECK(codes_set_long((codes_handle*)*out_handle, "bitmapPresent", bitmapPresent),
                 "Error setting bitmapPresent");
 
+    auto missingValue = static_cast<double>(std::numeric_limits<float>::max());
     if (bitmapPresent) {
-        char* missingValue;
-        ret = multio_grib2_dict_get(par_dict, "value-of-missing-values", &missingValue);
-        CODES_CHECK(codes_set_double((codes_handle*)*out_handle, "missingValue", std::stod(missingValue)),
+        char* strMissingValue;
+        ret = multio_grib2_dict_get(par_dict, "value-of-missing-values", &strMissingValue);
+        missingValue = std::stod(strMissingValue);
+        CODES_CHECK(codes_set_double((codes_handle*)*out_handle, "missingValue", missingValue),
                     "Error setting missingValue");
+    }
+
+    std::vector<double> scaledValues;
+    if (scaleFactor && (*scaleFactor != 1.0)) {
+        scaledValues.reserve(data_len);
+        std::transform(data, data + data_len, std::back_inserter(scaledValues),
+                       [&scaleFactor, missingValue](const double& v) {
+                           return (v == missingValue) ? missingValue : (v * (*scaleFactor));
+                       });
+        data = scaledValues.data();
     }
 
     CODES_CHECK(codes_set_double_array((codes_handle*)*out_handle, "values", data, data_len),

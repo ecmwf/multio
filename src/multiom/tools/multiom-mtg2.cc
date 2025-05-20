@@ -592,9 +592,10 @@ void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
 }
 
 void handleMissingValue(codes_handle* h, MultiOMDict& parDict) {
-    double missingValue = 9999.0;
+    const char* strMissingValue = "9999.0";
+    double missingValue = std::stod(strMissingValue);
     CODES_CHECK(codes_set_double(h, "missingValue", missingValue), nullptr);
-    parDict.set("valueOfMissingValues", "9999");
+    parDict.set("valueOfMissingValues", strMissingValue);
 }
 
 void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOMDict& parDict) {

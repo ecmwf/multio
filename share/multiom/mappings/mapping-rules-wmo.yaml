@@ -14,11 +14,13 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-map-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-accum.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-instant.yaml'
+
+
+  #
+  # Map deprecated GRIB1 parameters to GRIB2 parameters
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-wind-gust.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-precip-rate.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-min-precip-rate.yaml'
-
-
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-35-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-36-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-37-to-sol.yaml'

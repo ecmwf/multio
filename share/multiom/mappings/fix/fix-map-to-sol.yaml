@@ -8,7 +8,7 @@ filter:
   filters:
     - type: 'param'
       operation: 'match'
-      values: [ 33, 183, 238, 228038, 228141, 260360, 262024, 260199 ]
+      values: [ 33, 183, 238, 228038, 260360, 262024, 260199 ]
 
     - type: 'levtype'
       operation: 'match'

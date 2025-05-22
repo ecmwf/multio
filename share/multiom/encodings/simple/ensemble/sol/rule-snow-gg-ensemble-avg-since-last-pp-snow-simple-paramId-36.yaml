@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-snowLayer-gg-deterministic-instant-simple-paramId-1
+name: rule-snow-gg-ensemble-avg-since-last-pp-snow-simple-paramId-36
 
 filter:
   type: composed
@@ -10,9 +10,9 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: lacks
+      operation: has
     - type: number
-      operation: lacks
+      operation: has
     - type: hdate
       operation: lacks
     - type: levtype
@@ -21,10 +21,7 @@ filter:
     - type: param
       operation: match
       values:
-        - 33
-        - 74
-        - 238
-        - 228038
+        - 235078
     - type: packing
       operation: match
       value: simple
@@ -46,18 +43,21 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 1
+    template-number: 36
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 0
-    point-in-time-configurator:
-      type: default
+    template-number: 11
+    time-statistics-configurator:
+      type: since-last-post-processing-step
+      type-of-statistical-processing: average
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: snowLayer
+      type: snow
+    ensemble-configurator:
+      type: default
   data-representation-section:
     template-number: 0

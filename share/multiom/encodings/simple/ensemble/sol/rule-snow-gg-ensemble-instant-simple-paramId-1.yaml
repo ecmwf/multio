@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-36
+name: rule-snow-gg-ensemble-instant-simple-paramId-1
 
 filter:
   type: composed
@@ -10,18 +10,18 @@ filter:
       operation: match
       value: gaussian-grid
     - type: anoffset
-      operation: has
+      operation: lacks
     - type: number
       operation: has
     - type: hdate
-      operation: has
+      operation: lacks
     - type: levtype
       operation: match
       value: sol
     - type: param
       operation: match
       values:
-        - 235078
+        - 228141
     - type: packing
       operation: match
       value: simple
@@ -43,20 +43,19 @@ encoder:
       type: default
       local-tables-version: 0
   local-use-section:
-    template-number: 36
+    template-number: 1
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 61
-    time-statistics-configurator:
-      type: since-last-post-processing-step
-      type-of-statistical-processing: average
+    template-number: 1
+    point-in-time-configurator:
+      type: default
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: snowLayer
+      type: snow
     ensemble-configurator:
       type: default
   data-representation-section:

@@ -552,8 +552,14 @@ void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
         {55, {228004, {{"timeproc", 24l}}}},
         {56, {235168, {}}},
         {130232, {235135, {}}},
-        {151163, {262104, {}}},
+        {151130, {262100, {}}},
+        {151131, {262140, {}}},
+        {151132, {262139, {}}},
         {151145, {262124, {}}},
+        {151148, {3067, {}}},
+        {151163, {262104, {}}},
+        {151164, {262144, {}}},
+        {151175, {262118, {}}},
         {172146, {235033, {}}},
         {172147, {235034, {}}},
         {172169, {235035, {}}},
@@ -563,9 +569,6 @@ void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
         {172178, {235039, {}}},
         {172179, {235040, {}}},
         {174098, {262000, {}}},
-        {151175, {262118, {}}},
-        {151132, {262139, {}}},
-        {151131, {262140, {}}},
         {72, {260087, {}}},
         {73, {260097, {}}},
         {172050, {235026, {}}},
@@ -761,7 +764,7 @@ void postFixToolOnly(codes_handle* in, codes_handle* out) {
 bool isDiscipline192Param(long p) {
     // Fetched via rest API of paramDb
     // https://codes.ecmwf.int/parameter-database/api/v1/param/?discipline=192&encoding=grib2&limit=9000&offset=0&regex=false
-    static const std::unordered_set<long> set{
+    static const std::unordered_set<long> disc192{
         4,      5,      6,      7,      11,     12,     13,     14,     19,     24,     25,     35,     36,     37,
         38,     39,     40,     41,     42,     46,     62,     63,     64,     65,     70,     71,     80,     81,
         82,     83,     84,     85,     86,     87,     88,     89,     90,     91,     92,     93,     94,     95,
@@ -1008,7 +1011,11 @@ bool isDiscipline192Param(long p) {
         234228,
     };
 
-    return (set.find(p) != set.end());
+    static const std::unordered_set<long> disc192ToMap{35, 36, 37, 38, 39, 40, 41, 42, 123, 139, 170, 183, 236, 151130,
+                                                       151148, 151164};
+
+
+    return (disc192.find(p) != cend(disc192)) && (disc192ToMap.find(p) == cend(disc192ToMap));
 }
 
 
@@ -1087,7 +1094,7 @@ enum class Discipline192Handling : std::size_t
 
 const std::unordered_map<std::string, Discipline192Handling>& discipline192HandlingMap() {
     static const std::unordered_map<std::string, Discipline192Handling> map{
-        {"log-and-ignoore", Discipline192Handling::LogAndIgnore},
+        {"log-and-ignore", Discipline192Handling::LogAndIgnore},
         {"ignore", Discipline192Handling::Ignore},
         {"try-to-handle", Discipline192Handling::TryToHandle}};
     return map;

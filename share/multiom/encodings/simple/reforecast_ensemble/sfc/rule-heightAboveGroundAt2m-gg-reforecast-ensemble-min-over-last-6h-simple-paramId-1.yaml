@@ -1,0 +1,64 @@
+tag: grib2
+
+name: rule-heightAboveGroundAt2m-gg-reforecast-ensemble-min-over-last-6h-simple-paramId-1
+
+filter:
+  type: composed
+  operation: all
+  filters:
+    - type: repres
+      operation: match
+      value: gaussian-grid
+    - type: anoffset
+      operation: lacks
+    - type: number
+      operation: has
+    - type: hdate
+      operation: has
+    - type: levtype
+      operation: match
+      value: sfc
+    - type: param
+      operation: match
+      values:
+        - 122
+    - type: packing
+      operation: match
+      value: simple
+
+encoder:
+  type: grib2
+  indicator-section:
+    template-number: 0
+  identification-section:
+    template-number: 0
+    origin-configurator:
+      type: default
+      sub-centre: 0
+    data-type-configurator:
+      type: default
+    reference-time-configurator:
+      type: default
+    tables-configurator:
+      type: default
+      local-tables-version: 0
+  local-use-section:
+    template-number: 1
+  grid-definition-section:
+    template-number: 40
+  product-definition-section:
+    template-number: 61
+    time-statistics-configurator:
+      type: fixed-timerange
+      type-of-statistical-processing: min
+      overall-length-of-timerange: 6h
+    param-configurator:
+      type: paramId
+    model-configurator:
+      type: default
+    level-configurator:
+      type: heightAboveGroundAt2m
+    ensemble-configurator:
+      type: default
+  data-representation-section:
+    template-number: 0

@@ -1,0 +1,23 @@
+
+name: 'map fixed-range-max precip rate to generic param'
+
+tag: 'fixed-range max precip rate'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 228222, 228224 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 228226

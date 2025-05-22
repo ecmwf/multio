@@ -142,47 +142,22 @@ PARAM_LEVTYPE_SFC = [
     ),
     # heightAboveGround - statistical
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([123])],
-        [
-            levelConfig("heightAboveGround"),
-            paramConfig("paramIdECMF"),
-            TimeRange(
-                type="fixed-timerange",
-                typeOfStatisticalProcessing="max",
-                overallLengthOfTimeRange="6h",
-                descriptiveName="max-over-last-6h",
-            ),
-        ],
-    ),
-    partialRule(
         [matchType("levtype", "sfc"), matchParam([121])],
         [
-            levelConfig("heightAboveGround"),
+            levelConfig("heightAboveGroundAt2m"),
             paramConfig("paramId"),
             TimeRange(
                 type="fixed-timerange",
                 typeOfStatisticalProcessing="max",
                 overallLengthOfTimeRange="6h",
                 descriptiveName="max-over-last-6h",
-            ),
-        ],
-    ),
-    partialRule(
-        [matchType("levtype", "sfc"), matchParam([49, 201])],
-        [
-            levelConfig("heightAboveGround"),
-            paramConfig("paramId"),
-            TimeRange(
-                type="since-last-post-processing-step",
-                typeOfStatisticalProcessing="max",
-                descriptiveName="max-since-last-pp",
             ),
         ],
     ),
     partialRule(
         [matchType("levtype", "sfc"), matchParam([122])],
         [
-            levelConfig("heightAboveGround"),
+            levelConfig("heightAboveGroundAt2m"),
             paramConfig("paramId"),
             TimeRange(
                 type="fixed-timerange",
@@ -193,14 +168,64 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
+        [matchType("levtype", "sfc"), matchParam([201])],
+        [
+            levelConfig("heightAboveGroundAt2m"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="max",
+                descriptiveName="max-since-last-pp",
+            ),
+        ],
+    ),
+    partialRule(
         [matchType("levtype", "sfc"), matchParam([202])],
         [
-            levelConfig("heightAboveGround"),
+            levelConfig("heightAboveGroundAt2m"),
             paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="min",
                 descriptiveName="min-since-last-pp",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([123])],
+        [
+            levelConfig("heightAboveGroundAt10m"),
+            paramConfig("paramIdECMF"),
+            TimeRange(
+                type="fixed-timerange",
+                typeOfStatisticalProcessing="max",
+                overallLengthOfTimeRange="6h",
+                descriptiveName="max-over-last-6h",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([228028])],
+        [
+            levelConfig("heightAboveGroundAt10m"),
+            paramConfig("paramIdECMF"),
+            TimeRange(
+                type="fixed-timerange",
+                typeOfStatisticalProcessing="max",
+                overallLengthOfTimeRange="3h",
+                descriptiveName="max-over-last-3h",
+            ),
+        ],
+    ),
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([49])],
+        [
+            levelConfig("heightAboveGroundAt10m"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="max",
+                descriptiveName="max-since-last-pp",
             ),
         ],
     ),
@@ -476,7 +501,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - max over last 3h
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228028, 228222])],
+        [matchType("levtype", "sfc"), matchParam([228222])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -684,6 +709,7 @@ PARAM_LEVTYPE_SFC = [
                     238,
                     "243:245",
                     3020,
+                    3067,
                     160198,
                     200199,
                     210200,
@@ -717,8 +743,10 @@ PARAM_LEVTYPE_SFC = [
                     261015,
                     261016,
                     261018,
+                    262100,
                     262139,
                     262140,
+                    262144,
                     262124
                 ]
             ),

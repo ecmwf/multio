@@ -1,0 +1,22 @@
+name: 'map fixed-range-max wind gust to generic param'
+
+tag: 'fixed-range max wind gust'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 123, 228028 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 49

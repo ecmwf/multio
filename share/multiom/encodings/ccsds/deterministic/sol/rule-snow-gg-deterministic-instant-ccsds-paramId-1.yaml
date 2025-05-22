@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-snowLayer-gg-deterministic-instant-simple-paramId-1
+name: rule-snow-gg-deterministic-instant-ccsds-paramId-1
 
 filter:
   type: composed
@@ -21,13 +21,10 @@ filter:
     - type: param
       operation: match
       values:
-        - 33
-        - 74
-        - 238
-        - 228038
+        - 228141
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -58,6 +55,6 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: snowLayer
+      type: snow
   data-representation-section:
-    template-number: 0
+    template-number: 42

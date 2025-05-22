@@ -107,9 +107,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -211,9 +212,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -364,9 +366,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -468,9 +471,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-seaIceLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-soilLayer-gg-reforecast-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snowLayer-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sol/rule-snow-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -625,9 +629,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snow-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snow-gg-ensemble-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -729,9 +734,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snow-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snow-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -882,9 +888,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snow-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sol/rule-snow-gg-ensemble-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -986,9 +993,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-seaIceLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snow-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-soilLayer-gg-ensemble-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sol/rule-snow-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1159,9 +1167,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snow-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-simple-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-simple-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snow-gg-deterministic-avg-since-last-pp-snow-simple-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1263,9 +1272,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snow-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-ccsds-paramId-36.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snow-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-36.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1416,9 +1426,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-instant-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snow-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-simple-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-simple-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sol/rule-snow-gg-deterministic-avg-since-last-pp-snow-simple-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:
@@ -1520,9 +1531,10 @@ nested-rules:
                                     encoding-rules:
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-seaIceLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snow-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                       - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-soilLayer-gg-deterministic-avg-since-last-pp-soilLayer-ccsds-paramId-1.yaml'
-                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snowLayer-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
+                                      - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sol/rule-snow-gg-deterministic-avg-since-last-pp-snow-ccsds-paramId-1.yaml'
                                   - operation: match
                                     value: pt
                                     encoding-rules:

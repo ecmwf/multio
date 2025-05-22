@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-snowLayer-gg-ensemble-avg-since-last-pp-snow-simple-paramId-1
+name: rule-snow-gg-ensemble-avg-since-last-pp-snow-ccsds-paramId-1
 
 filter:
   type: composed
@@ -24,7 +24,7 @@ filter:
         - 235078
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -56,8 +56,8 @@ encoder:
     model-configurator:
       type: default
     level-configurator:
-      type: snowLayer
+      type: snow
     ensemble-configurator:
       type: default
   data-representation-section:
-    template-number: 0
+    template-number: 42

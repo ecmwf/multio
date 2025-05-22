@@ -1103,8 +1103,12 @@ PARAM_LEVTYPE_SOL = [
         [PointInTime(), levelConfig("seaIceLayer"), paramConfig("paramId")],
     ),
     partialRule(
-        [matchType("levtype", "sol"), matchParam([33, 74, 238, 228038, 228141])],
+        [matchType("levtype", "sol"), matchParam([33, 74, 238, 228038])],
         [PointInTime(), levelConfig("snowLayer"), paramConfig("paramId")],
+    ),
+    partialRule(
+        [matchType("levtype", "sol"), matchParam([228141])],
+        [PointInTime(), levelConfig("snow"), paramConfig("paramId")],
     ),
     partialRule(
         [matchType("levtype", "sol"), matchParam([260360, 260199, 183])],
@@ -1125,7 +1129,7 @@ PARAM_LEVTYPE_SOL = [
     partialRule(
         [matchType("levtype", "sol"), matchParam([235078])],
         [
-            levelConfig("snowLayer"),
+            levelConfig("snow"),
             paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",

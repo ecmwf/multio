@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-snowLayer-gg-deterministic-instant-simple-paramId-1
+name: rule-snow-gg-reforecast-ensemble-avg-since-last-pp-snow-ccsds-paramId-1
 
 filter:
   type: composed
@@ -12,22 +12,19 @@ filter:
     - type: anoffset
       operation: lacks
     - type: number
-      operation: lacks
+      operation: has
     - type: hdate
-      operation: lacks
+      operation: has
     - type: levtype
       operation: match
       value: sol
     - type: param
       operation: match
       values:
-        - 33
-        - 74
-        - 238
-        - 228038
+        - 235078
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -50,14 +47,17 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 0
-    point-in-time-configurator:
-      type: default
+    template-number: 61
+    time-statistics-configurator:
+      type: since-last-post-processing-step
+      type-of-statistical-processing: average
     param-configurator:
       type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: snowLayer
+      type: snow
+    ensemble-configurator:
+      type: default
   data-representation-section:
-    template-number: 0
+    template-number: 42

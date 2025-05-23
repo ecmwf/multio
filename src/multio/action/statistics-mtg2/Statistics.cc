@@ -309,24 +309,8 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // }
     auto md = inputMetadata;
 
-    // util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();
-
-    // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
-    // md.set("sampleInterval", lastPointsDiff.diff);
-
-    md.set(glossary().sampleIntervalInSeconds, win.lastPointsDiffInSeconds());
-
     md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
     md.set(glossary().startTime, win.epochPoint().time().hhmmss());
-    md.set(glossary().stepFrequency, win.timeSpanInSteps());
-
-    md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
-    md.set(glossary().previousTime, win.creationPoint().time().hhmmss());
-    md.set(glossary().currentDate, win.endPoint().date().yyyymmdd());
-    md.set(glossary().currentTime, win.endPoint().time().hhmmss());
-
-    md.set("startStepInHours", win.creationPointInHours());
-    md.set("endStepInHours", win.endPointInHours());
 
     return md;
 }
@@ -426,16 +410,12 @@ void Statistics::executeImpl(message::Message msg) {
             payload.resize((*it)->byte_size());
             payload.zero();
 
-            std::string opname = (*it)->operation();
-            std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
-            md.set("operation", opname);
-            md.set("operation-frequency", outputFrequency);
-
             const std::int64_t step = ts.win().endPointInSteps();
             const std::int64_t timespan = ts.win().timeSpanInHours();
             md.set(glossary().step, step);
             multio::message::Mtg2::mars::timespan.set(md, timespan);
 
+            std::string opname = (*it)->operation();
             paramMapping_.applyMapping(md, opname);
             for (const auto& kv : opt_.setMetadata()) {
                 md.set(kv.first, kv.second);

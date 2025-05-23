@@ -21,7 +21,6 @@ filter:
     - type: param
       operation: match
       values:
-        - 228028
         - 228222
     - type: packing
       operation: match

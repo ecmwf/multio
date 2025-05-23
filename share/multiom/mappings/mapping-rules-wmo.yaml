@@ -12,11 +12,28 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-height-above-ground-10m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-height-above-ground-2m.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-map-to-sol.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-123-levelist-to-10.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-accum.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-change-tables-version-for-chem-instant.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-min.yaml'
+
+
+  #
+  # Map deprecated GRIB1 parameters to GRIB2 parameters
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-wind-gust.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-precip-rate.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-min-precip-rate.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-35-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-36-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-37-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-38-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-39-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-40-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-41-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-42-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-139-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-170-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-183-to-sol.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-236-to-sol.yaml'
+
 
   #
   # Convert units to WMO standard

@@ -1,0 +1,39 @@
+name: 'map 183 to levtype sol level 3'
+
+tag: 'map-183-to-sol-3'
+
+filter:
+  type: 'composed'
+  operation: 'all'
+  filters:
+    - type: 'param'
+      operation: 'match'
+      value: 183
+    - type: 'levtype'
+      operation: 'match'
+      value: 'sfc'
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'levelist'
+          expression:
+            type: 'constant'
+            value: 3
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 260360
+        - type: 'message-int'
+          name: 'levtype'
+          expression:
+            type: 'enum'
+            name: 'levtype'
+            value: 'sol'

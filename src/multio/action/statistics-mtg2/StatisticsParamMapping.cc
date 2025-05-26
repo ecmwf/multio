@@ -18,10 +18,19 @@ StatisticsParamMapping::StatisticsParamMapping(ParamTypeOfStatisticalProcessingT
     paramMappings_{paramMappings} {}
 
 StatisticsParamMapping StatisticsParamMapping::makeStatisticsParamMapping() {
-    // TODO : This path might not always be correct?
+    std::string multioBuildDir;
+    if (eckit::PathName{multio::LibMultio::instance().libraryHome() + "/multio-targets.cmake"}.exists()) {
+        multioBuildDir = multio::LibMultio::instance().libraryHome();
+    }
+    else if (eckit::PathName{multio::LibMultio::instance().libraryHome() + "/multio/multio-targets.cmake"}.exists()) {
+        multioBuildDir = multio::LibMultio::instance().libraryHome() + "/multio";
+    }
+    else {
+        throw eckit::SeriousBug("Can't locate MultIO build directory!", Here());
+    }
+
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() +
-        "/multio/share/multio/statistics-mtg2/statistics_param_mappings.yml"
+        multioBuildDir + "/share/multio/statistics-mtg2/statistics_param_mappings.yml"
     }}};
 
     ParamTypeOfStatisticalProcessingToParamMap paramMappings;

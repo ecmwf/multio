@@ -18,10 +18,8 @@ StatisticsParamMapping::StatisticsParamMapping(ParamTypeOfStatisticalProcessingT
     paramMappings_{paramMappings} {}
 
 StatisticsParamMapping StatisticsParamMapping::makeStatisticsParamMapping() {
-    // TODO : This path might not always be correct?
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() +
-        "/multio/share/multio/statistics-mtg2/statistics_param_mappings.yml"
+        multio::LibMultio::instance().libraryHome() + "/share/multio/config/statistics_param_mappings.yml"
     }}};
 
     ParamTypeOfStatisticalProcessingToParamMap paramMappings;

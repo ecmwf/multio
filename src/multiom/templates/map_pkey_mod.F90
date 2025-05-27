@@ -341,23 +341,21 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Check if the keys are equal
+  ! Check if key 1 is lower than key 2
   IF ( SIZE(KEY1) .EQ. SIZE(KEY2) ) THEN
     IS_LOWER_THAN = .FALSE.
     I = 1_JPIB_K
     CompareLoop: DO
       IF ( I .GT. SIZE(KEY1) ) THEN
         EXIT CompareLoop
-      ENDIF
-      IF ( KEY1(I) .LT. KEY2(I) ) THEN
+      ELSEIF ( KEY1(I) .LT. KEY2(I) ) THEN
         IS_LOWER_THAN = .TRUE.
         EXIT CompareLoop
       ELSEIF ( KEY1(I) .GT. KEY2(I) ) THEN
-        I = I + 1
-      ELSE
         IS_LOWER_THAN = .FALSE.
         EXIT CompareLoop
       ENDIF
+      I = I + 1
     ENDDO CompareLoop
   ELSE
     IS_LOWER_THAN = SIZE(KEY1) .LT. SIZE(KEY2)

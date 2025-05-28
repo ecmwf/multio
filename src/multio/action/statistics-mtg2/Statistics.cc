@@ -441,8 +441,8 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
         auto md = ts.metadata();
         auto cfg = StatisticsConfiguration(md, source, opt_);
 
-        const std::int64_t step = ts.win().endPointInSteps();
-        const std::int64_t timespan = ts.win().timeSpanInHours();
+        const std::int64_t step = ts.win().currPointInSteps();
+        const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
         md.set(glossary().step, step);
         multio::message::Mtg2::mars::timespan.set(md, timespan);
 

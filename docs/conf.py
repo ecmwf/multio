@@ -90,21 +90,23 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_context = {"css_files": ["_static/style.css"]}
-
 # Remove links to the reST sources from the page headers.
 html_show_sourcelink = False
 
 # Remove "Created using Sphinx" from the HTML footer.
 html_show_sphinx = False
 
+# html_theme_options = {
+#     "version_selector": True,
+#     "display_version": True,
+# }
 
 # -- Breathe configuration ---------------------------------------------------
 
 breathe_projects = {"multio": "_build/xml/"}
 breathe_default_project = "multio"
 breathe_domain_by_file_pattern = {
-    "*/multio_c.h": "c",
+    "*.h": "c",
 }
 
 

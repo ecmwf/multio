@@ -2,6 +2,9 @@
 
 #include "multio_capi_types.h"
 
+/** \defgroup Configuration */
+/** @{ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -80,6 +83,7 @@ int multio_mpi_return_client_comm(multio_configuration_t* cc, int* return_client
  */
 int multio_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm);
 
+/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */

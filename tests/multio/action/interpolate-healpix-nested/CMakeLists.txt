@@ -35,7 +35,7 @@ foreach (_n
 
     ecbuild_add_test(
         TARGET        ${PREFIX}_original
-        TEST_REQUIRES ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest
+        TEST_REQUIRES ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest ${DATA_PREFIX}_get_data_interpolate_healpix
         COMMAND       multio-feed
         ARGS          ${CMAKE_CURRENT_BINARY_DIR}/MARS_reduced_gg.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/reduced_gg_to_HEALPix_${_n}_nested_original.yaml
     )
@@ -93,7 +93,7 @@ ecbuild_get_test_multidata(
 
 ecbuild_add_test(
     TARGET        ${PREFIX}_original
-    TEST_REQUIRES ${DATA_PREFIX}_get_data_fesom ${PREFIX}_fesom_csv_ring2mat_ring
+    TEST_REQUIRES ${DATA_PREFIX}_get_data_fesom ${PREFIX}_fesom_csv_ring2mat_ring ${DATA_PREFIX}_get_data_interpolate_healpix
     COMMAND       multio-feed
     ARGS          ${CMAKE_CURRENT_BINARY_DIR}/fesom_CORE2_ngrid_feed_o2d.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/fesom_CORE2_ngrid_to_HEALPix_128_nested_original.yaml
 )
@@ -107,7 +107,7 @@ ecbuild_add_test(
 
 ecbuild_add_test(
     TARGET        ${PREFIX}_compare
-    TEST_REQUIRES ${PREFIX}_original;${PREFIX}_direct
+    TEST_REQUIRES ${PREFIX}_original ${PREFIX}_direct
     COMMAND       grib_compare
     ARGS          MultIO_fesom_CORE2_ngrid_to_HEALPix_128_nested_original.grib MultIO_fesom_CORE2_ngrid_to_HEALPix_128_nested_direct.grib
 )

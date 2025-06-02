@@ -10,9 +10,13 @@ set(OFFSET ${OFFSET}${DOFFSET})
 set( MULTIOM_API_WRAPPER_DICTIONARIES_MAIN_SOURCES
   ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/mars_dictionary_wrapper_mod.F90
   ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/parametrization_dictionary_wrapper_mod.F90
-#  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/reduced_gg_dictionary_wrapper_mod.F90
-#  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/regular_gg_dictionary_wrapper_mod.F90
-#  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/spherical_harmonics_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/reduced_gg_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/regular_gg_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/regular_ll_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/healpix_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/orca_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/fesom_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/spherical_harmonics_dictionary_wrapper_mod.F90
   ${MULTIOM_API_WRAPPER_DICTIONARIES_DIR}/api_options_dictionary_wrapper_mod.F90
 )
 

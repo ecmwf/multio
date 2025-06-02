@@ -1,7 +1,7 @@
 set(MULTIOM_API_WRAPPER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Add subdirectories
-add_subdirectory( encoders )
+# add_subdirectory( encoders )
 add_subdirectory( dictionaries )
 
 

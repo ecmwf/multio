@@ -14,24 +14,172 @@ MODULE SPHERICAL_HARMONICS_DICTIONARY_WRAPPER_MOD
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
 
   ! Symbols imported from other modules within the project.
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
 
 IMPLICIT NONE
 
+  !> Default module visibnility
+  PRIVATE
+
   !> Dictionary index used used to identify the dictionary wrapper
   INTEGER(KIND=JPIB_K), PARAMETER :: SPHERICAL_HARMONICS_DICTIONARY_IDX_E = 300_JPIB_K
+  CHARACTER(LEN=*), PARAMETER :: SPHERICAL_HARMONICS_DICTIONARY_NAME_E = 'spherical_harmonics'
 
   !> Class used as a wrapper for the dictionary
   TYPE :: SPHERICAL_HARMONICS_DICTIONARY_CONTAINER_T
-    TYPE(SPHERICAL_HARMONICS_T), POINTER :: DICTIONARY => NULL()
+    TYPE(SH_T), POINTER :: DICTIONARY => NULL()
   END TYPE
 
   !> Whitelist of public symbols
+  PUBLIC :: SPHERICAL_HARMONICS_DICTIONARY_IDX_E
+  PUBLIC :: SPHERICAL_HARMONICS_DICTIONARY_NAME_E
+  PUBLIC :: INIT_SPHERICAL_HARMONICS_DICTIONARY
   PUBLIC :: CREATE_SPHERICAL_HARMONICS_DICTIONARY
   PUBLIC :: EXTRACT_SPHERICAL_HARMONICS_DICTIONARY
   PUBLIC :: FREE_SPHERICAL_HARMONICS_DICTIONARY
 
+  !> Utilities for the dictionary wrapper
+  PUBLIC :: RESET_SPHERICAL_HARMONICS_DICTIONARY
+
+  !> General utils
+  PUBLIC :: IS_ALLOWED_SPHERICAL_HARMONICS_DICTIONARY
+  PUBLIC :: HAS_SPHERICAL_HARMONICS_DICTIONARY
+  PUBLIC :: RANK_SPHERICAL_HARMONICS_DICTIONARY
+  PUBLIC :: SIZE_SPHERICAL_HARMONICS_DICTIONARY
+
+
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'INIT_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION INIT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,  ONLY: JPIB_K
+  USE :: HOOKS_MOD,          ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_SPHERICAL_HARMONICS_DICTIONARY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ALLOCATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INITIALIZE_SPHERICAL_HARMONICS_DICTIONARY=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INJECT_CHECKSUM=5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_SPHERICAL_HARMONICS_DICTIONARY), ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+
+  ! Create the spherical_harmonics dictionary
+  WRAPPED_SPHERICAL_HARMONICS_DICTIONARY = C_NULL_PTR
+  DICTIONARY => NULL()
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CREATE_SPHERICAL_HARMONICS_DICTIONARY) CREATE_SPHERICAL_HARMONICS_DICTIONARY( &
+&   WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_SPHERICAL_HARMONICS_DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ALLOCATED)
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ALLOCATED)
+
+  ! Initialize the spherical_harmonics dictionary
+  ! MIVAL: TODO add initialization method
+  ! PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_SPHERICAL_HARMONICS_DICTIONARY) DICTIONARY%INIT( HOOKS )
+
+  ! Inject checksum
+  PP_TRYCALL(ERRFLAG_INJECT_CHECKSUM) INJECT_CHECKSUM_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper already associated' )
+    CASE (ERRFLAG_UNABLE_TO_CREATE_SPHERICAL_HARMONICS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to create spherical_harmonics dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'SPHERICAL_HARMONICS dictionary not allocated' )
+    CASE (ERRFLAG_UNABLE_TO_INITIALIZE_SPHERICAL_HARMONICS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to initialize spherical_harmonics dictionary' )
+    CASE (ERRFLAG_INJECT_CHECKSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION INIT_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -45,11 +193,11 @@ PP_THREAD_SAFE FUNCTION CREATE_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
-  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_WRAPPER_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_ALLOCATE_WRAPPER
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD,  ONLY: SH_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_ALLOCATE_WRAPPER
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -64,7 +212,7 @@ IMPLICIT NONE
 
   !> Dummy arguments
   TYPE(C_PTR),                          INTENT(INOUT) :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
-  TYPE(SPHERICAL_HARMONICS_T), POINTER, INTENT(INOUT) :: DICTIONARY
+  TYPE(SH_T), POINTER, INTENT(INOUT) :: DICTIONARY
   TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
 
   ! Function result
@@ -190,22 +338,21 @@ END FUNCTION CREATE_SPHERICAL_HARMONICS_DICTIONARY
 #undef PP_PROCEDURE_TYPE
 
 
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'EXTRACT_SPHERICAL_HARMONICS_DICTIONARY'
-PP_THREAD_SAFE FUNCTION EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'INJECT_CHECKSUM_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION INJECT_CHECKSUM_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, HOOKS ) RESULT(RET)
 
   !> Symbols imported from intrinsic modules.
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
-  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_WRAPPER_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_EXTRACT_WRAPPER
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_INJECT_CHECKSUM_WRAPPER
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -219,8 +366,126 @@ PP_THREAD_SAFE FUNCTION EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICA
 IMPLICIT NONE
 
   !> Dummy arguments
-  TYPE(C_PTR),                          INTENT(INOUT) :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
-  TYPE(SPHERICAL_HARMONICS_T), POINTER, INTENT(INOUT) :: DICTIONARY
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(F_C_WRAPPER_T),    POINTER, DIMENSION(:) :: WRAPPER
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(WRAPPED_SPHERICAL_HARMONICS_DICTIONARY), ERRFLAG_WRAPPER_NOT_ASSOCIATED )
+
+  ! Extract the wrapper
+  WRAPPER => NULL()
+  CALL C_F_POINTER( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, WRAPPER, [1] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER )
+
+  ! Extract the buffer
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM) F_C_INJECT_CHECKSUM_WRAPPER( WRAPPER, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION INJECT_CHECKSUM_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'EXTRACT_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD,  ONLY: SH_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_EXTRACT_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),                          INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  TYPE(SH_T), POINTER, INTENT(INOUT) :: DICTIONARY
   TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -357,12 +622,12 @@ PP_THREAD_SAFE FUNCTION FREE_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_H
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
-  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_WRAPPER_T
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_EXTRACT_WRAPPER
-  USE :: API_F_C_WRAPPER_MOD,         ONLY: F_C_FREE_WRAPPER
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD,  ONLY: SH_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_EXTRACT_WRAPPER
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_FREE_WRAPPER
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -385,7 +650,7 @@ IMPLICIT NONE
   ! Local variables
   TYPE(F_C_WRAPPER_T), POINTER, DIMENSION(:) :: WRAPPER
   INTEGER(KIND=C_INT8_T), POINTER, DIMENSION(:) :: BUFFER
-  TYPE(SPHERICAL_HARMONICS_T), POINTER :: DICTIONARY
+  TYPE(SH_T), POINTER :: DICTIONARY
   TYPE(SPHERICAL_HARMONICS_DICTIONARY_CONTAINER_T) :: DICTIONARY_CONTAINER
   INTEGER(KIND=JPIB_K) :: DIM
   INTEGER(KIND=JPIB_K) :: ALLOC_STAT
@@ -512,6 +777,635 @@ PP_ERROR_HANDLER
 END FUNCTION FREE_SPHERICAL_HARMONICS_DICTIONARY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RESET_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION RESET_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_RESET_DICTIONARY=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Reset the dictionary
+  ! MIVAL: TODO add reset method
+  ! PP_TRYCALL(ERRFLAG_UNABLE_TO_RESET_DICTIONARY) DICTIONARY%INIT( HOOKS )
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract spherical_harmonics dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'SPHERICAL_HARMONICS dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_RESET_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to reset spherical_harmonics dictionary' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RESET_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IS_ALLOWED_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION IS_ALLOWED_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, KEY, IS_ALLOWED, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_IS_ALLOWED
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),      INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  CHARACTER(LEN=*), INTENT(IN)    :: KEY
+  LOGICAL,          INTENT(OUT)   :: IS_ALLOWED
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_KEY=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_KEY) SH_DICTIONARY_IS_ALLOWED( DICTIONARY, KEY, IS_ALLOWED, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract reduced-gg dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'reduced-gg dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check reduced-gg key' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IS_ALLOWED_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION HAS_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, KEY, HAS, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_NAME2ITERATOR
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_HAS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),      INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  CHARACTER(LEN=*), INTENT(IN)    :: KEY
+  LOGICAL,          INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_KEY=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) SH_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_KEY) SH_DICTIONARY_HAS( DICTIONARY, ITERATOR, HAS, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract spherical_harmonics dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'SPHERICAL_HARMONICS dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check spherical_harmonics key' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HAS_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RANK_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION RANK_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, KEY, RANK, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_NAME2ITERATOR
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_RANK
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),          INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  CHARACTER(LEN=*),     INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: RANK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_RANK=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) SH_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_RANK) SH_DICTIONARY_RANK( DICTIONARY, ITERATOR, RANK, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract spherical_harmonics dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'SPHERICAL_HARMONICS dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE (ERRFLAG_UNABLE_TO_GET_RANK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable get rank' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RANK_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SIZE_SPHERICAL_HARMONICS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION SIZE_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, KEY, SIZE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_NAME2ITERATOR
+  USE :: API_SH_DICTIONARY_UTILS_MOD, ONLY: SH_DICTIONARY_SIZE
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),          INTENT(IN)    :: WRAPPED_SPHERICAL_HARMONICS_DICTIONARY
+  CHARACTER(LEN=*),     INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(SH_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_SIZE=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_SPHERICAL_HARMONICS_DICTIONARY( WRAPPED_SPHERICAL_HARMONICS_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) SH_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_SIZE) SH_DICTIONARY_SIZE( DICTIONARY, ITERATOR, SIZE, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract spherical_harmonics dictionary' )
+    CASE (ERRFLAG_SPHERICAL_HARMONICS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'SPHERICAL_HARMONICS dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE (ERRFLAG_UNABLE_TO_GET_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable get size' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: ' // TRIM(KEY) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SIZE_SPHERICAL_HARMONICS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 
 END MODULE SPHERICAL_HARMONICS_DICTIONARY_WRAPPER_MOD
 #undef PP_SECTION_NAME

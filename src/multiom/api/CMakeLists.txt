@@ -36,13 +36,15 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_par_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_reduced_gg_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_regular_gg_dictionary_utils_mod.F90
+  ${MULTIOM_API_DIR}/api_regular_ll_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_sh_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_general_utils_mod.F90
   ${MULTIOM_API_DIR}/api_general_utils_c.cc
   ${MULTIOM_API_DIR}/api_shared_data_mod.F90
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
-  ${MULTIOM_API_DIR}/api_encoder_wrapper_mod-02.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
+  # ${MULTIOM_API_DIR}/api_encoder_wrapper_mod_02.F90
+  ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod_02.F90
   ${MULTIOM_API_DIR}/api_encode_c.cc
   ${CMAKE_CURRENT_BINARY_DIR}/map_int64_opt_dict_mod.F90
 )

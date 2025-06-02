@@ -41,7 +41,11 @@ PUBLIC :: DEALLOCATE_ITERATOR
 PUBLIC :: GRIB_MESSAGE_TO_C_CODES_HANDLE
 PUBLIC :: COPY_F_BUFFER_TO_C_BUFFER
 PUBLIC :: COPY_CPTR_TO_F_STRING
+
+
 PUBLIC :: DEREFERENCE_DOUBLE_C_POINTER
+PUBLIC :: COPY_FSTRING_TO_CCHAR_ARRAY
+PUBLIC :: ASSOCIATE_CPTR_TO_CCHAR_ARRAY
 
 CONTAINS
 
@@ -164,6 +168,7 @@ END FUNCTION DEREFERENCE_DOUBLE_C_POINTER
 PP_THREAD_SAFE FUNCTION COPY_CPTR_TO_F_STRING( CPTR, STRLEN, FSTRING, HOOKS, TOLOWER ) RESULT(RET)
 
   !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
@@ -186,11 +191,11 @@ PP_THREAD_SAFE FUNCTION COPY_CPTR_TO_F_STRING( CPTR, STRLEN, FSTRING, HOOKS, TOL
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(C_PTR),         INTENT(IN)    :: CPTR
-  INTEGER(KIND=C_INT), INTENT(IN)    :: STRLEN
-  CHARACTER(LEN=*),    INTENT(OUT)   :: FSTRING
-  TYPE(HOOKS_T),       INTENT(INOUT) :: HOOKS
-  LOGICAL, OPTIONAL,   INTENT(IN)    :: TOLOWER
+  TYPE(C_PTR),            INTENT(IN)    :: CPTR
+  INTEGER(KIND=C_SIZE_T), INTENT(IN)    :: STRLEN
+  CHARACTER(LEN=*),       INTENT(OUT)   :: FSTRING
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  LOGICAL, OPTIONAL,      INTENT(IN)    :: TOLOWER
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -2724,6 +2729,276 @@ END FUNCTION COPY_F_BUFFER_TO_C_BUFFER
 #undef PP_PROCEDURE_TYPE
 
 
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'COPY_FSTRING_TO_CCHAR_ARRAY'
+PP_THREAD_SAFE FUNCTION COPY_FSTRING_TO_CCHAR_ARRAY( F_STR, F_BUF, HOOKS, INITIALIZE ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_PTR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_INT
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_LOC
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*),                                    INTENT(IN)    :: F_STR
+  CHARACTER(LEN=1, KIND=C_CHAR), DIMENSION(:), TARGET, INTENT(INOUT) :: F_BUF
+  TYPE(HOOKS_T),                                       INTENT(INOUT) :: HOOKS
+  LOGICAL, OPTIONAL,                                   INTENT(IN)    :: INITIALIZE
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  CHARACTER(LEN=LEN(F_STR)) :: CTMP
+  !> Errorflags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_SIZE=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error rhandling
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(ADJUSTL(F_STR))+1_JPIB_K .GT. SIZE(F_BUF), ERRFLAG_WRONG_SIZE )
+
+  ! Initialization
+  IF ( PRESENT(INITIALIZE) ) THEN
+    DO I = 1, SIZE(F_BUF)
+      F_BUF(I) = C_NULL_CHAR
+    ENDDO
+  ENDIF
+
+  ! Populate
+  CTMP = REPEAT(' ', LEN(F_STR))
+  CTMP = TRIM(ADJUSTL(F_STR))
+  DO I = 1, LEN_TRIM(CTMP)
+    F_BUF(I) = CTMP(I:I)
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    CHARACTER(LEN=32) :: TMP
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_WRONG_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wron size of string and buffer' )
+      TMP = REPEAT( ' ', 32)
+      WRITE(TMP,'(I32)') LEN_TRIM(ADJUSTL(F_STR))+1_JPIB_K
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Size of string: '//TRIM(ADJUSTL(TMP)) )
+      TMP = REPEAT( ' ', 32)
+      WRITE(TMP,'(I32)') SIZE(F_BUF)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Size of buffer: '//TRIM(ADJUSTL(TMP)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COPY_FSTRING_TO_CCHAR_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ASSOCIATE_CPTR_TO_CCHAR_ARRAY'
+PP_THREAD_SAFE FUNCTION ASSOCIATE_CPTR_TO_CCHAR_ARRAY( CREF, LEN, F_BUF, HOOKS, INITIALIZE ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_PTR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, intrinsic :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(C_PTR),                                          INTENT(IN)    :: CREF
+  INTEGER(KIND=JPIB_K),                                 INTENT(IN)    :: LEN
+  CHARACTER(LEN=1, KIND=C_CHAR), DIMENSION(:), POINTER, INTENT(INOUT) :: F_BUF
+  TYPE(HOOKS_T),                                        INTENT(INOUT) :: HOOKS
+  LOGICAL, OPTIONAL,                                    INTENT(IN)    :: INITIALIZE
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: I
+
+  !> Errorflags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CPOINTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_SIZE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ASSOCIATED_AFTER_MAP=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error rhandling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(CREF), ERRFLAG_CPOINTER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN.LE.0_JPIB_K, ERRFLAG_WRONG_SIZE )
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(F_BUF), ERRFLAG_ALREADY_ASSOCIATED )
+
+
+  ! Associate the pointer
+  CALL C_F_POINTER( CREF, F_BUF, [LEN] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_BUF), ERRFLAG_NOT_ASSOCIATED_AFTER_MAP )
+
+  ! Initialization
+  IF ( PRESENT(INITIALIZE) ) THEN
+    DO I = 1, SIZE(F_BUF)
+      F_BUF(I) = C_NULL_CHAR
+    ENDDO
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    CHARACTER(LEN=32) :: CTMP
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (ERRFLAG_CPOINTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'C pointer is not associated' )
+
+    CASE (ERRFLAG_WRONG_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wron size of string and buffer' )
+      CTMP = REPEAT( ' ', 32)
+      WRITE(CTMP,'(I32)') LEN
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Size of string: '//TRIM(ADJUSTL(CTMP)) )
+
+    CASE (ERRFLAG_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Fortran pointer is already associated' )
+
+    CASE (ERRFLAG_NOT_ASSOCIATED_AFTER_MAP)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Fortran pointer is not associated after map' )
+
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION ASSOCIATE_CPTR_TO_CCHAR_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 END MODULE API_GENERAL_UTILS_MOD
 #undef PP_SECTION_NAME

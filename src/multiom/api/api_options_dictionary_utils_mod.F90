@@ -23,7 +23,6 @@ TYPE :: API_OPTIONS_T
   CHARACTER(LEN=8192)  :: ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/encodings/encoding-rules.yaml'
   CHARACTER(LEN=8192)  :: SAMPLES_PATH = '{MULTIO_INSTALL_DIR}/samples'
   CHARACTER(LEN=8192)  :: SAMPLE_FNAME = 'sample'
-  CHARACTER(LEN=8192)  :: ENCODER_TYPE = REPEAT(' ',1024)  ! For future use
   LOGICAL :: PRINT_WHOLE_ERROR_STACK = .FALSE.
   LOGICAL :: PRINT_DICTIONARIES = .FALSE.
 END TYPE
@@ -33,22 +32,27 @@ INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_ENCODING_RULES_FILE = 1_JPIB
 INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_MAPPING_RULES_FILE = 2_JPIB_K
 INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_SAMPLES_PATH = 3_JPIB_K
 INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_SAMPLE_FNAME = 4_JPIB_K
-INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_ENCODER_TYPE = 5_JPIB_K
-INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK = 6_JPIB_K
-INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_PRINT_DICTIONARIES = 7_JPIB_K
-INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_UNDEF = 8_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK = 5_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_PRINT_DICTIONARIES = 6_JPIB_K
+INTEGER(KIND=JPIB_K), PARAMETER :: OPTIONS_ITERATOR_UNDEF = 7_JPIB_K
 
 
 ! Whitelist of public symbols
 PUBLIC :: API_OPTIONS_T
+PUBLIC :: OPTIONS_DICTIONARY_INIT_DEFAULT
 PUBLIC :: OPTIONS_DICTIONARY_MAX_ITERATOR
 PUBLIC :: OPTIONS_DICTIONARY_INIT_ITERATOR
 PUBLIC :: OPTIONS_DICTIONARY_NAME2ITERATOR
 PUBLIC :: OPTIONS_DICTIONARY_GET_NEXT_ITERATOR
-PUBLIC :: OPTIONS_DICTIONARY_HAS
 PUBLIC :: OPTIONS_DICTIONARY_GET_KEY_AS_STRING
 PUBLIC :: OPTIONS_DICTIONARY_GET_VALUE_AS_STRING
 PUBLIC :: OPTIONS_DICTIONARY_SET_VALUE_FROM_STRING
+
+! General utils
+PUBLIC :: OPTIONS_DICTIONARY_IS_ALLOWED
+PUBLIC :: OPTIONS_DICTIONARY_HAS
+PUBLIC :: OPTIONS_DICTIONARY_RANK
+PUBLIC :: OPTIONS_DICTIONARY_SIZE
 
 CONTAINS
 
@@ -141,6 +145,102 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION OPTIONS_DICTIONARY_MAX_ITERATOR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'OPTIONS_DICTIONARY_INIT_DEFAULT'
+PP_THREAD_SAFE FUNCTION OPTIONS_DICTIONARY_INIT_DEFAULT( OPTIONS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(API_OPTIONS_T), INTENT(INOUT) :: OPTIONS_DICTIONARY
+  TYPE(HOOKS_T),       INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set the maximum iterator
+  OPTIONS_DICTIONARY%ENCODING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/mappings/mapping-rules.yaml'
+  OPTIONS_DICTIONARY%MAPPING_RULES_FNAME = '{MULTIO_INSTALL_DIR}/encodings/encoding-rules.yaml'
+  OPTIONS_DICTIONARY%SAMPLES_PATH = '{MULTIO_INSTALL_DIR}/samples'
+  OPTIONS_DICTIONARY%SAMPLE_FNAME = 'sample'
+  OPTIONS_DICTIONARY%PRINT_WHOLE_ERROR_STACK = .FALSE.
+  OPTIONS_DICTIONARY%PRINT_DICTIONARIES = .FALSE.
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION OPTIONS_DICTIONARY_INIT_DEFAULT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -422,9 +522,6 @@ IMPLICIT NONE
   CASE ( 'sample-name' )
     ITERATOR = OPTIONS_ITERATOR_SAMPLE_FNAME
 
-  CASE ( 'encoder-type' )
-    ITERATOR = OPTIONS_ITERATOR_ENCODER_TYPE
-
   CASE ( 'print-whole-error-stack' )
     ITERATOR = OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK
 
@@ -487,6 +584,137 @@ END FUNCTION OPTIONS_DICTIONARY_NAME2ITERATOR
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'OPTIONS_DICTIONARY_IS_ALLOWED'
+PP_THREAD_SAFE FUNCTION OPTIONS_DICTIONARY_IS_ALLOWED( OPTIONS_DICTIONARY, KEY, IS_ALLOWED, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(API_OPTIONS_T),  INTENT(IN)    :: OPTIONS_DICTIONARY
+  CHARACTER(LEN=*),     INTENT(IN)    :: KEY
+  LOGICAL,              INTENT(OUT)   :: IS_ALLOWED
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=LEN(KEY)) :: KEY_LOW
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_OPTIONS_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Convert to string to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( KEY, KEY_LOW, HOOKS )
+
+  ! Get the iterator from the key name
+  SELECT CASE ( KEY_LOW )
+
+  CASE ( 'encoding-rules', 'encoding-file', 'encoding' )
+    IS_ALLOWED = .TRUE.
+
+  CASE (  'mapping-rules', 'mapping-file', 'mapping' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'samples-path' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'sample-name' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'print-whole-error-stack' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'print-dictionaries' )
+    IS_ALLOWED = .TRUE.
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_OPTIONS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert to lowercase' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
+    CASE(ERRFLAG_NO_OPTIONS_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'No OPTIONS key found' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION OPTIONS_DICTIONARY_IS_ALLOWED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -617,6 +845,260 @@ END FUNCTION OPTIONS_DICTIONARY_HAS
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'OPTIONS_DICTIONARY_RANK'
+PP_THREAD_SAFE FUNCTION OPTIONS_DICTIONARY_RANK( OPTIONS_DICTIONARY, ITERATOR, RANK, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(API_OPTIONS_T),  INTENT(IN)    :: OPTIONS_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: RANK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_OPTIONS_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( OPTIONS_ITERATOR_ENCODING_RULES_FILE )
+    RANK = 0_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_MAPPING_RULES_FILE )
+    RANK = 0_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_SAMPLES_PATH )
+    RANK = 0_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_SAMPLE_FNAME )
+    RANK = 0_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK )
+    RANK = 0_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_PRINT_DICTIONARIES )
+    RANK = 0_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_OPTIONS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_OPTIONS_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION OPTIONS_DICTIONARY_RANK
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'OPTIONS_DICTIONARY_SIZE'
+PP_THREAD_SAFE FUNCTION OPTIONS_DICTIONARY_SIZE( OPTIONS_DICTIONARY, ITERATOR, SZ, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(API_OPTIONS_T),  INTENT(IN)    :: OPTIONS_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SZ
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_OPTIONS_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( OPTIONS_ITERATOR_ENCODING_RULES_FILE )
+    SZ = 1_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_MAPPING_RULES_FILE )
+    SZ = 1_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_SAMPLES_PATH )
+    SZ = 1_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_SAMPLE_FNAME )
+    SZ = 1_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK )
+    SZ = 1_JPIB_K
+
+  CASE ( OPTIONS_ITERATOR_PRINT_DICTIONARIES )
+    SZ = 1_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_OPTIONS_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_OPTIONS_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION OPTIONS_DICTIONARY_SIZE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'OPTIONS_DICTIONARY_GET_KEY_AS_STRING'
 PP_THREAD_SAFE FUNCTION OPTIONS_DICTIONARY_GET_KEY_AS_STRING( OPTIONS_DICTIONARY, ITERATOR, KEY, HOOKS ) RESULT(RET)
 
@@ -679,9 +1161,6 @@ IMPLICIT NONE
 
   CASE ( OPTIONS_ITERATOR_SAMPLE_FNAME )
     KEY = 'sample-fname'
-
-  CASE ( OPTIONS_ITERATOR_ENCODER_TYPE )
-    KEY = 'encoder-type'
 
   CASE ( OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK )
     KEY = 'print-whole-error-stack'
@@ -831,12 +1310,6 @@ IMPLICIT NONE
   CASE ( OPTIONS_ITERATOR_SAMPLE_FNAME )
     CTMP = REPEAT(' ', 8196)
     PP_TRYCALL(ERRFLAG_UNABLE_TO_REPLACE_ENVVAR) REPLACE_ENVVAR_IN_STRING( TRIM(OPTIONS_DICTIONARY%SAMPLE_FNAME), CTMP, HOOKS )
-    PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING(CTMP, VALUE, HOOKS )
-    HAS = .TRUE.
-
-  CASE ( OPTIONS_ITERATOR_ENCODER_TYPE )
-    CTMP = REPEAT(' ', 8196)
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_REPLACE_ENVVAR) REPLACE_ENVVAR_IN_STRING( TRIM(OPTIONS_DICTIONARY%ENCODER_TYPE), CTMP, HOOKS )
     PP_TRYCALL(ERRFLAG_CONVERT_ENUM_STRING) CONVERT_TO_C_STRING(CTMP, VALUE, HOOKS )
     HAS = .TRUE.
 
@@ -995,7 +1468,6 @@ IMPLICIT NONE
         OPTIONS_DICTIONARY%MAPPING_RULES_FNAME = TRIM(ADJUSTL(VALUE))
 
   CASE ( OPTIONS_ITERATOR_SAMPLES_PATH )
-        CALL GRIB_SET_SAMPLES_PATH( TRIM(ADJUSTL(VALUE)), STATUS=KRET )
         PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_SAMPLES_PATH_FAILED )
         OPTIONS_DICTIONARY%SAMPLES_PATH = REPEAT(' ',8192)
         OPTIONS_DICTIONARY%SAMPLES_PATH = TRIM(ADJUSTL(VALUE))
@@ -1003,10 +1475,6 @@ IMPLICIT NONE
   CASE ( OPTIONS_ITERATOR_SAMPLE_FNAME )
         OPTIONS_DICTIONARY%SAMPLE_FNAME = REPEAT(' ',8192)
         OPTIONS_DICTIONARY%SAMPLE_FNAME = TRIM(ADJUSTL(VALUE))
-
-  CASE ( OPTIONS_ITERATOR_ENCODER_TYPE )
-        OPTIONS_DICTIONARY%ENCODER_TYPE = REPEAT(' ',8192)
-        OPTIONS_DICTIONARY%ENCODER_TYPE = TRIM(ADJUSTL(VALUE))
 
   CASE ( OPTIONS_ITERATOR_PRINT_WHOLE_ERROR_STACK )
         OPTIONS_DICTIONARY%PRINT_WHOLE_ERROR_STACK = .FALSE.
@@ -1074,7 +1542,6 @@ PP_ERROR_HANDLER
 END FUNCTION OPTIONS_DICTIONARY_SET_VALUE_FROM_STRING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
-
 
 
 END MODULE API_OPTIONS_DICTIONARY_UTILS_MOD

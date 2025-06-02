@@ -594,28 +594,16 @@ int c_free_wrapper( void** mem ){
   return 0;
 }
 
-
-int c_wrapper_get_info( void* mem, size_t* obj_id, size_t* obj_sz, size_t* buf_sz, size_t* hash ){
-
-  // Initialize the object
-  f_c_wrapper* wrapper = (f_c_wrapper*)mem;
-  *obj_id = (size_t)wrapper->object_id;
-  *obj_sz = (size_t)wrapper->buf_size;
-  *buf_sz = (size_t)wrapper->obj_size;
-  *hash   = (size_t)wrapper->hash;
-
-  // Exit point on success
-  return 0;
-}
-
-
-void hash_int8_array(const int8_t* data, size_t len, size_t* hash ) {
+int hash_int8_array(const int8_t* data, size_t len, size_t* hash ) {
     *hash = 14695981039346656037ull; // FNV offset basis
     for (size_t i = 0; i < len; ++i) {
         *hash ^= (uint8_t)data[i];          // cast to uint8_t for consistency
         *hash *= 1099511628211ull;          // FNV prime
     }
-    return;
+    // MIVAL: code for debug interoperability on different compilers
+    // printf( "compute hash: %llu, %p, %llu\n", *hash, data, len );
+    return 0;
 }
+
 
 }

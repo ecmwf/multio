@@ -18,8 +18,12 @@ MODULE PARAMETRIZATION_DICTIONARY_WRAPPER_MOD
 
 IMPLICIT NONE
 
+  !> Default module visibility
+  PRIVATE
+
   !> Dictionary index used used to identify the dictionary wrapper
   INTEGER(KIND=JPIB_K), PARAMETER :: PARAMETRIZATION_DICTIONARY_IDX_E = 101_JPIB_K
+  CHARACTER(LEN=*), PARAMETER :: PARAMETRIZATION_DICTIONARY_NAME_E = 'parametrization'
 
   !> Class used as a wrapper for the dictionary
   TYPE :: PARAMETRIZATION_DICTIONARY_CONTAINER_T
@@ -27,11 +31,154 @@ IMPLICIT NONE
   END TYPE
 
   !> Whitelist of public symbols
+  PUBLIC :: PARAMETRIZATION_DICTIONARY_IDX_E
+  PUBLIC :: PARAMETRIZATION_DICTIONARY_NAME_E
+  PUBLIC :: INIT_PARAMETRIZATION_DICTIONARY
   PUBLIC :: CREATE_PARAMETRIZATION_DICTIONARY
   PUBLIC :: EXTRACT_PARAMETRIZATION_DICTIONARY
   PUBLIC :: FREE_PARAMETRIZATION_DICTIONARY
 
+  !> Utilities for the dictionary wrapper
+  PUBLIC :: RESET_PARAMETRIZATION_DICTIONARY
+
+  !> General utils
+  PUBLIC :: IS_ALLOWED_PARAMETRIZATION_DICTIONARY
+  PUBLIC :: HAS_PARAMETRIZATION_DICTIONARY
+  PUBLIC :: RANK_PARAMETRIZATION_DICTIONARY
+  PUBLIC :: SIZE_PARAMETRIZATION_DICTIONARY
+
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'INIT_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION INIT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_PARAMETRIZATION_DICTIONARY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ALLOCATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INITIALIZE_PARAMETRIZATION_DICTIONARY=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INJECT_CHECKSUM=5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_PARAMETRIZATION_DICTIONARY), ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+
+
+  ! Create the parametrization dictionary
+  WRAPPED_PARAMETRIZATION_DICTIONARY = C_NULL_PTR
+  DICTIONARY => NULL()
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CREATE_PARAMETRIZATION_DICTIONARY) CREATE_PARAMETRIZATION_DICTIONARY( &
+&   WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_PARAMETRIZATION_DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ALLOCATED)
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ALLOCATED)
+
+  ! Initialize the parametrization dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INITIALIZE_PARAMETRIZATION_DICTIONARY) DICTIONARY%INIT( HOOKS )
+
+  ! Inject checksum
+  PP_TRYCALL(ERRFLAG_INJECT_CHECKSUM) INJECT_CHECKSUM_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper already associated' )
+    CASE (ERRFLAG_UNABLE_TO_CREATE_PARAMETRIZATION_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to create parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Parametrization dictionary not allocated' )
+    CASE (ERRFLAG_UNABLE_TO_INITIALIZE_PARAMETRIZATION_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to initialize parametrization dictionary' )
+    CASE (ERRFLAG_INJECT_CHECKSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION INIT_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -186,6 +333,123 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION CREATE_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'INJECT_CHECKSUM_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION INJECT_CHECKSUM_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,          ONLY: JPIB_K
+  USE :: HOOKS_MOD,                  ONLY: HOOKS_T
+  USE :: API_F_C_WRAPPER_MOD,        ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD,        ONLY: F_C_INJECT_CHECKSUM_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(F_C_WRAPPER_T),    POINTER, DIMENSION(:) :: WRAPPER
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(WRAPPED_PARAMETRIZATION_DICTIONARY), ERRFLAG_WRAPPER_NOT_ASSOCIATED )
+
+  ! Extract the wrapper
+  WRAPPER => NULL()
+  CALL C_F_POINTER( WRAPPED_PARAMETRIZATION_DICTIONARY, WRAPPER, [1] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER )
+
+  ! Extract the buffer
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM) F_C_INJECT_CHECKSUM_WRAPPER( WRAPPER, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION INJECT_CHECKSUM_PARAMETRIZATION_DICTIONARY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -512,6 +776,623 @@ PP_ERROR_HANDLER
 END FUNCTION FREE_PARAMETRIZATION_DICTIONARY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RESET_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION RESET_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(IN)    :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_RESET_DICTIONARY=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_RESET_DICTIONARY) DICTIONARY%INIT( HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'PARAMETRIZATION dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_RESET_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to reset parametrization dictionary' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RESET_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IS_ALLOWED_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION IS_ALLOWED_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, KEY, IS_ALLOWED, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_IS_ALLOWED
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),      INTENT(IN)    :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  CHARACTER(LEN=*), INTENT(IN)    :: KEY
+  LOGICAL,          INTENT(OUT)   :: IS_ALLOWED
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_KEY=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_KEY) PAR_DICTIONARY_IS_ALLOWED( DICTIONARY, KEY, IS_ALLOWED, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'PARAMETRIZATION dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check parametrization key' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IS_ALLOWED_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION HAS_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, KEY, HAS, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_NAME2ITERATOR
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_HAS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),      INTENT(IN)    :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  CHARACTER(LEN=*), INTENT(IN)    :: KEY
+  LOGICAL,          INTENT(OUT)   :: HAS
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_KEY=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) PAR_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_KEY) PAR_DICTIONARY_HAS( DICTIONARY, ITERATOR, HAS, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'PARAMETRIZATION dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_KEY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check parametrization key' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HAS_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RANK_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION RANK_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, KEY, RANK, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_NAME2ITERATOR
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_RANK
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),          INTENT(IN)    :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  CHARACTER(LEN=*),     INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: RANK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_RANK=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) PAR_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_RANK) PAR_DICTIONARY_RANK( DICTIONARY, ITERATOR, RANK, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'PARAMETRIZATION dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_RANK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check parametrization rank' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RANK_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SIZE_PARAMETRIZATION_DICTIONARY'
+PP_THREAD_SAFE FUNCTION SIZE_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, KEY, SIZE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_NAME2ITERATOR
+  USE :: API_PAR_DICTIONARY_UTILS_MOD, ONLY: PAR_DICTIONARY_SIZE
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),          INTENT(IN)    :: WRAPPED_PARAMETRIZATION_DICTIONARY
+  CHARACTER(LEN=*),     INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ITERATOR
+  TYPE(PARAMETRIZATION_T), POINTER :: DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ITERATOR=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_SIZE=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Extract the encoder
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARY) EXTRACT_PARAMETRIZATION_DICTIONARY( WRAPPED_PARAMETRIZATION_DICTIONARY, DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(DICTIONARY), ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Get enumerator from the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ITERATOR) PAR_DICTIONARY_NAME2ITERATOR( DICTIONARY, KEY, ITERATOR, HOOKS )
+
+  ! Reset the dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_SIZE) PAR_DICTIONARY_SIZE( DICTIONARY, ITERATOR, SIZE, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_PARAMETRIZATION_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'PARAMETRIZATION dictionary not associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_ITERATOR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get iterator' )
+    CASE (ERRFLAG_UNABLE_TO_CHECK_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check parametrization size' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SIZE_PARAMETRIZATION_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
 
 END MODULE PARAMETRIZATION_DICTIONARY_WRAPPER_MOD
 #undef PP_SECTION_NAME

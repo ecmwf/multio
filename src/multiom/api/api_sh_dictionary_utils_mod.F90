@@ -30,7 +30,6 @@ PUBLIC :: SH_DICTIONARY_MAX_ITERATOR
 PUBLIC :: SH_DICTIONARY_INIT_ITERATOR
 PUBLIC :: SH_DICTIONARY_NAME2ITERATOR
 PUBLIC :: SH_DICTIONARY_GET_NEXT_ITERATOR
-PUBLIC :: SH_DICTIONARY_HAS
 PUBLIC :: SH_DICTIONARY_GET_KEY_AS_STRING
 PUBLIC :: SH_DICTIONARY_GET_VALUE_AS_STRING
 PUBLIC :: SH_DICTIONARY_SET_VALUE_FROM_STRING
@@ -38,6 +37,11 @@ PUBLIC :: SH_DICTIONARY_SET_VALUE_FROM_INT64
 PUBLIC :: SH_DICTIONARY_SET_VALUE_FROM_REAL64
 PUBLIC :: SH_DICTIONARY_SET_VALUE_FROM_INT64_ARRAY
 PUBLIC :: SH_DICTIONARY_SET_VALUE_FROM_REAL64_ARRAY
+
+PUBLIC :: SH_DICTIONARY_HAS
+PUBLIC :: SH_DICTIONARY_IS_ALLOWED
+PUBLIC :: SH_DICTIONARY_RANK
+PUBLIC :: SH_DICTIONARY_SIZE
 
 CONTAINS
 
@@ -469,6 +473,126 @@ END FUNCTION SH_DICTIONARY_NAME2ITERATOR
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SH_DICTIONARY_IS_ALLOWED'
+PP_THREAD_SAFE FUNCTION SH_DICTIONARY_IS_ALLOWED( SH_DICTIONARY, KEY, IS_ALLOWED, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,   ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(SH_T),       INTENT(IN)    :: SH_DICTIONARY
+  CHARACTER(LEN=*), INTENT(IN)    :: KEY
+  LOGICAL,          INTENT(INOUT) :: IS_ALLOWED
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=LEN(KEY)) :: KEY_LOW
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Convert to string to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( KEY, KEY_LOW, HOOKS )
+
+  ! Get the iterator from the key name
+  SELECT CASE ( KEY_LOW )
+
+  CASE ( 'pentagonalresolutionparameterj', 'pentagonal-resolution-parameter-j', 'pentagonal-resolution-j' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'pentagonalresolutionparameterk', 'pentagonal-resolution-parameter-k', 'pentagonal-resolution-k' )
+    IS_ALLOWED = .TRUE.
+
+  CASE ( 'pentagonalresolutionparameterm', 'pentagonal-resolution-parameter-m', 'pentagonal-resolution-m' )
+    IS_ALLOWED = .TRUE.
+
+  CASE DEFAULT
+
+    IS_ALLOWED = .FALSE.
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to convert to lowercase' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SH_DICTIONARY_IS_ALLOWED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'SH_DICTIONARY_HAS'
@@ -585,6 +709,244 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION SH_DICTIONARY_HAS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SH_DICTIONARY_RANK'
+PP_THREAD_SAFE FUNCTION SH_DICTIONARY_RANK( SH_DICTIONARY, ITERATOR, RANK, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(SH_T),           INTENT(IN)    :: SH_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: RANK
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_SH_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_J )
+    RANK = 0_JPIB_K
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_K )
+    RANK = 0_JPIB_K
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_M )
+    RANK = 0_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_SH_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_SH_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SH_DICTIONARY_RANK
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SH_DICTIONARY_SIZE'
+PP_THREAD_SAFE FUNCTION SH_DICTIONARY_SIZE( SH_DICTIONARY, ITERATOR, SZ, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(SH_T),           INTENT(IN)    :: SH_DICTIONARY
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: ITERATOR
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SZ
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NO_SH_KEY=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  SELECT CASE ( ITERATOR )
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_J )
+    SZ = 1_JPIB_K
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_K )
+    SZ = 1_JPIB_K
+
+  CASE ( SH_ITERATOR_PENTAGONAL_RESOLUTIONS_PAR_M )
+    SZ = 1_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NO_SH_KEY )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error variables
+    CHARACTER(LEN=32) :: CIT
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_NO_SH_KEY)
+      CIT=REPEAT(' ',32)
+      WRITE(CIT,'(I32)') ITERATOR
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid enumerator found' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Iterator value is: '//TRIM(ADJUSTL(CIT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SH_DICTIONARY_SIZE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

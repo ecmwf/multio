@@ -110,6 +110,14 @@ class MatchType(BaseModel):
 
 def matchType(t: str, v: str) -> MatchType:
     return MatchType(type=t, value=v)
+    
+class NotMatchType(BaseModel):
+    type: str
+    value: str
+
+
+def notMatchType(t: str, v: str) -> NotMatchType:
+    return NotMatchType(type=t, value=v)
 
 class NotMatchType(BaseModel):
     type: str

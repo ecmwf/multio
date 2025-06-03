@@ -11,6 +11,9 @@ filter:
       value: gaussian-grid
     - type: anoffset
       operation: lacks
+    - type: class
+      operation: ignore
+      value: d1
     - type: number
       operation: has
     - type: levtype

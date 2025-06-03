@@ -110,6 +110,14 @@ class MatchType(BaseModel):
 
 def matchType(t: str, v: str) -> MatchType:
     return MatchType(type=t, value=v)
+    
+class NotMatchType(BaseModel):
+    type: str
+    value: str
+
+
+def notMatchType(t: str, v: str) -> NotMatchType:
+    return NotMatchType(type=t, value=v)
 
 
 class TypeTreshold(BaseModel):
@@ -151,7 +159,7 @@ def lacksType(t: str) -> LacksType:
 
 
 RuleFilterType: TypeAlias = Union[
-    MatchParam, HasType, LacksType, MatchType, TypeTreshold, "ComposeAll"
+    MatchParam, HasType, LacksType, MatchType, NotMatchType, TypeTreshold, "ComposeAll"
 ]
 
 
@@ -474,6 +482,8 @@ def toDictRepres(val):
             return val.value
         case MatchType():
             return {"type": val.type, "operation": "match", "value": val.value}
+        case NotMatchType():
+            return {"type": val.type, "operation": "ignore", "value": val.value}
         case TypeTreshold():
             return {
                 "type": val.type,

@@ -21,6 +21,7 @@ filter:
     - type: param
       operation: match
       values:
+        - 262000
         - 262024
     - type: packing
       operation: match

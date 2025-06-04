@@ -287,7 +287,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # iceLayerOnWater - point in time
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228014, 262000])],
+        [matchType("levtype", "sfc"), matchParam([228014])],
         [PointInTime(), levelConfig("iceLayerOnWater")],
     ),
     # iceTopOnWater - point in time
@@ -743,6 +743,7 @@ PARAM_LEVTYPE_SFC = [
                     261015,
                     261016,
                     261018,
+                    262000,
                     262100,
                     262139,
                     262140,
@@ -1010,7 +1011,7 @@ PARAM_LEVTYPE_AL = [
 
 PARAM_LEVTYPE_SOL = [
     partialRule(
-        [matchType("levtype", "sol"), matchParam([262024])],
+        [matchType("levtype", "sol"), matchParam([262000, 262024])],
         [PointInTime(), levelConfig("seaIceLayer"), paramConfig("paramId")],
     ),
     partialRule(

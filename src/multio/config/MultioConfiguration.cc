@@ -199,7 +199,7 @@ const ConfigFile& MultioConfiguration::getConfigFile(const eckit::PathName& fnam
 
     referencedConfigFiles_.emplace(
         std::piecewise_construct, std::forward_as_tuple(key),
-        std::forward_as_tuple(ConfigFile{eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}, path}));
+        std::forward_as_tuple(ConfigFile{replaceAllCurly(eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}), path}));
     return referencedConfigFiles_[key];
 }
 

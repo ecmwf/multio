@@ -67,6 +67,9 @@ CONTAINS
   !> @brief Retrieve the wrapped grib handle.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_HANDLE => GRIB_METADATA_GET_HANDLE
 
+  !> @brief Bind a grib handle to this object.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: BIND_HANDLE => GRIB_METADATA_BIND_HANDLE
+
   !> @brief Initializes the object with default values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT_DEFAULT => GRIB_METADATA_INIT_DEFAULT
 
@@ -229,7 +232,7 @@ END FUNCTION GRIB_METADATA_INITIALIZED
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'GRIB_METADATA_GET_HANDLE'
-PP_THREAD_SAFE FUNCTION GRIB_METADATA_GET_HANDLE( THIS, HANDLE, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION GRIB_METADATA_GET_HANDLE( THIS, HANDLE, HOOKS, TAKE ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
@@ -248,12 +251,16 @@ PP_THREAD_SAFE FUNCTION GRIB_METADATA_GET_HANDLE( THIS, HANDLE, HOOKS ) RESULT(R
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(GRIB_METADATA_T), INTENT(IN)    :: THIS
+  CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
   INTEGER(KIND=JPIM_K),   INTENT(OUT)   :: HANDLE
   TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  LOGICAL, OPTIONAL,      INTENT(IN)    :: TAKE
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: LOC_TAKE
 
   !> Local error flag
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_INITIALIZED=1_JPIB_K
@@ -273,11 +280,24 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Handle optional arguments
+  IF ( PRESENT(TAKE) ) THEN
+    LOC_TAKE = TAKE
+  ELSE
+    LOC_TAKE = .FALSE.
+  ENDIF
+
   ! This procedure can be called only if the object is not initialized
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_NOT_INITIALIZED )
 
   ! Read the sample and set the initialization flag to .true.
   HANDLE = THIS%IGRIB_HANDLE_
+
+  ! If TAKE is .TRUE., set the handle to -1
+  IF ( LOC_TAKE ) THEN
+    THIS%IGRIB_HANDLE_ = -1_JPIM_K
+    THIS%INITIALIZED_ = .FALSE.
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -322,6 +342,115 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION GRIB_METADATA_GET_HANDLE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Retrive the grib handle wrapped by this object.
+!>
+!> This procedure return the grib handle
+!>
+!> @param [inout] this The object to be initialized.
+!>
+!> @result handle The grib handle wrapped by the object.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GRIB_METADATA_BIND_HANDLE'
+PP_THREAD_SAFE FUNCTION GRIB_METADATA_BIND_HANDLE( THIS, HANDLE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIM_K),   INTENT(IN)    :: HANDLE
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flag
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_INITIALIZED=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! This procedure can be called only if the object is not initialized
+  PP_DEBUG_CRITICAL_COND_THROW( THIS%INITIALIZED_, ERRFLAG_ALREADY_INITIALIZED )
+
+  ! Read the sample and set the initialization flag to .true.
+  THIS%IGRIB_HANDLE_ = HANDLE
+  THIS%INITIALIZED_ = .TRUE.
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ALREADY_INITIALIZED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle is already initialized' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GRIB_METADATA_BIND_HANDLE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

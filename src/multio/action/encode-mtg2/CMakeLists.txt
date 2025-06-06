@@ -4,6 +4,9 @@ ecbuild_add_library(
     TYPE SHARED # Due to reliance on factory self registration this library cannot be static
 
     SOURCES
+        wrappers/hack.h
+        wrappers/WrappedEncoder.h
+        wrappers/WrappedRules.h
         EncodeMtg2.cc
         EncodeMtg2.h
         AtlasGeoSetter.h

@@ -126,6 +126,8 @@ PUBLIC :: YAML_CONFIGURATIONS_T
 PUBLIC :: FUN_C2I_IF
 
 !> Public symbols visibility (subroutines)
+PUBLIC :: CPTR_FROM_YAML_CONFIGURATION
+PUBLIC :: YAML_NEW_CONFIGURATION_FROM_CPTR
 PUBLIC :: YAML_NEW_CONFIGURATION_FROM_FILE
 PUBLIC :: YAML_DELETE_CONFIGURATION
 PUBLIC :: YAML_DELETE_CONFIGURATIONS
@@ -151,6 +153,312 @@ PUBLIC :: YAML_READ_LOGICAL
 
 CONTAINS
 
+
+
+!>
+!> @brief Returns the c pointer of a YAML configuration object.
+!>
+!> @section interface
+!> @param [in] VALUE The new YAML configuration object created from the file.
+!> @param [out] CPTR The C pointer to the YAML configuration object.
+!> @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
+!>
+!> @return Integer error code (`RET`) indicating the result of the operation.
+!>         Possible values:
+!>           - `0`: Success
+!>           - `1`: Failure
+!>
+!> @section Dependencies of this function:
+!>
+!> @subsection module dependencies
+!>   - @dependency [TYPE] YAML_CONFIGURATION_T
+!>
+!> @subsection local dependencies
+!>   - @dependency [PARAMETER] DATAKINDS_DEF_MOD::JPIB_K
+!>
+!> @subsection external dependencies
+!>   - @dependency [PROCEDURE] FCKIT_PATHNAME_MODULE::FCKIT_PATHNAME
+!>   - @dependency [PROCEDURE] FCKIT_CONFIGURATION_MODULE::FCKIT_YAMLCONFIGURATION
+!>
+!> @subsection special dependencies
+!>   - @dependency [*] PP_DEBUG_USE_VARS::*
+!>   - @dependency [*] PP_LOG_USE_VARS::*
+!>   - @dependency [*] PP_TRACE_USE_VARS::*
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CPTR_FROM_YAML_CONFIGURATION'
+PP_THREAD_SAFE FUNCTION CPTR_FROM_YAML_CONFIGURATION( VALUE, CPTR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE :: ISO_C_BINDING, ONLY: C_PTR
+  USE :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from other libraries
+  USE  :: FCKIT_PATHNAME_MODULE,      ONLY: FCKIT_PATHNAME
+  USE  :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(YAML_CONFIGURATION_T), INTENT(IN)    :: VALUE
+  TYPE(C_PTR),                INTENT(OUT)   :: CPTR
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+
+  ! Function return value
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(C_PTR) :: XXX
+  INTEGER(KIND=JPIB_K) :: ALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_NOT_ALLOCATED=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Erro handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(VALUE%CFG_), ERRFLAG_CFG_NOT_ALLOCATED )
+
+  ! Load the configuration
+!$omp critical(FCKIT_YAMLCONFIGURATION)
+  CPTR = C_NULL_PTR
+  CPTR = VALUE%CFG_%C_PTR()
+!$omp end critical(FCKIT_YAMLCONFIGURATION)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CFG_NOT_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Configuration not allocated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION CPTR_FROM_YAML_CONFIGURATION
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+!>
+!> @brief Creates a new YAML configuration from a c pointer.
+!>
+!> This function creates a new YAML configuration object from a C pointer (`CPTR`).
+!>
+!> @section interface
+!> @param [in] CPTR The C pointer to the YAML configuration object.
+!> @param [out] VALUE The new YAML configuration object created from the file.
+!> @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
+!>
+!> @return Integer error code (`RET`) indicating the result of the operation.
+!>         Possible values:
+!>           - `0`: Success
+!>           - `1`: Failure
+!>
+!> @section Dependencies of this function:
+!>
+!> @subsection module dependencies
+!>   - @dependency [TYPE] YAML_CONFIGURATION_T
+!>
+!> @subsection local dependencies
+!>   - @dependency [PARAMETER] DATAKINDS_DEF_MOD::JPIB_K
+!>
+!> @subsection external dependencies
+!>   - @dependency [PROCEDURE] FCKIT_PATHNAME_MODULE::FCKIT_PATHNAME
+!>   - @dependency [PROCEDURE] FCKIT_CONFIGURATION_MODULE::FCKIT_YAMLCONFIGURATION
+!>
+!> @subsection special dependencies
+!>   - @dependency [*] PP_DEBUG_USE_VARS::*
+!>   - @dependency [*] PP_LOG_USE_VARS::*
+!>   - @dependency [*] PP_TRACE_USE_VARS::*
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'YAML_NEW_CONFIGURATION_FROM_CPTR'
+PP_THREAD_SAFE FUNCTION YAML_NEW_CONFIGURATION_FROM_CPTR( CPTR, VALUE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE :: ISO_C_BINDING, ONLY: C_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from other libraries
+  USE  :: FCKIT_PATHNAME_MODULE,      ONLY: FCKIT_PATHNAME
+  USE  :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(C_PTR), VALUE,         INTENT(IN)    :: CPTR
+  TYPE(YAML_CONFIGURATION_T), INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+
+  ! Function return value
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_ALREADY_ALLOCATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_ALLOCATED_FLAG=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CFG_ALLOCATE_ERROR=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Erro handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(VALUE%CFG_), ERRFLAG_CFG_ALREADY_ALLOCATED )
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE%IS_ALLOCATED_, ERRFLAG_CFG_ALLOCATED_FLAG )
+
+  ! Allocate the configuration
+  ALLOCATE( VALUE%CFG_, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_CFG_ALLOCATE_ERROR )
+  VALUE%IS_ALLOCATED_ = .TRUE.
+
+  ! Load the configuration
+!$omp critical(FCKIT_YAMLCONFIGURATION)
+  VALUE%CFG_ = FCKIT_CONFIGURATION( CPTR )
+!$omp end critical(FCKIT_YAMLCONFIGURATION)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CFG_ALREADY_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Configuration already allocated' )
+    CASE (ERRFLAG_CFG_ALLOCATED_FLAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'IS_ALLOCATED flag inconsistent with pointer allocation status' )
+    CASE (ERRFLAG_CFG_ALLOCATE_ERROR)
+      IF ( .NOT.ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating configuration' )
+      ELSE
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating configuration: '//TRIM(ADJUSTL(ERRMSG)) )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION YAML_NEW_CONFIGURATION_FROM_CPTR
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 !>
 !> @brief Creates a new YAML configuration from a file.
@@ -243,16 +551,16 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Erro handling
-  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(VALUE%CFG_), 1 )
-  PP_DEBUG_CRITICAL_COND_THROW( VALUE%IS_ALLOCATED_, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(VALUE%CFG_), ERRFLAG_CFG_ALREADY_ALLOCATED )
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE%IS_ALLOCATED_, ERRFLAG_CFG_ALLOCATED_FLAG )
 
   ! Check if the file exsts
   INQUIRE( FILE=TRIM(YAML_FILE_NAME), EXIST=FILE_EXISTS )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT.FILE_EXISTS, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.FILE_EXISTS, ERRFLAG_YAML_FILE_NOT_PRESENT )
 
   ! Allocate the configuration
   ALLOCATE( VALUE%CFG_, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
-  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_CFG_ALLOCATE_ERROR )
   VALUE%IS_ALLOCATED_ = .TRUE.
 
   ! Load the configuration

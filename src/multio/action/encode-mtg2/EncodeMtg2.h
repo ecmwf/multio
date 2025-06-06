@@ -27,6 +27,42 @@
 #include "multiom/api/c/api.h"
 
 namespace multio::action::encode_mtg2 {
+struct ForeignDictType;
+}
+
+template <>
+class std::default_delete<multio::action::encode_mtg2::ForeignDictType> {
+public:
+    void operator()(multio::action::encode_mtg2::ForeignDictType* ptr) const {
+        void* p = static_cast<void*>(ptr);
+        ASSERT(multio_grib2_dict_destroy(&p) == 0);
+    }
+};
+
+
+namespace multio::action::encode_mtg2 {
+struct ForeignEncoderType;
+}
+
+template <>
+class std::default_delete<multio::action::encode_mtg2::ForeignEncoderType> {
+public:
+    void operator()(multio::action::encode_mtg2::ForeignEncoderType* ptr) const {
+        void* p = static_cast<void*>(ptr);
+        ASSERT(multio_grib2_encoder_close(&p) == 0);
+    }
+};
+
+
+namespace multio::action::encode_mtg2 {
+
+enum class MultiOMEncoderKind : unsigned long
+{
+    Simple,
+    Cached,
+};
+
+std::string multiOMEncoderKindString(MultiOMEncoderKind kind);
 
 enum class MultiOMDictKind : unsigned long
 {
@@ -44,12 +80,18 @@ struct EncodeMultiOMOptions {
     std::optional<std::string> samplesPath;
     std::optional<std::string> encodingFile;
     std::optional<std::string> mappingFile;
+    bool geoFromAtlas = false;
 };
 
 std::string multiOMDictKindString(MultiOMDictKind kind);
 
 struct MultiOMDict {
     MultiOMDict(MultiOMDictKind kind);
+    ~MultiOMDict() = default;
+
+    MultiOMDict(MultiOMDict&&) noexcept = default;
+    MultiOMDict& operator=(MultiOMDict&&) noexcept = default;
+
 
     void set(const char* key, const char* val);
     void set(const std::string& key, const std::string& val);
@@ -64,14 +106,13 @@ struct MultiOMDict {
     void set(const std::string& key, const std::vector<double>& val);
 
     // Set geoemtry on parametrization
-    void set_geometry(MultiOMDict& geom);
-
-    ~MultiOMDict();
+    void set_geometry(MultiOMDict&& geom);
 
     void* get();
 
     MultiOMDictKind kind_;
-    void* dict_ = nullptr;
+    std::unique_ptr<ForeignDictType> dict_;
+    std::unique_ptr<MultiOMDict> geom_;
 };
 
 

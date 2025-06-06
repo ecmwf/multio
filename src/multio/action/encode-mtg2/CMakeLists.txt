@@ -6,6 +6,7 @@ ecbuild_add_library(
     SOURCES
         EncodeMtg2.cc
         EncodeMtg2.h
+        AtlasGeoSetter.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -16,4 +17,5 @@ ecbuild_add_library(
         multio
         multiom-encoders
         eccodes
+        atlas
 )

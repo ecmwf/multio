@@ -64,6 +64,8 @@ std::tuple<Repres, std::string> represAndPrefixFromGridName(const std::string& g
     };
 
     switch (gridName[0]) {
+        case 'H': // HEALPix
+            return handleGG();
         case 'F':
             return handleGG();
         case 'O':

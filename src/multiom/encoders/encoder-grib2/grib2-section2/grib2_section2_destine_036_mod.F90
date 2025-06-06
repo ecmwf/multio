@@ -221,9 +221,6 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
-
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -243,9 +240,6 @@ IMPLICIT NONE
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'LOCAL_USE_SECTION'
   THIS%KIND_   = 'DESTINE_2.36'
-
-  ! This is not managed
-  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -269,8 +263,6 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE ( ERRFLAG_NOT_IMPLEMENTED )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'destine section2 for analysis is not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -364,9 +356,6 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
-
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -386,9 +375,6 @@ IMPLICIT NONE
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'LOCAL_USE_SECTION'
   THIS%KIND_   = '2.36'
-
-  ! This is not managed
-  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -412,8 +398,6 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE ( ERRFLAG_NOT_IMPLEMENTED )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'destine section2 for analysis is not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -514,7 +498,10 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -531,6 +518,8 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
@@ -564,6 +553,8 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_NOT_IMPLEMENTED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
     CASE DEFAULT
@@ -665,7 +656,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -683,6 +675,9 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
+
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
@@ -719,6 +714,8 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_NOT_IMPLEMENTED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
     CASE DEFAULT
@@ -829,7 +826,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -846,6 +844,9 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
+
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
@@ -875,6 +876,8 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_NOT_IMPLEMENTED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
     CASE DEFAULT

@@ -63,6 +63,47 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: LEVTYPE_WAM_SPEC_E=14_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_LEVTYPES=14_JPIB_K
 
+  ! Enumerators for Activity
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_UNKNOWN_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_CMIP6_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_SCENARIOMIP_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_HIGHRESMIP_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_STORY_NUDGING_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_BASELINE_E=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ACTIVITY_PROJECTIONS_E=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_ACTIVITIES=7_JPIB_K
+
+  ! Enumerators for Dataset
+  INTEGER(KIND=JPIB_K), PARAMETER :: DATASET_UNKNOWN_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: DATASET_CLIMATE_DT_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: DATASET_EXTREMES_DT_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: DATASET_ON_DEMAND_CLIMATE_DT_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: DATASET_ON_DEMAND_EXTREMES_DT_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_DATASETS=4_JPIB_K
+
+  ! Enumerators for experiment
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_UNKNOWN_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_HIST_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_CONT_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_AMIP_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_SSP1_19_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_SSP1_26_E=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_SSP2_45_E=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_SSP3_70_E=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_SSP5_85_E=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_TPLUS15K_E=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_TPLUS20K_E=10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_TPLUS30K_E=11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_TPLUS40K_E=12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: EXPERIMENT_ABRUPT_4XCO2_E=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_EXPERIMENTS=13_JPIB_K
+
+  ! Enumerators for Resolution
+  INTEGER(KIND=JPIB_K), PARAMETER :: RESOLUTION_UNKNOWN_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: RESOLUTION_STANDARD_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: RESOLUTION_HIGH_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_RESOLUTIONS=2_JPIB_K
+
   ! Enumerators for class
   INTEGER(KIND=JPIB_K), PARAMETER :: CLASS_0_E=0_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: CLASS_OD_E=1_JPIB_K
@@ -656,6 +697,63 @@ END INTERFACE
   PUBLIC :: LEVTYPE_WAM_INT_E
   PUBLIC :: LEVTYPE_WAM_SPEC_E
   PUBLIC :: N_LEVTYPES
+
+  ! Enumerators for Activity
+  PUBLIC :: ACTIVITY_UNKNOWN_E
+  PUBLIC :: ACTIVITY_CMIP6_E
+  PUBLIC :: ACTIVITY_SCENARIOMIP_E
+  PUBLIC :: ACTIVITY_HIGHRESMIP_E
+  PUBLIC :: ACTIVITY_STORY_NUDGING_E
+  PUBLIC :: ACTIVITY_BASELINE_E
+  PUBLIC :: ACTIVITY_PROJECTIONS_E
+  PUBLIC :: N_ACTIVITIES
+
+  ! Activity conversions
+  PUBLIC :: CACTIVITY2IACTIVITY
+  PUBLIC :: IACTIVITY2CACTIVITY
+
+  ! Enumerators for resolution
+  PUBLIC :: RESOLUTION_UNKNOWN_E
+  PUBLIC :: RESOLUTION_STANDARD_E
+  PUBLIC :: RESOLUTION_HIGH_E
+  PUBLIC :: N_RESOLUTIONS
+
+  ! Resolution conversions
+  PUBLIC :: CRESOLUTION2IRESOLUTION
+  PUBLIC :: IRESOLUTION2CRESOLUTION
+
+  ! Enumerators for Dataset
+  PUBLIC :: DATASET_UNKNOWN_E
+  PUBLIC :: DATASET_CLIMATE_DT_E
+  PUBLIC :: DATASET_EXTREMES_DT_E
+  PUBLIC :: DATASET_ON_DEMAND_CLIMATE_DT_E
+  PUBLIC :: DATASET_ON_DEMAND_EXTREMES_DT_E
+  PUBLIC :: N_DATASETS
+
+  ! Activity conversions
+  PUBLIC :: CDATASET2IDATASET
+  PUBLIC :: IDATASET2CDATASET
+
+  ! Enumerators for experiment
+  PUBLIC :: EXPERIMENT_UNKNOWN_E
+  PUBLIC :: EXPERIMENT_HIST_E
+  PUBLIC :: EXPERIMENT_CONT_E
+  PUBLIC :: EXPERIMENT_AMIP_E
+  PUBLIC :: EXPERIMENT_SSP1_19_E
+  PUBLIC :: EXPERIMENT_SSP1_26_E
+  PUBLIC :: EXPERIMENT_SSP2_45_E
+  PUBLIC :: EXPERIMENT_SSP3_70_E
+  PUBLIC :: EXPERIMENT_SSP5_85_E
+  PUBLIC :: EXPERIMENT_TPLUS15K_E
+  PUBLIC :: EXPERIMENT_TPLUS20K_E
+  PUBLIC :: EXPERIMENT_TPLUS30K_E
+  PUBLIC :: EXPERIMENT_TPLUS40K_E
+  PUBLIC :: EXPERIMENT_ABRUPT_4XCO2_E
+  PUBLIC :: N_EXPERIMENTS
+
+  ! Activity conversions
+  PUBLIC :: CEXPERIMENT2IEXPERIMENT
+  PUBLIC :: IEXPERIMENT2CEXPERIMENT
 
   ! Enumerators for class
   PUBLIC :: CLASS_0_E
@@ -2178,7 +2276,6 @@ END FUNCTION CPREFIX2IPREFIX
 
 
 
-
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ILEVTYPE2CLEVTYPE'
 PP_THREAD_SAFE FUNCTION ILEVTYPE2CLEVTYPE( ILEVTYPE, CLEVTYPE, HOOKS ) RESULT(RET)
@@ -2451,6 +2548,996 @@ END FUNCTION CLEVTYPE2ILEVTYPE
 #undef PP_PROCEDURE_TYPE
 
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IACTIVITY2CACTIVITY'
+PP_THREAD_SAFE FUNCTION IACTIVITY2CACTIVITY( IACTIVITY, CACTIVITY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IACTIVITY
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CACTIVITY
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ACTIVITY=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CACTIVITY = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IACTIVITY )
+
+  CASE ( ACTIVITY_UNKNOWN_E )
+    CACTIVITY = 'unknown'
+  CASE ( ACTIVITY_CMIP6_E )
+    CACTIVITY = 'cmip6'
+  CASE ( ACTIVITY_SCENARIOMIP_E )
+    CACTIVITY = 'scenariomip'
+  CASE ( ACTIVITY_HIGHRESMIP_E )
+    CACTIVITY = 'highresmip'
+  CASE ( ACTIVITY_STORY_NUDGING_E )
+    CACTIVITY = 'story-nudging'
+  CASE ( ACTIVITY_BASELINE_E )
+    CACTIVITY = 'baseline'
+  CASE ( ACTIVITY_PROJECTIONS_E )
+    CACTIVITY = 'projections'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_ACTIVITY )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_ACTIVITY)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IACTIVITY
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown iactivity: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IACTIVITY2CACTIVITY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CACTIVITY2IACTIVITY'
+PP_THREAD_SAFE FUNCTION CACTIVITY2IACTIVITY( CACTIVITY, IACTIVITY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CACTIVITY
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IACTIVITY
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CACTIVITY)) :: LOC_CACTIVITY
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_ACTIVITY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IACTIVITY = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CACTIVITY, LOC_CACTIVITY, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CACTIVITY)) )
+
+  CASE ( 'unknown' )
+    IACTIVITY = ACTIVITY_UNKNOWN_E
+  CASE ( 'cmip6' )
+    IACTIVITY = ACTIVITY_CMIP6_E
+  CASE ( 'scenariomip' )
+    IACTIVITY = ACTIVITY_SCENARIOMIP_E
+  CASE ( 'highresmip' )
+    IACTIVITY = ACTIVITY_HIGHRESMIP_E
+  CASE ( 'story-nudging' )
+    IACTIVITY = ACTIVITY_STORY_NUDGING_E
+  CASE ( 'baseline' )
+    IACTIVITY = ACTIVITY_BASELINE_E
+  CASE ( 'projections' )
+    IACTIVITY = ACTIVITY_PROJECTIONS_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_ACTIVITY )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_ACTIVITY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cactivity: '//TRIM(ADJUSTL(CACTIVITY)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CACTIVITY2IACTIVITY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IDATASET2CDATASET'
+PP_THREAD_SAFE FUNCTION IDATASET2CDATASET( IDATASET, CDATASET, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IDATASET
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CDATASET
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_DATASET=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CDATASET = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IDATASET )
+
+  CASE ( DATASET_UNKNOWN_E )
+    CDATASET = 'unknown'
+  CASE ( DATASET_CLIMATE_DT_E )
+    CDATASET = 'climate-dt'
+  CASE ( DATASET_EXTREMES_DT_E )
+    CDATASET = 'extremes-dt'
+  CASE ( DATASET_ON_DEMAND_CLIMATE_DT_E )
+    CDATASET = 'on-demand-climate-dt'
+  CASE ( DATASET_ON_DEMAND_EXTREMES_DT_E )
+    CDATASET = 'on-demand-extremes-dt'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_DATASET )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_DATASET)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IDATASET
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown idataset: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IDATASET2CDATASET
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CDATASET2IDATASET'
+PP_THREAD_SAFE FUNCTION CDATASET2IDATASET( CDATASET, IDATASET, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CDATASET
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IDATASET
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CDATASET)) :: LOC_CDATASET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_DATASET=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IDATASET = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CDATASET, LOC_CDATASET, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CDATASET)) )
+
+  CASE ( 'unknown' )
+    IDATASET = DATASET_UNKNOWN_E
+  CASE ( 'climate-dt' )
+    IDATASET = DATASET_CLIMATE_DT_E
+  CASE ( 'extremes-dt' )
+    IDATASET = DATASET_EXTREMES_DT_E
+  CASE ( 'on-demand-climate-dt' )
+    IDATASET = DATASET_ON_DEMAND_CLIMATE_DT_E
+  CASE ( 'on-demand-extremes-dt' )
+    IDATASET = DATASET_ON_DEMAND_EXTREMES_DT_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_DATASET )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_DATASET)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cdataset: '//TRIM(ADJUSTL(CDATASET)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CDATASET2IDATASET
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IEXPERIMENT2CEXPERIMENT'
+PP_THREAD_SAFE FUNCTION IEXPERIMENT2CEXPERIMENT( IEXPERIMENT, CEXPERIMENT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IEXPERIMENT
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CEXPERIMENT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_EXPERIMENT=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CEXPERIMENT = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IEXPERIMENT )
+
+  CASE ( EXPERIMENT_UNKNOWN_E )
+    CEXPERIMENT = 'unknown'
+  CASE ( EXPERIMENT_HIST_E )
+    CEXPERIMENT = 'hist'
+  CASE ( EXPERIMENT_CONT_E )
+    CEXPERIMENT = 'cont'
+  CASE ( EXPERIMENT_AMIP_E )
+    CEXPERIMENT = 'amip'
+  CASE ( EXPERIMENT_SSP1_19_E )
+    CEXPERIMENT = 'ssp1-1.9'
+  CASE ( EXPERIMENT_SSP1_26_E )
+    CEXPERIMENT = 'ssp1-2.6'
+  CASE ( EXPERIMENT_SSP2_45_E )
+    CEXPERIMENT = 'ssp2-4.5'
+  CASE ( EXPERIMENT_SSP3_70_E )
+    CEXPERIMENT = 'ssp3-7.0'
+  CASE ( EXPERIMENT_SSP5_85_E )
+    CEXPERIMENT = 'ssp5-8.5'
+  CASE ( EXPERIMENT_TPLUS15K_E )
+    CEXPERIMENT = 'tplus1.5k'
+  CASE ( EXPERIMENT_TPLUS20K_E )
+    CEXPERIMENT = 'tplus2.0k'
+  CASE ( EXPERIMENT_TPLUS30K_E )
+    CEXPERIMENT = 'tplus3.0k'
+  CASE ( EXPERIMENT_TPLUS40K_E )
+    CEXPERIMENT = 'tplus4.0k'
+  CASE ( EXPERIMENT_ABRUPT_4XCO2_E )
+    CEXPERIMENT = 'abrupt4xco2'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_EXPERIMENT )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_EXPERIMENT)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IEXPERIMENT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown iexperiment: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IEXPERIMENT2CEXPERIMENT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CEXPERIMENT2IEXPERIMENT'
+PP_THREAD_SAFE FUNCTION CEXPERIMENT2IEXPERIMENT( CEXPERIMENT, IEXPERIMENT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CEXPERIMENT
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IEXPERIMENT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CEXPERIMENT)) :: LOC_CEXPERIMENT
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_EXPERIMENT=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IEXPERIMENT = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CEXPERIMENT, LOC_CEXPERIMENT, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CEXPERIMENT)) )
+
+  CASE ( 'unknown' )
+    IEXPERIMENT = EXPERIMENT_UNKNOWN_E
+  CASE ( 'hist' )
+    IEXPERIMENT = EXPERIMENT_HIST_E
+  CASE ( 'cont' )
+    IEXPERIMENT = EXPERIMENT_CONT_E
+  CASE ( 'amip' )
+    IEXPERIMENT = EXPERIMENT_AMIP_E
+  CASE ( 'ssp1-1.9' )
+    IEXPERIMENT = EXPERIMENT_SSP1_19_E
+  CASE ( 'ssp1-2.6' )
+    IEXPERIMENT = EXPERIMENT_SSP1_26_E
+  CASE ( 'ssp2-4.5' )
+    IEXPERIMENT = EXPERIMENT_SSP2_45_E
+  CASE ( 'ssp3-7.0' )
+    IEXPERIMENT = EXPERIMENT_SSP3_70_E
+  CASE ( 'ssp5-8.5' )
+    IEXPERIMENT = EXPERIMENT_SSP5_85_E
+  CASE ( 'tplus1.5k' )
+    IEXPERIMENT = EXPERIMENT_TPLUS15K_E
+  CASE ( 'tplus2.0k' )
+    IEXPERIMENT = EXPERIMENT_TPLUS20K_E
+  CASE ( 'tplus3.0k' )
+    IEXPERIMENT = EXPERIMENT_TPLUS30K_E
+  CASE ( 'tplus4.0k' )
+    IEXPERIMENT = EXPERIMENT_TPLUS40K_E
+  CASE ( 'abrupt4xco2' )
+    IEXPERIMENT = EXPERIMENT_ABRUPT_4XCO2_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_EXPERIMENT )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_EXPERIMENT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cexperiment: '//TRIM(ADJUSTL(CEXPERIMENT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CEXPERIMENT2IEXPERIMENT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IRESOLUTION2CRESOLUTION'
+PP_THREAD_SAFE FUNCTION IRESOLUTION2CRESOLUTION( IRESOLUTION, CRESOLUTION, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IRESOLUTION
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CRESOLUTION
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_RESOLUTION=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CRESOLUTION = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IRESOLUTION )
+
+  CASE ( RESOLUTION_UNKNOWN_E )
+    CRESOLUTION = 'unknown'
+  CASE ( RESOLUTION_STANDARD_E )
+    CRESOLUTION = 'standard'
+  CASE ( RESOLUTION_HIGH_E )
+    CRESOLUTION = 'high'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_RESOLUTION )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_RESOLUTION)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IRESOLUTION
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown iresolution: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IRESOLUTION2CRESOLUTION
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CRESOLUTION2IRESOLUTION'
+PP_THREAD_SAFE FUNCTION CRESOLUTION2IRESOLUTION( CRESOLUTION, IRESOLUTION, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CRESOLUTION
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IRESOLUTION
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CRESOLUTION)) :: LOC_CRESOLUTION
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_RESOLUTION=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IRESOLUTION = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CRESOLUTION, LOC_CRESOLUTION, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CRESOLUTION)) )
+
+  CASE ( 'unknown' )
+    IRESOLUTION = RESOLUTION_UNKNOWN_E
+  CASE ( 'standard' )
+    IRESOLUTION = RESOLUTION_STANDARD_E
+  CASE ( 'high' )
+    IRESOLUTION = RESOLUTION_HIGH_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_RESOLUTION )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_RESOLUTION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cresolution: '//TRIM(ADJUSTL(CRESOLUTION)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CRESOLUTION2IRESOLUTION
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

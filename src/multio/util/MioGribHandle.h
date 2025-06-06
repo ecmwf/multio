@@ -17,6 +17,7 @@ public:
     MioGribHandle(codes_handle& hdl);
     ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
+    using metkit::grib::GribHandle::raw;
     std::unique_ptr<MioGribHandle> duplicate() const;
     void setValue(const char* key, std::int64_t value);
     void setValue(const char* key, std::int32_t value);

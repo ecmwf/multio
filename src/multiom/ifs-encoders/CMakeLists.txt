@@ -22,6 +22,7 @@ configure_file(  ${MULTIOM_TEMPLATES_DIR}/map_pkey_mod.F90 ${CMAKE_CURRENT_BINAR
 
 set( MULTIOM_IFS_ENCODERS_MAIN_SOURCES
   ${MULTIOM_IFS_ENCODERS_DIR}/multiom_cached_encoder_mod.F90
+  ${MULTIOM_IFS_ENCODERS_DIR}/multiom_raw_encoder_mod.F90
   ${MULTIOM_IFS_ENCODERS_DIR}/multiom_encoder_mod.F90
   ${CMAKE_CURRENT_BINARY_DIR}/map_int64_encoder_mod.F90
 )

@@ -51,7 +51,8 @@ struct AtlasGeoSetter {
     using GridTypeFunction = std::function<void(const std::string& prefix, const std::string& gridName)>;
 
     static void handleGG(const std::string& prefix, const std::string& gridName) {
-        message::Metadata md{{prefix, true}};
+
+        message::BaseMetadata& global = message::Parametrization::instance().get();
 
         // std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
         // bool isReducedGaussian = std::regex_match(gridName, reducedGaussianMatch);
@@ -61,21 +62,21 @@ struct AtlasGeoSetter {
 
         // getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
         using namespace message::Mtg2;
-        md.set(prefix + std::string(gg::numberOfParallelsBetweenAPoleAndTheEquator), gaussianGrid.N());
+        global.set(prefix + std::string(gg::numberOfParallelsBetweenAPoleAndTheEquator), gaussianGrid.N());
         // getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
 
         {
             auto it = gaussianGrid.lonlat().begin();
 
-            md.set(prefix + std::string(gg::latitudeOfFirstGridPointInDegrees), (*it)[1]);
-            md.set(prefix + std::string(gg::longitudeOfFirstGridPointInDegrees), (*it)[0]);
+            global.set(prefix + std::string(gg::latitudeOfFirstGridPointInDegrees), (*it)[1]);
+            global.set(prefix + std::string(gg::longitudeOfFirstGridPointInDegrees), (*it)[0]);
 
             it += gaussianGrid.size() - 1;
-            md.set(prefix + std::string(gg::latitudeOfLastGridPointInDegrees), (*it)[1]);
+            global.set(prefix + std::string(gg::latitudeOfLastGridPointInDegrees), (*it)[1]);
 
             const auto equator = gaussianGrid.N();
             const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-            md.set(prefix + std::string(gg::longitudeOfLastGridPointInDegrees), maxLongitude);
+            global.set(prefix + std::string(gg::longitudeOfLastGridPointInDegrees), maxLongitude);
         }
 
         {
@@ -84,9 +85,8 @@ struct AtlasGeoSetter {
             for (int i = 0; i < tmp.size(); ++i) {
                 pl[i] = long(tmp[i]);
             }
-            md.set(prefix + std::string(gg::pl), std::move(pl));
+            global.set(prefix + std::string(gg::pl), std::move(pl));
         }
-        message::Parametrization::instance().update(md);
     }
 
     static void handleGrid(const std::string& prefix, const std::string& gridName) {

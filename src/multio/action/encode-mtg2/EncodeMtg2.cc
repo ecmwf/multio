@@ -22,13 +22,6 @@
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
-<<<<<<< HEAD
-=======
-#include "multio/message/Glossary.h"
-#include "wrappers/hack.h"
-#include "wrappers/WrappedEncoder.h"
-#include "wrappers/WrappedRules.h"
->>>>>>> 2c540757 (Add c++ class to wrap rules loader)
 
 namespace multio::action::encode_mtg2 {
 
@@ -185,8 +178,8 @@ void MultiOMDict::set(const std::string& key, bool val) {
 }
 void MultiOMDict::set(const std::string& key, double val) {
     if (multio_grib2_dict_set_double(get(), key.c_str(), val) != 0) {
-        throw EncodeMtg2Exception(std::string("Can not set key ")
-                                      + std::string(key)
+
+        throw EncodeMtg2Exception(std::string("Can not set key ") + std::string(key)
                                       + std::string(" with double value ") + std::to_string(val),
                                   Here());
     }
@@ -352,7 +345,7 @@ void EncodeMtg2::executeImpl(Message msg) {
                 switch (repres) {
                     case Repres::GG:
                         switch (grid[0]) {
-                            case 'H': // HEALPix
+                            case 'H':  // HEALPix
                                 return MultiOMDictKind::HEALPix;
                             default:
                                 return MultiOMDictKind::ReducedGG;
@@ -366,9 +359,10 @@ void EncodeMtg2::executeImpl(Message msg) {
             })()};
 
             withGeometryKeys(repres, [&](const auto& kvDescr) {
-                const auto& global = Parametrization::instance().get();
+                auto& global = Parametrization::instance().get();
                 if (options_.geoFromAtlas && (global.find(prefix) == global.end())) {
                     extract::AtlasGeoSetter::handleGrid(prefix, grid);
+                    global.set(prefix, true);
                 }
 
                 if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {

@@ -847,6 +847,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION1_DATA_TYPE_DEFAULT_RUNTIME( THIS, &
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_PF_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_SSD_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_GSD_E
+  USE :: ENUMERATORS_MOD,          ONLY: CLASS_AI_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -897,19 +898,24 @@ IMPLICIT NONE
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', THIS%TYPE_OF_PROCESSED_DATA_ )
   ELSE IF ( MSG%TYPE .NE. UNDEF_PARAM_E ) THEN
       ! TODO MIVAL: this check is very naive, it should be replaced with a more complex one
-      SELECT CASE ( MSG%TYPE )
-          CASE ( TYPE_FC_E )
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_FC_E )
-          CASE ( TYPE_AN_E )
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_FC_E )
-          CASE ( TYPE_CF_E )
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_CF_E )
-          CASE ( TYPE_PF_E )
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_PF_E )
-          CASE ( TYPE_SSD_E, TYPE_GSD_E )
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_SO_E )
-          CASE DEFAULT
-            PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', 255_JPIB_K )
+      SELECT CASE ( MSG%CLASS )
+        CASE ( CLASS_AI_E )
+          PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', 10_JPIB_K )
+        CASE DEFAULT
+          SELECT CASE ( MSG%TYPE )
+            CASE ( TYPE_FC_E )
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_FC_E )
+            CASE ( TYPE_AN_E )
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_FC_E )
+            CASE ( TYPE_CF_E )
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_CF_E )
+            CASE ( TYPE_PF_E )
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_PF_E )
+            CASE ( TYPE_SSD_E, TYPE_GSD_E )
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', TYPE_OF_PROCESSED_DATA_SO_E )
+            CASE DEFAULT
+              PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', 255_JPIB_K )
+        END SELECT
       END SELECT
   ELSE
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfProcessedData', 255_JPIB_K )

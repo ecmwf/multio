@@ -8,16 +8,17 @@
 import pytest
 
 from multio.plans import sinks
-from multio.plans.actions import Aggregation, Encode, Mask, Print, Select, Sink, Transport
+from multio.plans.actions import Aggregation, Encode, EncodeMTG, Mask, Print, Select, Sink, Transport
 
 
 @pytest.mark.parametrize(
     ("action", "type", "kwargs"),
     (
         (Select, "select", {"match": [{"category": "custom"}]}),
-        (Print, "print", {"stream": "cout", "prefix": " ++ MULTIO-PRINT-ALL-DEBUG :: "}),
+        (Print, "print", {"stream": "cout", "prefix": " ++ MULTIO-PRINT-ALL-DEBUG :: ", "only-fields": False}),
         (Mask, "mask", {}),
-        (Encode, "encode", {"format": "grib", "template": "template", "grid_type": "grid_type"}),
+        (Encode, "encode", {"format": "grib", "template": "template", "grid-type": "grid_type"}),
+        (EncodeMTG, "encode-mtg2", {}),
         (Transport, "transport", {"target": "target"}),
         (Aggregation, "aggregation", {}),
         (Sink, "sink", {"sinks": [{"append": True, "path": "debug.grib", "per-server": False, "type": "file"}]}),
@@ -26,6 +27,9 @@ from multio.plans.actions import Aggregation, Encode, Mask, Print, Select, Sink,
 def test_action_default_values(action, type, kwargs):
     action_cls = action(**kwargs)
     assert action_cls.type == type
+    assert action_cls.model_dump(exclude_unset=True) == {
+        **kwargs,
+    }
 
 
 def test_add_sinks():

@@ -203,7 +203,7 @@ jobs:
   preview-publish:
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     needs: build
-    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-publish.yml@feature/allow-target-dir-in-sites-upload
+    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-publish.yml@main
     with:
       artifact-id: ${{ needs.build.outputs.artifact-id }}
       space: docs
@@ -215,7 +215,7 @@ jobs:
       sites-token: ${{ secrets.ECMWF_SITES_DOCS_DEV_SECTION_TOKEN }}
   preview-unpublish:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-unpublish.yml@feature/allow-target-dir-in-sites-upload
+    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-unpublish.yml@main
     with:
       space: docs
       name: dev-section

@@ -11,6 +11,17 @@ from multio.plans import sinks
 from multio.plans.actions import Aggregation, Encode, EncodeMTG, Mask, Print, Select, Sink, Transport
 
 
+def test_allow_underscore():
+    action = Encode(format="grib", template="template", grid_type="grid_type")
+    assert action.type == "encode"
+    assert action.model_dump()['grid-type'] == "grid_type"
+
+def test_allow_dash():
+    action = Encode(**{"format": "grib", "template": "template", "grid-type": "grid_type"})
+    assert action.type == "encode"
+    assert action.model_dump()['grid-type'] == "grid_type"
+
+
 @pytest.mark.parametrize(
     ("action", "type", "kwargs"),
     (
@@ -30,6 +41,7 @@ def test_action_default_values(action, type, kwargs):
     assert action_cls.model_dump(exclude_unset=True) == {
         **kwargs,
     }
+
 
 
 def test_add_sinks():

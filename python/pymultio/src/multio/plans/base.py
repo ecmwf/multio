@@ -18,6 +18,8 @@ class MultioBaseModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         serialize_by_alias=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         alias_generator=AliasGenerator(
             alias=lambda field_name: field_name.replace('_', '-'),
         )

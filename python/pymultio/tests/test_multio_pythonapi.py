@@ -175,6 +175,36 @@ def test_field_accepted():
     )  # Unsure if this should be true or false on return need to look at definition in c api
     assert os.path.isfile(TEST_WRITE_FILE) is True
     os.remove(TEST_WRITE_FILE)
+    
+    
+def test_write_parametrization_array():
+    os.environ["MULTIO_PLANS"] = WRITE_FILE_PLAN
+    multio_object = multio.Multio(**default_dict)
+    multio_object.write_parametrization_array("key_float32", np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
+    multio_object.write_parametrization_array("key_float64", np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64))
+    multio_object.write_parametrization_array("key_int32", np.array([1, 2, 3, 4], dtype=np.int32))
+    multio_object.write_parametrization_array("key_int64", np.array([1, 2, 3, 4], dtype=np.int64))
+    multio_object.write_parametrization_array("key_ubyte", np.array([1, 2, 3, 4], dtype=np.ubyte))
+    multio_object.write_parametrization_array("key_byte", np.array([1, 2, 3, 4], dtype=np.byte))
+    multio_object.write_parametrization_array("key_raw_byte", bytearray(b'\x01\x03\x02\x05\x04'))
+    multio_object.write_parametrization_array("key_list", [1,2,3,4])
+
+    # TODO extend test to check if it has arrived
+    
+def test_write_parametrization():
+    os.environ["MULTIO_PLANS"] = WRITE_FILE_PLAN
+    metadata = {"static_key": "key1", 
+                "key_float32": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32),
+                "key_float64": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+                "key_int32": np.array([1, 2, 3, 4], dtype=np.int32),
+                "key_int64": np.array([1, 2, 3, 4], dtype=np.int64),
+                "key_ubyte": np.array([1, 2, 3, 4], dtype=np.ubyte),
+                "key_byte": np.array([1, 2, 3, 4], dtype=np.byte),
+                "key_raw_byte": bytearray(b'\x01\x03\x02\x05\x04'),
+                "key_list": [1,2,3,4]}
+    multio_object = multio.Multio(**default_dict)
+    multio_object.write_parametrization(metadata)
+    # TODO extend test to check if it has arrived
 
 
 def test_enter_exit_connections():

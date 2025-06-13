@@ -15,15 +15,16 @@ from __future__ import annotations
 
 from typing import Any, Literal, Union
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator, validate_call
+from pydantic import Field, ValidationInfo, field_validator, validate_call, ConfigDict
 from typing_extensions import Annotated
 
 from .sinks import SINKS
+from .base import MultioBaseModel
 
 SinksType = Annotated[SINKS, Field(discriminator="type", title="Sinks")]
 
 
-class Action(BaseModel):
+class Action(MultioBaseModel):
     """Base Action class.
 
     Contains only a `type` field.
@@ -60,7 +61,7 @@ class Statistics(Action):
 
     type: Literal["statistics"] = Field("statistics", init=False)
     operations: list[Literal["average", "minimum", "maximum", "accumulate", "instant"]]
-    output_frequency: str = Field(serialization_alias="output-frequency", examples=["5h", "10d", "1w"])
+    output_frequency: str = Field(examples=["5h", "10d", "1w"])
 
 
 class Transport(Action):
@@ -89,16 +90,16 @@ class Print(Action):
     type: Literal["print"] = Field("print", init=False)
     stream: Literal["cout", "info", "error"] = Field("info", description="Stream to print to")
     prefix: str = Field("", description="Prefix to print")
-    only_fields: bool = Field(False, serialization_alias="only-fields")
+    only_fields: bool = Field(False)
 
 
 class Mask(Action):
     """Mask Action"""
 
     type: Literal["mask"] = Field("mask", init=False)
-    apply_bitmap: bool = Field(True, serialization_alias="apply-bitmap")
-    missing_value: float = Field(None, serialization_alias="missing-value")  # Need to set to max
-    offset_value: float = Field(273.15, serialization_alias="offset-value")
+    apply_bitmap: bool = Field(True)
+    missing_value: float = Field(None)  # Need to set to max
+    offset_value: float = Field(273.15)
 
 
 class Encode(Action):
@@ -107,9 +108,9 @@ class Encode(Action):
     type: Literal["encode"] = Field("encode", init=False)
     format: Literal["grib", "raw"]
     template: str | None = Field(None, validate_default=True)
-    grid_type: str | None = Field(None, serialization_alias="grid-type")
-    atlas_named_grid: str | None = Field(None, serialization_alias="atlas-named-grid")
-    additional_metadata: dict[str, Any] = Field(default_factory=dict, serialization_alias="additional-metadata")
+    grid_type: str | None = Field(None)
+    atlas_named_grid: str | None = Field(None)
+    additional_metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("template", mode="after")
     @classmethod

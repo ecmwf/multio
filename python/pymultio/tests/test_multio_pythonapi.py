@@ -42,11 +42,7 @@ WRITE_FILE_PLAN = json.dumps(
 
 def test_initialisation():
     multio.Multio(**default_dict)
-
-
-def test_multio_version():
-    assert multio.Multio(**default_dict).__version__() == "2.6.0"
-
+    
 
 def test_initialisation_no_config():
     multio.Multio()

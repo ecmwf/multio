@@ -10,7 +10,8 @@ Multio Sinks.
 """
 from typing import Literal, Union
 
-from pydantic import BaseModel, Field, FilePath, field_validator
+from pydantic import ConfigDict, Field, FilePath, field_validator
+from .base import MultioBaseModel
 
 
 def open_yaml(v: str | dict) -> dict:
@@ -22,13 +23,13 @@ def open_yaml(v: str | dict) -> dict:
     return v
 
 
-class Sinks(BaseModel):
+class Sinks(MultioBaseModel):
     """Base Sinks class
 
     This class should not be instantiated directly.
     Use one of the subclasses instead.
     """
-
+    
     type: str
 
 
@@ -68,7 +69,7 @@ class File(Sinks):
 
     type: Literal["file"] = Field("file", init=False)
     append: bool
-    per_server: bool = Field(False, serialization_alias="per-server")
+    per_server: bool = Field(False)
     path: str
 
 

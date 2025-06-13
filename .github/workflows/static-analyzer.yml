@@ -1,7 +1,5 @@
 name: Publish static analyzer to sites.ecmwf.int
 on:
-  # REENABLE BEFORE MERGING
-  # pull_request_target:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 jobs:
@@ -194,6 +192,15 @@ jobs:
         run: |
           CodeChecker analyze build/compile_commands.json -o cc_out --analyzers clangsa
           CodeChecker parse -e html cc_out -o ./reports_html || true
+
+          jq '[ .[] | select(.file | test(".*/multio/src/.*") ) ]' build/compile_commands.json > multio_compile_commands.json
+          # See atlas ci for including multiple repos
+          jq -n --slurpfile multio multio_compile_commands.json '$multio[]' \
+            > build/filtered_compile_commands.json
+
+          CodeChecker analyze build/filtered_compile_commands.json -o cc_out --analyzers clangsa -j 4 \
+            -i multio/.github/static-analyzer-skip.txt
+          CodeChecker parse -e html cc_out -o ./reports_html --trim-path-prefix ${PWD} || true
       - name: Archive static-analyzer report
         id: upload-sareport
         uses: actions/upload-artifact@v4

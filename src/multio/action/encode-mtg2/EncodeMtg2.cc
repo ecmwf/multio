@@ -19,6 +19,7 @@
 #include "multio/action/encode-mtg2/AtlasGeoSetter.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/message/Glossary.h"
+#include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
 
@@ -29,6 +30,7 @@ using config::configuration_path_name;
 using message::glossary;
 using message::Message;
 using message::MetadataTypes;
+using message::Parametrization;
 using message::Peer;
 
 
@@ -172,8 +174,9 @@ void MultiOMDict::set(const std::string& key, bool val) {
     set(key, (std::int64_t)val);
 }
 void MultiOMDict::set(const std::string& key, double val) {
-    if (multio_grib2_dict_set_double(get(), key.c_str(), val) == 0) {
-        throw EncodeMtg2Exception(std::string("Can not set key ") + std::string(key)
+    if (multio_grib2_dict_set_double(get(), key.c_str(), val) != 0) {
+        throw EncodeMtg2Exception(std::string("Can not set key ")
+                                      + std::string(key)
                                       + std::string(" with double value ") + std::to_string(val),
                                   Here());
     }
@@ -273,10 +276,10 @@ void EncodeMtg2::executeImpl(Message msg) {
             else {
                 // Hack for defaults until properly implemented in different branch
                 if (prefixedKvDescr.plain.key == misc::initialStep.plain.key) {
-                    par.set(prefixedKvDescr.plain, (std::int64_t) 0);
+                    par.set(prefixedKvDescr.plain, (std::int64_t)0);
                 }
                 if (prefixedKvDescr.plain.key == misc::lengthOfTimeStepInSeconds.plain.key) {
-                    par.set(prefixedKvDescr.plain, (std::int64_t) 3600);
+                    par.set(prefixedKvDescr.plain, (std::int64_t)3600);
                 }
             }
         });
@@ -304,10 +307,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             grid = mars::grid.get(searchGrid->second);
         }
 
-        if (options_.geoFromAtlas) {
-            extract::AtlasGeoSetter<MultiOMDict>::handleGrid(grid, md, mars, par);
-        }
-        else {
+        {
             Repres repres;
             std::string prefix;
             std::tie(repres, prefix) = represAndPrefixFromGridName(grid);
@@ -351,6 +351,12 @@ void EncodeMtg2::executeImpl(Message msg) {
             })()};
 
             withGeometryKeys(repres, [&](const auto& kvDescr) {
+                auto& global = Parametrization::instance().get();
+                if (options_.geoFromAtlas && (global.find(prefix) == global.end())) {
+                    extract::AtlasGeoSetter::handleGrid(prefix, grid);
+                    global.set(prefix, true);
+                }
+
                 if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {
                     geom.set(kvDescr, kvDescr.get(search->second));
                 }

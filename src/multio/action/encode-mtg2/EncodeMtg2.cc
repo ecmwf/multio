@@ -351,10 +351,9 @@ void EncodeMtg2::executeImpl(Message msg) {
             })()};
 
             withGeometryKeys(repres, [&](const auto& kvDescr) {
-                auto& global = Parametrization::instance().get();
+                const auto& global = Parametrization::instance().get();
                 if (options_.geoFromAtlas && (global.find(prefix) == global.end())) {
                     extract::AtlasGeoSetter::handleGrid(prefix, grid);
-                    global.set(prefix, true);
                 }
 
                 if (auto search = md.find(prefix + std::string(kvDescr)); search != md.end()) {

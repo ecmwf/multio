@@ -87,6 +87,8 @@ struct MetadataTypes {
     using FloatLists = util::MapTypeList_t<std::vector, Floats>;
     using StringLists = util::MapTypeList_t<std::vector, Strings>;
     using Lists = util::MergeTypeList_t<Bytes, IntegerLists, FloatLists, StringLists>;
+    
+    using ListsWrapped = util::MapTypeList_t<std::unique_ptr, Lists>;  // Used for memory layout. Hidden from user. Lists wrapped to be referenced safely in case of rehashing of the map
 
     using Nested = util::TypeList<BaseMetadata>;
     using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;  // Used for memory layout. Hidden from user.
@@ -104,7 +106,7 @@ struct MetadataTypes {
     using AllNested = util::MergeTypeList_t<Nested, NestedLists>;
 
     using All = util::MergeTypeList_t<Scalars, Lists, Nested, NestedLists>;
-    using AllWrapped = util::MergeTypeList_t<Scalars, Lists, NestedWrapped,
+    using AllWrapped = util::MergeTypeList_t<Scalars, ListsWrapped, NestedWrapped,
                                              NestedListsWrapped>;  // Used for memory layout. Hidden from user.
 };
 

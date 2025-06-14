@@ -155,17 +155,21 @@ struct Glossary {
     const KV<std::int64_t> levelist{"levelist"};
     const KV<std::string> levtype{"levtype"};
     const KV<std::string> levtypeWam{"levtype_wam"};
-    const KV<std::string> dataset{"dataset"};
-    const KV<std::string> resolution{"resolution"};
-    const KV<std::string> activity{"activity"};
-    const KV<std::string> experiment{"experiment"};
-    const KV<std::string> generation{"generation"};
+
     const KV<std::string> model{"model"};
-    const KV<std::string> realization{"realization"};
     const KV<std::int64_t> methodNumber{"methodNumber"};
     const KV<std::int64_t> systemNumber{"systemNumber"};
     const KV<std::int64_t> methodNumberKC{"method-number"};  // Kebap case
     const KV<std::int64_t> systemNumberKC{"system-number"};  // Kebap case
+
+
+    // Additional mars keys enabled by "dataset" key specific for DestinE
+    const KV<std::string> dataset{"dataset"};
+    const KV<std::string> resolution{"resolution"};
+    const KV<std::string> activity{"activity"};
+    const KV<std::string> experiment{"experiment"};
+    const KV<std::int64_t> generation{"generation"};
+    const KV<std::int64_t> realization{"realization"};
 
     // Eccodes specific
     const KV<std::string> gribEdition{"gribEdition"};
@@ -403,6 +407,15 @@ namespace Mtg2 {
         static const KV<std::int64_t> hdate{"hdate"};
 
         static const KV<std::string> grid{"grid"};
+
+        // Additional mars keys enabled by "dataset" key specific for DestinE
+        static const KV<std::string> dataset{"dataset"};
+        static const KV<std::string> resolution{"resolution"};
+        static const KV<std::string> activity{"activity"};
+        static const KV<std::string> experiment{"experiment"};
+        static const KV<std::int64_t> generation{"generation"};
+        static const KV<std::int64_t> realization{"realization"};
+
     }
 
     namespace marsCustom {
@@ -440,6 +453,12 @@ namespace Mtg2 {
         func(mars::timespan);
         func(mars::hdate);
         func(mars::grid);
+        func(mars::dataset);
+        func(mars::resolution);
+        func(mars::activity);
+        func(mars::experiment);
+        func(mars::generation);
+        func(mars::realization);
         func(marsLegacy::repres);
     }
 

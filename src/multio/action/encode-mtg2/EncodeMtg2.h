@@ -34,6 +34,7 @@ enum class MultiOMDictKind : unsigned long
     MARS,
     Parametrization,
     // Geometry dicts
+    HEALPix,
     ReducedGG,
     RegularLL,
     SH,

@@ -30,6 +30,7 @@ set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_options_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_mars_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_par_dictionary_utils_mod.F90
+  ${MULTIOM_API_DIR}/api_HEALPix_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_reduced_gg_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_regular_gg_dictionary_utils_mod.F90
   ${MULTIOM_API_DIR}/api_sh_dictionary_utils_mod.F90

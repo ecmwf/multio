@@ -581,7 +581,6 @@ IMPLICIT NONE
   !> Preset everything that can be preset
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfStatisticalProcessing', THIS%TYPE_OF_STATISTICAL_PROCESS_ )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitOfTimeRange', 'h' )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeRange', 'h' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -689,6 +688,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_STATISTICS_FIXED_TIMERANGE_PRESET( THIS, 
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,          ONLY: UNDEF_PARAM_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -747,11 +747,17 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitOfTimeRange', 'h' )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeRange', 'h' )
 
-  !> @note See table 4.11 in the GRIB2 documentation for the following values
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  2_JPIB_K )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', INT(PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_, KIND=JPIB_K)  )
-
+  !> @note See MUL-227
+  IF ( PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .EQ. UNDEF_PARAM_E .OR. & ! lacks("lengthOfTimeStepInSeconds")
+&      PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .EQ. 0_JPIB_K ) THEN
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  255_JPIB_K ) ! Code Table 4.11
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeIncrement',  255_JPIB_K ) ! Code table 4.4
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', 0_JPIB_K  ) ! default value
+  ELSE
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  2_JPIB_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', INT(PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_, KIND=JPIB_K)  )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )

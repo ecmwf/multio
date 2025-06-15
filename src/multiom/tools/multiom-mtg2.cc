@@ -680,12 +680,9 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
 
     getAndSet(h, marsDict, "gridName", "grid");
 
-    getAndSet(h, parDict, "tablesVersion");
     getAndSet(h, parDict, "generatingProcessIdentifier");
-    getAndSetLong(h, parDict, "typeOfProcessedData");
     getAndSet(h, parDict, "initialStep", OptVal{"0"}, SetDefault::Always);
     getAndSet(h, parDict, "timeIncrement", "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
-    // getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
     getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
@@ -709,15 +706,17 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
         }
         if (numForecasts != 0) {
             marsDict.set("number", number);
+            parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
 
-            if (hasKey(h, "typeOfEnsembleForecast")) {
+            if (hasKey(h, "class") && getString(h, "class") == "ai") {
+                // Handled in the encoder
+            }
+            else if (hasKey(h, "typeOfEnsembleForecast")) {
                 getAndSet(h, parDict, "typeOfEnsembleForecast");
             }
             else if (hasKey(h, "eps")) {
                 getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
             }
-
-            parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
         }
     }
 

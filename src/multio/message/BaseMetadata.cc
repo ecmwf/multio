@@ -116,6 +116,25 @@ void BaseMetadata::json(eckit::JSON& j) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+bool operator==(const BaseMetadata& lhs, const BaseMetadata& rhs) noexcept {
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+    for (const auto& p : lhs) {
+        if (auto search = rhs.find(p.first); search != rhs.end()) {
+            return p.second == search->second;
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool operator!=(const BaseMetadata& lhs, const BaseMetadata& rhs) noexcept {
+    return !(lhs == rhs);
+}
+
 
 eckit::JSON& operator<<(eckit::JSON& json, const BaseMetadata& metadata) {
     json.startObject();

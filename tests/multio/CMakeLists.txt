@@ -54,10 +54,12 @@ ecbuild_add_test( TARGET    test_multio_metadata
                   LIBS      multio )
 
 ecbuild_add_test( TARGET    test_multio_metadata_parametrization
+                  TEST_REQUIRES test_multio_metadata
                   SOURCES   test_multio_metadata_parametrization.cc
                   LIBS      multio )
 
 ecbuild_add_test( TARGET    test_multio_metadata_mapping
+                  TEST_REQUIRES test_multio_metadata
                   SOURCES   test_multio_metadata_mapping.cc
                   NO_AS_NEEDED
                   LIBS      multio multio-action-metadata-mapping multio-action-debug-sink multio-action-print

@@ -442,6 +442,49 @@ CASE("Test visit with unwrapped unique ptr") {
 }
 
 
+CASE("Test comparing metadata value") {
+    EXPECT((MetadataValue{true} == MetadataValue{true}));
+    EXPECT((MetadataValue{true} != MetadataValue{false}));
+    EXPECT((MetadataValue{std::string("123")} == MetadataValue{std::string("123")}));
+    EXPECT((MetadataValue{std::string("123")} != MetadataValue{std::string("1234")}));
+    EXPECT((MetadataValue{"123"} == MetadataValue{"123"}));
+    EXPECT((MetadataValue{"123"} != MetadataValue{"1234"}));
+    EXPECT((MetadataValue{123} == MetadataValue{123}));
+    EXPECT((MetadataValue{123} != MetadataValue{124}));
+    EXPECT((MetadataValue{123.0} == MetadataValue{123.0}));
+    EXPECT((MetadataValue{123.0} != MetadataValue{124.0}));
+    EXPECT((MetadataValue{123.0f} == MetadataValue{123.0f}));
+    EXPECT((MetadataValue{123.0f} != MetadataValue{124.0f}));
+    // Float with double is explicitly not comparable
+    EXPECT((MetadataValue{123.0f} != MetadataValue{123.0}));
+    EXPECT((MetadataValue{123.0f} != MetadataValue{124.0}));
+    EXPECT((MetadataValue{std::vector<std::string>{"abc", "def", "ghij"}}
+            == MetadataValue{std::vector<std::string>{"abc", "def", "ghij"}}));
+    EXPECT((MetadataValue{std::vector<std::string>{"abc", "def", "ghij"}}
+            != MetadataValue{std::vector<std::string>{"abc", "def", "ghij", "klm"}}));
+    EXPECT((MetadataValue{std::vector<unsigned char>{0x01, 0x02, 0x03}}
+            == MetadataValue{std::vector<unsigned char>{0x01, 0x02, 0x03}}));
+    EXPECT((MetadataValue{std::vector<unsigned char>{0x01, 0x02, 0x03}}
+            != MetadataValue{std::vector<unsigned char>{0x01, 0x02, 0x03, 0x04}}));
+    EXPECT(
+        (MetadataValue{std::vector<bool>{true, false, true}} == MetadataValue{std::vector<bool>{true, false, true}}));
+    EXPECT((MetadataValue{std::vector<bool>{true, false, true}}
+            != MetadataValue{std::vector<bool>{true, false, true, false}}));
+    EXPECT((MetadataValue{std::vector<std::int64_t>{1, 2, 3}} == MetadataValue{std::vector<std::int64_t>{1, 2, 3}}));
+    EXPECT((MetadataValue{std::vector<std::int64_t>{1, 2, 3}} != MetadataValue{std::vector<std::int64_t>{1, 2, 3, 4}}));
+    EXPECT((MetadataValue{std::vector<double>{1.0, 2.0, 3.0}} == MetadataValue{std::vector<double>{1.0, 2.0, 3.0}}));
+    EXPECT(
+        (MetadataValue{std::vector<double>{1.0, 2.0, 3.0}} != MetadataValue{std::vector<double>{1.0, 2.0, 3.0, 4.0}}));
+    EXPECT((MetadataValue{std::vector<float>{1.0, 2.0, 3.0}} == MetadataValue{std::vector<float>{1.0, 2.0, 3.0}}));
+    EXPECT((MetadataValue{std::vector<float>{1.0, 2.0, 3.0}} != MetadataValue{std::vector<float>{1.0, 2.0, 3.0, 4.0}}));
+
+    EXPECT((BaseMetadata{{"key", "value"}} == BaseMetadata{{"key", "value"}}));
+    EXPECT((BaseMetadata{{"key", "value"}} != BaseMetadata{{"key", "value2"}}));
+    EXPECT((MetadataValue{Metadata{{"key", "value"}}} == MetadataValue{Metadata{{"key", "value"}}}));
+    EXPECT((MetadataValue{Metadata{{"key", "value"}}} != MetadataValue{Metadata{{"key", "value2"}}}));
+}
+
+
 }  // namespace multio::test
 
 int main(int argc, char** argv) {

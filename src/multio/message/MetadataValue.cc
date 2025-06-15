@@ -14,11 +14,14 @@
 
 #include "multio/message/MetadataValue.h"
 
+#include "eckit/utils/Overloaded.h"
 #include "multio/message/Metadata.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/parser/YAMLParser.h"
+#include "multio/util/TypeTraits.h"
 
+#include <iomanip>
 #include <sstream>
 
 
@@ -50,15 +53,45 @@ void MetadataValue::json(eckit::JSON& j) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+bool operator==(const MetadataValue& lhs, const MetadataValue& rhs) noexcept {
+    if (lhs.index() != rhs.index()) {
+        return false;
+    }
+    return lhs.visit([&](const auto& lhsVal) -> bool { return lhsVal == rhs.get<std::decay_t<decltype(lhsVal)>>(); });
+};
+bool operator!=(const MetadataValue& lhs, const MetadataValue& rhs) noexcept {
+    return !(lhs == rhs);
+};
+
 eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue& mv) {
+    // TODO print vector<unsigned char> as base64 encoded in json?
     mv.visit([&json](const auto& v) { json << v; });
     return json;
 }
 
 
-std::ostream& operator<<(std::ostream& os, const MetadataValue& metadataValue) {
-    eckit::JSON json(os);
-    json << metadataValue;
+std::ostream& operator<<(std::ostream& os, const MetadataValue& mv) {
+    mv.visit(eckit::Overloaded{// Special overload to
+                               [&os](const std::vector<unsigned char>& vec) -> void {
+                                   auto flags(os.flags());
+                                   os << "[";
+                                   bool first = true;
+                                   for (const auto& v : vec) {
+                                       if (first) {
+                                           first = false;
+                                       }
+                                       else {
+                                           os << ", ";
+                                       }
+                                       os << "0x" << std::setw(2) << std::setfill('0') << std::hex << (0xFF & +v);
+                                   }
+                                   os << "]";
+                                   os.flags(flags);
+                               },
+                               [&os](const auto& other) -> void {
+                                   eckit::JSON json(os);
+                                   json << other;
+                               }});
     return os;
 }
 

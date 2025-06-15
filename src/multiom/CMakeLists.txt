@@ -119,6 +119,7 @@ add_subdirectory( ifs-encoders )
 add_subdirectory( ifs2mars )
 add_subdirectory( tools )
 add_subdirectory( api )
+add_subdirectory( raw-api )
 
 #
 # + ADD LOCAL FILES
@@ -220,6 +221,7 @@ ecbuild_add_library(
     ${MULTIOM_ENCODERS_SOURCES}
     ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_API_SOURCES}
+    ${MULTIOM_RAWAPI_SOURCES}
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}

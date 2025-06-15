@@ -49,6 +49,8 @@ CONTAINS
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: INIT     => MULTIOM_RAW_ENCODER_INIT
 
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PREPARE  => MULTIOM_RAW_ENCODER_PREPARE
+
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: RUNTIME  => MULTIOM_RAW_ENCODER_RUNTIME
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRINT    => MULTIOM_RAW_ENCODER_PRINT
@@ -62,10 +64,11 @@ PUBLIC :: MULTIOM_RAW_ENCODER_T
 
 CONTAINS
 
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_INIT'
 PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_INIT( THIS, &
-&  MSG, PAR, ENCODER_CFG, ENCODER_OPT, GRIB_SAMPLE, HOOKS ) RESULT(RET)
+&  ENCODER_CFG, ENCODER_OPT, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -74,6 +77,116 @@ PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_INIT( THIS, &
   USE :: YAML_CORE_UTILS_MOD,      ONLY: YAML_CONFIGURATION_T
   USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
   USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: MAKE_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
+  TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: ENCODER_CFG
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: ENCODER_OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ASSOCIATED = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_ENCODER = 2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
+
+  ! Copy options
+  THIS%ENCODER_OPT_ = ENCODER_OPT
+
+  !> Make the encoder (recursively go through the configuration an create all the nested objects)
+  PP_LOG_DEVELOP_STR( ' * Make encoder' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_ENCODER) MAKE_ENCODER( &
+&   THIS%ENCODER_, ENCODER_CFG, THIS%ENCODER_OPT_, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder is already associated' )
+    CASE (ERRFLAG_UNABLE_TO_MAKE_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the encoder' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MULTIOM_RAW_ENCODER_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_PREPARE'
+PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_PREPARE( THIS, &
+&  MSG, PAR, GRIB_SAMPLE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIM_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   uSE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
@@ -94,8 +207,6 @@ IMPLICIT NONE
   CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
-  TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: ENCODER_CFG
-  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: ENCODER_OPT
   INTEGER(KIND=JPIM_K),         INTENT(INOUT) :: GRIB_SAMPLE
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -136,14 +247,8 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
 
   ! Copy options
-  THIS%ENCODER_OPT_ = ENCODER_OPT
   LOC_GRIB_SAMPLE = GRIB_SAMPLE
   GRIB_SAMPLE = -1_JPIM_K
-
-  !> Make the encoder (recursively go through the configuration an create all the nested objects)
-  PP_LOG_DEVELOP_STR( ' * Make encoder' )
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_ENCODER) MAKE_ENCODER( &
-&   THIS%ENCODER_, ENCODER_CFG, THIS%ENCODER_OPT_, HOOKS )
 
   !> Bind the encoder to the sample
   PP_LOG_DEVELOP_STR( ' * Bind the encoder to the sample...' )
@@ -223,7 +328,7 @@ PP_ERROR_HANDLER
   RETURN
 
 
-END FUNCTION MULTIOM_RAW_ENCODER_INIT
+END FUNCTION MULTIOM_RAW_ENCODER_PREPARE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

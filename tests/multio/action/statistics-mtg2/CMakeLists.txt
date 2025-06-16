@@ -28,3 +28,5 @@ ecbuild_add_test(
     NO_AS_NEEDED
     LIBS multio-action-debug-sink multio-action-statistics-mtg2
 )
+
+add_subdirectory(operations)

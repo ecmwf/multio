@@ -112,6 +112,7 @@ add_subdirectory( metadata )
 add_subdirectory( operations )
 add_subdirectory( mapping-rules )
 add_subdirectory( encoding-rules )
+add_subdirectory( nested-rules )
 add_subdirectory( ifs-interface )
 add_subdirectory( output-manager )
 add_subdirectory( sinks )
@@ -138,7 +139,7 @@ list( APPEND output_manager_src
   ${MULTIOM_OPERATIONS_SOURCES}
   ${MULTIOM_MAPPING_RULES_SOURCES}
   ${MULTIOM_ENCODING_RULES_SOURCES}
-  ${MULTIOM_ENCODING_RULES_SOURCES}
+  ${MULTIOM_NESTED_RULES_SOURCES}
   ${MULTIOM_IFS_INTERFACE_SOURCES}
   ${MULTIOM_OUTPUT_MANAGER_SOURCES}
   ${MULTIOM_SINKS_SOURCES}
@@ -218,6 +219,7 @@ ecbuild_add_library(
   SOURCES
     ${MULTIOM_MAPPING_RULES_SOURCES}
     ${MULTIOM_ENCODING_RULES_SOURCES}
+    ${MULTIOM_NESTED_RULES_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
     ${MULTIOM_IFS_ENCODERS_SOURCES}
     ${MULTIOM_API_SOURCES}

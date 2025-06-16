@@ -21,3 +21,17 @@ ecbuild_add_test(
     NO_AS_NEEDED
     LIBS multio-action-debug-sink multio-action-statistics-mtg2
 )
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_difference
+    SOURCES Difference.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2
+)
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_inverse_difference
+    SOURCES InverseDifference.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2
+)

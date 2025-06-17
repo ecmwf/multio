@@ -501,6 +501,7 @@ namespace Mtg2 {
         static const Prefixed<KV<std::int64_t>> satelliteSeries{prefix, "satelliteSeries"};
         static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};
         static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};
+        static const Prefixed<KV<std::int64_t>> destineLocalVersion{prefix, "destineLocalVersion"};
 
         // TBD - move to marse
         static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};
@@ -534,6 +535,7 @@ namespace Mtg2 {
         func(misc::satelliteSeries);
         func(misc::scaleFactorOfCentralWavenumber);
         func(misc::scaledValueOfCentralWavenumber);
+        func(misc::destineLocalVersion);
 
         func(misc::methodNumber);
         func(misc::systemNumber);

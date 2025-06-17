@@ -52,7 +52,8 @@ ecbuild_add_option( FEATURE ECKIT_CODEC
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
                     DESCRIPTION "Interpolate data using MIR"
-                    REQUIRED_PACKAGES "NAME mir VERSION 1.17.0" )
+		    CONDITION eckit_HAVE_ECKIT_GEO
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.26.0" )
 
 ecbuild_add_option( FEATURE PGEN
                     DEFAULT OFF

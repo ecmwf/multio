@@ -33,9 +33,9 @@ class StatisticsParamMapping {
 public:
     static StatisticsParamMapping makeStatisticsParamMapping();
 
-    std::int64_t getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing) const;
-    void applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing) const;
-    void applyMapping(message::Metadata& metadata, const std::string& opname) const;
+    std::optional<std::int64_t> getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing) const;
+    void applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing, bool strict = true) const;
+    void applyMapping(message::Metadata& metadata, const std::string& opname, bool strict = true) const;
 
 private:
     StatisticsParamMapping(ParamTypeOfStatisticalProcessingToParamMap paramMappings);

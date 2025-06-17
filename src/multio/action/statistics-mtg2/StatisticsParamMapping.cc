@@ -34,21 +34,27 @@ StatisticsParamMapping StatisticsParamMapping::makeStatisticsParamMapping() {
     return StatisticsParamMapping(paramMappings);
 }
 
-std::int64_t StatisticsParamMapping::getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing) const {
+std::optional<std::int64_t> StatisticsParamMapping::getMapping(std::int64_t param, std::int64_t typeOfStatisticalProcessing) const {
     if (auto search = paramMappings_.find({param, typeOfStatisticalProcessing}); search != paramMappings_.end()) {
         return search->second;
     }
-
-    std::ostringstream os;
-    os << "Mapping for param=" << param << " and typeOfStatisticalProcessing=" << typeOfStatisticalProcessing << " is undefined!" << std::endl;
-    throw eckit::SeriousBug(os.str() , Here());
+    return std::nullopt;
 }
 
-void StatisticsParamMapping::applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing) const {
+void StatisticsParamMapping::applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing, bool strict) const {
     if (auto paramOld = metadata.getOpt<std::int64_t>(glossary().param); paramOld) {
         auto paramNew = getMapping(*paramOld, typeOfStatisticalProcessing);
-        metadata.set(glossary().param, paramNew);
-        return;
+        if (paramNew.has_value()) {
+            metadata.set(glossary().param, *paramNew);
+            return;
+        }
+        if (!strict) {
+            return;
+        }
+
+        std::ostringstream os;
+        os << "Mapping for param=" << *paramOld << " and typeOfStatisticalProcessing=" << typeOfStatisticalProcessing << " is undefined!" << std::endl;
+        throw eckit::SeriousBug(os.str() , Here());
     }
 
     throw eckit::SeriousBug("Metadata does not contain param!", Here());
@@ -62,9 +68,9 @@ const std::map<const std::string, const std::int64_t> opname_to_typeOfStatistica
 
 // NOTE : This function will not apply a mapping, nor throw an exception, if the operation is not an official
 //        type of statistical processing as defined in table 4.10.
-void StatisticsParamMapping::applyMapping(message::Metadata& metadata, const std::string& opname) const {
+void StatisticsParamMapping::applyMapping(message::Metadata& metadata, const std::string& opname, bool strict) const {
     if (auto search = opname_to_typeOfStatisticalProcessing.find(opname); search != opname_to_typeOfStatisticalProcessing.end()) {
-        applyMapping(metadata, search->second);
+        applyMapping(metadata, search->second, strict);
     }
 }
 

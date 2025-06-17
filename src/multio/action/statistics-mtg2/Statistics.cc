@@ -447,7 +447,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
         multio::message::Mtg2::mars::timespan.set(md, timespan);
 
         std::string opname = (*it)->operation();
-        paramMapping_.applyMapping(md, opname);
+        paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
         for (const auto& kv : opt_.setMetadata()) {
             md.set(kv.first, kv.second);
         }

@@ -20,6 +20,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     windowType_{"forward-offset"},
     accumulatedFieldsResetFreqency_{"month"},
     valueCountThreshold_{},
+    disableStrictMapping_(false),
     setMetadata_{} {
     // Dump usage
     if (compConf.parsedConfig().has("help")) {
@@ -46,6 +47,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
         parseWindowType(compConf, options);
         parseSolverResetAccumulatedFields(compConf, options);
         parseValueCountThreshold(compConf, options);
+        parseDisableStrictMapping(compConf, options);
         parseSetMetadata(compConf, options);
     }
 
@@ -228,6 +230,19 @@ void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfigur
     throw eckit::UserError(os.str(), Here());
 }
 
+void StatisticsOptions::parseDisableStrictMapping(const config::ComponentConfiguration& compConf,
+                                                  const eckit::LocalConfiguration& cfg) {
+    std::optional<bool> r;
+    r = util::parseBool(cfg, "disable-strict-mapping", false);
+    if (r) {
+        disableStrictMapping_ = *r;
+    }
+    else {
+        usage();
+        throw eckit::SeriousBug{"Unable to read disable-strict-mapping", Here()};
+    }
+}
+
 void StatisticsOptions::parseSetMetadata(const config::ComponentConfiguration& compConf,
                                          const eckit::LocalConfiguration& cfg) {
     if (!cfg.has("set-metadata")) {
@@ -309,6 +324,9 @@ std::optional<long> StatisticsOptions::valueCountThreshold() const {
     return valueCountThreshold_;
 }
 
+bool StatisticsOptions::disableStrictMapping() const {
+    return disableStrictMapping_;
+}
 
 const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {
     return setMetadata_;

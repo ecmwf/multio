@@ -127,7 +127,7 @@ private:
                 "\"type\": \"statistics-mtg2\", "
                 "\"output-frequency\": \"1m\", "
                 "\"operations\": [ \"" + name_ + "\" ], "
-                "\"options\": { \"initial-condition-present\": \"true\" } },"
+                "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
                 "{ \"type\": \"debug-sink\" } ] }";
     }
 

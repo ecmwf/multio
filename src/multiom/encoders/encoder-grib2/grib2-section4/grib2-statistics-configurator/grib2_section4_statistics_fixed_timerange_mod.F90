@@ -750,7 +750,7 @@ IMPLICIT NONE
   !> @note See MUL-227
   IF ( PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .EQ. UNDEF_PARAM_E .OR. & ! lacks("lengthOfTimeStepInSeconds")
 &      PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ .EQ. 0_JPIB_K ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  255_JPIB_K ) ! Code Table 4.11
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  2_JPIB_K ) ! Code Table 4.11
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeIncrement',  255_JPIB_K ) ! Code table 4.4
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', 0_JPIB_K  ) ! default value
   ELSE

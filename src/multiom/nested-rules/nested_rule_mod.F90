@@ -28,6 +28,16 @@ TYPE :: NESTED_RULE_CONTAINER_T
 
 END TYPE
 
+! Raw container for the rule information
+! It is in a separate object to achieeve the maximum
+! reduction in memory footprint
+TYPE :: RAW_RULE_T
+  CHARACTER(LEN=:), ALLOCATABLE :: NAME_
+  CHARACTER(LEN=:), ALLOCATABLE :: TAG_
+  CHARACTER(LEN=:), ALLOCATABLE :: SAMPLE_NAME_
+  TYPE(YAML_CONFIGURATION_T)    :: ENCODER_CFG_
+END TYPE
+
 
 TYPE :: NESTED_RULE_T
 
@@ -36,6 +46,8 @@ TYPE :: NESTED_RULE_T
 
   !> Id of the rule
   INTEGER(KIND=JPIB_K) :: ID_=-9999_JPIB_K
+  CHARACTER(LEN=:), ALLOCATABLE :: RULE_FNAME_
+  TYPE(RAW_RULE_T), POINTER :: RAW_RULE_ => NULL()
 
   !> Name of the rule
   CHARACTER(LEN=256) :: NAME_ = REPEAT( ' ', 256 )
@@ -55,7 +67,8 @@ TYPE :: NESTED_RULE_T
 CONTAINS
 
   !> Initialize the rule
-  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: INIT => RULE_INIT
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: INIT_CFG => RULE_INIT_CFG
+  PROCEDURE, PASS, PRIVATE, NON_OVERRIDABLE :: INIT_FNAME => RULE_INIT_FILE
 
   !> Match the rule
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: MATCH => RULE_MATCH
@@ -78,15 +91,13 @@ PUBLIC :: NESTED_RULE_CONTAINER_T
 CONTAINS
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'RULE_INIT'
-PP_THREAD_SAFE FUNCTION RULE_INIT( THIS, ID, CFG, FILTER_OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'RULE_INIT_CFG'
+PP_THREAD_SAFE FUNCTION RULE_INIT_CFG( THIS, ID, CFG, FILTER_OPT, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: FILTER_FACTORY_MOD,       ONLY: MAKE_FILTER
-  USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: READ_ENCODER_TYPE
-  USE :: FILTER_OPTIONS_MOD,       ONLY: FILTER_OPTIONS_T
   USE :: FILTER_OPTIONS_MOD,       ONLY: FILTER_OPTIONS_T
 
   ! Symbols imported from other libraries
@@ -346,12 +357,110 @@ PP_ERROR_HANDLER
   RETURN
 
 
-END FUNCTION RULE_INIT
+END FUNCTION RULE_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_INIT_FILE'
+PP_THREAD_SAFE FUNCTION RULE_INIT_FILE( THIS, ID, RULE_FNAME, FILTER_OPT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,  ONLY: JPIB_K
+  USE :: HOOKS_MOD,          ONLY: HOOKS_T
+  USE :: FILTER_FACTORY_MOD, ONLY: MAKE_FILTER
+  USE :: FILTER_OPTIONS_MOD, ONLY: FILTER_OPTIONS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(NESTED_RULE_T),   INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),   INTENT(IN)    :: ID
+  CHARACTER(LEN=*),       INTENT(IN)    :: RULE_FNAME
+  TYPE(FILTER_OPTIONS_T), INTENT(IN)    :: FILTER_OPT
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization
+  THIS%ID_ = ID
+  THIS%NAME_ = REPEAT( ' ', 256 )
+  THIS%TAG_ = REPEAT( ' ', 256 )
+  THIS%SAMPLE_NAME_ = REPEAT( ' ', 32 )
+  THIS%RULE_FNAME_ = TRIM(ADJUSTL(RULE_FNAME))
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_INIT_FILE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

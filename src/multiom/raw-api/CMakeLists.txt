@@ -11,6 +11,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 add_subdirectory(common)
 add_subdirectory(dictionaries)
 add_subdirectory(encoders)
+add_subdirectory(rules)
 
 
 # Collect source files in module2
@@ -29,6 +30,7 @@ set( MULTIOM_RAWAPI_SOURCES
   ${MULTIOM_RAWAPI_COMMON_SOURCES}
   ${MULTIOM_RAWAPI_DICTIONARIES_SOURCES}
   ${MULTIOM_RAWAPI_ENCODERS_SOURCES}
+  ${MULTIOM_RAWAPI_RULES_SOURCES}
   CACHE INTERNAL "List of all sources in rawapi directory"
 )
 

@@ -427,12 +427,6 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    // TODO paramType is experimental
-    ret = getAndSet(h, *mars_dict, "paramType");
-    if (ret != 0) {
-        return ret;
-    }
-
     ret = getAndSet(h, *mars_dict, "chemId", "chem");
     if (ret != 0) {
         return ret;

@@ -107,15 +107,6 @@ int main() {
     free(readVal);
     readVal = NULL;
 
-    ret = multio_grib2_dict_has(dictionary_01, "paramType", &has1);
-    ret = multio_grib2_dict_set(dictionary_01, "paramType", "optical");
-    ret = multio_grib2_dict_has(dictionary_01, "paramType", &has2);
-    ret = multio_grib2_dict_get(dictionary_01, "paramType", &readVal);
-    // printf("paramType: %s, %d, %d, %d\n", readVal, has1, has2, ret );
-    assert(strcmp(readVal, "optical") == 0);
-    free(readVal);
-    readVal = NULL;
-
     ret = multio_grib2_dict_has(dictionary_01, "chem", &has1);
     ret = multio_grib2_dict_set(dictionary_01, "chem", "1");
     ret = multio_grib2_dict_has(dictionary_01, "chem", &has2);

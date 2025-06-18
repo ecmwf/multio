@@ -202,12 +202,11 @@ END FUNCTION RULE_INIT
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'RULE_COUNT_MATCHES'
-PP_THREAD_SAFE FUNCTION RULE_COUNT_MATCHES( THIS, MSG, PAR, NUM_MATCHES, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION RULE_COUNT_MATCHES( THIS, MSG, NUM_MATCHES, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -223,10 +222,9 @@ IMPLICIT NONE
 
   !> Dummy arguments
   CLASS(NESTED_RULE_COLLECTION_T), INTENT(IN)    :: THIS
-  TYPE(PARAMETRIZATION_T),           INTENT(IN)    :: PAR
-  TYPE(FORTRAN_MESSAGE_T),           INTENT(IN)    :: MSG
-  INTEGER(KIND=JPIB_K),              INTENT(OUT)   :: NUM_MATCHES
-  TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
+  TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
+  INTEGER(KIND=JPIB_K),            INTENT(OUT)   :: NUM_MATCHES
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -258,7 +256,7 @@ IMPLICIT NONE
 
   !> Error handling
   PP_TRYCALL(ERRFLAG_MATCH_FILTERS) THIS%RULES_CONTAINER_%COUNT_MATCHES( &
-&      MSG, PAR, NUM_MATCHES, HOOKS )
+&      MSG, NUM_MATCHES, HOOKS )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -387,70 +385,8 @@ IMPLICIT NONE
 
   !> Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%RULES_), ERRFLAG_FILTER_NOT_ASSOCIATED )
-#if 0
-  !> Initialize the rules (array to be filled by the search routine)
-  P_RULES => RULES
 
-  !> Initialize the rules
-  DO I = 1, SIZE(RULES)
-    RULES(I)%RULE_ => NULL()
-  ENDDO
 
-  !> Search the rules and comput the number of matches
-  NUM_MATCHES = 0_JPIB_K
-  PP_TRYCALL(ERRFLAG_MATCH_FILTERS) THIS%RULES_CONTAINER_%MATCH( &
-&    MSG, PAR, P_RULES, NUM_MATCHES, OPT, HOOKS )
-
-  ! Initialize the sample to null
-  SAMPLE => NULL()
-
-  !> Initialize the encoding info
-  IF ( NUM_MATCHES .EQ. 0 ) THEN
-
-    ! Extract the Json of the message
-    PP_TRYCALL(ERRFLAG_MARS_TO_JSON) MSG%TO_JSON( JSON, HOOKS )
-    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED_YET )
-
-    !> On the fly create the encoder using msg and par
-    !> Allocate the encoding info to be output
-    ALLOCATE( ENCODERS(1), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
-    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_MATCHES_ALLOCATION_ERROR )
-
-    !> Lazy construction of the encoder
-    PP_TRYCALL(ERRFLAG_INIT_ENCODING_INFO) MAKE_ENCODER( ENCODER, MSG, PAR, OPT, HOOKS )
-    TAG = REPEAT(' ',256)
-    TAG = 'Lazy encoder'
-    NAME = REPEAT(' ',256)
-    NAME = 'default-encoder'
-    !> Initialize the encoding info
-    PP_TRYCALL(ERRFLAG_INIT_ENCODING_INFO) ENCODERS(1)%INIT( MSG, PAR, TAG, NAME, METADATA, SAMPLE, ENCODER, .TRUE., OPT, HOOKS )
-
-  ELSEIF ( NUM_MATCHES .GT. 0 ) THEN
-
-    !> Allocate the encoding info to be output
-    ALLOCATE( ENCODERS(NUM_MATCHES), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
-    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS .NE. 0, ERRFLAG_MATCHES_ALLOCATION_ERROR )
-
-    !> Initialize encoding info
-    DO I = 1, NUM_MATCHES
-      NULLIFY(ENCODER)
-      NULLIFY(SAMPLE)
-      TAG = REPEAT(' ',256)
-      NAME = REPEAT(' ',256)
-      PP_TRYCALL(ERRFLAG_GET_ENCODERS) P_RULES(I)%RULE_%GET_ENCODER( NAME, TAG, SAMPLE, ENCODER, HOOKS )
-      PP_TRYCALL(ERRFLAG_INIT_ENCODING_INFO) ENCODERS(I)%INIT( MSG, PAR, TAG, NAME, METADATA, SAMPLE, ENCODER, .FALSE., OPT, HOOKS )
-      THIS%MATCHES_(I) = -1_JPIB_K
-    ENDDO
-
-    ! PAranoid operation
-    NUM_MATCHES = 0_JPIB_K
-
-  ELSE
-
-    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNEXPECTED_NUMBER_OF_MATCHES)
-
-  ENDIF
-#endif
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

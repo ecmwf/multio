@@ -978,7 +978,7 @@ PARAM_LEVTYPE_PT = [
 
 PARAM_LEVTYPE_PT_SH = [
     partialRule(
-        [matchType("levtype", "pt"), matchParam([54, 131, 132, 133, 138, 155])],
+        [matchType("levtype", "pt"), matchParam([53, 54, 131, 132, 133, 138, 155])],
         [PointInTime(), levelConfig("theta"), paramConfig("paramId")],
     ),
 ]

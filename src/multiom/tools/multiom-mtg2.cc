@@ -680,12 +680,9 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
 
     getAndSet(h, marsDict, "gridName", "grid");
 
-    getAndSet(h, parDict, "tablesVersion");
     getAndSet(h, parDict, "generatingProcessIdentifier");
-    getAndSetLong(h, parDict, "typeOfProcessedData");
     getAndSet(h, parDict, "initialStep", OptVal{"0"}, SetDefault::Always);
     getAndSet(h, parDict, "timeIncrement", "lengthOfTimeStepInSeconds", OptVal{"3600"}, SetDefault::Always);
-    // getAndSet(h, parDict, "lengthOfTimeRangeInSeconds", OptVal{"3600"}, SetDefault::IfKeyGiven);
     getAndSet(h, parDict, "valuesScaleFactor");
     getAndSetDoubleArray(h, parDict, "pv", "pv");
     getAndSetIfNonZero(h, parDict, "numberOfMissingValues");
@@ -709,15 +706,17 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
         }
         if (numForecasts != 0) {
             marsDict.set("number", number);
+            parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
 
-            if (hasKey(h, "typeOfEnsembleForecast")) {
+            if (hasKey(h, "class") && getString(h, "class") == "ai") {
+                // Handled in the encoder
+            }
+            else if (hasKey(h, "typeOfEnsembleForecast")) {
                 getAndSet(h, parDict, "typeOfEnsembleForecast");
             }
             else if (hasKey(h, "eps")) {
                 getAndSet(h, parDict, "eps", "typeOfEnsembleForecast");
             }
-
-            parDict.set("numberOfForecastsInEnsemble", std::to_string(numForecasts));
         }
     }
 
@@ -1148,6 +1147,7 @@ private:
     std::optional<FieldValueMap> excludeMap_ = {};
     std::optional<FieldValueMap> filterMap_ = {};
     std::optional<std::string> overwritePacking_ = {};
+    std::optional<std::string> setModel_ = {};
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
 };
 
@@ -1182,7 +1182,8 @@ MultioMMtg2::MultioMMtg2(int argc, char** argv) : multio::MultioTool{argc, argv}
         "by ';'. Example --filter paramId=130,131,133;levtype=pl,sfc"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "packing", "Enforce a specific packing type. Valid values are `ccsds` and `simple`."));
-
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "model", "Inject the MARS key \"model\""));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "discipline-192",
         "Options on handling fields with discipline 192 (field that are ill-formed). Values: \"log-and-ignore\" "
@@ -1210,6 +1211,12 @@ void MultioMMtg2::init(const eckit::option::CmdArgs& args) {
         else {
             throw std::runtime_error(std::string("Unsupported packing: ") + packing);
         }
+    }
+
+    std::string model;
+    args.get("model", model);
+    if (!model.empty()) {
+        setModel_ = model;
     }
 
     args.get("knowledge-root", knowledgeRoot_);
@@ -1372,6 +1379,13 @@ void MultioMMtg2::execute(const eckit::option::CmdArgs& args) {
                     std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
                 }
                 marsDict.set("packing", overwritePacking_->c_str());
+            }
+
+            if (setModel_) {
+                if (verbosity_ > 2) {
+                    std::cout << "Set model " << *setModel_ << std::endl;
+                }
+                marsDict.set("model", setModel_->c_str());
             }
 
             if (verbosity_ > 2) {

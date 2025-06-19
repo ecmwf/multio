@@ -8,6 +8,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 
 set( MULTIOM_NESTED_RULES_MAIN_SOURCES
+  ${MULTIOM_NESTED_RULES_DIR}/nested_rules_list_mod.F90
   ${MULTIOM_NESTED_RULES_DIR}/nested_rules_tree_loader_mod.F90
   ${MULTIOM_NESTED_RULES_DIR}/nested_rules_linear_loader_mod.F90
   ${MULTIOM_NESTED_RULES_DIR}/nested_rule_mod.F90

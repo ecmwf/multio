@@ -653,7 +653,7 @@ IMPLICIT NONE
 
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NUMBER_EXPECTED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARSTYPE_EXPECTED=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_TYPE_OF_ENSEMBLE_FORECAST=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -682,10 +682,10 @@ IMPLICIT NONE
 
   !> Configure the information needed for describing the ensemble (tipically 1 from table 4.6:
   !> Unperturbed low-resolution control forecast )
-  IF ( PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ .NE. UNDEF_PARAM_E ) THEN
+  IF ( PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ .NE. UNDEF_PARAM_E ) THEN ! has(typeOfEnsembleForecast)
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfEnsembleForecast', PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ )
   ELSE
-    IF ( MSG%TYPE .NE. UNDEF_PARAM_E ) THEN ! Has( number )
+    IF ( MSG%TYPE .NE. UNDEF_PARAM_E ) THEN
       SELECT CASE (MSG%TYPE)
       CASE ( TYPE_CF_E ) ! Control forecast
         ! MIVAL: Need to define preper enumerators for type_of_ensemble_forecast
@@ -697,7 +697,7 @@ IMPLICIT NONE
         PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_TYPE_OF_ENSEMBLE_FORECAST )
       END SELECT
     ELSE
-      PP_DEBUG_CRITICAL_THROW( ERRFLAG_NUMBER_EXPECTED )
+      PP_DEBUG_CRITICAL_THROW( ERRFLAG_MARSTYPE_EXPECTED )
     ENDIF
   ENDIF
 
@@ -730,8 +730,8 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_UNKNOWN_TYPE_OF_ENSEMBLE_FORECAST )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown type of ensemble forecast' )
-    CASE ( ERRFLAG_NUMBER_EXPECTED )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'expected a number for perturbationNumber' )
+    CASE ( ERRFLAG_MARSTYPE_EXPECTED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'marstype is mandatory' )
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
     CASE DEFAULT

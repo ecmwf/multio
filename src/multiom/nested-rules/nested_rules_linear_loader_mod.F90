@@ -39,6 +39,7 @@ CONTAINS
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: INIT => RULE_INIT
 
   !> Match the rule
+  PROCEDURE, PASS, PRIVATE, NON_OVERRIDABLE :: MATCH_LIST => RULE_MATCH_LIST
   PROCEDURE, PASS, PRIVATE, NON_OVERRIDABLE :: MATCH_SINGLE => RULE_MATCH_SINGLE
   PROCEDURE, PASS, PRIVATE, NON_OVERRIDABLE :: MATCH_MULTIPLE => RULE_MATCH_MULTIPLE
 
@@ -55,7 +56,7 @@ CONTAINS
   PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: FREE => RULE_FREE
 
   !> Generic rule for matching
-  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE
+  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE, MATCH_LIST
 
 END TYPE
 
@@ -350,6 +351,129 @@ END FUNCTION RULE_COUNT_MATCHES
 #undef PP_PROCEDURE_TYPE
 
 
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_MATCH_LIST'
+PP_THREAD_SAFE FUNCTION RULE_MATCH_LIST( THIS, MSG, RULES_LIST, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: HOOKS_MOD,             ONLY: HOOKS_T
+  USE :: METADATA_BASE_MOD,     ONLY: METADATA_BASE_A
+  USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
+  USE :: PARAMETRIZATION_MOD,   ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD,   ONLY: FORTRAN_MESSAGE_T
+  USE :: NESTED_RULES_LIST_MOD, ONLY: RAW_RULES_LIST_T
+  USE :: SAMPLE_MOD,            ONLY: SAMPLE_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(NESTED_RULES_LINEAR_LOADER_T), INTENT(IN)    :: THIS
+  TYPE(FORTRAN_MESSAGE_T),             INTENT(IN)    :: MSG
+  TYPE(RAW_RULES_LIST_T),              INTENT(INOUT) :: RULES_LIST
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  LOGICAL :: LMATCH
+  INTEGER(KIND=JPIB_K) :: I
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULES_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PUSH_RULE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCH_RULE=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_ALREADY_ASSOCIATED=4_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%RULES_), ERRFLAG_RULES_NOT_ASSOCIATED )
+
+  !> Match the filter
+  DO I = 1, SIZE(THIS%RULES_)
+    PP_TRYCALL(ERRFLAG_MATCH_RULE) THIS%RULES_(I)%RULE_%MATCH( MSG, LMATCH, HOOKS )
+    IF ( LMATCH ) THEN
+      PP_TRYCALL(ERRFLAG_PUSH_RULE) THIS%RULES_(I)%RULE_%GET_FNAME( RULES_LIST, HOOKS )
+    ENDIF
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_RULES_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rules not associated' )
+    CASE(ERRFLAG_PUSH_RULE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to push new rule' )
+    CASE(ERRFLAG_MATCH_RULE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to match the rule' )
+    CASE(ERRFLAG_RULE_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule already associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_MATCH_LIST
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

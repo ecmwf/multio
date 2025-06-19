@@ -44,12 +44,13 @@ TYPE :: NESTED_RULES_TREE_LOADER_T
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: INIT  => NESTED_RULES_TREE_LOADER_INIT
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: COUNT_MATCHES  => NESTED_RULES_TREE_LOADER_COUNT_MATCHES
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_LIST => NESTED_RULES_TREE_LOADER_MATCH_LIST
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_SINGLE => NESTED_RULES_TREE_LOADER_MATCH_SINGLE
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_MULTIPLE => NESTED_RULES_TREE_LOADER_MATCH_MULTIPLE
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: FREE  => NESTED_RULES_TREE_LOADER_FREE
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SIZE  => NESTED_RULES_TREE_LOADER_SIZE
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRINT  => NESTED_RULES_TREE_LOADER_PRINT
-  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE
+  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE, MATCH_LIST
 
 END TYPE
 
@@ -81,9 +82,10 @@ CONTAINS
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: INIT_RULES => NESTED_RULES_TREE_LOADER_NODE_INIT_RULES
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: COUNT_MATCHES  => NESTED_RULES_TREE_LOADER_NODE_COUNT_MATCHES
 
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_LIST => NESTED_RULES_TREE_LOADER_NODE_MATCH_LIST
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_SINGLE => NESTED_RULES_TREE_LOADER_NODE_MATCH_SINGLE
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS :: MATCH_MULTIPLE => NESTED_RULES_TREE_LOADER_NODE_MATCH_MULTIPLE
-  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE
+  GENERIC, PUBLIC :: MATCH => MATCH_SINGLE, MATCH_MULTIPLE, MATCH_LIST
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: FREE  => NESTED_RULES_TREE_LOADER_NODE_FREE
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRINT  => NESTED_RULES_TREE_LOADER_NODE_PRINT
@@ -488,6 +490,125 @@ PP_ERROR_HANDLER
 END FUNCTION NESTED_RULES_TREE_LOADER_SIZE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'NESTED_RULES_TREE_LOADER_MATCH_LIST'
+PP_THREAD_SAFE FUNCTION NESTED_RULES_TREE_LOADER_MATCH_LIST( THIS, MSG, RULES_LIST, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
+  USE :: NESTED_RULES_LIST_MOD,    ONLY: RAW_RULES_LIST_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(NESTED_RULES_TREE_LOADER_T), INTENT(IN)    :: THIS
+  TYPE(FORTRAN_MESSAGE_T),           INTENT(IN)    :: MSG
+  TYPE(RAW_RULES_LIST_T),            INTENT(INOUT) :: RULES_LIST
+  TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULES_NOT_INITIALIZED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCHES_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCH_RULES=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INIT_RULES_LIST=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.THIS%INITIALIZED, ERRFLAG_RULES_NOT_INITIALIZED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(THIS%HEAD), ERRFLAG_MATCHES_NOT_ASSOCIATED )
+
+  !> Initialize the rules list
+  PP_TRYCALL(ERRFLAG_INIT_RULES_LIST) RULES_LIST%INIT( HOOKS )
+
+  !> Match the rules
+  PP_TRYCALL(ERRFLAG_MATCH_RULES) THIS%HEAD%MATCH( MSG, RULES_LIST, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_RULES_NOT_INITIALIZED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'rules not initialized' )
+    CASE(ERRFLAG_MATCHES_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'matches not associated' )
+    CASE(ERRFLAG_MATCH_RULES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to match rules' )
+    CASE(ERRFLAG_INIT_RULES_LIST)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to initialize rules list' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION NESTED_RULES_TREE_LOADER_MATCH_LIST
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
 
 
 
@@ -2074,6 +2195,145 @@ PP_ERROR_HANDLER
 
 
 END FUNCTION NESTED_RULES_TREE_LOADER_NODE_PRINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'NESTED_RULES_TREE_LOADER_NODE_MATCH_LIST'
+RECURSIVE FUNCTION NESTED_RULES_TREE_LOADER_NODE_MATCH_LIST( THIS, MSG, RULES_LIST, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: HOOKS_MOD,             ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD,   ONLY: FORTRAN_MESSAGE_T
+  USE :: NESTED_RULES_LIST_MOD, ONLY: RAW_RULES_LIST_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(NESTED_RULES_TREE_LOADER_NODE_T), INTENT(IN)    :: THIS
+  TYPE(FORTRAN_MESSAGE_T),                INTENT(IN)    :: MSG
+  TYPE(RAW_RULES_LIST_T),                 INTENT(INOUT) :: RULES_LIST
+  TYPE(HOOKS_T),                          INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  LOGICAL, DIMENSION(2) :: CONDITIONS
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: TMP
+  LOGICAL :: LMATCH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_MATCHES=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_ENCODERS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_NODE=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_MATCHES_RULE=4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+
+  !> Error handling
+  CONDITIONS(1) = ASSOCIATED(THIS%FILTERS)
+  CONDITIONS(2) = ASSOCIATED(THIS%RULES_COLLECTION)
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ALL( CONDITIONS ), ERRFLAG_INVALID_NODE )
+  ! PP_DEBUG_CRITICAL_COND_THROW( .NOT.ANY( CONDITIONS ), ERRFLAG_INVALID_NODE )
+
+  !> Check filters (if internal node)
+  IF ( CONDITIONS(1) ) THEN
+
+    DO I = 1, SIZE(THIS%FILTERS)
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_MATCHES) THIS%FILTERS(I)%FILTER%MATCH( MSG, LMATCH, HOOKS )
+      IF ( LMATCH ) THEN
+        ! Recursive call to the children
+        PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_ENCODERS) THIS%CHILDREN(I)%MATCH( MSG, RULES_LIST, HOOKS )
+      ENDIF
+    ENDDO
+
+  ELSEIF ( CONDITIONS(2) ) THEN
+
+    ! MIVAL: Count the number of matches in the rules collections
+    ! Count the number of matches in the rules collections
+    PP_TRYCALL(ERRFLAG_UNABLE_MATCHES_RULE) THIS%RULES_COLLECTION%MATCH( MSG, RULES_LIST, HOOKS )
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CHECK_MATCHES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to check filter for the i-th children' )
+    CASE(ERRFLAG_UNABLE_TO_GET_ENCODERS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call nested match' )
+    CASE(ERRFLAG_INVALID_NODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid node: unexpected pointer state' )
+    CASE(ERRFLAG_UNABLE_MATCHES_RULE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to match rules' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION NESTED_RULES_TREE_LOADER_NODE_MATCH_LIST
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

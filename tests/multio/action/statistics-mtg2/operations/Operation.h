@@ -5,8 +5,7 @@
 #include "../../../MultioTestEnvironment.h"
 
 
-#define SIZE 4096
-#define TOLERANCE 0.000001
+inline constexpr std::size_t SIZE = 4096;
 
 
 namespace multio::test::statistics_mtg2 {
@@ -18,6 +17,10 @@ using eckit::testing::ArrayView;
 
 class StatisticsOperationTest {
 public:
+    using SinglePointOverTime = std::vector<double>;
+    using SpatialData = std::vector<double>;
+    using SpatialDataOverTime = std::vector<SpatialData>;
+
     StatisticsOperationTest(const std::string &name) : name_{name} {};
 
     void runSingle() {
@@ -26,7 +29,7 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
         // Initial values + single field at 21st july
-        auto pls = std::vector<std::vector<double>>(2);
+        auto pls = SpatialDataOverTime(2);
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 2; ++i) {
             pls[i] = getPayload(SIZE, step);
@@ -44,7 +47,7 @@ public:
         auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                      env.debugSink().front().payload().size() / sizeof(double));
         EXPECT_EQUAL(res.size(), SIZE);
-        EXPECT(res.isApproximatelyEqual(ref, TOLERANCE));
+        EXPECT(res.isApproximatelyEqual(ref, std::numeric_limits<double>::epsilon()));
     }
 
     void runMultiple() {
@@ -53,7 +56,7 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
         // Send 45 messages stating from 21st july
-        auto pls = std::vector<std::vector<double>>(45);
+        auto pls = SpatialDataOverTime(45);
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 45; ++i) {
             pls[i] = getPayload(SIZE, step);
@@ -72,7 +75,7 @@ public:
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLERANCE));
+            EXPECT(res.isApproximatelyEqual(ref, 11 * std::numeric_limits<double>::epsilon()));
             env.debugSink().pop();
         }
         {   // August (31 days)
@@ -80,7 +83,7 @@ public:
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLERANCE));
+            EXPECT(res.isApproximatelyEqual(ref, 31 * std::numeric_limits<double>::epsilon()));
             env.debugSink().pop();
         }
         {   // September (2 days)
@@ -88,22 +91,22 @@ public:
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLERANCE));
+            EXPECT(res.isApproximatelyEqual(ref, 2 * std::numeric_limits<double>::epsilon()));
             env.debugSink().pop();
         }
     }
 
 protected:
-    virtual double reference(const std::vector<double> &input, const double init) = 0;
+    virtual double reference(const SinglePointOverTime &input, const double init) = 0;
 
 private:
     const std::string name_;
 
-    std::vector<double> reference(const std::vector<std::vector<double>>& input) {
+    SpatialData reference(const SpatialDataOverTime& input) {
         return reference(input, 1, input.size());
     }
 
-    std::vector<double> reference(const std::vector<std::vector<double>>& input, std::size_t start, std::size_t stop) {
+    SpatialData reference(const SpatialDataOverTime& input, std::size_t start, std::size_t stop) {
         const std::size_t steps = input.size();
         EXPECT(start > 0 && start <= stop && stop <= steps && steps != 0);
 
@@ -113,8 +116,8 @@ private:
             EXPECT_EQUAL(input[i].size(), size);
         }
 
-        auto output = std::vector<double>(size);
-        auto column = std::vector<double>(stop - start);
+        auto output = SpatialData(size);
+        auto column = SinglePointOverTime(stop - start);
         for (std::size_t i = 0; i < size; ++i) {
             for (std::size_t j = 0; j < (stop - start); ++j) {
                 column[j] = input[start+j][i];
@@ -135,7 +138,7 @@ private:
                 "{ \"type\": \"debug-sink\" } ] }";
     }
 
-    Message getMessage(std::vector<double> payload, std::int64_t step) {
+    Message getMessage(SpatialData payload, std::int64_t step) {
         auto md = Metadata({
             {"param", 130},
             {"levtype", "sfc"},
@@ -149,9 +152,9 @@ private:
         return Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
     }
 
-    std::vector<double> getPayload(std::size_t size, std::size_t seed, double min = 183.95, double max = 329.85) {
+    SpatialData getPayload(std::size_t size, std::size_t seed, double min = 183.95, double max = 329.85) {
         std::mt19937 gen(seed);
-        std::vector<double> v(size);
+        SpatialData v(size);
         std::uniform_real_distribution<double> dis(min, max);
         std::transform(v.begin(), v.end(), v.begin(), [&dis, &gen](double val) { return dis(gen); });
         return v;

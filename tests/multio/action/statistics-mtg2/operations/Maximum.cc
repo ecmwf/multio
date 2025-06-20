@@ -10,7 +10,7 @@ public:
 
     MinimumTest() : StatisticsOperationTest("maximum") {}
 
-    double reference(const std::vector<double> &input, const double init) override {
+    double reference(const SinglePointOverTime &input, const double init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return *std::max_element(input.begin(), input.end());
     }

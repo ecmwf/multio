@@ -10,7 +10,7 @@ public:
 
     InverseDifferenceTest() : StatisticsOperationTest("inverse-difference") {}
 
-    double reference(const std::vector<double> &input, const double init) override {
+    double reference(const SinglePointOverTime &input, const double init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return init - input[input.size()-1];
     }

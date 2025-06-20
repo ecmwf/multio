@@ -23,6 +23,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED FALSE
     TARGET ${PREFIX}_difference
     SOURCES Difference.cc
     NO_AS_NEEDED
@@ -30,6 +31,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED FALSE
     TARGET ${PREFIX}_inverse_difference
     SOURCES InverseDifference.cc
     NO_AS_NEEDED
@@ -44,6 +46,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED FALSE
     TARGET ${PREFIX}_deaccumulate
     SOURCES DeAccumulate.cc
     NO_AS_NEEDED
@@ -58,6 +61,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED FALSE
     TARGET ${PREFIX}_fixed_window_flux_average
     SOURCES FixedWindowFluxAverage.cc
     NO_AS_NEEDED

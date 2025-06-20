@@ -20,43 +20,19 @@ class StatisticsOperationTest {
 public:
     StatisticsOperationTest(const std::string &name) : name_{name} {};
 
-    virtual double reference(const std::vector<double> &input) = 0;
-
-    std::vector<double> reference(const std::vector<std::vector<double>>& input) {
-        return reference(input, 0, input.size());
-    }
-
-    std::vector<double> reference(const std::vector<std::vector<double>>& input, std::size_t start, std::size_t stop) {
-        const std::size_t steps = input.size();
-        EXPECT(start <= stop && stop <= steps && steps != 0);
-
-        const std::size_t size = input[start].size();
-        EXPECT_NOT_EQUAL(size, 0);
-        for (std::size_t i = start; i < stop; ++i) {
-            EXPECT_EQUAL(input[i].size(), size);
-        }
-
-        auto output = std::vector<double>(size);
-        auto column = std::vector<double>(stop - start);
-        for (std::size_t i = 0; i < size; ++i) {
-            for (std::size_t j = 0; j < (stop - start); ++j) {
-                column[j] = input[start+j][i];
-            }
-            output[i] = reference(column);
-        }
-
-        return output;
-    }
-
     void runSingle() {
         const std::string plan = getPlan();
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
-        // Single field message at 21st july
-        EXPECT_NO_THROW(env.plan().process(getMessage(getPayload(SIZE, 0), 0)));
-        auto pl = getPayload(SIZE, 1);
-        EXPECT_NO_THROW(env.plan().process(getMessage(pl, 1)));
+        // Initial values + single field at 21st july
+        auto pls = std::vector<std::vector<double>>(2);
+        std::int64_t step = 0;
+        for (std::size_t i = 0; i < 2; ++i) {
+            pls[i] = getPayload(SIZE, step);
+            EXPECT_NO_THROW(env.plan().process(getMessage(pls[i], step)));
+            step += 24;
+        }
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
         // Flush last-step should trigger emitting the statistics message
@@ -64,7 +40,7 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
         // Check the result
-        auto ref = reference(std::vector<std::vector<double>>{pl});
+        auto ref = reference(pls);
         auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                      env.debugSink().front().payload().size() / sizeof(double));
         EXPECT_EQUAL(res.size(), SIZE);
@@ -77,13 +53,12 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
         // Send 45 messages stating from 21st july
-        EXPECT_NO_THROW(env.plan().process(getMessage(getPayload(SIZE, 0), 0)));  // First one doesn't count :^)
         auto pls = std::vector<std::vector<double>>(45);
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 45; ++i) {
-            step += 24;
             pls[i] = getPayload(SIZE, step);
             EXPECT_NO_THROW(env.plan().process(getMessage(pls[i], step)));
+            step += 24;
         }
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
@@ -93,7 +68,7 @@ public:
 
         // Check the results
         {   // July (11 days)
-            auto ref = reference(pls, 0, 11);
+            auto ref = reference(pls, 1, 12);
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
@@ -101,15 +76,15 @@ public:
             env.debugSink().pop();
         }
         {   // August (31 days)
-            auto ref = reference(pls, 11, 42);
+            auto ref = reference(pls, 12, 43);
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, TOLERANCE));
             env.debugSink().pop();
         }
-        {   // September (3 days)
-            auto ref = reference(pls, 42, 45);
+        {   // September (2 days)
+            auto ref = reference(pls, 43, 45);
             auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(double));
             EXPECT_EQUAL(res.size(), SIZE);
@@ -118,8 +93,37 @@ public:
         }
     }
 
+protected:
+    virtual double reference(const std::vector<double> &input, const double init) = 0;
+
 private:
     const std::string name_;
+
+    std::vector<double> reference(const std::vector<std::vector<double>>& input) {
+        return reference(input, 1, input.size());
+    }
+
+    std::vector<double> reference(const std::vector<std::vector<double>>& input, std::size_t start, std::size_t stop) {
+        const std::size_t steps = input.size();
+        EXPECT(start > 0 && start <= stop && stop <= steps && steps != 0);
+
+        const std::size_t size = input[start].size();
+        EXPECT_NOT_EQUAL(size, 0);
+        for (std::size_t i = start - 1; i < stop; ++i) {
+            EXPECT_EQUAL(input[i].size(), size);
+        }
+
+        auto output = std::vector<double>(size);
+        auto column = std::vector<double>(stop - start);
+        for (std::size_t i = 0; i < size; ++i) {
+            for (std::size_t j = 0; j < (stop - start); ++j) {
+                column[j] = input[start+j][i];
+            }
+            output[i] = reference(column, input[start-1][i]);
+        }
+
+        return output;
+    }
 
     std::string getPlan() {
         return "{ \"name\": \"operation_" + name_ + "_test\", "

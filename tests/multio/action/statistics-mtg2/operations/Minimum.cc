@@ -10,7 +10,7 @@ public:
 
     MinimumTest() : StatisticsOperationTest("minimum") {}
 
-    double reference(const std::vector<double> &input) {
+    double reference(const std::vector<double> &input, const double init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return *std::min_element(input.begin(), input.end());
     }

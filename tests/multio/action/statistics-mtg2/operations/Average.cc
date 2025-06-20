@@ -10,7 +10,7 @@ public:
 
     AverageTest() : StatisticsOperationTest("average") {}
 
-    double reference(const std::vector<double> &input) {
+    double reference(const std::vector<double> &input, const double init) {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return std::accumulate(input.begin(), input.end(), 0.0) / input.size();
     }

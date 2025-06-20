@@ -10,9 +10,9 @@ public:
 
     DifferenceTest() : StatisticsOperationTest("difference") {}
 
-    double reference(const std::vector<double> &input) {
+    double reference(const std::vector<double> &input, const double init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
-        return input[input.size()-1] - input[0];
+        return input[input.size()-1] - init;
     }
 
 };

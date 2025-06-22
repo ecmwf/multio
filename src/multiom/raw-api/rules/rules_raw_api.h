@@ -15,10 +15,7 @@ int multio_grib2_rules_close(
 int multio_grib2_rules_serch(
     void*  handle,
     void*  mars_dict,
-    char** tag,
-    char** name,
-    char** sample_name,
-    void** localConfiguration
+    char** rule_name
 );
 
 #endif

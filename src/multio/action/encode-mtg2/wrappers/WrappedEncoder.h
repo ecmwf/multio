@@ -126,7 +126,23 @@ class WrappedEncoder {
     };
 
 
-    void prepare(
+    /**
+      * @brief Prepares a sample for encoding using the provided
+      * MarsDict, ParametrizationDict, and GeometryDict.
+      * This method, depending on the geometry perform hacks on the sample to
+      * enable the proper section3.
+      * Spherical harmonics section3 is tricky to obtain from a
+      * non-spherical harmonics sample
+      *
+      * stage 0
+      *
+      * @param mars_dict The MarsDict to search against.
+      * @param parametrization_dict The ParametrizationDict to use.
+      * @param geometry_dict The GeomotryDict to use.
+      * @param gribHandle c pointer to the grib sample
+      *
+      */
+    void prepareSample(
       const MarsDict&              mars_dict,
       const ParametrizationDict&   parametrization_dict,
       const GeomotryDict&          geometry_dict,
@@ -158,6 +174,21 @@ class WrappedEncoder {
       return;
     };
 
+    /**
+      * @brief Perform the allocation stage of the encoding on the provided sample,
+      * using the provided MarsDict, ParametrizationDict, and GeometryDict.
+      * This method prepares the sample by setting the proper sections ID for
+      * each section, and allocate all the dynamic memory inside the header
+      * (pl,pv,freq,dir,...)
+      *
+      * stage 1
+      *
+      * @param mars_dict The MarsDict to search against.
+      * @param parametrization_dict The ParametrizationDict to use.
+      * @param geometry_dict The GeomotryDict to use.
+      * @param gribHandle c pointer to the grib sample
+      *
+      */
     void allocate(
       const MarsDict&              mars_dict,
       const ParametrizationDict&   parametrization_dict,
@@ -190,6 +221,20 @@ class WrappedEncoder {
       return;
     };
 
+    /**
+      * @brief Perform the preset stage of the encoding on the provided sample,
+      * using the provided MarsDict, ParametrizationDict, and GeometryDict.
+      * This method performs populates all the grib metadata that are not
+      * time-dependent.
+      *
+      * stage 2
+      *
+      * @param mars_dict The MarsDict to search against.
+      * @param parametrization_dict The ParametrizationDict to use.
+      * @param geometry_dict The GeomotryDict to use.
+      * @param gribHandle c pointer to the grib sample
+      *
+      */
     void preset(
       const MarsDict&              mars_dict,
       const ParametrizationDict&   parametrization_dict,
@@ -222,6 +267,20 @@ class WrappedEncoder {
       return;
     };
 
+    /**
+      * @brief Perform the runtime stage of the encoding on the provided sample,
+      * using the provided MarsDict, ParametrizationDict, and GeometryDict.
+      * This method performs the final encoding step, writing the metadata that
+      * is time-dependent.
+      *
+      * stage 3
+      *
+      * @param mars_dict The MarsDict to search against.
+      * @param parametrization_dict The ParametrizationDict to use.
+      * @param geometry_dict The GeomotryDict to use.
+      * @param gribHandle c pointer to the grib sample
+      *
+      */
     void runtime(
       const MarsDict&              mars_dict,
       const ParametrizationDict&   parametrization_dict,

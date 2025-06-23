@@ -81,6 +81,7 @@ simply by describing a splitting from the world communicator with a unique colou
 The default behaviour is as follows.
 
 .. code-block:: yaml
+
     mpi-communicators:
         multio:
             type: passed

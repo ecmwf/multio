@@ -24,6 +24,9 @@
  *  - Implement map function to apply further compile time mappings
  * implementation)
  *
+ * To be replaced with C++20 `std::views::transform` (https://en.cppreference.com/w/cpp/ranges/transform_view.html)
+ * once we migrated
+ *
  */
 
 

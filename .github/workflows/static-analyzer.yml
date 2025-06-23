@@ -1,0 +1,231 @@
+name: Publish static analyzer to sites.ecmwf.int
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+jobs:
+  build:
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' || github.event_name == 'push'}}
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload-sareport.outputs.artifact-id }}
+    steps:
+      - name: Checkout Multio
+        uses: actions/checkout@v4
+        with:
+          path: multio
+      - name: Checkout ecbuild
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/ecbuild
+          path: ecbuild
+          ref: 'develop'
+      - name: Checkout eckit
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/eckit
+          path: eckit
+          ref: 'develop'
+      - name: Checkout eccodes
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/eccodes
+          path: eccodes
+          ref: 'develop'
+      - name: Checkout metkit
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/metkit
+          path: metkit
+          ref: 'develop'
+      - name: Checkout fckit
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/fckit
+          path: fckit
+          ref: 'develop'
+      - name: Checkout fdb
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/fdb
+          path: fdb
+          ref: 'develop'
+      - name: Checkout atlas
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/atlas
+          path: atlas
+          ref: 'develop'
+      - name: Checkout mir
+        uses: actions/checkout@v4
+        with:
+          repository: ecmwf/mir
+          path: mir
+          ref: 'develop'
+      # - name: Checkout pgen
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: ecmwf/pgen
+      #     path: pgen
+      #     ref: 'develop'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          python -m pip install CodeChecker
+          sudo apt-get install -y libaec-dev
+      - name: Generate CMakeLists.txt
+        shell: bash                               # default on ubuntu-latest
+        run: |
+          # Write the file atomically; fail if anything goes wrong
+          cat > CMakeLists.txt <<'CML'
+          cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+          ####################################################################
+          macro(ecbundle_add_project package_name)
+              #
+              #   add_subdirectory depending on BUILD_${package_name}
+              #
+              set(BUILD_${package_name} ON CACHE BOOL "")
+              if(BUILD_${package_name})
+                  set(dir ${ARGV1})
+                  if(NOT dir)
+                      set(dir ${package_name})
+                  endif()
+                  add_subdirectory(${dir})
+              endif()
+          endmacro()
+          macro(ecbundle_set key value)
+              set(${key} ${value} CACHE STRING "")
+              if("${${key}}" STREQUAL "${value}")
+                  message("  - ${key} = ${value}")
+              else()
+                  message("  - ${key} = ${${key}} [default=${value}]")
+              endif()
+          endmacro()
+          ####################################################################
+          ecbundle_set(CMAKE_BUILD_TYPE Release)
+          message("  - source     : ${CMAKE_CURRENT_SOURCE_DIR}")
+          message("  - build      : ${CMAKE_CURRENT_BINARY_DIR}")
+          message("  - install    : ${CMAKE_INSTALL_PREFIX}")
+          message("  - build type : ${CMAKE_BUILD_TYPE}")
+          message("Bundle variables set for this build:")
+          ecbundle_set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+          ecbundle_set(ENABLE_AEC ON)
+          ecbundle_set(ENABLE_MEMFS ON)
+          ecbundle_set(ENABLE_ECKIT_CMD off)
+          ecbundle_set(ENABLE_ECKIT_SQL off)
+          ecbundle_set(ENABLE_PYTHON_API_TESTS ON)
+
+          ecbundle_set( INSTALL_LIB_DIR lib )
+          ecbundle_set( ECBUILD_INSTALL_LIBRARY_HEADERS OFF )
+          ecbundle_set( ECBUILD_INSTALL_FORTRAN_MODULES OFF )
+          ecbundle_set( CMAKE_LINK_DEPENDS_NO_SHARED ON )
+          ecbundle_set( BUILD_oops ON )
+          ecbundle_set( ENABLE_OMP OFF )
+          ecbundle_set( ENABLE_SINGLE_PRECISION OFF )
+          ecbundle_set( FFTW_ENABLE_MKL OFF )
+          ecbundle_set( ENABLE_SCMEC OFF )
+          ecbundle_set( ENABLE_MULTIO_IFS_PIPELINE OFF )
+          ecbundle_set( ENABLE_FORWARD_WAM_DATA_TO_IFSIO OFF )
+          ecbundle_set( ENABLE_TESTS ON )
+          ecbundle_set( ENABLE_ECCODES_THREADS ON )
+          ecbundle_set( ECCODES_ENABLE_NETCDF OFF )
+          ecbundle_set( ECCODES_ENABLE_FORTRAN ON )
+          ecbundle_set( ECCODES_ENABLE_MEMFS ON )
+          ecbundle_set( ECCODES_INSTALL_EXTRA_TOOLS ON )
+          ecbundle_set( ECCODES_ENABLE_AEC ON )
+          ecbundle_set( ECCODES_ENABLE_JPG_LIBOPENJPEG OFF )
+          # ecbundle_set( BUFR_TABLES_PATH ${CMAKE_INSTALL_PREFIX}/share/bufrdc_tables/ )
+          ecbundle_set( ECKIT_ENABLE_XXHASH OFF )
+          ecbundle_set( ECKIT_ENABLE_VIENNACL OFF )
+          ecbundle_set( ECKIT_ENABLE_EIGEN OFF )
+          ecbundle_set( ECKIT_ENABLE_ARMADILLO OFF )
+          ecbundle_set( ECKIT_ENABLE_CUDA OFF )
+          ecbundle_set( ECKIT_ENABLE_SANDBOX OFF )
+          ecbundle_set( ECKIT_ENABLE_MKL OFF )
+          ecbundle_set( ECKIT_ENABLE_LAPACK OFF )
+          # ecbundle_set( ECKIT_ENABLE_MPI ON ) # Not possible in CI
+          ecbundle_set( FCKIT_ENABLE_FINAL OFF )
+          ecbundle_set( ENABLE_ODB OFF )
+          ecbundle_set( ENABLE_FDB_REMOTE OFF )
+          ecbundle_set( ENABLE_FDB_BUILD_TOOLS ON )
+          ecbundle_set( ATLAS_ENABLE_TESSELATION OFF )
+          ecbundle_set( ATLAS_ENABLE_TRANS OFF )
+          ecbundle_set( ATLAS_ENABLE_CLANG_TIDY OFF )
+          ecbundle_set( ATLAS_ENABLE_GRIDTOOLS_STORAGE OFF )
+          ecbundle_set( ENABLE_RETRIEVE_ORCA_DATA ON )
+          ecbundle_set( ENABLE_INSTALL_ORCA_DATA ON )
+          ecbundle_set( ENABLE_MIR_DOWNLOAD_MASKS OFF )
+          ecbundle_set( ENABLE_LEGACY_IFSIO ON )
+
+          message("")
+          ####################################################################
+          find_package(ecbuild 3.0 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR}/ecbuild)
+          project(All VERSION 2024.11)
+          ## Initialize
+          include(${CMAKE_CURRENT_BINARY_DIR}/init.cmake OPTIONAL)
+          ## Projects
+          ecbundle_add_project(ecbuild)
+          ecbundle_add_project(eccodes)
+          ecbundle_add_project(eckit)
+          ecbundle_add_project(metkit)
+          ecbundle_add_project(fckit)
+          ecbundle_add_project(fdb)
+          ecbundle_add_project(atlas)
+          ecbundle_add_project(mir)
+          # ecbundle_add_project(pgen)
+          ecbundle_add_project(multio)
+          ## Finalize
+          include(${CMAKE_CURRENT_BINARY_DIR}/final.cmake OPTIONAL)
+          ecbuild_install_project(NAME ${PROJECT_NAME})
+          ecbuild_print_summary()
+          CML
+      - name: Build sources
+        run: |
+          mkdir build
+          cd build
+          cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ninja
+      - name: Analyze sources
+        run: |
+          CodeChecker analyze build/compile_commands.json -o cc_out --analyzers clangsa
+          CodeChecker parse -e html cc_out -o ./reports_html || true
+
+          jq '[ .[] | select(.file | test(".*/multio/src/.*") ) ]' build/compile_commands.json > multio_compile_commands.json
+          # See atlas ci for including multiple repos
+          jq -n --slurpfile multio multio_compile_commands.json '$multio[]' \
+            > build/filtered_compile_commands.json
+
+          CodeChecker analyze build/filtered_compile_commands.json -o cc_out --analyzers clangsa -j 4 \
+            -i multio/.github/static-analyzer-skip.txt
+          CodeChecker parse -e html cc_out -o ./reports_html --trim-path-prefix ${PWD} || true
+      - name: Archive static-analyzer report
+        id: upload-sareport
+        uses: actions/upload-artifact@v4
+        with:
+          name: sareport
+          path: reports_html
+  preview-publish:
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    needs: build
+    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-publish.yml@main
+    with:
+      artifact-id: ${{ needs.build.outputs.artifact-id }}
+      space: docs
+      name: dev-section
+      path: multio/static-analyzer
+      link-text: 💣💥☠️ Static Analyzer Report ☠️💥💣
+      link-tag: STATIC-ANALYSIS
+    secrets:
+      sites-token: ${{ secrets.ECMWF_SITES_DOCS_DEV_SECTION_TOKEN }}
+  preview-unpublish:
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+    uses: ecmwf/reusable-workflows/.github/workflows/pr-preview-unpublish.yml@main
+    with:
+      space: docs
+      name: dev-section
+      path: multio/static-analyzer
+    secrets:
+      sites-token: ${{ secrets.ECMWF_SITES_DOCS_DEV_SECTION_TOKEN }}

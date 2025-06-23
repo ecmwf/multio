@@ -286,6 +286,7 @@ int multio_config_set_failure_handler(multio_configuration_t* cc, multio_failure
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [handler, usercontext, cc] {
+            ASSERT(cc != nullptr);
             if (!cc->failureContext) {
                 cc->failureContext = std::make_unique<multio_failure_context_t>();
             }
@@ -304,6 +305,7 @@ int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handl
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [handler, usercontext, mio] {
+            ASSERT(mio != nullptr);
             if (!mio->failureContext) {
                 mio->failureContext = std::make_unique<multio_failure_context_t>();
             }
@@ -320,6 +322,7 @@ int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handl
 
 int multio_new_configuration(multio_configuration_t** cc) {
 #if !defined(MULTIO_DUMMY_API)
+    ASSERT(cc != nullptr);
     return wrapApiFunction([cc]() { (*cc) = new multio_configuration_t{}; });
 #else
     return MULTIO_SUCCESS;
@@ -329,6 +332,7 @@ int multio_new_configuration(multio_configuration_t** cc) {
 int multio_new_configuration_from_filename(multio_configuration_t** cc, const char* conf_file_name) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([cc, conf_file_name]() {
+        ASSERT(cc != nullptr);
         ASSERT(conf_file_name);
         (*cc) = new multio_configuration_t{eckit::PathName{conf_file_name}};
     });
@@ -341,7 +345,7 @@ int multio_delete_configuration(multio_configuration_t* cc) {
 #if !defined(MULTIO_DUMMY_API)
     // delete without failurehandler. Configuration is assumed to have be invalid after movement
     return wrapApiFunction([cc]() {
-        ASSERT(cc);
+        ASSERT(cc != nullptr);
         delete cc;
     });
 #else
@@ -353,7 +357,7 @@ int multio_config_set_path(multio_configuration_t* cc, const char* configuration
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, configuration_path]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             if (configuration_path != nullptr) {
                 cc->setConfigDir(eckit::PathName(configuration_path));
             }
@@ -368,7 +372,7 @@ int multio_mpi_allow_world_default_comm(multio_configuration_t* cc, bool allow) 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, allow]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             if (!cc->getMPIInitInfo()) {
                 cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
@@ -384,7 +388,7 @@ int multio_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, parent_comm]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             if (!cc->getMPIInitInfo()) {
                 cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
@@ -400,7 +404,7 @@ int multio_mpi_return_client_comm(multio_configuration_t* cc, int* return_client
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, return_client_comm]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             if (!cc->getMPIInitInfo()) {
                 cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
@@ -416,7 +420,7 @@ int multio_mpi_return_server_comm(multio_configuration_t* cc, int* return_server
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, return_server_comm]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             if (!cc->getMPIInitInfo()) {
                 cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
@@ -433,7 +437,8 @@ int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction(
         [mio, cc]() {
-            ASSERT(cc);
+            ASSERT(mio != nullptr);
+            ASSERT(cc != nullptr);
             (*mio) = new multio_handle_t{std::move(*cc)};
 
             // Finally move failureContext (should not throw...)
@@ -457,7 +462,7 @@ int multio_new_handle_default(multio_handle_t** mio) {
 int multio_delete_handle(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([mio]() {
-        ASSERT(mio);
+        ASSERT(mio != nullptr);
 
         // TODO add sleep
         delete mio;
@@ -472,7 +477,7 @@ int multio_start_server(multio_configuration_t* cc) {
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction(
         [cc]() {
-            ASSERT(cc);
+            ASSERT(cc != nullptr);
             multio::server::MultioServer{std::move(*cc)};
         },
         cc);
@@ -485,7 +490,7 @@ int multio_open_connections(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio]() {
-            ASSERT(mio);
+            ASSERT(mio != nullptr);
 
             mio->openConnections();
         },
@@ -499,7 +504,7 @@ int multio_close_connections(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio]() {
-            ASSERT(mio);
+            ASSERT(mio != nullptr);
 
             multio::message::Metadata md;
             md.set("flushKind", "close-connection");
@@ -519,8 +524,8 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
             mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Flush);
         },
         mio);
@@ -534,8 +539,8 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
 
             mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Notification);
         },
@@ -550,8 +555,9 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(data != nullptr);
 
             // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
             multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int)};
@@ -569,8 +575,8 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
 
             mio->dispatch(md->md, eckit::Buffer{}, Message::Tag::Parametrization);
         },
@@ -586,8 +592,9 @@ int multio_write_parametrization_array_byte(multio_handle_t* mio, const char* ke
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
-            ASSERT(mio);
-            ASSERT(key);
+            ASSERT(mio != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(data != nullptr);
 
 
             using namespace multio::message::parametrization;
@@ -609,8 +616,9 @@ int multio_write_parametrization_array_int32(multio_handle_t* mio, const char* k
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
-            ASSERT(mio);
-            ASSERT(key);
+            ASSERT(mio != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(data != nullptr);
 
 
             using namespace multio::message::parametrization;
@@ -632,8 +640,9 @@ int multio_write_parametrization_array_int64(multio_handle_t* mio, const char* k
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
-            ASSERT(mio);
-            ASSERT(key);
+            ASSERT(mio != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(data != nullptr);
 
 
             using namespace multio::message::parametrization;
@@ -655,8 +664,9 @@ int multio_write_parametrization_array_real32(multio_handle_t* mio, const char* 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
-            ASSERT(mio);
-            ASSERT(key);
+            ASSERT(mio != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(data != nullptr);
 
 
             using namespace multio::message::parametrization;
@@ -678,8 +688,9 @@ int multio_write_parametrization_array_real64(multio_handle_t* mio, const char* 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
-            ASSERT(mio);
-            ASSERT(key);
+            ASSERT(mio != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(data != nullptr);
 
 
             using namespace multio::message::parametrization;
@@ -701,8 +712,9 @@ int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const f
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(data != nullptr);
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
 
@@ -718,8 +730,9 @@ int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(data != nullptr);
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
 
@@ -735,8 +748,9 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(data != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set("misc-precision", "single");
@@ -758,8 +772,9 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(data != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set("misc-precision", "double");
@@ -783,9 +798,9 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, d, byte_size]() {
-            ASSERT(mio);
-            ASSERT(md);
-            ASSERT(d);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(d != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set("misc-format", "raw");
@@ -815,8 +830,8 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, gribdata, gribsize]() {
-            ASSERT(mio);
-            ASSERT(gribdata);
+            ASSERT(mio != nullptr);
+            ASSERT(gribdata != nullptr);
 
             multio::message::Metadata md;
             // md.acquire();  // Make sure metadata is not stored in a stateful container from last write
@@ -834,7 +849,11 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
-        [md, mio]() { (*md) = new multio_metadata_t{std::make_shared<multio::message::Metadata>(), mio}; }, mio);
+        [md, mio]() {
+            ASSERT(md != nullptr);
+            (*md) = new multio_metadata_t{std::make_shared<multio::message::Metadata>(), mio};
+        },
+        mio);
 #else
     return MULTIO_SUCCESS;
 #endif
@@ -852,7 +871,7 @@ int multio_delete_metadata(multio_metadata_t* md) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md]() {
-            ASSERT(md);
+            ASSERT(md != nullptr);
             delete md;
         },
         md);
@@ -866,8 +885,8 @@ int multio_metadata_set_int(multio_metadata_t* md, const char* key, long long va
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
+            ASSERT(md != nullptr);
+            ASSERT(key != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set(key, value);
@@ -883,9 +902,9 @@ int multio_metadata_set_string(multio_metadata_t* md, const char* key, const cha
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-            ASSERT(value);
+            ASSERT(md != nullptr);
+            ASSERT(key != nullptr);
+            ASSERT(value != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set(key, value);
@@ -900,8 +919,8 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
+            ASSERT(md != nullptr);
+            ASSERT(key != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set(key, value);
@@ -917,8 +936,8 @@ int multio_metadata_set_double(multio_metadata_t* md, const char* key, double va
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
+            ASSERT(md != nullptr);
+            ASSERT(key != nullptr);
 
             md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             md->md.modify().set(key, static_cast<double>(value));
@@ -934,6 +953,7 @@ int multio_data_new(multio_data_t** d, multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d]() {
+            ASSERT(d != nullptr);
             (*d) = new multio_data_t();
             return 0;
         },
@@ -947,7 +967,7 @@ int multio_data_delete(multio_data_t* d) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d]() {
-            ASSERT(d);
+            ASSERT(d != nullptr);
             delete d;
             return 0;
         },
@@ -961,6 +981,7 @@ int multio_data_zero(multio_data_t* d) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d]() {
+            ASSERT(d != nullptr);
             d->zero();
             return 0;
         },
@@ -974,6 +995,7 @@ int multio_data_resize(multio_data_t* d, int new_size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d, new_size]() {
+            ASSERT(d != nullptr);
             d->resize(new_size);
             return 0;
         },
@@ -987,6 +1009,8 @@ int multio_data_size(multio_data_t* d, int* size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d, size]() {
+            ASSERT(d != nullptr);
+            ASSERT(size != nullptr);
             *size = d->size();
             return 0;
         },
@@ -1016,7 +1040,8 @@ int multio_data_set_float_chunk(multio_data_t* d, float* value, int pos, int siz
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d, value, pos, size]() {
-            ASSERT(value);
+            ASSERT(d != nullptr);
+            ASSERT(value != nullptr);
             ASSERT(pos >= 0);
             ASSERT(pos * sizeof(float) < d->size());
             float* val = static_cast<float*>(d->data());
@@ -1035,7 +1060,8 @@ int multio_data_set_double_chunk(multio_data_t* d, double* value, int pos, int s
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [d, value, pos, size]() {
-            ASSERT(value);
+            ASSERT(d != nullptr);
+            ASSERT(value != nullptr);
             ASSERT(pos >= 0);
             ASSERT(pos * sizeof(double) < d->size());
             double* val = static_cast<double*>(d->data());
@@ -1055,9 +1081,9 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, accepted]() {
-            ASSERT(mio);
-            ASSERT(md);
-            ASSERT(accepted);
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+            ASSERT(accepted != nullptr);
 
             *accepted = mio->isFieldMatched(md->md.read());
         },

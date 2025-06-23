@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-/** \ingroup Data-routing */
+/** \ingroup Data routing */
 /** @{*/
 
 /** Initialises and starts server

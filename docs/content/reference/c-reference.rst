@@ -4,11 +4,6 @@
 C Reference
 ===========
 
-Error Handling
---------------
-
-.. doxygengroup:: Error Handling
-   :content-only:
 
 Initialisation
 --------------
@@ -17,10 +12,17 @@ Initialisation
    :content-only:
 
 
-Version Accessors
------------------
+Configuration
+--------------
 
-.. doxygengroup:: Version Accessors
+.. doxygengroup:: Configuration
+   :content-only:
+
+
+Error Handling
+--------------
+
+.. doxygengroup:: Error Handling
    :content-only:
 
 
@@ -29,7 +31,7 @@ Data Routing
 
 .. _`reference-data-routing`:
 
-.. doxygengroup:: Data-routing
+.. doxygengroup:: Data routing
    :content-only:
 
 

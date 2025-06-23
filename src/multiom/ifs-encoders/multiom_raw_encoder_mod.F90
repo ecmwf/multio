@@ -51,6 +51,10 @@ CONTAINS
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PREPARE  => MULTIOM_RAW_ENCODER_PREPARE
 
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: ALLOCATE  => MULTIOM_RAW_ENCODER_ALLOCATE
+
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRESET  => MULTIOM_RAW_ENCODER_PRESET
+
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: RUNTIME  => MULTIOM_RAW_ENCODER_RUNTIME
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRINT    => MULTIOM_RAW_ENCODER_PRINT
@@ -181,16 +185,20 @@ END FUNCTION MULTIOM_RAW_ENCODER_INIT
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_PREPARE'
 PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_PREPARE( THIS, &
-&  MSG, PAR, GRIB_SAMPLE, HOOKS ) RESULT(RET)
+&  MSG, PAR, GEO, C_GRIB_SAMPLE_P, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
-  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIM_K
-  USE :: HOOKS_MOD,                ONLY: HOOKS_T
-  USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
-  USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
-  uSE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
-  USE :: GRIB_METADATA_MOD,        ONLY: GRIB_METADATA_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIM_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  uSE :: METADATA_BASE_MOD,   ONLY: METADATA_BASE_A
+  USE :: GRIB_METADATA_MOD,   ONLY: GRIB_METADATA_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -207,7 +215,8 @@ IMPLICIT NONE
   CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
-  INTEGER(KIND=JPIM_K),         INTENT(INOUT) :: GRIB_SAMPLE
+  CLASS(REPRES_A), POINTER,     INTENT(IN)    :: GEO
+  TYPE(C_PTR),                  INTENT(IN)    :: C_GRIB_SAMPLE_P
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -246,6 +255,7 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
 
+#if 0
   ! Copy options
   LOC_GRIB_SAMPLE = GRIB_SAMPLE
   GRIB_SAMPLE = -1_JPIM_K
@@ -270,6 +280,7 @@ IMPLICIT NONE
 
   PP_LOG_DEVELOP_STR( ' * Take the sample from the metadata...' )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_TAKE_HANDLE) METADATA%GET_HANDLE( GRIB_SAMPLE, HOOKS, TAKE=.TRUE. )
+#endif
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -334,9 +345,338 @@ END FUNCTION MULTIOM_RAW_ENCODER_PREPARE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_ALLOCATE'
+PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_ALLOCATE( THIS, &
+&  MSG, PAR, GEO, C_GRIB_SAMPLE_P, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIM_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  uSE :: METADATA_BASE_MOD,   ONLY: METADATA_BASE_A
+  USE :: GRIB_METADATA_MOD,   ONLY: GRIB_METADATA_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  CLASS(REPRES_A), POINTER,     INTENT(IN)    :: GEO
+  TYPE(C_PTR),                  INTENT(IN)    :: C_GRIB_SAMPLE_P
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  TYPE(GRIB_METADATA_T), TARGET :: METADATA
+  CLASS(METADATA_BASE_A), POINTER :: P_METADATA
+  INTEGER(KINd=JPIM_K) :: LOC_GRIB_SAMPLE
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ASSOCIATED = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_ENCODER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BIND_METADATA = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SAFE_LOAD1 = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SAFE_LOAD2 = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_TAKE_HANDLE = 8_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
+
+#if 0
+  ! Copy options
+  LOC_GRIB_SAMPLE = GRIB_SAMPLE
+  GRIB_SAMPLE = -1_JPIM_K
+
+  !> Bind the encoder to the sample
+  PP_LOG_DEVELOP_STR( ' * Bind the encoder to the sample...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_BIND_METADATA) METADATA%BIND_HANDLE( LOC_GRIB_SAMPLE, HOOKS )
+  P_METADATA => METADATA
+
+  ! Preconfigure the local metadata with all the memory related information
+  PP_LOG_DEVELOP_STR( ' * Allocate the sample...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE) THIS%ENCODER_%ALLOCATE( MSG, PAR, THIS%ENCODER_OPT_, P_METADATA, HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Safe reload of sample after allocation...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_SAFE_LOAD1) METADATA%SAFE_LOAD( HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Preset the sample' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE) THIS%ENCODER_%PRESET( MSG, PAR, THIS%ENCODER_OPT_, P_METADATA, HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Safe reload of sample after preset...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_SAFE_LOAD2) METADATA%SAFE_LOAD( HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Take the sample from the metadata...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_TAKE_HANDLE) METADATA%GET_HANDLE( GRIB_SAMPLE, HOOKS, TAKE=.TRUE. )
+#endif
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder is already associated' )
+    CASE (ERRFLAG_UNABLE_TO_MAKE_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the encoder' )
+    CASE (ERRFLAG_UNABLE_TO_BIND_METADATA)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to bind the encoder to the sample' )
+    CASE (ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate the encoder' )
+    CASE (ERRFLAG_UNABLE_TO_SAFE_LOAD1)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to safe load the sample after allocation' )
+    CASE (ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to preset the sample' )
+    CASE (ERRFLAG_UNABLE_TO_SAFE_LOAD2)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to safe load the sample after preset' )
+    CASE (ERRFLAG_UNABLE_TO_TAKE_HANDLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to take the sample from the metadata' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MULTIOM_RAW_ENCODER_ALLOCATE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_PRESET'
+PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_PRESET( THIS, &
+&  MSG, PAR, GEO, C_GRIB_SAMPLE_P, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIM_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  uSE :: METADATA_BASE_MOD,   ONLY: METADATA_BASE_A
+  USE :: GRIB_METADATA_MOD,   ONLY: GRIB_METADATA_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
+  TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
+  TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
+  CLASS(REPRES_A), POINTER,     INTENT(IN)    :: GEO
+  TYPE(C_PTR),                  INTENT(IN)    :: C_GRIB_SAMPLE_P
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  TYPE(GRIB_METADATA_T), TARGET :: METADATA
+  CLASS(METADATA_BASE_A), POINTER :: P_METADATA
+  INTEGER(KINd=JPIM_K) :: LOC_GRIB_SAMPLE
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ASSOCIATED = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_ENCODER = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BIND_METADATA = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SAFE_LOAD1 = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SAFE_LOAD2 = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_TAKE_HANDLE = 8_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
+
+#if 0
+  ! Copy options
+  LOC_GRIB_SAMPLE = GRIB_SAMPLE
+  GRIB_SAMPLE = -1_JPIM_K
+
+
+  !> Bind the encoder to the sample
+  PP_LOG_DEVELOP_STR( ' * Bind the encoder to the sample...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_BIND_METADATA) METADATA%BIND_HANDLE( LOC_GRIB_SAMPLE, HOOKS )
+  P_METADATA => METADATA
+
+  ! Preconfigure the local metadata with all the memory related information
+  PP_LOG_DEVELOP_STR( ' * Allocate the sample...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE) THIS%ENCODER_%ALLOCATE( MSG, PAR, THIS%ENCODER_OPT_, P_METADATA, HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Safe reload of sample after allocation...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_SAFE_LOAD1) METADATA%SAFE_LOAD( HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Preset the sample' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE) THIS%ENCODER_%PRESET( MSG, PAR, THIS%ENCODER_OPT_, P_METADATA, HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Safe reload of sample after preset...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_SAFE_LOAD2) METADATA%SAFE_LOAD( HOOKS )
+
+  PP_LOG_DEVELOP_STR( ' * Take the sample from the metadata...' )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_TAKE_HANDLE) METADATA%GET_HANDLE( GRIB_SAMPLE, HOOKS, TAKE=.TRUE. )
+
+#endif
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder is already associated' )
+    CASE (ERRFLAG_UNABLE_TO_MAKE_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the encoder' )
+    CASE (ERRFLAG_UNABLE_TO_BIND_METADATA)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to bind the encoder to the sample' )
+    CASE (ERRFLAG_UNABLE_TO_PERFORM_ALLOCATE_STAGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate the encoder' )
+    CASE (ERRFLAG_UNABLE_TO_SAFE_LOAD1)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to safe load the sample after allocation' )
+    CASE (ERRFLAG_UNABLE_TO_PERFORM_PRESET_STAGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to preset the sample' )
+    CASE (ERRFLAG_UNABLE_TO_SAFE_LOAD2)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to safe load the sample after preset' )
+    CASE (ERRFLAG_UNABLE_TO_TAKE_HANDLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to take the sample from the metadata' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MULTIOM_RAW_ENCODER_PRESET
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MULTIOM_RAW_ENCODER_RUNTIME'
 PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_RUNTIME( THIS, &
-&    MSG, PAR, GRIB_SAMPLE, HOOKS ) RESULT(RET)
+&    MSG, PAR, GEO, C_GRIB_SAMPLE_P, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -346,6 +686,7 @@ PP_THREAD_SAFE FUNCTION MULTIOM_RAW_ENCODER_RUNTIME( THIS, &
   uSE :: METADATA_BASE_MOD,   ONLY: METADATA_BASE_A
   USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
   USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
 
   ! Dummy objects to be removed in the future
   USE :: TIME_UTILS_MOD, ONLY: TIME_HISTORY_T
@@ -366,7 +707,8 @@ IMPLICIT NONE
   CLASS(MULTIOM_RAW_ENCODER_T), INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
-  INTEGER(KIND=JPIM_K),         INTENT(IN)    :: GRIB_SAMPLE
+  CLASS(REPRES_A), POINTER,     INTENT(IN)    :: GEO
+  TYPE(C_PTR),                  INTENT(IN)    :: C_GRIB_SAMPLE_P
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -401,6 +743,7 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_NOT_ASSOCIATED )
 
+#if 0
   !> Bind the sample to the metadata
   PP_LOG_DEVELOP_STR( ' * Bind metadata...' )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_BIND_METADATA) METADATA%BIND_HANDLE( GRIB_SAMPLE, HOOKS )
@@ -412,6 +755,8 @@ IMPLICIT NONE
 &   MSG, PAR, TIME_HIST, CURR_TIME, THIS%ENCODER_OPT_, P_METADATA, HOOKS )
 
   !> N.B. No need to call metadata%free because the sample need to survive
+#endif
+
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

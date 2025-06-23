@@ -20,6 +20,8 @@
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/message/Glossary.h"
+#include "wrappers/hack.h"
+#include "wrappers/WrappedEncoder.h"
 #include "wrappers/WrappedRules.h"
 
 namespace multio::action::encode_mtg2 {

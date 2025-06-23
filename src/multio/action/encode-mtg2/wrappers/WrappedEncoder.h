@@ -11,37 +11,17 @@ using eckit::LocalConfiguration;
 
 // explicit interface to the C API for rules management
 extern "C" {
-  int multio_grib2_rules_open(void* options, void** handle, const char* fname, int len);
-  int multio_grib2_rules_close(void** handle);
-  int multio_grib2_rules_search(void* handle, void* mars_dict, char** rule_name);
+  int multio_grib2_raw_encoder_open(void* options, void** handle, const char* fname, int len);
+  int multio_grib2_raw_encoder_close(void** handle);
+  int multio_grib2_raw_encoder_prepare (void* handle, const void* mars_dict, const void* par_dict, const void* geom_dict, void* grib_handle );
+  int multio_grib2_raw_encoder_allocate(void* handle, const void* mars_dict, const void* par_dict, const void* geom_dict, void* grib_handle );
+  int multio_grib2_raw_encoder_preset  (void* handle, const void* mars_dict, const void* par_dict, const void* geom_dict, void* grib_handle );
+  int multio_grib2_raw_encoder_runtime (void* handle, const void* mars_dict, const void* par_dict, const void* geom_dict, void* grib_handle );
   // int multio_grib2_rules_print(void* handle, const char* output_file, int len);
   // int multio_grib2_rules_size(void* handle, int64_t* num_rules, int64_t max_linear_size, int64_t* max_levels);
 }
 
 namespace multio::action::encode_mtg2::wrappers {
-
-// Define a type for the MarsDict ID, which is used to identify the dictionary in the C API.
-// using MarsDict = multio::action::encode_mtg2::wrappers::Dict<MarsDictId>;
-// using ApiOptions = multio::action::encode_mtg2::wrappers::Dict<ApiOptionsId>;
-class MarsDict {
-  public:
-    void* raw() const {return nullptr; }; // Returns the raw pointer to the underlying C API dictionary
-};
-
-class ParametrizationDict {
-  public:
-    void* raw() const {return nullptr; }; // Returns the raw pointer to the underlying C API dictionary
-};
-
-class GeomotryDict {
-  public:
-    void* raw() const {return nullptr; }; // Returns the raw pointer to the underlying C API dictionary
-};
-
-class ApiOptions {
-  public:
-    void* raw() const {return nullptr; }; // Returns the raw pointer to the underlying C API dictionary
-};
 
 namespace {
 
@@ -57,7 +37,7 @@ namespace {
     */
   void* init_wrapped_encoder_type( const std::string& encoderTye, const ApiOptions& options ) {
     void* handle = nullptr;
-    int result = multio_grib2_rules_open( options.raw(), &handle, encoderTye.c_str(), static_cast<int>(encoderTye.size()) );
+    int result = multio_grib2_raw_encoder_open( options.raw(), &handle, encoderTye.c_str(), static_cast<int>(encoderTye.size()) );
     if (result != 0) {
       throw eckit::Exception("Failed to open wrapped encoder: " + encoderTye, Here());
     }
@@ -75,7 +55,8 @@ namespace {
     */
   void* init_wrapped_encoder( const ApiOptions& options) {
     void* handle = nullptr;
-    int result = multio_grib2_rules_open( nullptr, &handle, "default", static_cast<int>(fname.size()) );
+    const std::string fname = "default"; // Default encoder type
+    int result = multio_grib2_raw_encoder_open( nullptr, &handle, fname.c_str(), static_cast<int>(fname.size()) );
     if (result != 0) {
       throw eckit::Exception("Failed to open wrapped encoder default ", Here());
     }
@@ -139,29 +120,18 @@ class WrappedEncoder {
       */
     ~WrappedEncoder() {
       if (handle_) {
-        int result = multio_grib2_rules_close(&handle_);
+        int result = multio_grib2_raw_encoder_close(&handle_);
       }
       handle_ = nullptr;
     };
 
-    /**
-      * @brief Searches for a rule to build the encoder in the rules handle.
-      *
-      * This method searches for a rule based on the provided MarsDict and retrieves
-      * the associated tag, name, sample, and local configuration.
-      *
-      * @param mars_dict The MarsDict to search against.
-      * @param tag The tag associated with the rule.
-      * @param name The name of the rule.
-      * @param gribHandle The sample GribHandle associated with the rule.
-      * @param localConfiguration The local configuration for the encoder.
-      * @return int Returns 0 on success, or an error code on failure.
-      */
-    multio::util::MioGribHandle searchEncoder(
+
+    void prepare(
       const MarsDict&              mars_dict,
-      std::string&                 tag,
-      std::string&                 name,
-      eckit::LocalConfiguration&   localConfiguration ) {
+      const ParametrizationDict&   parametrization_dict,
+      const GeomotryDict&          geometry_dict,
+      multio::util::MioGribHandle& gribHandle
+      ) {
 
 
       if (!handle_) {
@@ -170,81 +140,120 @@ class WrappedEncoder {
       if (!mars_dict.raw()) {
         throw eckit::Exception("MarsDict is not initialized", Here());
       }
+      if (!parametrization_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!geometry_dict.raw()) {
+        throw eckit::Exception("GeometryDict is not initialized", Here());
+      }
 
       // Search for the rule in the rules handle using the provided MarsDict
       char* c_rule_name = nullptr;
-      int result = multio_grib2_rules_search(handle_, mars_dict.raw(), &c_rule_name );
+      int result = multio_grib2_raw_encoder_prepare( handle_,
+      mars_dict.raw(), parametrization_dict.raw(), geometry_dict.raw(), gribHandle.raw() );
       if (result != 0) {
         throw eckit::Exception("Failed to search rules", Here());
       }
-
-      // Convert the char* result to a std::string
-      eckit::LocalConfiguration conf{eckit::YAMLConfiguration{std::string{c_rule_name}}};
-
-      // Free the memory allocated by the C API
-      free(c_rule_name);
-      c_rule_name = nullptr;
-
-      if (conf.has("name")) {
-        name = conf.getString("name");
-      } else {
-        throw eckit::Exception("Rule configuration does not contain 'name'", Here());
-      }
-
-      if (conf.has("tag")) {
-        tag = conf.getString("tag");
-      } else {
-        throw eckit::Exception("Rule configuration does not contain 'tag'", Here());
-      }
-
-
-      if (conf.has("encoder")) {
-        localConfiguration = conf.getSubConfiguration("encoder");
-      } else {
-        throw eckit::Exception("Rule configuration does not contain 'local_configuration'", Here());
-      }
-
       // Load the rule into an eckit::LocalConfiguration and return it to
-      return { []( const eckit::LocalConfiguration& cfg ) {
-          if (cfg.has("sample")) {
-            return multio::util::MioGribHandle{grib_handle_new_from_samples( nullptr, cfg.getString("sample").c_str())};
-          } else {
-            return multio::util::MioGribHandle{grib_handle_new_from_samples( nullptr, "sample" )};
-          }
-        }( conf )
-      };
-    };
-
-    void searchMapper(
-      const MarsDict&              mars_dict,
-      eckit::LocalConfiguration&   localConfiguration ) {
-
-
-      if (!handle_) {
-        throw eckit::Exception("Rules handle is not initialized", Here());
-      }
-      if (!mars_dict.raw()) {
-        throw eckit::Exception("MarsDict is not initialized", Here());
-      }
-
-      // Search for the rule in the rules handle using the provided MarsDict
-      char* c_rule_name = nullptr;
-      int result = multio_grib2_rules_search(handle_, mars_dict.raw(), &c_rule_name );
-      if (result != 0) {
-        throw eckit::Exception("Failed to search rules", Here());
-      }
-
-      // Convert the char* result to a std::string
-      eckit::LocalConfiguration conf{eckit::YAMLConfiguration{std::string{c_rule_name}}};
-
-      // Free the memory allocated by the C API
-      free(c_rule_name);
-      c_rule_name = nullptr;
-
-      // Get mapper
-
       return;
     };
+
+    void allocate(
+      const MarsDict&              mars_dict,
+      const ParametrizationDict&   parametrization_dict,
+      const GeomotryDict&          geometry_dict,
+      multio::util::MioGribHandle& gribHandle
+      ) {
+
+
+      if (!handle_) {
+        throw eckit::Exception("Rules handle is not initialized", Here());
+      }
+      if (!mars_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!parametrization_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!geometry_dict.raw()) {
+        throw eckit::Exception("GeometryDict is not initialized", Here());
+      }
+
+      // Search for the rule in the rules handle using the provided MarsDict
+      char* c_rule_name = nullptr;
+      int result = multio_grib2_raw_encoder_allocate( handle_,
+      mars_dict.raw(), parametrization_dict.raw(), geometry_dict.raw(), gribHandle.raw() );
+      if (result != 0) {
+        throw eckit::Exception("Failed to search rules", Here());
+      }
+      // Load the rule into an eckit::LocalConfiguration and return it to
+      return;
+    };
+
+    void preset(
+      const MarsDict&              mars_dict,
+      const ParametrizationDict&   parametrization_dict,
+      const GeomotryDict&          geometry_dict,
+      multio::util::MioGribHandle& gribHandle
+      ) {
+
+
+      if (!handle_) {
+        throw eckit::Exception("Rules handle is not initialized", Here());
+      }
+      if (!mars_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!parametrization_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!geometry_dict.raw()) {
+        throw eckit::Exception("GeometryDict is not initialized", Here());
+      }
+
+      // Search for the rule in the rules handle using the provided MarsDict
+      char* c_rule_name = nullptr;
+      int result = multio_grib2_raw_encoder_preset( handle_,
+      mars_dict.raw(), parametrization_dict.raw(), geometry_dict.raw(), gribHandle.raw() );
+      if (result != 0) {
+        throw eckit::Exception("Failed to search rules", Here());
+      }
+      // Load the rule into an eckit::LocalConfiguration and return it to
+      return;
+    };
+
+    void runtime(
+      const MarsDict&              mars_dict,
+      const ParametrizationDict&   parametrization_dict,
+      const GeomotryDict&          geometry_dict,
+      multio::util::MioGribHandle& gribHandle
+      ) {
+
+
+      if (!handle_) {
+        throw eckit::Exception("Rules handle is not initialized", Here());
+      }
+      if (!mars_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!parametrization_dict.raw()) {
+        throw eckit::Exception("MarsDict is not initialized", Here());
+      }
+      if (!geometry_dict.raw()) {
+        throw eckit::Exception("GeometryDict is not initialized", Here());
+      }
+
+      // Search for the rule in the rules handle using the provided MarsDict
+      char* c_rule_name = nullptr;
+      int result = multio_grib2_raw_encoder_runtime( handle_,
+      mars_dict.raw(), parametrization_dict.raw(), geometry_dict.raw(), gribHandle.raw() );
+      if (result != 0) {
+        throw eckit::Exception("Failed to search rules", Here());
+      }
+      // Load the rule into an eckit::LocalConfiguration and return it to
+      return;
+    };
+
 
     /**
       * @brief Returns the raw handle to the rules.
@@ -293,7 +302,7 @@ class WrappedEncoder {
       */
     void reset() {
       if (handle_) {
-        int result = multio_grib2_rules_close(&handle_);
+        int result = multio_grib2_raw_encoder_close(&handle_);
         if (result != 0) {
           throw eckit::Exception("Failed to reset rules handle", Here());
         }
@@ -320,15 +329,6 @@ class WrappedEncoder {
     };
 
     WrappedEncoder() = default;
-
-    WrappedEncoder& operator=(const std::string& fname) {
-      reset();
-      handle_ = init_rules(fname);
-      return *this;
-    };
-
-    WrappedEncoder(const char* fname) : WrappedEncoder(std::string(fname)) {};
-
 };
 
 } // namespace multio::action::encode_mtg2::wrappers

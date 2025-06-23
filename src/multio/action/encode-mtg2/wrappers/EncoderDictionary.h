@@ -18,7 +18,7 @@ extern "C" {
     int dict_set_string_array(const char*, int, const char**, int*, int);
     int dict_set_long_array(const char*, int, int64_t*, int);
     int dict_set_double_array(const char*, int, double*, int);
-    int dict_set_has(const char*, int);
+    int dict_has(const char*, int);
 
     int dict_get_string(const char*, int, char**, int*);
     int dict_get_long(const char*, int, int64_t*);
@@ -84,8 +84,8 @@ public:
     void set(const std::string& key, double value) {
         dict_set_double(key.c_str(), key.size(), value);
     }
-    void set_has(const std::string& key) {
-        dict_set_has(key.c_str(), key.size());
+    void has(const std::string& key) {
+        dict_has(key.c_str(), key.size());
     }
 
     void set(const std::string& key, const std::vector<std::string>& values) {

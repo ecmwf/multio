@@ -733,7 +733,7 @@ IMPLICIT NONE
 
                   IF( LOCAL_DEFINITION.GT.0 ) THEN
                       PP_TRYCALL(ERRFLAG_CONVERT_MODEL) IMODEL2CMODEL(MSG%MODEL, TMPMODEL, HOOKS)
-                      PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'model', MSG%MODEL )
+                      PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'model', TMPMODEL )
                   ENDIF
               ENDIF
       END SELECT

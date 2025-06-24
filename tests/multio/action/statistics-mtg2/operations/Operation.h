@@ -101,6 +101,10 @@ public:
     }
 
 protected:
+    // The output of the operation is checked against the implementation of
+    // this reference method. The 'input' is a vector of values over time
+    // in the same spatial point. The last value from the previous window
+    // is given as 'init'.
     virtual ElemType reference(const SinglePointOverTime &input, const ElemType init) = 0;
 
 private:

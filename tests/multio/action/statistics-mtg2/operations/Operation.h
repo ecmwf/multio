@@ -7,6 +7,9 @@
 
 inline constexpr std::size_t SIZE = 4096;
 
+template <typename T>
+inline constexpr T TOLLERANCE = 10 * std::numeric_limits<T>::epsilon();
+
 
 namespace multio::test::statistics_mtg2 {
 
@@ -15,10 +18,11 @@ using multio::message::Message;
 using multio::message::Metadata;
 using eckit::testing::ArrayView;
 
+template <typename ElemType>
 class StatisticsOperationTest {
 public:
-    using SinglePointOverTime = std::vector<double>;
-    using SpatialData = std::vector<double>;
+    using SinglePointOverTime = std::vector<ElemType>;
+    using SpatialData = std::vector<ElemType>;
     using SpatialDataOverTime = std::vector<SpatialData>;
 
     StatisticsOperationTest(const std::string &name) : name_{name} {};
@@ -44,10 +48,10 @@ public:
 
         // Check the result
         auto ref = reference(pls);
-        auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
-                                     env.debugSink().front().payload().size() / sizeof(double));
+        auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                     env.debugSink().front().payload().size() / sizeof(ElemType));
         EXPECT_EQUAL(res.size(), SIZE);
-        EXPECT(res.isApproximatelyEqual(ref, std::numeric_limits<double>::epsilon()));
+        EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
     }
 
     void runMultiple() {
@@ -72,32 +76,32 @@ public:
         // Check the results
         {   // July (11 days)
             auto ref = reference(pls, 1, 12);
-            auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
-                                        env.debugSink().front().payload().size() / sizeof(double));
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, 11 * std::numeric_limits<double>::epsilon()));
+            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
             env.debugSink().pop();
         }
         {   // August (31 days)
             auto ref = reference(pls, 12, 43);
-            auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
-                                        env.debugSink().front().payload().size() / sizeof(double));
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, 31 * std::numeric_limits<double>::epsilon()));
+            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
             env.debugSink().pop();
         }
         {   // September (2 days)
             auto ref = reference(pls, 43, 45);
-            auto res = ArrayView<double>(static_cast<double const *>(env.debugSink().front().payload().data()),
-                                        env.debugSink().front().payload().size() / sizeof(double));
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, 2 * std::numeric_limits<double>::epsilon()));
+            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
             env.debugSink().pop();
         }
     }
 
 protected:
-    virtual double reference(const SinglePointOverTime &input, const double init) = 0;
+    virtual ElemType reference(const SinglePointOverTime &input, const ElemType init) = 0;
 
 private:
     const std::string name_;
@@ -139,6 +143,8 @@ private:
     }
 
     Message getMessage(SpatialData payload, std::int64_t step) {
+        static_assert(std::is_same_v<ElemType, float> || std::is_same_v<ElemType, double>, "type must be float or double");
+
         auto md = Metadata({
             {"param", 130},
             {"levtype", "sfc"},
@@ -146,17 +152,17 @@ private:
             {"startDate", 20200721},
             {"startTime", 0000},
             {"step", step},
-            {"misc-precision", "double"}
+            {"misc-precision", std::is_same_v<ElemType, float> ? "single" : "double"}
         });
-        auto pl = eckit::Buffer(payload.data(), payload.size() * sizeof(double));
+        auto pl = eckit::Buffer(payload.data(), payload.size() * sizeof(ElemType));
         return Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
     }
 
-    SpatialData getPayload(std::size_t size, std::size_t seed, double min = 183.95, double max = 329.85) {
+    SpatialData getPayload(std::size_t size, std::size_t seed, ElemType min = 183.95, ElemType max = 329.85) {
         std::mt19937 gen(seed);
         SpatialData v(size);
-        std::uniform_real_distribution<double> dis(min, max);
-        std::transform(v.begin(), v.end(), v.begin(), [&dis, &gen](double val) { return dis(gen); });
+        std::uniform_real_distribution<ElemType> dis(min, max);
+        std::transform(v.begin(), v.end(), v.begin(), [&dis, &gen](ElemType val) { return dis(gen); });
         return v;
     }
 

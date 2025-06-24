@@ -5,22 +5,27 @@
 
 namespace multio::test::statistics_mtg2 {
 
-class MinimumTest : public StatisticsOperationTest {
+template <typename ElemType>
+class MinimumTest : public StatisticsOperationTest<ElemType> {
 public:
+    using typename StatisticsOperationTest<ElemType>::SinglePointOverTime;
 
-    MinimumTest() : StatisticsOperationTest("minimum") {}
+    MinimumTest() : StatisticsOperationTest<ElemType>("minimum") {}
 
-    double reference(const SinglePointOverTime &input, const double init) override {
+    ElemType reference(const SinglePointOverTime &input, const ElemType init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return *std::min_element(input.begin(), input.end());
     }
 
 };
 
-auto test = MinimumTest();
+auto testFloat = MinimumTest<float>();
+auto testDouble = MinimumTest<double>();
 
-CASE("single test") { test.runSingle(); }
-CASE("multiple test") { test.runMultiple(); }
+CASE("single test float") { testFloat.runSingle(); }
+CASE("single test double") { testDouble.runSingle(); }
+CASE("multiple test float") { testFloat.runMultiple(); }
+CASE("multiple test double") { testDouble.runMultiple(); }
 
 }  // multio::test::statistics_mtg2
 

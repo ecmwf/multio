@@ -5,22 +5,27 @@
 
 namespace multio::test::statistics_mtg2 {
 
-class DifferenceTest : public StatisticsOperationTest {
+template <typename ElemType>
+class DifferenceTest : public StatisticsOperationTest<ElemType> {
 public:
+    using typename StatisticsOperationTest<ElemType>::SinglePointOverTime;
 
-    DifferenceTest() : StatisticsOperationTest("difference") {}
+    DifferenceTest() : StatisticsOperationTest<ElemType>("difference") {}
 
-    double reference(const SinglePointOverTime &input, const double init) override {
+    ElemType reference(const SinglePointOverTime &input, const ElemType init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return input[input.size()-1] - init;
     }
 
 };
 
-auto test = DifferenceTest();
+auto testFloat = DifferenceTest<float>();
+auto testDouble = DifferenceTest<double>();
 
-CASE("single test") { test.runSingle(); }
-CASE("multiple test") { test.runMultiple(); }
+CASE("single test float") { testFloat.runSingle(); }
+CASE("single test double") { testDouble.runSingle(); }
+CASE("multiple test float") { testFloat.runMultiple(); }
+CASE("multiple test double") { testDouble.runMultiple(); }
 
 }  // multio::test::statistics_mtg2
 

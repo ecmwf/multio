@@ -5,22 +5,27 @@
 
 namespace multio::test::statistics_mtg2 {
 
-class InverseDifferenceTest : public StatisticsOperationTest {
+template <typename ElemType>
+class InverseDifferenceTest : public StatisticsOperationTest<ElemType> {
 public:
+    using typename StatisticsOperationTest<ElemType>::SinglePointOverTime;
 
-    InverseDifferenceTest() : StatisticsOperationTest("inverse-difference") {}
+    InverseDifferenceTest() : StatisticsOperationTest<ElemType>("inverse-difference") {}
 
-    double reference(const SinglePointOverTime &input, const double init) override {
+    ElemType reference(const SinglePointOverTime &input, const ElemType init) override {
         EXPECT_NOT_EQUAL(input.size(), 0);
         return init - input[input.size()-1];
     }
 
 };
 
-auto test = InverseDifferenceTest();
+auto testFloat = InverseDifferenceTest<float>();
+auto testDouble = InverseDifferenceTest<double>();
 
-CASE("single test") { test.runSingle(); }
-CASE("multiple test") { test.runMultiple(); }
+CASE("single test float") { testFloat.runSingle(); }
+CASE("single test double") { testDouble.runSingle(); }
+CASE("multiple test float") { testFloat.runMultiple(); }
+CASE("multiple test double") { testDouble.runMultiple(); }
 
 }  // multio::test::statistics_mtg2
 

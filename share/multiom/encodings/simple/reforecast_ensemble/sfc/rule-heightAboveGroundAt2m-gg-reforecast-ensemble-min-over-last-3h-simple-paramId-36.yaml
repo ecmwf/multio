@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-reforecast-ensemble-min-over-last-3h-simple-paramIdECMF-36
+name: rule-heightAboveGroundAt2m-gg-reforecast-ensemble-min-over-last-3h-simple-paramId-36
 
 filter:
   type: composed
@@ -53,11 +53,11 @@ encoder:
       type-of-statistical-processing: min
       overall-length-of-timerange: 3h
     param-configurator:
-      type: paramIdECMF
+      type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: surface
+      type: heightAboveGroundAt2m
     ensemble-configurator:
       type: default
   data-representation-section:

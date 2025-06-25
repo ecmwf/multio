@@ -1,6 +1,6 @@
 tag: grib2
 
-name: rule-surface-gg-deterministic-max-over-last-3h-simple-paramIdECMF-1
+name: rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-3h-ccsds-paramId-1
 
 filter:
   type: composed
@@ -12,7 +12,7 @@ filter:
     - type: anoffset
       operation: lacks
     - type: number
-      operation: lacks
+      operation: has
     - type: hdate
       operation: lacks
     - type: levtype
@@ -24,7 +24,7 @@ filter:
         - 228026
     - type: packing
       operation: match
-      value: simple
+      value: ccsds
 
 encoder:
   type: grib2
@@ -47,16 +47,18 @@ encoder:
   grid-definition-section:
     template-number: 40
   product-definition-section:
-    template-number: 8
+    template-number: 11
     time-statistics-configurator:
       type: fixed-timerange
       type-of-statistical-processing: max
       overall-length-of-timerange: 3h
     param-configurator:
-      type: paramIdECMF
+      type: paramId
     model-configurator:
       type: default
     level-configurator:
-      type: surface
+      type: heightAboveGroundAt2m
+    ensemble-configurator:
+      type: default
   data-representation-section:
-    template-number: 0
+    template-number: 42

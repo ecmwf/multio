@@ -21,6 +21,8 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-wind-gust.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-precip-rate.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-min-precip-rate.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-max-2m-temperature.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-timespan-min-2m-temperature.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-35-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-36-to-sol.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-37-to-sol.yaml'

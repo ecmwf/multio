@@ -1,0 +1,22 @@
+name: 'map fixed-range-max 2m temp to generic param'
+
+tag: 'fixed-range 2m temperature'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 122, 228027 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 202

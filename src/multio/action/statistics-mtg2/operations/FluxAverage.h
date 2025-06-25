@@ -46,7 +46,7 @@ private:
     }
 
     void computeWithoutMissing(T* buf, const StatisticsConfiguration& cfg) {
-        const double c = static_cast<double>(1.0) / static_cast<double>(win_.timeSpanInSeconds());
+        const double c = static_cast<double>(1.0) / static_cast<double>(win_.currPointInSeconds() - win_.creationPointInSeconds());
         std::transform(values_.begin(), values_.end(), buf, [c](T v) { return static_cast<T>(v * c); });
         return;
     }

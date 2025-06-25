@@ -381,6 +381,12 @@ IMPLICIT NONE
 &       MAPPED_MSG, MAPPED_PAR, ENCODER_TAG, ENCODER_NAME, METADATA, ENCODING_DONE, &
 &       THIS%ENCODER_OPTIONS, HOOKS )
 
+      WRITE(*,*) ' ======================================================================'
+      WRITE( *,*) 'Encoder tag:  ', TRIM(ADJUSTL(ENCODER_TAG))
+      WRITE( *,*) 'Encoder name: ', TRIM(ADJUSTL(ENCODER_NAME))
+      PP_TRYCALL(ERRFLAG_ENCODER_COLLECTION_ENCODE) ENCODERS%PRINT( J, &
+&       MAPPED_MSG, MAPPED_PAR, 6_JPIB_K, 0_JPIB_K, THIS%ENCODER_OPTIONS, HOOKS )
+
       !> If encdong required/done then add the metadata the the list
       IF ( ENCODING_DONE ) THEN
         PP_TRYCALL(ERRFLAG_UNABLE_TO_ADD_METADATA) METADATA_LIST%PUSH( MAPPED_MSG, MAPPED_PAR, &

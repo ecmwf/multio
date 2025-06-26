@@ -16,6 +16,8 @@ set( MULTIOM_FILTERS_MARS_SOURCES
   ${MULTIOM_FILTERS_MARS_DIR}/filter_frequency_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_wavelength_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_levelist_mod.F90
+  ${MULTIOM_FILTERS_MARS_DIR}/filter_system_mod.F90
+  ${MULTIOM_FILTERS_MARS_DIR}/filter_method_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_anoffset_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_chem_mod.F90
   ${MULTIOM_FILTERS_MARS_DIR}/filter_step_mod.F90

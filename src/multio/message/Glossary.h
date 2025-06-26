@@ -424,6 +424,10 @@ namespace Mtg2 {
         static const KV<std::string> experiment{"experiment"};
         static const KV<std::int64_t> generation{"generation"};
         static const KV<std::int64_t> realization{"realization"};
+
+        // Multi model simulations
+        static const KV<std::int64_t> system{"system"};
+        static const KV<std::int64_t> method{"method"};
     }
 
     namespace marsCustom {
@@ -467,6 +471,8 @@ namespace Mtg2 {
         func(mars::experiment);
         func(mars::generation);
         func(mars::realization);
+        func(mars::system);
+        func(mars::method);
         func(marsLegacy::repres);
     }
 
@@ -510,10 +516,6 @@ namespace Mtg2 {
         static const Prefixed<KV<std::int64_t>> scaleFactorOfCentralWavenumber{prefix, "scaleFactorOfCentralWavenumber"};
         static const Prefixed<KV<std::int64_t>> scaledValueOfCentralWavenumber{prefix, "scaledValueOfCentralWavenumber"};
         static const Prefixed<KV<std::int64_t>> destineLocalVersion{prefix, "destineLocalVersion"};
-
-        // TBD - move to marse
-        static const Prefixed<KV<std::int64_t>> methodNumber{prefix, "methodNumber"};
-        static const Prefixed<KV<std::int64_t>> systemNumber{prefix, "systemNumber"};
     }
 
     template<typename Func>
@@ -544,9 +546,6 @@ namespace Mtg2 {
         func(misc::scaleFactorOfCentralWavenumber);
         func(misc::scaledValueOfCentralWavenumber);
         func(misc::destineLocalVersion);
-
-        func(misc::methodNumber);
-        func(misc::systemNumber);
     }
 
     namespace gg {

@@ -1,9 +1,9 @@
 !>
-!> @file grib2_section2_024_mod.F90
+!> @file grib2_section2_015_mod.F90
 !>
 !> @brief Module for managing GRIB2 Section 2 operations.
 !>
-!> The `GRIB2_SECTION2_024_MOD` module contains procedures to initialize, allocate,
+!> The `GRIB2_SECTION2_015_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 2 objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see GRIB2_SECTION2_024_INIT
-!>   - @see GRIB2_SECTION2_024_ALLOCATE
-!>   - @see GRIB2_SECTION2_024_PRESET
-!>   - @see GRIB2_SECTION2_024_RUNTIME
-!>   - @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!>   - @see GRIB2_SECTION2_024_FREE
+!>   - @see GRIB2_SECTION2_015_INIT
+!>   - @see GRIB2_SECTION2_015_ALLOCATE
+!>   - @see GRIB2_SECTION2_015_PRESET
+!>   - @see GRIB2_SECTION2_015_RUNTIME
+!>   - @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!>   - @see GRIB2_SECTION2_015_FREE
 !>
 !> @section dependencies
 !>
@@ -52,10 +52,10 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_section2_024_mod.F90'
+#define PP_FILE_NAME 'grib2_section2_015_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION2_024_MOD'
-MODULE GRIB2_SECTION2_024_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION2_015_MOD'
+MODULE GRIB2_SECTION2_015_MOD
 
   !> Symbols imported from other modules within the project.
   USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
@@ -69,7 +69,7 @@ PRIVATE
 !>
 !> @brief Type definition for GRIB2 Section 2 handler.
 !>
-!> The `GRIB2_SECTION2_024_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `GRIB2_SECTION2_015_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runtime,
 !> encoding checks, and cleanup operations for GRIB2 Section 2 objects.
 !>
@@ -77,7 +77,7 @@ PRIVATE
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION2_024_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: GRIB2_SECTION2_015_T
 
   !> Default symbols visibility
   PRIVATE
@@ -92,7 +92,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => GRIB2_SECTION2_024_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => GRIB2_SECTION2_015_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 2 object.
@@ -102,7 +102,7 @@ CONTAINS
   !> The preocedure starts from a message and fro the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => GRIB2_SECTION2_024_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => GRIB2_SECTION2_015_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 2 object.
@@ -110,7 +110,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => GRIB2_SECTION2_024_ALLOCATE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => GRIB2_SECTION2_015_ALLOCATE
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 2 object.
@@ -118,7 +118,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runtime execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => GRIB2_SECTION2_024_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => GRIB2_SECTION2_015_PRESET
 
   !>
   !> @brief Manages the runtime execution of GRIB2 Section 2 operations.
@@ -126,7 +126,7 @@ CONTAINS
   !> This procedure handles operations and computations during runtime,
   !> making use of time and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => GRIB2_SECTION2_024_RUNTIME
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => GRIB2_SECTION2_015_RUNTIME
 
   !>
   !> @brief Determines if the GRIB2 Section 2 object needs to be encoded.
@@ -134,7 +134,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => GRIB2_SECTION2_024_TO_BE_ENCODED
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => GRIB2_SECTION2_015_TO_BE_ENCODED
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 2 object.
@@ -142,14 +142,14 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => GRIB2_SECTION2_024_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => GRIB2_SECTION2_015_FREE
 
 END TYPE
 
 
 !>
 !> Public symbols (dataTypes)
-PUBLIC :: GRIB2_SECTION2_024_T
+PUBLIC :: GRIB2_SECTION2_015_T
 
 CONTAINS
 
@@ -161,7 +161,7 @@ CONTAINS
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_024_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_015_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -183,16 +183,16 @@ CONTAINS
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_INIT_CFG'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_INIT_CFG'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -213,7 +213,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -239,7 +239,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'LOCAL_USE_SECTION'
-  THIS%KIND_   = '2.24'
+  THIS%KIND_   = '2.15'
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -281,7 +281,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_INIT_CFG
+END FUNCTION GRIB2_SECTION2_015_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -293,7 +293,7 @@ END FUNCTION GRIB2_SECTION2_024_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_024_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_015_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -316,16 +316,16 @@ END FUNCTION GRIB2_SECTION2_024_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -347,7 +347,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -377,7 +377,7 @@ IMPLICIT NONE
   ! Initialise the section
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'LOCAL_USE_SECTION'
-  THIS%KIND_   = '2.24'
+  THIS%KIND_   = '2.15'
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -419,7 +419,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_INIT_LAZY
+END FUNCTION GRIB2_SECTION2_015_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -433,7 +433,7 @@ END FUNCTION GRIB2_SECTION2_024_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION2_024_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION2_015_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -458,16 +458,16 @@ END FUNCTION GRIB2_SECTION2_024_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_ALLOCATE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_ALLOCATE( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_ALLOCATE'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_ALLOCATE( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -490,7 +490,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_ALLOCATE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -526,7 +526,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'setLocalDefinition', 1 )
 
   ! Set the number of local definitions
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'localDefinitionNumber', 24 )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'localDefinitionNumber', 15 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -571,7 +571,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_ALLOCATE
+END FUNCTION GRIB2_SECTION2_015_ALLOCATE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -584,7 +584,7 @@ END FUNCTION GRIB2_SECTION2_024_ALLOCATE
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `GRIB2_SECTION2_024_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `GRIB2_SECTION2_015_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -609,16 +609,16 @@ END FUNCTION GRIB2_SECTION2_024_ALLOCATE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_PRESET'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_PRESET'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -628,6 +628,11 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_PRESET( THIS, &
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,          ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,          ONLY: STREAM_MMSF_E
+  USE :: ENUMERATORS_MOD,          ONLY: STREAM_MSMM_E
+  USE :: ENUMERATORS_MOD,          ONLY: STREAM_MMSA_E
+  USE :: ENUMERATORS_MOD,          ONLY: ISTREAM2CSTREAM
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -641,7 +646,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -651,8 +656,18 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  CHARACTER(LEN=32) CTMP
+
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_STREAM=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_TYPE=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_CLASS=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_EXPVER=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_METHOD=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNDEF_SYSTEM=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ISTREAM2CSTREAM=8_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -673,15 +688,34 @@ IMPLICIT NONE
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%STREAM .EQ. UNDEF_PARAM_E, ERRFLAG_UNDEF_STREAM )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%TYPE .EQ. UNDEF_PARAM_E, ERRFLAG_UNDEF_TYPE )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%CLASS .EQ. UNDEF_PARAM_E, ERRFLAG_UNDEF_CLASS )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%EXPVER .EQ. '****', ERRFLAG_UNDEF_EXPVER )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%METHOD .EQ. UNDEF_PARAM_E, ERRFLAG_UNDEF_METHOD )
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%SYSTEM .EQ. UNDEF_PARAM_E, ERRFLAG_UNDEF_SYSTEM )
+
 
   ! Preset the section with the mars keywords
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'stream', MSG%STREAM )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'type',   MSG%TYPE )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'class',  MSG%CLASS )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'expver', MSG%EXPVER )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'channelNumber', MSG%CHANNEL )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'methodNumber', MSG%METHOD )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'systemNumber', MSG%SYSTEM )
 
-  ! Eventually other metadata needs to be set according to the specific section 2 type
+  ! Warnings
+  IF ( (MSG%STREAM.NE.STREAM_MMSF_E) .AND. &
+&      (MSG%STREAM.NE.STREAM_MSMM_E) .AND. &
+&      (MSG%STREAM.NE.STREAM_MMSA_E) ) THEN
+
+    CTMP = REPEAT(' ', LEN(CTMP) )
+
+    PP_TRYCALL(ERRFLAG_ISTREAM2CSTREAM) ISTREAM2CSTREAM( MSG%STREAM, CTMP, HOOKS )
+
+    WRITE( *, '(A)' ) 'WARNING: Unexpected stream in section2: LocalSectionNumber=15: "'//TRIM(ADJUSTL(CTMP))//'"'
+
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -708,6 +742,20 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+    CASE ( ERRFLAG_UNDEF_STREAM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'stream is undefined' )
+    CASE ( ERRFLAG_UNDEF_TYPE )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'type is undefined' )
+    CASE ( ERRFLAG_UNDEF_CLASS )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'class is undefined' )
+    CASE ( ERRFLAG_UNDEF_EXPVER )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'expver is undefined' )
+    CASE ( ERRFLAG_UNDEF_METHOD )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'method is undefined' )
+    CASE ( ERRFLAG_UNDEF_SYSTEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'system is undefined' )
+    CASE ( ERRFLAG_ISTREAM2CSTREAM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'stream is not a valid istream2cstream' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -726,7 +774,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_PRESET
+END FUNCTION GRIB2_SECTION2_015_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -740,7 +788,7 @@ END FUNCTION GRIB2_SECTION2_024_PRESET
 !> the success or failure of the runtime operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `GRIB2_SECTION2_024_T` representing the GRIB section for runtime execution.
+!>   @param [in]    THIS      An object of type `GRIB2_SECTION2_015_T` representing the GRIB section for runtime execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -769,16 +817,16 @@ END FUNCTION GRIB2_SECTION2_024_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_RUNTIME'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_RUNTIME( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_RUNTIME'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_RUNTIME( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -803,7 +851,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_RUNTIME( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),     INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -882,7 +930,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_RUNTIME
+END FUNCTION GRIB2_SECTION2_015_RUNTIME
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -896,7 +944,7 @@ END FUNCTION GRIB2_SECTION2_024_RUNTIME
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `GRIB2_SECTION2_024_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `GRIB2_SECTION2_015_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -924,16 +972,16 @@ END FUNCTION GRIB2_SECTION2_024_RUNTIME
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_FREE
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_TO_BE_ENCODED'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_TO_BE_ENCODED( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_TO_BE_ENCODED'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_TO_BE_ENCODED( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -957,7 +1005,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_TO_BE_ENCODED( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1027,7 +1075,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_TO_BE_ENCODED
+END FUNCTION GRIB2_SECTION2_015_TO_BE_ENCODED
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1040,7 +1088,7 @@ END FUNCTION GRIB2_SECTION2_024_TO_BE_ENCODED
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_024_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `GRIB2_SECTION2_015_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1056,15 +1104,15 @@ END FUNCTION GRIB2_SECTION2_024_TO_BE_ENCODED
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION2_024_INIT
-!> @see GRIB2_SECTION2_024_ALLOCATE
-!> @see GRIB2_SECTION2_024_PRESET
-!> @see GRIB2_SECTION2_024_RUNTIME
-!> @see GRIB2_SECTION2_024_TO_BE_ENCODED
+!> @see GRIB2_SECTION2_015_INIT
+!> @see GRIB2_SECTION2_015_ALLOCATE
+!> @see GRIB2_SECTION2_015_PRESET
+!> @see GRIB2_SECTION2_015_RUNTIME
+!> @see GRIB2_SECTION2_015_TO_BE_ENCODED
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_024_FREE'
-PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION2_015_FREE'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_015_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1083,7 +1131,7 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION2_024_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION2_024_T),  INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION2_015_T),  INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1145,11 +1193,11 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION GRIB2_SECTION2_024_FREE
+END FUNCTION GRIB2_SECTION2_015_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-END MODULE GRIB2_SECTION2_024_MOD
+END MODULE GRIB2_SECTION2_015_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

@@ -14,6 +14,7 @@ from GenerateEncoding import (
     mergePartialRules,
     buildRule,
     matchType,
+    notMatchType,
     matchParam,
     pdtCatPair,
     typeGE,
@@ -51,6 +52,7 @@ from GenerateEncoding import (
     composeAll,
     ComposeAll,
     MatchType,
+    NotMatchType,
 )
 
 # Helpers
@@ -60,6 +62,7 @@ isOptical = composeAll([lacksType("chem"), hasType("wavelength")])
 isChemicalOptical = composeAll([hasType("chem"), hasType("wavelength")])
 
 #
+
 
 TYPES = [
     # partialRule(
@@ -86,9 +89,12 @@ GRIDS_SH = [
     )
 ]
 
+# Class d1 is hacked - we don't expect to have conditions on other classes. Also the local template numbers are hacked in the encoders
 LOCALSECTION = [
-    partialRule([lacksType("anoffset")], [localUse(1)]),
-    partialRule([hasType("anoffset")], [localUse(36)]),
+    partialRule([lacksType("anoffset"), notMatchType("class", "d1")], [localUse(1)]),
+    partialRule([hasType("anoffset"), notMatchType("class", "d1")], [localUse(36)]),
+    partialRule([lacksType("anoffset"), matchType("class", "d1")], [localUse(1001)]),
+    partialRule([hasType("anoffset"), matchType("class", "d1")], [localUse(1036)]),
 ]
 
 PROCESSTYPES = [
@@ -1415,14 +1421,19 @@ def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
     )
 
 
-def findMatchTypeFilter(filter: RuleFilter, type: str):
+def findMatchTypeFilter(filter: RuleFilter, type: str) -> (str, str):
+    """
+    Returns a tuple with the value of the filter and the operation (match or ignore)
+    """
     if not isinstance(filter, RuleFilter):
         return None
     if not isinstance(filter.filter, ComposeAll):
         return None
     for r in filter.filter.filters:
         if isinstance(r.filter, MatchType) and r.filter.type == type:
-            return r.filter.value
+            return (r.filter.value, "match")
+        if isinstance(r.filter, NotMatchType) and r.filter.type == type:
+            return (r.filter.value, "ignore")
         # Look recursively
         if isinstance(r.filter, ComposeAll):
             return findMatchTypeFilter(r, type)
@@ -1470,20 +1481,20 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
                 ]
              }
 
-        case "match":
+        case "match/ignore":
              # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
              matchPairs = [(findMatchTypeFilter(rc.rule.filter, filterName), rc) for rc in rules]
              valuesDict = {}
-             for (val, rc) in matchPairs:
-                if val not in valuesDict.keys():
-                    valuesDict[val] = []
-                valuesDict[val].append(rc)
+             for (valAndOp, rc) in matchPairs:
+                if valAndOp not in valuesDict.keys():
+                    valuesDict[valAndOp] = []
+                valuesDict[valAndOp].append(rc)
 
              return {
                 "key": filterName,
                 "operations": [
-                    ( {"operation": "lacks", **recurse(fs, rs, baseDir)} if val is None
-                        else {"operation": "match", "value": val, **recurse(fs, rs, baseDir)})  for (val, rs) in valuesDict.items()
+                    ( {"operation": "lacks", **recurse(fs, rs, baseDir)} if valAndOp is None
+                        else {"operation": valAndOp[1], "value": valAndOp[0], **recurse(fs, rs, baseDir)})  for (valAndOp, rs) in valuesDict.items()
                 ]
              }
 
@@ -1496,7 +1507,7 @@ BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
 ENCODING_RULES_SPLIT = ["packing", "process"]
 
 # Filters are has/lacks
-NESTED_FILTERS = [("number", "has/lacks"), ("hdate", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match"), ("packing", "match"), ("levtype", "match")]
+NESTED_FILTERS = [("class", "match/ignore"), ("number", "has/lacks"), ("hdate", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match/ignore"), ("packing", "match/ignore"), ("levtype", "match/ignore")]
 
 REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
 

@@ -1,7 +1,11 @@
 name: Publish static analyzer to sites.ecmwf.int
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
+  # Allow workflow to be dispatched on demand
+  workflow_dispatch: ~
+
+  # Takes too long, hence we are switching to manual workflow dispatch
+  # pull_request:
+  #   types: [opened, synchronize, reopened, closed]
 jobs:
   build:
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' || github.event_name == 'push'}}

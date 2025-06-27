@@ -28,6 +28,7 @@ public:
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
         cfg.bitmapPresent() ? computeWithMissing(val, cfg) : computeWithoutMissing(val, cfg);
+        std::copy(values_.begin(), values_.end(), initValues_.begin());
         return;
     }
 

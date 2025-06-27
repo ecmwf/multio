@@ -36,9 +36,9 @@ public:
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         }
         else {
-            const T* val = static_cast<const T*>(data);
-            std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
-                           [](const T& v1, const T& v2) { return static_cast<T>(v2); });
+            // const T* val = static_cast<const T*>(data);
+            // std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
+            //                [](const T& v1, const T& v2) { return static_cast<T>(v2); });
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         }
         return;

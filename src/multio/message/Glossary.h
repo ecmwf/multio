@@ -15,6 +15,7 @@
 #pragma once
 
 #include "multio/message/Metadata.h"
+#include "multio/message/MetadataException.h"
 #include <type_traits>
 #include <tuple>
 
@@ -36,7 +37,11 @@ struct KeyValueDescription<KeyType, ValueType, void> {
 
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
     decltype(auto) get(MD&& md) const {
-        return std::forward<MD>(md).template get<ValueType>(key);;
+        try {
+            return std::forward<MD>(md).template get<ValueType>(key);;
+        } catch (...) {
+            std::throw_with_nested(MetadataException(std::string("Unable to get required key ") + std::string(key), Here()));
+        }
     }
     template<typename MD, std::enable_if_t<std::is_base_of_v<BaseMetadata, std::decay_t<MD>>, bool> = true>
     decltype(auto) getOpt(MD&& md) const {
@@ -54,7 +59,11 @@ struct KeyValueDescription<KeyType, ValueType, void> {
 
     template<typename MDV, std::enable_if_t<std::is_base_of_v<MetadataValue, std::decay_t<MDV>>, bool> = true>
     decltype(auto) get(MDV&& md) const {
-        return std::forward<MDV>(md).template get<ValueType>();;
+        try {
+            return std::forward<MDV>(md).template get<ValueType>();;
+        } catch (...) {
+            std::throw_with_nested(MetadataException(std::string("Unable to get required key ") + std::string(key), Here()));
+        }
     }
 
 };

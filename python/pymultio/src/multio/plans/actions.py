@@ -122,6 +122,12 @@ class Encode(Action):
 class EncodeMTG(Action):
     """Encode-mtg2 Action"""
     type: Literal["encode-mtg2"] = Field("encode-mtg2", init=False)
+    
+    geo_from_atlas: bool = Field(False)
+    knowledge_root: str | None = Field(None)
+    samples_path: str | None = Field(None)
+    mapping_rules: str | None = Field(None)
+    encoding_rules: str | None = Field(None)
 
 
 class Sink(Action):

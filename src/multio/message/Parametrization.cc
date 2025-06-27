@@ -122,7 +122,7 @@ Parametrization& Parametrization::instance() {
     return singleton;
 }
 
-BaseMetadata& Parametrization::get() {
+const BaseMetadata& Parametrization::get() const {
     return data_;
 }
 

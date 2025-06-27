@@ -256,6 +256,10 @@ namespace multio::message {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+// Comparison operator overloads to overload default comparison with everything wrapped in a unique_ptr
+bool operator==(const MetadataValue& lhs, const MetadataValue& rhs) noexcept;
+bool operator!=(const MetadataValue& lhs, const MetadataValue& rhs) noexcept;
+
 eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue& mv);
 
 std::ostream& operator<<(std::ostream& os, const MetadataValue& metadataValue);

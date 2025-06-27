@@ -220,6 +220,9 @@ protected:
 
 
 //----------------------------------------------------------------------------------------------------------------------
+// Comparison operator overloads to overload default comparison with everything wrapped in a unique_ptr
+bool operator==(const BaseMetadata& lhs, const BaseMetadata& rhs) noexcept;
+bool operator!=(const BaseMetadata& lhs, const BaseMetadata& rhs) noexcept;
 
 eckit::JSON& operator<<(eckit::JSON& json, const BaseMetadata& metadata);
 

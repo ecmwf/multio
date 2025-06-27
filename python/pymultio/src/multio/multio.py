@@ -88,6 +88,7 @@ class Multio:
         self._handle = ffi.gc(handle[0], lib.multio_delete_handle)
 
         self.__dummy_metadata_field = Metadata(self, md={})
+        self.__dummy_metadata_parametrization = Metadata(self, md={})
         self.__dummy_metadata_domain = Metadata(self, md={})
         self.__dummy_metadata_mask = Metadata(self, md={})
         self.__dummy_metadata_flush = Metadata(self, md={})
@@ -126,7 +127,7 @@ class Multio:
         """
         Indicates all servers that a given step is complete
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
         md = self.__check_metadata(metadata, self.__dummy_metadata_flush)
         lib.multio_flush(self._handle, md._handle)
@@ -136,7 +137,7 @@ class Multio:
         Notifies all servers (e.g. step notification)
         and potentially performs triggers on sinks.
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
         md = self.__check_metadata(metadata, self.__dummy_metadata_notification)
         lib.multio_notify(self._handle, md._handle)
@@ -145,7 +146,7 @@ class Multio:
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
         md = self.__check_metadata(metadata, self.__dummy_metadata_domain)
@@ -163,7 +164,7 @@ class Multio:
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
         md = self.__check_metadata(metadata, self.__dummy_metadata_mask)
@@ -185,7 +186,7 @@ class Multio:
         """
         Writes fields
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
         md = self.__check_metadata(metadata, self.__dummy_metadata_field)
@@ -203,11 +204,69 @@ class Multio:
             doubleArr = ffi.new(f"double[{size}]", data)
             lib.multio_write_field_double(self._handle, md._handle, doubleArr, sizeInt)
 
+    def write_parametrization_array(self, key, data):
+        """
+        Writes parametrization
+        Parameters:
+            key(string): Name of the key for which the data is sent
+            data(array): Data of a single type usable by multio in the form an array (int32,int64,float32,float64,byte)
+        """
+        k = ffi.new("char[]", key.encode("utf-8"))
+
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and isinstance(data, np.ndarray) and (data.dtype in [np.float32, np.float64, np.int32, np.int64, np.byte, np.ubyte]):
+            match data.dtype:
+                case np.float32:
+                    arr = ffi.from_buffer("float*", data)
+                    lib.multio_write_parametrization_array_real32(self._handle, k, arr, sizeInt)
+                case np.float64:
+                    arr = ffi.from_buffer("double*", data)
+                    lib.multio_write_parametrization_array_real64(self._handle, k, arr, sizeInt)
+                case np.int32:
+                    arr = ffi.from_buffer("int32_t*", data)
+                    lib.multio_write_parametrization_array_int32(self._handle, k, arr, sizeInt)
+                case np.int64:
+                    arr = ffi.from_buffer("int64_t*", data)
+                    lib.multio_write_parametrization_array_int64(self._handle, k, arr, sizeInt)
+                case _:
+                    # Handles byte and ubyte
+                    arr = ffi.from_buffer("unsigned char*", data)
+                    lib.multio_write_parametrization_array_byte(self._handle, k, arr, sizeInt)
+        elif isinstance(data, list):
+            doubleArr = ffi.new(f"double[{size}]", data)
+            lib.multio_write_parametrization_array_real64(self._handle, k, doubleArr, sizeInt)
+        else:
+            c_buffer = ffi.from_buffer(data)
+            lib.multio_write_parametrization_array_byte(self._handle, k, c_buffer, len(data))
+            
+    def write_parametrization(self, metadata):
+        """
+        Writes parametrization
+        Parameters:
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+        """
+        
+        if isinstance(metadata, dict):
+            # Check if some keys contain array or nd array and use the array call...
+            keys_to_delete=[]
+            for (key,data) in metadata.items():
+                if (haveNumpy and isinstance(data, np.ndarray)) or isinstance(data, (list, bytearray, bytes)):
+                    keys_to_delete.append(key)
+                    self.write_parametrization_array(key, data)
+            
+            for key in keys_to_delete:
+                del metadata[key]
+            
+        md = self.__check_metadata(metadata, self.__dummy_metadata_parametrization)
+        lib.multio_write_parametrization(self._handle, md._handle)
+            
+
     def field_accepted(self, metadata):
         """
         Determines if the pipelines are configured to accept the specified data
         Parameters:
-            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
+            metadata(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         Returns:
             boolean with True if accepted, otherwise False
         """

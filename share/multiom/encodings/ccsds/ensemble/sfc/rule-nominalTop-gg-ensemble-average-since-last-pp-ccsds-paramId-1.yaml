@@ -14,6 +14,8 @@ filter:
     - type: class
       operation: ignore
       value: d1
+    - type: method
+      operation: lacks
     - type: number
       operation: has
     - type: hdate

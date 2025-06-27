@@ -91,7 +91,8 @@ GRIDS_SH = [
 
 # Class d1 is hacked - we don't expect to have conditions on other classes. Also the local template numbers are hacked in the encoders
 LOCALSECTION = [
-    partialRule([lacksType("anoffset"), notMatchType("class", "d1")], [localUse(1)]),
+    partialRule([lacksType("anoffset"), notMatchType("class", "d1"), lacksType("method")], [localUse(1)]),
+    partialRule([lacksType("anoffset"), notMatchType("class", "d1"), hasType("method")], [localUse(15)]),
     partialRule([hasType("anoffset"), notMatchType("class", "d1")], [localUse(36)]),
     partialRule([lacksType("anoffset"), matchType("class", "d1")], [localUse(1001)]),
     partialRule([hasType("anoffset"), matchType("class", "d1")], [localUse(1036)]),

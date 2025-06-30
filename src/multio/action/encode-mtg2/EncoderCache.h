@@ -41,7 +41,7 @@ public:
 
 private:
     struct CacheEntry {
-        EncoderConf conf;
+        EncoderInfo info;
         MultIOMRawEncoder encoder;
         std::unique_ptr<util::MioGribHandle> preparedSample; 
     };

@@ -234,9 +234,9 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
         if (c.isStringList(key)) {
             return std::forward<Func>(func)(util::TypeTag<std::vector<std::string>>{});
         }
-        // if (c.isSubConfiguration(key)) {
-        //     // Not supported
-        // }
+        if (c.isSubConfiguration(key)) {
+            return std::forward<Func>(func)(util::TypeTag<eckit::LocalConfiguration>{});
+        }
 
         return std::forward<Func>(func)();
     }
@@ -320,12 +320,12 @@ struct KeyValueWriter<eckit::LocalConfiguration> : BaseKeyValueWriter<eckit::Loc
                                 && std::is_base_of_v<eckit::LocalConfiguration, std::decay_t<LConf>>),
                                bool>
               = true>
-    static void set(const KVD& kvd, KV_&& kv, LConf& md) {
+    static void set(const KVD& kvd, KV_&& kv, LConf& conf) {
         std::forward<KV_>(kv).visit(eckit::Overloaded{
             [&](MissingValue v) {},
             [&](auto&& v) {
-                md.set(kvd.key(),
-                       KVD::ReadWrite::template write<eckit::LocalConfiguration>(std::forward<decltype(v)>(v)));
+                conf.set(std::string(kvd.key()),
+                         KVD::ReadWrite::template write<eckit::LocalConfiguration>(std::forward<decltype(v)>(v)));
             }});
     }
 };

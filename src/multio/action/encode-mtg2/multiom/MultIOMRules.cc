@@ -10,7 +10,9 @@
 
 #include "multio/action/encode-mtg2/multiom/MultIOMRules.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
+#include "multio/action/encode-mtg2/EncoderConf.h"
 #include "multio/action/encode-mtg2/Options.h"
+#include "eckit/filesystem/PathName.h"
 
 #include <iostream>
 
@@ -35,17 +37,18 @@ void* MultIOMRules::get() const {
     return static_cast<void*>(rules_.get());
 }
 
-EncoderConf MultIOMRules::search(const MultIOMDict& mars) {
+EncoderInfo MultIOMRules::search(const MultIOMDict& mars) {
     char* cRulePath = nullptr;
     if (multio_grib2_rules_search(rules_.get(), mars.get(), &cRulePath) != 0) {
         throw EncodeMtg2Exception(std::string("Failed searching for rule"), Here());
     }
-    std::string rulePath{cRulePath};
+    eckit::PathName rulePath{cRulePath};
+    free(cRulePath);
 
     // Convert the char* result to a std::string
     eckit::LocalConfiguration conf{eckit::YAMLConfiguration{rulePath}};
 
-    return datamod::readByValue(EncoderDefKeySet{}, conf);
+    return datamod::readByValue(EncoderInfoKeySet{}, conf);
 }
 
 

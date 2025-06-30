@@ -40,7 +40,7 @@ MetadataValue& MetadataValue::operator=(const This& other) {
 }
 
 std::string MetadataValue::toString() const {
-    std::stringstream ss;
+    std::ostringstream ss;
     eckit::JSON json(ss);
     json << *this;
     return ss.str();

@@ -147,7 +147,7 @@ MultIOMDict MultIOMDict::makeOptions(const EncodeMtg2Conf& opts) {
     // TODO -- this hack will just be removed through
     const auto& knowledgeRoot = key<EncodeMtg2Def::KnowledgeRoot>(opts);
     if (!knowledgeRoot.isMissing()) {
-        setenv("IFS_INSTALL_DIR", knowledgeRoot.get().c_str(), 0);
+        setenv("IFS_INSTALL_DIR", std::string(knowledgeRoot.get()).c_str(), 0);
     }
 
     // TODO set codes sample path...

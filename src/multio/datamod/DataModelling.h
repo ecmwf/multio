@@ -208,9 +208,9 @@ struct ReadWriteSpecs {
         return Reader<ValueType, Mapper>::read(std::forward<Val>(val));
     }
 
-    template <typename Container>
-    static decltype(auto) write(const ValueType& val) {
-        return Writer<ValueType, Container, Mapper>::write(val);
+    template <typename Container, typename Val>
+    static decltype(auto) write(Val&& val) {
+        return Writer<ValueType, Container, Mapper>::write(std::forward<Val>(val));
     }
 };
 
@@ -798,6 +798,25 @@ struct BaseKeyValue {
     }
     operator const ValueType&() const { return get(); }
 
+    // TODO rename ?
+    ValueType& modify() {
+        return std::visit(eckit::Overloaded{
+                              [&](ValueType& val) -> ValueType& { return val; },
+                              [&](RefType& val) -> ValueType& {
+                                  this->value = val.get();
+                                  return std::get<ValueType>(this->value);
+                              },
+                              [&](const MissingValue&) -> ValueType& {
+                                  throw DataModellingException(
+                                      std::string("Unchecked call to `KeyValue::get()` (missing value). Seems like an "
+                                                  "unvalidated object has been accessed?"),
+                                      Here());
+                              },
+                          },
+                          value);
+    }
+    operator ValueType&() { return modify(); }
+
     void setMissing() noexcept { value = MissingValue{}; }
 
     template <typename V,
@@ -887,6 +906,16 @@ struct KeyValue : BaseKeyValue<KeyDefValueType_t<id_>, KeyDefMapper_t<id_>> {
     const Base& baseRef() const& noexcept { return static_cast<const Base&>(*this); };
     Base& baseRef() & noexcept { return static_cast<Base&>(*this); };
     Base baseRef() && noexcept { return std::move(*this); };
+
+    This& setMissingOrDefaultValue() {
+        if constexpr (Definition::hasDefaultValueFunctor) {
+            this->set(key<id_>().defaultValue());
+        }
+        else {
+            this->set(MissingValue{});
+        }
+        return *this;
+    }
 };
 
 
@@ -1265,7 +1294,7 @@ ValTup& alterAndValidate(ValTup& tup) {
 // KeyId tag used for overload resolution in function calls
 template <auto id_>
 struct KeyId {
-    static const auto id = id_;
+    static constexpr auto id = id_;
 };
 
 
@@ -1277,10 +1306,16 @@ struct KeyId {
 // * `getByValue(KeyId, DynamicKey, Container)`: Can be customized if KeyId is required. Otherwise only dynamic key
 // information should be used to avoid too code generation for each field
 template <typename Container>
-struct KeyValueReader;
+struct KeyValueReader {
+    // Multiple methods are specialized in th reader and it will get a base class anyway.
+    // For this reason it is easier ta add a flag that signals whether it has been specialized
+    static constexpr bool isSpecialized = false;
+};
 
 template <typename Container>
 struct BaseKeyValueReader {
+    static constexpr bool isSpecialized = true;
+
     template <auto id, typename KVD, typename Cont_,
               std::enable_if_t<(IsDynamicKey_v<KVD> && std::is_base_of_v<Container, std::decay_t<Cont_>>), bool> = true>
     static KeyValue<id> getByRef(KeyId<id> kid, const KVD& kvd, Cont_&& c) {
@@ -1346,10 +1381,14 @@ struct KeyValueReader<KeyValueSet<KeySet_>> : BaseKeyValueReader<KeyValueSet<Key
 // Methods to read/write tuples of KeyValues to specific types (i.e. from Metadata)
 // set(KeyDefinition, KeyValue, Container)
 template <typename Container>
-struct KeyValueWriter;
+struct KeyValueWriter {
+    static constexpr bool isSpecialized = false;
+};
 
 template <typename Container>
 struct BaseKeyValueWriter {
+    static constexpr bool isSpecialized = true;
+
     template <auto id, typename KVD, typename KV, typename Cont_,
               std::enable_if_t<(IsDynamicKey_v<KVD> && IsBaseKeyValue_v<std::decay_t<KV>>
                                 && std::is_base_of_v<Container, std::decay_t<Cont_>>),
@@ -1407,12 +1446,18 @@ decltype(auto) reify(KS&& ks) {
 
 
 // Takes a KeyDefinition and a container from which to read/create an object from
-template <typename KVD, typename Container, std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>>), bool> = true>
+template <
+    typename KVD, typename Container,
+    std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
+    = true>
 decltype(auto) read(KVD&& kvd, Container&& c) {
     return KeyValueReader<std::decay_t<Container>>::getByRef(KeyId<std::decay_t<KVD>::id>{}, kvd.baseRef(),
                                                              std::forward<Container>(c));
 }
-template <typename KVD, typename Container, std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>>), bool> = true>
+template <
+    typename KVD, typename Container,
+    std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
+    = true>
 decltype(auto) readByValue(KVD&& kvd, Container&& c) {
     return KeyValueReader<std::decay_t<Container>>::getByValue(KeyId<std::decay_t<KVD>::id>{}, kvd.baseRef(),
                                                                std::forward<Container>(c));
@@ -1420,27 +1465,32 @@ decltype(auto) readByValue(KVD&& kvd, Container&& c) {
 
 
 // Takes a tuple of KeyDefinition and a container from which to read/create an object from
-template <
-    typename DescTup, typename Container,
-    std::enable_if_t<
-        (util::IsTuple_v<std::decay_t<DescTup>> && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>), bool>
-    = true>
+template <typename DescTup, typename Container,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
+                            && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>
+                            && KeyValueReader<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
 decltype(auto) read(DescTup&& tup, Container&& c) {
     return util::map([&](const auto& kvd) { return read(kvd, std::forward<Container>(c)); },
                      std::forward<DescTup>(tup));
 }
-template <
-    typename DescTup, typename Container,
-    std::enable_if_t<
-        (util::IsTuple_v<std::decay_t<DescTup>> && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>), bool>
-    = true>
+template <typename DescTup, typename Container,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
+                            && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>
+                            && KeyValueReader<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
 decltype(auto) readByValue(DescTup&& tup, Container&& c) {
     return util::map([&](const auto& kvd) { return readByValue(kvd, std::forward<Container>(c)); },
                      std::forward<DescTup>(tup));
 }
 
 
-template <typename KS, typename Container, std::enable_if_t<(IsKeySet_v<std::decay_t<KS>>), bool> = true>
+template <
+    typename KS, typename Container,
+    std::enable_if_t<(IsKeySet_v<std::decay_t<KS>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
+    = true>
 decltype(auto) read(KS&& ks, Container&& c) {
     auto values = read(ks.keys(), std::forward<Container>(c));
     KeyValueSet<std::decay_t<KS>> ret{std::forward<KS>(ks), std::move(values)};
@@ -1448,7 +1498,10 @@ decltype(auto) read(KS&& ks, Container&& c) {
     return ret;
 }
 
-template <typename KS, typename Container, std::enable_if_t<(IsKeySet_v<std::decay_t<KS>>), bool> = true>
+template <
+    typename KS, typename Container,
+    std::enable_if_t<(IsKeySet_v<std::decay_t<KS>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
+    = true>
 decltype(auto) readByValue(KS&& ks, Container&& c) {
     auto values = readByValue(ks.keys(), std::forward<Container>(c));
     KeyValueSet<std::decay_t<KS>> ret{std::forward<KS>(ks), std::move(values)};
@@ -1458,26 +1511,48 @@ decltype(auto) readByValue(KS&& ks, Container&& c) {
 
 
 //-----------------------------------------------------------------------------
+// ReadSpec for KeyValueSet - make it possible to nest things
+//
+
+template <typename KeySet_>
+struct ReadSpec<KeyValueSet<KeySet_>> {
+    template <typename Val, std::enable_if_t<KeyValueReader<std::decay_t<Val>>::isSpecialized, bool> = true>
+    static KeyValueSet<KeySet_> read(Val&& val) noexcept(noexcept(datamod::read(KeySet_{}, std::forward<Val>(val)))) {
+        // TODO find a mechanism to determine whether by value or ref is the better default
+        // Also key modifications may be considered?
+        return datamod::read(KeySet_{}, std::forward<Val>(val));
+    }
+};
+
+
+//-----------------------------------------------------------------------------
 
 
 // Takes a tuple of KeyDefinition and a container from which to read/create an object from
 template <typename KVD, typename KV, typename Container,
-          std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>> && IsKeyValue_v<std::decay_t<KV>>), bool> = true>
+          std::enable_if_t<(IsScopedKey_v<std::decay_t<KVD>> && IsKeyValue_v<std::decay_t<KV>>
+                            && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
 void write(const KVD& kvd, KV&& kv, Container& c) {
     KeyValueWriter<std::decay_t<Container>>::set(KeyId<std::decay_t<KV>::id>{}, kvd.baseRef(),
                                                  std::forward<decltype(kv)>(kv).baseRef(), c);
 }
 
 // Takes a tuple of KeyDefinition and a container from which to read/create an object from
-template <typename KV, typename Container, std::enable_if_t<(IsKeyValue_v<std::decay_t<KV>>), bool> = true>
+template <
+    typename KV, typename Container,
+    std::enable_if_t<(IsKeyValue_v<std::decay_t<KV>> && KeyValueWriter<std::decay_t<Container>>::isSpecialized), bool>
+    = true>
 void write(KV&& kv, Container& c) {
     write(key<std::decay_t<KV>::id>(), std::forward<decltype(kv)>(kv), c);
 }
 
 template <
     typename KVTup, typename Container,
-    std::enable_if_t<
-        (util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>), bool>
+    std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>
+                      && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                     bool>
     = true>
 void write(KVTup&& tup, Container& c) {
     util::forEach([&](auto&& kv) { write(std::forward<decltype(kv)>(kv), c); }, std::forward<KVTup>(tup));
@@ -1485,8 +1560,9 @@ void write(KVTup&& tup, Container& c) {
 
 template <
     typename Container, typename KVTup,
-    std::enable_if_t<
-        (util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>), bool>
+    std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>
+                      && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                     bool>
     = true>
 Container write(KVTup&& tup) {
     Container c{};
@@ -1495,13 +1571,19 @@ Container write(KVTup&& tup) {
 }
 
 
-template <typename KVS, typename Container, std::enable_if_t<(IsKeyValueSet_v<std::decay_t<KVS>>), bool> = true>
+template <typename KVS, typename Container,
+          std::enable_if_t<
+              (IsKeyValueSet_v<std::decay_t<KVS>> && KeyValueWriter<std::decay_t<Container>>::isSpecialized), bool>
+          = true>
 void write(KVS&& kvs, Container& c) {
     util::forEach([&](const auto& kvd, auto&& kv) { write(kvd, std::forward<decltype(kv)>(kv), c); },
                   std::forward<KVS>(kvs));
 }
 
-template <typename Container, typename KVS, std::enable_if_t<(IsKeyValueSet_v<std::decay_t<KVS>>), bool> = true>
+template <typename Container, typename KVS,
+          std::enable_if_t<
+              (IsKeyValueSet_v<std::decay_t<KVS>> && KeyValueWriter<std::decay_t<Container>>::isSpecialized), bool>
+          = true>
 Container write(KVS&& kvs) {
     Container c{};
     write(std::forward<KVS>(kvs), c);
@@ -1509,6 +1591,40 @@ Container write(KVS&& kvs) {
 }
 
 
+//-----------------------------------------------------------------------------
+// WriteSpec for KeyValueSet - make it possible to nest things
+//
+// ALso note that this is overloaded for some types
+
+template <typename KeySet_, typename Container>
+struct WriteSpec<KeyValueSet<KeySet_>, Container> {
+    template <typename Val, std::enable_if_t<std::is_same_v<std::decay_t<Val>, KeyValueSet<KeySet_>>, bool> = true>
+    static Container write(Val&& val) noexcept(noexcept(datamod::write<Container>(std::forward<Val>(val)))) {
+        // TODO find a mechanism to determine whether by value or ref is the better default
+        // Also key modifications may be considered?
+        return datamod::write<Container>(std::forward<Val>(val));
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+// Shorter way to nest keysets in each other
+//-----------------------------------------------------------------------------
+
+
+template <auto id_, typename NestedEnum>
+constexpr auto nestedKeyDef() {
+    return KeyDef<id_, KeyValueSet<KeySet<NestedEnum>>>{KeySetName_v<NestedEnum>};
+}
+
+template <auto id_, typename NestedEnum>
+constexpr auto nestedKeyDef(std::string_view keyName) {
+    return KeyDef<id_, KeyValueSet<KeySet<NestedEnum>>>{keyName};
+}
+
+
+//-----------------------------------------------------------------------------
+// Utilities
 //-----------------------------------------------------------------------------
 
 
@@ -1542,6 +1658,38 @@ std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValueSet<Ke
 }
 
 }  // namespace multio::datamod
+
+
+namespace multio::util {
+template <typename EnumType>
+struct TypeToString<datamod::KeySet<EnumType>> {
+    std::string operator()() const {
+        return std::string("datamod::KeySet<") + std::string(datamod::KeySetName_v<EnumType>) + std::string(">");
+    };
+};
+
+
+template <auto id>
+struct TypeToString<datamod::KeyId<id>> {
+    std::string operator()() const {
+        return std::string(datamod::KeySetName_v<decltype(id)>) + std::string("::") + datamod::key<id>().key();
+    };
+};
+
+template <auto... Ids>
+struct TypeToString<datamod::CustomKeySet<Ids...>> {
+    std::string operator()() const {
+        return std::string("datamod::CustomKeySet<") + ((typeToString<datamod::KeyId<Ids>() + std::string(", ")...)  + std::string(">");
+    };
+};
+
+template <typename KeySet_>
+struct TypeToString<datamod::KeyValueSet<KeySet_>> {
+    std::string operator()() const {
+        return std::string("datamod::KeyValueSet<") + util::typeToString<KeySet_>() + std::string(">");
+    };
+};
+}  // namespace multio::util
 
 
 //-----------------------------------------------------------------------------

@@ -418,7 +418,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
-                # encodeStepZero=True,
                 descriptiveName="average-since-last-pp",
             ),
             levelConfig("nominalTop"),
@@ -429,7 +428,7 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam([228045])],
         [PointInTime(), levelConfig("tropopause")],
     ),
-    # surface - since beginning - chem
+    # surface - chem
     partialRule(
         [
             matchType("levtype", "sfc"),
@@ -646,7 +645,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
-                # encodeStepZero=True,
                 descriptiveName="average-since-last-pp",
             ),
             levelConfig("surface"),

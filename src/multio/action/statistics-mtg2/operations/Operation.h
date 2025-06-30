@@ -26,7 +26,6 @@ public:
     virtual void updateWindow(const void* data, long sz, const message::Message& msg,
                               const StatisticsConfiguration& cfg)
         = 0;
-    virtual void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
 
     virtual void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const = 0;
     virtual void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) = 0;

@@ -97,7 +97,6 @@ encoder:
     time-statistics-configurator:
       type: since-beginning-of-forecast
       type-of-statistical-processing: accumul
-      encode-step-zero: true
     param-configurator:
       type: paramId
     model-configurator:

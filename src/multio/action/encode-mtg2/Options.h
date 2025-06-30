@@ -15,14 +15,11 @@
 #pragma once
 
 
-#include <optional>
 #include <string>
 
-#include "multio/action/Action.h"
-#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/DataModelling.h"
 
-#include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
 
 
@@ -46,10 +43,10 @@ using action::EncodeMtg2Def;
 MULTIO_KEY_SET_DESCRIPTION(EncodeMtg2Def,                                                                       //
                            "encode-mtg2",                                                                       //
                                                                                                                 //
-                           KeyDef<EncodeMtg2Def::KnowledgeRoot, std::string>{"knowledge-root"}.tagDefaulted(),  //
-                           KeyDef<EncodeMtg2Def::SamplesPath, std::string>{"samples-path"}.tagDefaulted(),      //
-                           KeyDef<EncodeMtg2Def::EncodingRules, std::string>{"encoding-rules"}.tagDefaulted(),  //
-                           KeyDef<EncodeMtg2Def::MappingRules, std::string>{"mapping-rules"}.tagDefaulted(),    //
+                           KeyDef<EncodeMtg2Def::KnowledgeRoot, eckit::PathName>{"knowledge-root"}.tagDefaulted(),  //
+                           KeyDef<EncodeMtg2Def::SamplesPath, eckit::PathName>{"samples-path"}.tagDefaulted(),      //
+                           KeyDef<EncodeMtg2Def::EncodingRules, eckit::PathName>{"encoding-rules"}.tagDefaulted(),  //
+                           KeyDef<EncodeMtg2Def::MappingRules, eckit::PathName>{"mapping-rules"}.tagDefaulted(),    //
                            KeyDef<EncodeMtg2Def::GeoFromAtlas, bool>{"geo-from-atlas"}.withDefault(false))
 
 

@@ -405,7 +405,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
-                encodeStepZero=True,
                 descriptiveName="accumul-since-beginning",
             ),
             levelConfig("nominalTop"),
@@ -418,7 +417,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
-                # encodeStepZero=True,
                 descriptiveName="average-since-last-pp",
             ),
             levelConfig("nominalTop"),
@@ -443,7 +441,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
-                encodeStepZero=True,
                 descriptiveName="since-beginning",
             ),
             TablesConfig(type="custom", localTablesVersion=0, tablesVersion=30),
@@ -508,7 +505,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
-                encodeStepZero=True,
                 descriptiveName="since-beginning",
             ),
         ],
@@ -646,7 +642,6 @@ PARAM_LEVTYPE_SFC = [
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
-                # encodeStepZero=True,
                 descriptiveName="average-since-last-pp",
             ),
             levelConfig("surface"),
@@ -973,7 +968,6 @@ PARAM_LEVTYPE_ML = [
             TimeRange(
                 type="since-beginning-of-forecast",
                 typeOfStatisticalProcessing="accumul",
-                encodeStepZero=True,
                 descriptiveName="since-beginning",
             ),
             levelConfig("hybrid"),

@@ -30,10 +30,6 @@ public:
         std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
-    void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) override {
-        std::fill(values_.begin(), values_.end(), initialValue_);
-    };
-
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the first field of the window
         return;

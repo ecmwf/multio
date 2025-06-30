@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/filesystem/PathName.h"
 
 namespace multio::util {
 
@@ -174,6 +175,11 @@ struct TypeToString<std::chrono::seconds> {
 template <>
 struct TypeToString<eckit::LocalConfiguration> {
     std::string operator()() const { return std::string("eckit::LocalConfiguration"); };
+};
+
+template <>
+struct TypeToString<eckit::PathName> {
+    std::string operator()() const { return std::string("eckit::PathName"); };
 };
 
 //-----------------------------------------------------------------------------

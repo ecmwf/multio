@@ -64,7 +64,7 @@ struct MultIOMRules {
     MultIOMRules(MultIOMRules&&) noexcept = default;
     MultIOMRules& operator=(MultIOMRules&&) noexcept = default;
 
-    EncoderConf search(const MultIOMDict& mars);
+    EncoderInfo search(const MultIOMDict& mars);
 
     void* get() const;
 

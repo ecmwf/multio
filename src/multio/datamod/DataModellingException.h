@@ -8,12 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
-
-/// @date Oct 2019
-
 #pragma once
 
 #include "eckit/exception/Exceptions.h"

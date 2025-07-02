@@ -430,7 +430,7 @@ IMPLICIT NONE
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
-\
+
   !> Local error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT=1_JPIB_K
 

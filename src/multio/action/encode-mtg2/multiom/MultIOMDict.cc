@@ -149,9 +149,7 @@ MultIOMDict MultIOMDict::makeOptions(const EncodeMtg2Conf& opts) {
     if (!knowledgeRoot.isMissing()) {
         setenv("IFS_INSTALL_DIR", std::string(knowledgeRoot.get()).c_str(), 0);
     }
-
-    // TODO set codes sample path...
-
+    
     return optDict;
 }
 

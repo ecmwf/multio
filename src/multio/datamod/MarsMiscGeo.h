@@ -8,10 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date Sep 2023
-
 #pragma once
 
 #include "multio/datamod/DataModelling.h"
@@ -42,6 +38,7 @@ enum class MarsKeys : std::uint64_t
     INSTRUMENT,
     CHANNEL,
     CHEM,
+    WAVELENGTH,
     MODEL,
     LEVTYPE,
     LEVELIST,
@@ -75,6 +72,7 @@ MULTIO_KEY_SET_DESCRIPTION(
     KeyDef<MarsKeys::INSTRUMENT, std::int64_t>{"instrument"}.tagOptional(),  //
     KeyDef<MarsKeys::CHANNEL, std::int64_t>{"channel"}.tagOptional(),        //
     KeyDef<MarsKeys::CHEM, std::int64_t>{"chem"}.tagOptional(),              //
+    KeyDef<MarsKeys::WAVELENGTH, std::int64_t>{"wavelength"}.tagOptional(),  //
     KeyDef<MarsKeys::MODEL, std::string>{"model"}.tagOptional(),             //
     KeyDef<MarsKeys::LEVTYPE, std::string>{"levtype"}.tagOptional(),         //
     KeyDef<MarsKeys::LEVELIST, std::int64_t>{"levelist"}.tagOptional(),      //
@@ -87,6 +85,7 @@ MULTIO_KEY_SET_DESCRIPTION(
     KeyDef<MarsKeys::HDATE, std::int64_t>{"hdate"}.tagOptional(),            //
     KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),               //
     KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),  //
+    // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as official mars key
     KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
         "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical harmonics) "
         "without defining resolution. It can derived from `grid` and `truncation`. If passed its value is compared "

@@ -8,7 +8,6 @@
  * nor does it submit to any jurisdiction.
  */
 
-
 #pragma once
 
 // This functionality is supposed has been added to allow a fast migration for encoding AIFS output via python.

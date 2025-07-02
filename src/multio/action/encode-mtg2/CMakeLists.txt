@@ -13,12 +13,19 @@ ecbuild_add_library(
         EncoderCache.cc
         EncoderCache.h
         EncoderConf.h
+        Rules.cc
+        Rules.h
         multiom/MultIOMDict.cc
         multiom/MultIOMDict.h
         multiom/MultIOMRawEncoder.cc
         multiom/MultIOMRawEncoder.h
         multiom/MultIOMRules.cc
         multiom/MultIOMRules.h
+        rules/Matcher.h
+        rules/Setter.h
+        rules/Rule.h
+        generated/InferPDT.h
+        generated/InferPDTTest.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

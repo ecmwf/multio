@@ -8,10 +8,6 @@
  * nor does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date Oct 2025
-
 #pragma once
 
 

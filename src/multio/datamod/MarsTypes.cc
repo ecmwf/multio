@@ -21,7 +21,7 @@
 namespace multio::datamod {
 
 
-std::string WriteSpec<TimeDuration>::write(const TimeDuration& td) noexcept {
+std::string WriteSpec<TimeDuration>::write(const TimeDuration& td) {
     return std::visit(
         eckit::Overloaded{[&](const std::chrono::hours& h) {
                               // The fortran encoder currently don't accepts units - after that we should remove them

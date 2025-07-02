@@ -8,10 +8,6 @@
  * nor does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date Oct 2025
-
 #pragma once
 
 
@@ -41,7 +37,7 @@ public:
 
 private:
     struct CacheEntry {
-        EncoderInfo info;
+        EncoderSections sections;
         MultIOMRawEncoder encoder;
         std::unique_ptr<util::MioGribHandle> preparedSample; 
     };
@@ -50,7 +46,7 @@ private:
     
     std::reference_wrapper<const EncodeMtg2Conf> conf_;
     MultIOMDict options_;
-    MultIOMRules rules_;
+    // MultIOMRules rules_;
     std::unique_ptr<util::MioGribHandle> baseSample_;
     std::unordered_map<PrehashedMarsKeys, CacheEntry> cache_{};
 };

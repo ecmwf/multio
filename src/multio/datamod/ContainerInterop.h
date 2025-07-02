@@ -8,10 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date March 2025
-
 #pragma once
 
 #include <type_traits>

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "metkit/codes/GribHandle.h"
+#include "eckit/filesystem/PathName.h"
 
 #include "eccodes.h"
 
@@ -18,8 +19,10 @@ class MioGribHandle : public metkit::grib::GribHandle {
 public:
     // owning constructor
     MioGribHandle(codes_handle* hdl);
+    MioGribHandle(const eckit::PathName&);
     // Non owning constructor
     MioGribHandle(codes_handle& hdl);
+    
     ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
     using metkit::grib::GribHandle::raw;

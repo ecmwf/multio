@@ -8,10 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date Sep 2023
-
 #pragma once
 
 #include "multio/datamod/DataModelling.h"

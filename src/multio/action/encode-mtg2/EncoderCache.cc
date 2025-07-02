@@ -11,21 +11,23 @@
 #include "multio/action/encode-mtg2/EncoderCache.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/Options.h"
+#include "multio/action/encode-mtg2/Rules.h"
 #include "multio/action/encode-mtg2/multiom/MultIOMDict.h"
 #include "multio/action/encode-mtg2/multiom/MultIOMRules.h"
+#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/util/MioGribHandle.h"
+
+#include "eckit/filesystem/PathName.h"
 
 namespace multio::action {
 
 namespace {
 
-std::unique_ptr<util::MioGribHandle> loadSample(const std::string& sample) {
-    codes_handle* h = codes_handle_new_from_samples(nullptr, sample.c_str());
-    if (h == nullptr) {
-        throw EncodeMtg2Exception(std::string("Unable to load eccodes sample: ") + sample, Here());
-    }
-    return std::make_unique<util::MioGribHandle>(codes_handle_new_from_samples(nullptr, sample.c_str()));
+std::unique_ptr<util::MioGribHandle> loadSample(const EncodeMtg2Conf& conf, const std::string& sample) {
+    using namespace datamod;
+    const auto& samplesPath = key<EncodeMtg2Def::SamplesPath>(conf);
+    return std::make_unique<util::MioGribHandle>(eckit::PathName{samplesPath.get() + std::string("/") + sample});
 }
 
 }  // namespace
@@ -35,7 +37,8 @@ EncoderCache::EncoderCache(const EncodeMtg2Conf& opts) : EncoderCache(opts, Mult
 
 
 EncoderCache::EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options) :
-    conf_{conf}, options_{std::move(options)}, rules_{options_, conf_}, baseSample_{loadSample("sample")} {}
+    // conf_{conf}, options_{std::move(options)}, rules_{options_, conf_}, baseSample_{loadSample(conf_, "sample.tmpl")} {}
+    conf_{conf}, options_{std::move(options)}, baseSample_{loadSample(conf_, "sample.tmpl")} {}
 
 
 EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyValueSet& marsKeys,
@@ -53,21 +56,31 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyVal
     // Otherwise prepare a new entry
 
     // Searching for rule...
-    auto encoderConf = rules_.search(mars);
-    auto exportedConf = datamod::write<eckit::LocalConfiguration>(datamod::key<EncoderInfoDef::Sections>(encoderConf).get());
-    
+    // auto encoderConf = rules_.search(mars);
+    // auto exportedConf =
+    // datamod::write<eckit::LocalConfiguration>(datamod::key<EncoderInfoDef::Sections>(encoderConf).get());
+
+    EncoderSections sections;
+    rules::allRules()(marsKeys, sections);
+    alterAndValidate(sections);
+    auto exportedConf = datamod::write<eckit::LocalConfiguration>(sections);
+
     MultIOMRawEncoder encoder{options_, exportedConf};
 
     // Load custom sample or use default sample
-    const auto& sampleName = datamod::key<EncoderInfoDef::Sample>(encoderConf);
-    auto sample = sampleName.has() ? loadSample(sampleName.get()) : baseSample_->duplicate();
+    // const auto& sampleName = datamod::key<EncoderInfoDef::Sample>(encoderConf);
+    // auto sample = sampleName.has() ? loadSample(sampleName.get()) : baseSample_->duplicate();
+    auto sample = baseSample_->duplicate();
 
     // Prepare sample
     sample = encoder.prepare(std::move(sample), mars, par, geo);
 
     // Move encoder and prepared sample to cache
+    // return cache_
+    //     .emplace(std::move(cacheKeySet), CacheEntry{std::move(encoderConf), std::move(encoder), std::move(sample)})
+    //     .first->second;
     return cache_
-        .emplace(std::move(cacheKeySet), CacheEntry{std::move(encoderConf), std::move(encoder), std::move(sample)})
+        .emplace(std::move(cacheKeySet), CacheEntry{std::move(sections), std::move(encoder), std::move(sample)})
         .first->second;
 }
 

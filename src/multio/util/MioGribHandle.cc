@@ -32,6 +32,7 @@ void codesCheckRelaxed(int ret, const char* name, const T& value) {
 }  // namespace
 
 
+MioGribHandle::MioGribHandle(const eckit::PathName& path): metkit::grib::GribHandle{path} {};
 MioGribHandle::MioGribHandle(codes_handle* hdl) : metkit::grib::GribHandle{hdl} {};
 MioGribHandle::MioGribHandle(codes_handle& hdl) : metkit::grib::GribHandle{hdl} {};
 

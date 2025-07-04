@@ -12,10 +12,13 @@
 
 #include <type_traits>
 #include "eckit/config/LocalConfiguration.h"
+#include "metkit/codes/CodesDecoder.h"
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/DataModellingException.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
+#include "multio/util/MioGribHandle.h"
+#include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 
 
@@ -42,7 +45,7 @@ struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseM
             if constexpr (std::is_same_v<message::Null, std::decay_t<decltype(v)>>) {
                 if constexpr (KVD::tag == KVTag::Required) {
                     std::ostringstream oss;
-                    oss << "Required Key " << kvd.keyInfo() << " is null in metadata " << md << std::endl;
+                    oss << "Required key " << kvd.keyInfo() << " is null in metadata " << md;
                     throw DataModellingException(oss.str(), Here());
                 }
                 return toMissingOrDefaultValue(kvd);
@@ -58,7 +61,7 @@ struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseM
             else {
                 std::ostringstream oss;
                 oss << "Unsupported type " << util::typeToString<std::decay_t<decltype(v)>>() << " for key "
-                    << kvd.keyInfo() << " in metadata: " << md << std::endl;
+                    << kvd.keyInfo() << " in metadata: " << md;
                 throw DataModellingException(oss.str(), Here());
             }
             return toMissingValue(kvd);  // unreachable
@@ -73,7 +76,7 @@ struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseM
     static KeyValueFromKey_t<KVD> defaultOrThrow(const KVD& kvd, const MD& md) {
         if constexpr (KVD::tag == KVTag::Required) {
             std::ostringstream oss;
-            oss << "Missing required key " << kvd.keyInfo() << " in metadata " << md << std::endl;
+            oss << "Missing required key " << kvd.keyInfo() << " in metadata " << md;
             throw DataModellingException(oss.str(), Here());
         }
         return toMissingOrDefaultValue(kvd);
@@ -256,8 +259,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
         if (conf.isNull(kvd.key())) {
             if constexpr (KVD::tag == KVTag::Required) {
                 std::ostringstream oss;
-                oss << "Key \"" << kvd.key() << "\" in configuration should have a non-null value: " << conf
-                    << std::endl;
+                oss << "Key \"" << kvd.key() << "\" in configuration should have a non-null value: " << conf;
                 throw DataModellingException(oss.str(), Here());
             }
             return toMissingOrDefaultValue(kvd);
@@ -268,8 +270,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
             kvd.key(), conf,
             eckit::Overloaded{[&]() {
                                   std::ostringstream oss;
-                                  oss << "Unsupported value for key " << kvd.keyInfo() << " in configuration: " << conf
-                                      << std::endl;
+                                  oss << "Unsupported value for key " << kvd.keyInfo() << " in configuration: " << conf;
                                   throw DataModellingException(oss.str(), Here());
 
                                   return toMissingValue(kvd);  // unreachable
@@ -282,7 +283,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
                                   else {
                                       std::ostringstream oss;
                                       oss << "Unsupported type " << util::typeToString<Type>() << " for key "
-                                          << kvd.keyInfo() << " in configuration: " << conf << std::endl;
+                                          << kvd.keyInfo() << " in configuration: " << conf;
                                       throw DataModellingException(oss.str(), Here());
                                   }
                                   return toMissingValue(kvd);  // unreachable
@@ -328,5 +329,136 @@ struct KeyValueWriter<eckit::LocalConfiguration> : BaseKeyValueWriter<eckit::Loc
 
 
 //-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
+// Reading from MioGribHandle
+//-----------------------------------------------------------------------------
+
+template <>
+struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHandle> {
+    using Base = BaseKeyValueReader<util::MioGribHandle>;
+    using Base::getByRef;
+    using Base::getByValue;
+
+    template <typename KVD, typename GH,
+              std::enable_if_t<(IsDynamicKey_v<KVD> && std::is_base_of_v<util::MioGribHandle, std::decay_t<GH>>), bool>
+              = true>
+    static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, GH&& handle) {
+        using RW = typename KVD::ReadWrite;
+        // For codes we always copy - no value by ref
+
+        if (!handle.isDefined(kvd.key())) {
+            if constexpr (KVD::tag == KVTag::Required) {
+                std::ostringstream oss;
+                oss << "Required key " << kvd.keyInfo() << " is not defined on eccodes handle.";
+                throw DataModellingException(oss.str(), Here());
+            }
+            return toMissingOrDefaultValue(kvd);
+        }
+        if (handle.isMissing(kvd.key())) {
+            if constexpr (KVD::tag == KVTag::Required) {
+                std::ostringstream oss;
+                oss << "Required key " << kvd.keyInfo() << " is defined but missing on eccodes handle.";
+                throw DataModellingException(oss.str(), Here());
+            }
+            return toMissingOrDefaultValue(kvd);
+        }
+
+        // TODO
+        // Eccodes types interface is nasti - basic types are string, double, long and bytes. Bytes can be weird to
+        // handle, for now we just decode as string. To check if an array is contained, we ideally need to check the
+        // size...
+        auto throwWrongType = [&](const std::string& typeStr) {
+            std::ostringstream oss;
+            oss << "Can not create key " << kvd.keyInfo() << " from " << typeStr;
+            throw DataModellingException(oss.str(), Here());
+        };
+        int keyType = 0;
+        ASSERT(codes_get_native_type(handle.raw(), kvd.key().value().c_str(), &keyType) == 0);
+        switch (keyType) {
+            case GRIB_TYPE_LONG: {
+                if constexpr (util::IsVector_v<KeyValueFromKey_t<KVD>>) {
+                    if constexpr (RW::template CanCreateFromValue_v<std::vector<long>>) {
+                        return toKeyValue(kvd, handle.getLongArray(kvd.key()));
+                    }
+                    else {
+                        throwWrongType(util::typeToString<std::vector<long>>());
+                    }
+                }
+                else {
+                    if constexpr (RW::template CanCreateFromValue_v<long>) {
+                        return toKeyValue(kvd, handle.getLong(kvd.key()));
+                    }
+                    else {
+                        throwWrongType(util::typeToString<long>());
+                    }
+                }
+            }
+            case GRIB_TYPE_DOUBLE: {
+                if constexpr (util::IsVector_v<KeyValueFromKey_t<KVD>>) {
+                    if constexpr (RW::template CanCreateFromValue_v<std::vector<double>>) {
+                        return toKeyValue(kvd, handle.getDoubleArray(kvd.key()));
+                    }
+                    else {
+                        throwWrongType(util::typeToString<std::vector<double>>());
+                    }
+                }
+                else {
+                    if constexpr (RW::template CanCreateFromValue_v<double>) {
+                        return toKeyValue(kvd, handle.getDouble(kvd.key()));
+                    }
+                    else {
+                        throwWrongType(util::typeToString<double>());
+                    }
+                }
+            }
+            case GRIB_TYPE_BYTES:
+            case GRIB_TYPE_STRING: {
+                // TODO add support for string vectors?
+                if constexpr (RW::template CanCreateFromValue_v<std::string>) {
+                    return toKeyValue(kvd, handle.getString(kvd.key()));
+                }
+                else {
+                    throwWrongType(util::typeToString<std::string>());
+                }
+            }
+            default: {
+                throwWrongType(std::to_string(keyType));
+            }
+        }
+        return toMissingOrDefaultValue(kvd);
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+// Writing to MioGribHandle
+//-----------------------------------------------------------------------------
+
+template <>
+struct KeyValueWriter<util::MioGribHandle> : BaseKeyValueWriter<util::MioGribHandle> {
+    using Base = BaseKeyValueWriter<util::MioGribHandle>;
+    using Base::set;
+
+    template <typename KVD, typename KV_, typename GH,
+              std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV_>>
+                                && std::is_base_of_v<util::MioGribHandle, std::decay_t<GH>>),
+                               bool>
+              = true>
+    static void set(const KVD& kvd, KV_&& kv, GH& handle) {
+        using RW = typename KVD::ReadWrite;
+        std::forward<KV_>(kv).visit(eckit::Overloaded{
+            [&](MissingValue v) {},
+            [&](auto&& v) {
+                if (!handle.isDefined(kvd.key())) {
+                    std::ostringstream oss;
+                    oss << "Key " << kvd.keyInfo() << " should be written but is not defined on  eccodes handle.";
+                    throw DataModellingException(oss.str(), Here());
+                }
+                handle.setValue(kvd.key(), RW::template write<util::MioGribHandle>(std::forward<decltype(v)>(v)));
+            }});
+    }
+};
 
 }  // namespace multio::datamod

@@ -42,13 +42,6 @@ enum class {enumName}: std::uint64_t
 
 }}
 
-
-template <>
-struct std::hash<{namespace}::{enumName}> {{
-    std::size_t operator()(const {namespace}::{enumName}& v) const noexcept {{ return static_cast<std::size_t>(v); }}
-}};
-
-
 namespace multio::util {{
 template <>
 struct TypeToString<{namespace}::{enumName}> {{

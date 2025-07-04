@@ -31,7 +31,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-simple-paramId-36.yaml'
@@ -105,10 +105,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -138,7 +138,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramId-36.yaml'
@@ -212,10 +212,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -267,8 +267,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInhPa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInPa-complex-reforecast-ensemble-instant-complex-paramId-36.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -294,7 +294,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-simple-paramId-1.yaml'
@@ -355,7 +355,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-default-gg-wave_spec-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-isothermal-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-default-gg-satellite-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-simple-paramId-15.yaml'
@@ -433,14 +433,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -482,7 +482,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramId-1.yaml'
@@ -543,7 +543,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-default-gg-wave_spec-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-isothermal-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-default-gg-satellite-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramId-15.yaml'
@@ -621,14 +621,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -697,10 +697,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInhPa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInPa-complex-reforecast-ensemble-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInhPa-complex-reforecast-ensemble-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInPa-complex-reforecast-ensemble-instant-complex-paramId-15.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -732,7 +732,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-simple-paramId-36.yaml'
@@ -806,10 +806,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-simple-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -839,7 +839,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-ccsds-paramId-36.yaml'
@@ -913,10 +913,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -968,8 +968,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInhPa-complex-ensemble-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInPa-complex-ensemble-instant-complex-paramId-36.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -995,7 +995,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-simple-paramId-1.yaml'
@@ -1056,7 +1056,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-isothermal-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-simple-paramId-15.yaml'
@@ -1134,14 +1134,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-simple-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -1183,7 +1183,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-ccsds-paramId-1.yaml'
@@ -1244,7 +1244,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-wave_spec-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-isothermal-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-default-gg-satellite-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-ccsds-paramId-15.yaml'
@@ -1322,14 +1322,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -1398,10 +1398,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInhPa-complex-ensemble-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInPa-complex-ensemble-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInhPa-complex-ensemble-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInPa-complex-ensemble-instant-complex-paramId-15.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -1449,7 +1449,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-simple-paramId-36.yaml'
@@ -1523,10 +1523,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-simple-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -1556,7 +1556,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-ccsds-paramId-36.yaml'
@@ -1630,10 +1630,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -1685,8 +1685,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInhPa-complex-deterministic-instant-complex-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInPa-complex-deterministic-instant-complex-paramId-36.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -1712,7 +1712,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-simple-paramId-1.yaml'
@@ -1773,7 +1773,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-isothermal-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-simple-paramId-15.yaml'
@@ -1851,14 +1851,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-simple-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -1900,7 +1900,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-ccsds-paramId-1.yaml'
@@ -1961,7 +1961,7 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-wave_spec-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-isothermal-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-default-gg-satellite-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-ccsds-paramId-15.yaml'
@@ -2039,14 +2039,14 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2115,10 +2115,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInhPa-complex-deterministic-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInPa-complex-deterministic-instant-complex-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInhPa-complex-deterministic-instant-complex-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInPa-complex-deterministic-instant-complex-paramId-15.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -2159,7 +2159,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-simple-paramId-1036.yaml'
@@ -2233,10 +2233,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2266,7 +2266,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramId-1036.yaml'
@@ -2340,10 +2340,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2395,8 +2395,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInhPa-complex-reforecast-ensemble-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInPa-complex-reforecast-ensemble-instant-complex-paramId-1036.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -2422,7 +2422,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-simple-paramId-1001.yaml'
@@ -2496,10 +2496,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2529,7 +2529,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudbase-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-cloudBase-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireAtmosphere-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-entireLake-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-heightAboveGroundAt2m-gg-reforecast-ensemble-max-over-last-6h-ccsds-paramId-1001.yaml'
@@ -2603,10 +2603,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinhpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricinpa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInhPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/pl/rule-isobaricInPa-gg-reforecast-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2658,8 +2658,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinhpa-complex-reforecast-ensemble-instant-complex-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricinpa-complex-reforecast-ensemble-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInhPa-complex-reforecast-ensemble-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/reforecast_ensemble/pl/rule-isobaricInPa-complex-reforecast-ensemble-instant-complex-paramId-1001.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -2689,7 +2689,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-simple-paramId-1036.yaml'
@@ -2763,10 +2763,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2796,7 +2796,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-ccsds-paramId-1036.yaml'
@@ -2870,10 +2870,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -2925,8 +2925,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInhPa-complex-ensemble-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInPa-complex-ensemble-instant-complex-paramId-1036.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -2952,7 +2952,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-entireLake-gg-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-simple-paramId-1001.yaml'
@@ -3026,10 +3026,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3059,7 +3059,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudbase-gg-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-cloudBase-gg-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireAtmosphere-gg-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-entireLake-gg-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-heightAboveGroundAt2m-gg-ensemble-max-over-last-6h-ccsds-paramId-1001.yaml'
@@ -3133,10 +3133,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinhpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricinpa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInhPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/pl/rule-isobaricInPa-gg-ensemble-avg-since-last-pp-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3188,8 +3188,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinhpa-complex-ensemble-instant-complex-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricinpa-complex-ensemble-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInhPa-complex-ensemble-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/ensemble/pl/rule-isobaricInPa-complex-ensemble-instant-complex-paramId-1001.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -3235,7 +3235,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-simple-paramId-1036.yaml'
@@ -3309,10 +3309,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3342,7 +3342,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-ccsds-paramId-1036.yaml'
@@ -3416,10 +3416,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3471,8 +3471,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInhPa-complex-deterministic-instant-complex-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInPa-complex-deterministic-instant-complex-paramId-1036.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:
@@ -3498,7 +3498,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-entireLake-gg-deterministic-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-simple-paramId-1001.yaml'
@@ -3572,10 +3572,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3605,7 +3605,7 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudbase-gg-deterministic-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-cloudBase-gg-deterministic-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireAtmosphere-gg-deterministic-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-entireLake-gg-deterministic-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-heightAboveGroundAt2m-gg-deterministic-max-over-last-6h-ccsds-paramId-1001.yaml'
@@ -3679,10 +3679,10 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinhpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricinpa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInhPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-instant-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/pl/rule-isobaricInPa-gg-deterministic-avg-since-last-pp-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: sol
                                           encoding-rules:
@@ -3734,8 +3734,8 @@ nested-rules:
                                         - operation: match
                                           value: pl
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinhpa-complex-deterministic-instant-complex-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricinpa-complex-deterministic-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInhPa-complex-deterministic-instant-complex-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/complex/deterministic/pl/rule-isobaricInPa-complex-deterministic-instant-complex-paramId-1001.yaml'
                                         - operation: match
                                           value: pv
                                           encoding-rules:

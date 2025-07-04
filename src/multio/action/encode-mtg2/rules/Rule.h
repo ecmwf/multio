@@ -30,6 +30,8 @@ struct DynRule {
     // If nothing matches only false is returned
     virtual bool apply(const datamod::KeyValueSet<MatchKeySet_>& keys, EncoderSections&) const = 0;
     virtual std::ostream& print(std::ostream&) const = 0;
+    
+    virtual ~DynRule() = default;
 };
 
 

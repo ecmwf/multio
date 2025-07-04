@@ -49,6 +49,14 @@ enum class MarsKeys : std::uint64_t
     STEP,
     TIMESPAN,
     HDATE,
+    DATASET,
+    RESOLUTION,
+    ACTIVITY,
+    EXPERIMENT,
+    GENERATION,
+    REALIZATION,
+    METHOD,
+    SYSTEM,
     GRID,
     TRUNCATION,
     REPRES
@@ -56,36 +64,45 @@ enum class MarsKeys : std::uint64_t
 
 
 MULTIO_KEY_SET_DESCRIPTION(
-    MarsKeys,                                                                //
-    "mars",                                                                  //
-                                                                             //
-    KeyDef<MarsKeys::EXPVER, std::string>{"expver"},                         //
-    KeyDef<MarsKeys::STREAM, std::string>{"stream"},                         //
-    KeyDef<MarsKeys::TYPE, std::string>{"type"},                             //
-    KeyDef<MarsKeys::CLASS, std::string>{"class"},                           //
-    KeyDef<MarsKeys::PARAM, std::int64_t, mapper::ParamMapper>{"param"},     //
-    KeyDef<MarsKeys::ORIGIN, std::string>{"origin"}.withDefault("ecmf"),     //
-    KeyDef<MarsKeys::ANOFFSET, std::int64_t>{"anoffset"}.tagOptional(),      //
-    KeyDef<MarsKeys::PACKING, std::string>{"packing"}.tagOptional(),         //
-    KeyDef<MarsKeys::NUMBER, std::int64_t>{"number"}.tagOptional(),          //
-    KeyDef<MarsKeys::IDENT, std::int64_t>{"ident"}.tagOptional(),            //
-    KeyDef<MarsKeys::INSTRUMENT, std::int64_t>{"instrument"}.tagOptional(),  //
-    KeyDef<MarsKeys::CHANNEL, std::int64_t>{"channel"}.tagOptional(),        //
-    KeyDef<MarsKeys::CHEM, std::int64_t>{"chem"}.tagOptional(),              //
-    KeyDef<MarsKeys::WAVELENGTH, std::int64_t>{"wavelength"}.tagOptional(),  //
-    KeyDef<MarsKeys::MODEL, std::string>{"model"}.tagOptional(),             //
-    KeyDef<MarsKeys::LEVTYPE, std::string>{"levtype"}.tagOptional(),         //
-    KeyDef<MarsKeys::LEVELIST, std::int64_t>{"levelist"}.tagOptional(),      //
-    KeyDef<MarsKeys::DIRECTION, std::int64_t>{"direction"}.tagOptional(),    //
-    KeyDef<MarsKeys::FREQUENCY, std::int64_t>{"frequency"}.tagOptional(),    //
-    KeyDef<MarsKeys::DATE, std::int64_t>{"date"},                            //
-    KeyDef<MarsKeys::TIME, std::int64_t>{"time"},                            //
-    KeyDef<MarsKeys::STEP, TimeDuration>{"step"},                            //
-    KeyDef<MarsKeys::TIMESPAN, TimeDuration>{"timespan"}.tagOptional(),      //
-    KeyDef<MarsKeys::HDATE, std::int64_t>{"hdate"}.tagOptional(),            //
-    KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),               //
-    KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),  //
-    // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as official mars key
+    MarsKeys,                                                                  //
+    "mars",                                                                    //
+                                                                               //
+    KeyDef<MarsKeys::EXPVER, std::string>{"expver"},                           //
+    KeyDef<MarsKeys::STREAM, std::string>{"stream"},                           //
+    KeyDef<MarsKeys::TYPE, std::string>{"type"},                               //
+    KeyDef<MarsKeys::CLASS, std::string>{"class"},                             //
+    KeyDef<MarsKeys::PARAM, std::int64_t, mapper::ParamMapper>{"param"},       //
+    KeyDef<MarsKeys::ORIGIN, std::string>{"origin"}.withDefault("ecmf"),       //
+    KeyDef<MarsKeys::ANOFFSET, std::int64_t>{"anoffset"}.tagOptional(),        //
+    KeyDef<MarsKeys::PACKING, std::string>{"packing"}.tagOptional(),           //
+    KeyDef<MarsKeys::NUMBER, std::int64_t>{"number"}.tagOptional(),            //
+    KeyDef<MarsKeys::IDENT, std::int64_t>{"ident"}.tagOptional(),              //
+    KeyDef<MarsKeys::INSTRUMENT, std::int64_t>{"instrument"}.tagOptional(),    //
+    KeyDef<MarsKeys::CHANNEL, std::int64_t>{"channel"}.tagOptional(),          //
+    KeyDef<MarsKeys::CHEM, std::int64_t>{"chem"}.tagOptional(),                //
+    KeyDef<MarsKeys::WAVELENGTH, std::int64_t>{"wavelength"}.tagOptional(),    //
+    KeyDef<MarsKeys::MODEL, std::string>{"model"}.tagOptional(),               //
+    KeyDef<MarsKeys::LEVTYPE, LevType>{"levtype"}.tagOptional(),               //
+    KeyDef<MarsKeys::LEVELIST, std::int64_t>{"levelist"}.tagOptional(),        //
+    KeyDef<MarsKeys::DIRECTION, std::int64_t>{"direction"}.tagOptional(),      //
+    KeyDef<MarsKeys::FREQUENCY, std::int64_t>{"frequency"}.tagOptional(),      //
+    KeyDef<MarsKeys::DATE, std::int64_t>{"date"},                              //
+    KeyDef<MarsKeys::TIME, std::int64_t>{"time"},                              //
+    KeyDef<MarsKeys::STEP, TimeDuration>{"step"},                              //
+    KeyDef<MarsKeys::TIMESPAN, TimeDuration>{"timespan"}.tagOptional(),        //
+    KeyDef<MarsKeys::HDATE, std::int64_t>{"hdate"}.tagOptional(),              //
+    KeyDef<MarsKeys::DATASET, std::string>{"dataset"}.tagOptional(),           //
+    KeyDef<MarsKeys::RESOLUTION, std::string>{"resolution"}.tagOptional(),     //
+    KeyDef<MarsKeys::ACTIVITY, std::string>{"activity"}.tagOptional(),         //
+    KeyDef<MarsKeys::EXPERIMENT, std::string>{"experiment"}.tagOptional(),     //
+    KeyDef<MarsKeys::GENERATION, std::int64_t>{"generation"}.tagOptional(),    //
+    KeyDef<MarsKeys::REALIZATION, std::int64_t>{"realization"}.tagOptional(),  //
+    KeyDef<MarsKeys::METHOD, std::int64_t>{"method"}.tagOptional(),            //
+    KeyDef<MarsKeys::SYSTEM, std::int64_t>{"system"}.tagOptional(),            //
+    KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),                 //
+    KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),    //
+    // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as
+    // official mars key
     KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
         "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical harmonics) "
         "without defining resolution. It can derived from `grid` and `truncation`. If passed its value is compared "
@@ -112,7 +129,8 @@ struct KeySetAlter<MarsKeySet> {
         }
         if (!grid.isMissing() && !trunc.isMissing()) {
             std::ostringstream oss;
-            oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both ore given: "
+            oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both ore "
+                   "given: "
                 << mars;
             throw DataModellingException(oss.str(), Here());
         }
@@ -163,7 +181,7 @@ struct KeySetAlter<EncoderCacheMarsKeySet> {
 
         const auto& levtype = key<MarsKeys::LEVTYPE>(cacheKeys);
 
-        if (!levtype.isMissing() && levtype.get() == "ml") {
+        if (!levtype.isMissing() && levtype.get() == LevType::ML) {
             key<MarsKeys::LEVELIST>(cacheKeys).setMissing();
         }
 
@@ -177,6 +195,8 @@ struct KeySetAlter<EncoderCacheMarsKeySet> {
 // Parametrization keys
 //-----------------------------------------------------------------------------
 
+
+// Userfacing keys
 
 enum class MiscKeys : std::uint64_t
 {
@@ -204,11 +224,7 @@ enum class MiscKeys : std::uint64_t
     WaveFrequencies,
     SatelliteSeries,
     ScaleFactorOfCentralWavenumber,
-    ScaledValueOfCentralWavenumber,
-
-    // TBD - move to mars
-    MethodNumber,
-    SystemNumber
+    ScaledValueOfCentralWavenumber
 };
 
 
@@ -243,10 +259,11 @@ MULTIO_KEY_SET_DESCRIPTION(
     KeyDef<MiscKeys::WaveFrequencies, std::vector<double>>{"waveFrequencies"}.tagOptional(),                         //
     KeyDef<MiscKeys::SatelliteSeries, std::int64_t>{"satelliteSeries"}.tagOptional(),                                //
     KeyDef<MiscKeys::ScaleFactorOfCentralWavenumber, std::int64_t>{"scaleFactorOfCentralWavenumber"}.tagOptional(),  //
-    KeyDef<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>{"scaledValueOfCentralWavenumber"}.tagOptional(),  //
-    KeyDef<MiscKeys::MethodNumber, std::int64_t>{"methodNumber"}.tagOptional(),                                      //
-    KeyDef<MiscKeys::SystemNumber, std::int64_t>{"systemNumber"}.tagOptional());                                     //
+    KeyDef<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>{"scaledValueOfCentralWavenumber"}.tagOptional())  //
 
+
+using MiscKeySet = KeySet<MiscKeys>;
+using MiscKeyValueSet = KeyValueSet<MiscKeySet>;
 
 //-----------------------------------------------------------------------------
 // Geometry keys - gg
@@ -332,6 +349,8 @@ MULTIO_KEY_SET_DESCRIPTION(
 //-----------------------------------------------------------------------------
 // Evaluate geometry from mars
 //-----------------------------------------------------------------------------
+
+using Geometry = std::variant<KeyValueSet<GeoGG>, KeyValueSet<GeoSH>, KeyValueSet<GeoHEALPix>>;
 
 template <typename KVS, typename Func>
 decltype(auto) withScopedGeometryKeySet(const KVS& kvs, Func&& func) {

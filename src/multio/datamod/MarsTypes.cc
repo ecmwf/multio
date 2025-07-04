@@ -112,7 +112,79 @@ Repres ReadSpec<Repres>::read(const std::string& val) {
     if (val == "sh") {
         return Repres::SH;
     }
-    throw DataModellingException(std::string("RepresMapper::read Unknown value for Repres: ") + val, Here());
+    throw DataModellingException(std::string("ReadSpec<Repres>::read Unknown value for Repres: ") + val, Here());
+}
+
+
+std::string WriteSpec<LevType>::write(LevType v) {
+    switch (v) {
+        case LevType::ML:
+            return "ml";
+        case LevType::PL:
+            return "pl";
+        case LevType::PV:
+            return "pv";
+        case LevType::PT:
+            return "pt";
+        case LevType::SOL:
+            return "sol";
+        case LevType::SFC:
+            return "sfc";
+        case LevType::O2D:
+            return "o2d";
+        case LevType::O3D:
+            return "o3d";
+        case LevType::HL:
+            return "hl";
+        case LevType::HHL:
+            return "hhl";
+        case LevType::HPL:
+            return "hpl";
+        case LevType::AL:
+            return "al";
+        default:
+            throw DataModellingException("WriteSpec<LevType>::write: Unexpected value for LevType", Here());
+    }
+}
+
+LevType ReadSpec<LevType>::read(const std::string& val) {
+    if (val == "ml") {
+        return LevType::ML;
+    }
+    if (val == "pl") {
+        return LevType::PL;
+    }
+    if (val == "pv") {
+        return LevType::PV;
+    }
+    if (val == "pt") {
+        return LevType::PT;
+    }
+    if (val == "sol") {
+        return LevType::SOL;
+    }
+    if (val == "sfc") {
+        return LevType::SFC;
+    }
+    if (val == "o2d") {
+        return LevType::O2D;
+    }
+    if (val == "o3d") {
+        return LevType::O3D;
+    }
+    if (val == "hl") {
+        return LevType::HL;
+    }
+    if (val == "hhl") {
+        return LevType::HHL;
+    }
+    if (val == "hpl") {
+        return LevType::HPL;
+    }
+    if (val == "al") {
+        return LevType::AL;
+    }
+    throw DataModellingException(std::string("ReadSpec<LevType>::read Unknown value for LevType: ") + val, Here());
 }
 
 
@@ -132,6 +204,11 @@ std::int64_t ParamMapper::read(const std::string& str) {
 
 std::ostream& operator<<(std::ostream& os, const Repres& t) {
     os << Writer<Repres>::write(t);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const LevType& t) {
+    os << Writer<LevType>::write(t);
     return os;
 }
 

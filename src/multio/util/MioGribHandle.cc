@@ -5,6 +5,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/utils/MD5.h"
 #include "multio/LibMultio.h"
+#include "multio/action/encode/GribEncoder.h"
 
 #define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
@@ -32,9 +33,30 @@ void codesCheckRelaxed(int ret, const char* name, const T& value) {
 }  // namespace
 
 
-MioGribHandle::MioGribHandle(const eckit::PathName& path): metkit::grib::GribHandle{path} {};
+MioGribHandle::MioGribHandle(const eckit::PathName& path) : metkit::grib::GribHandle{path} {};
 MioGribHandle::MioGribHandle(codes_handle* hdl) : metkit::grib::GribHandle{hdl} {};
 MioGribHandle::MioGribHandle(codes_handle& hdl) : metkit::grib::GribHandle{hdl} {};
+
+std::unique_ptr<MioGribHandle> MioGribHandle::makeDefault() {
+    // Basically GRIB2.tmpl from eccodes but without local section
+    static const std::vector<unsigned char> data_{
+        {0x52, 0x47, 0x42, 0x49, 0xff, 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xb3, 0x00, 0x00, 0x00,
+         0x15, 0x00, 0x00, 0x01, 0x00, 0x62, 0x04, 0x00, 0x01, 0x00, 0xd7, 0x07, 0x17, 0x03, 0x00, 0x0c, 0x00, 0x00,
+         0x00, 0x02, 0x00, 0x00, 0x03, 0x48, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x28, 0xff, 0xff,
+         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0x00, 0x00, 0x80,
+         0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0xff, 0x00, 0xff, 0xff, 0x05, 0xff, 0xb1, 0x3c, 0x00, 0xf7, 0x00, 0x00,
+         0x20, 0x00, 0x3c, 0x85, 0xf7, 0xb1, 0x4a, 0x15, 0xac, 0x3f, 0x2a, 0x00, 0x48, 0xec, 0x00, 0x00, 0x20, 0x00,
+         0x00, 0x00, 0x00, 0x00, 0x04, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x80, 0x00, 0x00,
+         0x00, 0x01, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x86, 0x01, 0xff, 0xa0, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff,
+         0x00, 0x00, 0x05, 0x15, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+         0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0xff, 0x06, 0x00, 0x00, 0x05, 0x00, 0x37, 0x07, 0x37, 0x37, 0x00, 0x37}};
+
+    codes_handle* h = codes_handle_new_from_message(nullptr, data_.data(), data_.size());
+    if (!h) {
+        throw eckit::SeriousBug("failed to clone output grib", Here());
+    }
+    return std::make_unique<MioGribHandle>(h);
+}
 
 std::unique_ptr<MioGribHandle> MioGribHandle::duplicate() const {
     codes_handle* h = codes_handle_clone(raw());
@@ -43,6 +65,97 @@ std::unique_ptr<MioGribHandle> MioGribHandle::duplicate() const {
     }
     return std::make_unique<MioGribHandle>(h);
 }
+
+
+bool MioGribHandle::hasKey(const char* key) const {
+    return isDefined(key) && !isMissing(key);
+}
+bool MioGribHandle::hasKey(const std::string& key) const {
+    return hasKey(key.c_str());
+}
+
+bool MioGribHandle::isDefined(const char* key) const {
+    return codes_is_defined(this->raw(), key) != 0;
+}
+bool MioGribHandle::isDefined(const std::string& key) const {
+    return isDefined(key.c_str());
+}
+bool MioGribHandle::isMissing(const char* key) const {
+    int err;
+    return codes_is_missing(this->raw(), key, &err) != 0;
+}
+bool MioGribHandle::isMissing(const std::string& key) const {
+    return isMissing(key.c_str());
+}
+
+
+std::string MioGribHandle::getString(const std::string& key) const {
+    return getString(key.c_str());
+}
+
+std::string MioGribHandle::getString(const char* key) const {
+    std::string ret;
+    std::size_t keylen = 1024;
+    // Use resize instead of reserive - will allocate enough memory and sets the size internally to the string
+    ret.resize(keylen);
+    // Now eccodes is writing in the buffer...
+    CODES_CHECK(codes_get_string(this->raw(), key, ret.data(), &keylen), nullptr);
+    ret.resize(strlen(ret.c_str()));
+    return ret;
+}
+
+long MioGribHandle::getLong(const std::string& key) const {
+    return getLong(key.c_str());
+}
+
+long MioGribHandle::getLong(const char* key) const {
+    long ret;
+    CODES_CHECK(codes_get_long(this->raw(), key, &ret), nullptr);
+    return ret;
+}
+
+double MioGribHandle::getDouble(const std::string& key) const {
+    return getDouble(key.c_str());
+}
+
+double MioGribHandle::getDouble(const char* key) const {
+    double ret;
+    CODES_CHECK(codes_get_double(this->raw(), key, &ret), nullptr);
+    return ret;
+}
+
+std::size_t MioGribHandle::getSize(const std::string& key) const {
+    return getSize(key.c_str());
+}
+
+std::size_t MioGribHandle::getSize(const char* key) const {
+    std::size_t ret;
+    CODES_CHECK(codes_get_size(this->raw(), key, &ret), nullptr);
+    return ret;
+}
+
+std::vector<double> MioGribHandle::getDoubleArray(const std::string& key) const {
+    return getDoubleArray(key.c_str());
+}
+
+std::vector<double> MioGribHandle::getDoubleArray(const char* key) const {
+    std::vector<double> ret;
+    std::size_t size = this->getSize(key);
+    ret.resize(size);
+    CODES_CHECK(codes_get_double_array(this->raw(), key, ret.data(), &size), nullptr);
+    ret.resize(size);
+    return ret;
+}
+
+std::vector<long> MioGribHandle::getLongArray(const char* key) const {
+    std::vector<long> ret;
+    std::size_t size = this->getSize(key);
+    ret.resize(size);
+    CODES_CHECK(codes_get_long_array(this->raw(), key, ret.data(), &size), nullptr);
+    ret.resize(size);
+    return ret;
+}
+
 
 namespace {
 void setLongValue(codes_handle* hdl, const char* key, long value) {

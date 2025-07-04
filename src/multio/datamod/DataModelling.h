@@ -792,9 +792,14 @@ struct BaseKeyValue {
     // Actual value
     Container value;
 
+    // Raw accessor
+    Container raw() && { return std::move(value); }
+    Container& raw() & { return value; }
+    const Container& raw() const& { return value; }
+
     bool isMissing() const { return std::holds_alternative<MissingValue>(value); }
     bool has() const { return !std::holds_alternative<MissingValue>(value); }
-    bool holdsReference() const { return std::holds_alternative<const ValueType>(value); }
+    bool holdsReference() const { return std::holds_alternative<RefType>(value); }
 
     // Using polymorphism for keyInfo to avoid needing too finegrained types for each key
     // virtual std::string keyInfo() const { return ""; };
@@ -838,24 +843,37 @@ struct BaseKeyValue {
 
     void setMissing() noexcept { value = MissingValue{}; }
 
+    // Explicitly setting value as reference
+    template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, ValueType>), bool> = true>
+    void setRef(const V& v) {
+        value = std::cref(v);
+    }
+
     template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, ValueType>), bool> = true>
     void set(V&& v) {
         value = std::forward<V>(v);
     }
-    template <typename V, std::enable_if_t<(!std::is_same_v<std::decay_t<V>, MissingValue>
-                                            && !std::is_same_v<std::decay_t<V>, RefType>
-                                            && !std::is_same_v<std::decay_t<V>, ValueType>),
-                                           bool>
-                          = true>
+    template <
+        typename V,
+        std::enable_if_t<(!std::is_same_v<std::decay_t<V>, MissingValue> && !std::is_same_v<std::decay_t<V>, RefType>
+                          && !std::is_same_v<std::decay_t<V>, ValueType> && !std::is_same_v<std::decay_t<V>, Container>
+                          && !std::is_same_v<std::decay_t<V>, This>),
+                         bool>
+        = true>
     void set(V&& v) {
         value = ReadWrite::read(std::forward<V>(v));
     }
-    template <typename V,
-              std::enable_if_t<
-                  (std::is_same_v<std::decay_t<V>, MissingValue> || std::is_same_v<std::decay_t<V>, RefType>), bool>
-              = true>
+    template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, MissingValue>
+                                            || std::is_same_v<std::decay_t<V>, RefType>
+                                            || std::is_same_v<std::decay_t<V>, Container>),
+                                           bool>
+                          = true>
     void set(V&& v) {
         value = std::forward<V>(v);
+    }
+    template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, This>), bool> = true>
+    void set(V&& v) {
+        *this = std::forward<V>(v);
     }
 
     // Visit function that handles RValues and references properly
@@ -1343,7 +1361,7 @@ KVS& alterKeys(KVS& kvs) {
 template <typename KVS, std::enable_if_t<(IsKeyValueSet_v<std::decay_t<KVS>>), bool> = true>
 KVS& alter(KVS& kvs) {
     alterKeys(kvs);
-    
+
     // Now call the Keyset specific alter function if given
     std::decay_t<KVS>::alter(kvs);
     return kvs;
@@ -1683,7 +1701,10 @@ Container write(KVS&& kvs) {
 
 template <typename KeySet_, typename Container>
 struct WriteSpec<KeyValueSet<KeySet_>, Container> {
-    template <typename Val, std::enable_if_t<(std::is_same_v<std::decay_t<Val>, KeyValueSet<KeySet_>> && KeyValueWriter<std::decay_t<Container>>::isSpecialized), bool> = true>
+    template <typename Val, std::enable_if_t<(std::is_same_v<std::decay_t<Val>, KeyValueSet<KeySet_>>
+                                              && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                                             bool>
+                            = true>
     static Container write(Val&& val) noexcept(noexcept(datamod::write<Container>(std::forward<Val>(val)))) {
         return datamod::write<Container>(std::forward<Val>(val));
     }
@@ -1809,7 +1830,8 @@ struct TypeToString<datamod::KeySet<EnumType>> {
 template <auto id>
 struct TypeToString<datamod::KeyId<id>> {
     std::string operator()() const {
-        return std::string(datamod::KeySetName_v<decltype(id)>) + std::string("::") + std::string(datamod::key<id>().key());
+        return std::string(datamod::KeySetName_v<decltype(id)>) + std::string("::")
+             + std::string(datamod::key<id>().key());
     };
 };
 

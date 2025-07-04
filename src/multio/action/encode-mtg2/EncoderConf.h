@@ -13,8 +13,12 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/generated/InferPDT.h"
+#include "multio/action/encode-mtg2/sections/Level.h"
+#include "multio/action/encode-mtg2/sections/SectionTypes.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/DataModelling.h"
+#include "multio/datamod/GribKeys.h"
+#include "multio/datamod/GribTypes.h"
 
 #include <memory>
 
@@ -64,11 +68,11 @@ enum class EncoderOriginDef : std::uint64_t
 
 namespace datamod {
 using action::EncoderOriginDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderOriginDef,                                                                //
-                           "origin-configurator",                                                           //
-                                                                                                            //
-                           KeyDef<EncoderOriginDef::Type, std::string>{"type"}.withDefault("default"),      //
-                           KeyDef<EncoderOriginDef::SubCentre, std::int64_t>{"sub-centre"}.withDefault(97))  //
+MULTIO_KEY_SET_DESCRIPTION(EncoderOriginDef,                                                               //
+                           "origin-configurator",                                                          //
+                                                                                                           //
+                           KeyDef<EncoderOriginDef::Type, std::string>{"type"}.withDefault("default"),     //
+                           KeyDef<EncoderOriginDef::SubCentre, std::int64_t>{"sub-centre"}.tagOptional())  //
 };  // namespace datamod
 
 
@@ -249,12 +253,14 @@ enum class EncoderTimeRangeDef : std::uint64_t
 
 namespace datamod {
 using action::EncoderTimeRangeDef;
+using action::sections::TimeRangeType;
 MULTIO_KEY_SET_DESCRIPTION(
-    EncoderTimeRangeDef,                                                                                              //
-    "time-statistics-configurator",                                                                                   //
-                                                                                                                      //
-    KeyDef<EncoderTimeRangeDef::Type, std::string>{"type"},                                                           //
-    KeyDef<EncoderTimeRangeDef::TypeOfStatisticalProcessing, std::string>{"type-of-statistical-processing"},          //
+    EncoderTimeRangeDef,                                       //
+    "time-statistics-configurator",                            //
+                                                               //
+    KeyDef<EncoderTimeRangeDef::Type, TimeRangeType>{"type"},  //
+    KeyDef<EncoderTimeRangeDef::TypeOfStatisticalProcessing, TypeOfStatisticalProcessing>{
+        "type-of-statistical-processing"},                                                                            //
     KeyDef<EncoderTimeRangeDef::OverallLengthOfTimeRange, std::string>{"overall-length-of-timerange"}.tagOptional())  //
 };  // namespace datamod
 
@@ -290,22 +296,6 @@ MULTIO_KEY_SET_DESCRIPTION(EncoderModelDef,                                     
                            "model-configurator",                                                       //
                                                                                                        //
                            KeyDef<EncoderModelDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
-
-// Level config
-namespace action {
-enum class EncoderLevelDef : std::uint64_t
-{
-    Type,
-};
-}
-
-namespace datamod {
-using action::EncoderLevelDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderLevelDef,                                                            //
-                           "level-configurator",                                                       //
-                                                                                                       //
-                           KeyDef<EncoderLevelDef::Type, std::string>{"type"}.withDefault("default"))  //
 };  // namespace datamod
 
 // Random patterns config
@@ -416,6 +406,7 @@ enum class EncoderProductDef : std::uint64_t
 namespace datamod {
 using action::EncoderProductDef;
 using action::rules::PDTCatDef;
+using multio::action::sections::LevelDef;
 MULTIO_KEY_SET_DESCRIPTION(EncoderProductDef,             //
                            "product-definition-section",  //
                                                           //
@@ -427,7 +418,7 @@ MULTIO_KEY_SET_DESCRIPTION(EncoderProductDef,             //
                            nestedOptKeyDef<EncoderProductDef::PointInTime, EncoderPointInTimeDef>(),        //
                            nestedOptKeyDef<EncoderProductDef::TimeRange, EncoderTimeRangeDef>(),            //
                            nestedOptKeyDef<EncoderProductDef::Process, EncoderProcessDef>(),                //
-                           nestedOptKeyDef<EncoderProductDef::Level, EncoderLevelDef>(),                    //
+                           nestedOptKeyDef<EncoderProductDef::Level, LevelDef>(),                           //
                            nestedOptKeyDef<EncoderProductDef::RandomPatterns, EncoderRandomPatternsDef>(),  //
                            nestedOptKeyDef<EncoderProductDef::Chemical, EncoderChemDef>(),                  //
                            nestedOptKeyDef<EncoderProductDef::DirFreq, EncoderDirFreqDef>(),                //
@@ -454,7 +445,7 @@ struct KeySetAlter<KeySet<EncoderProductDef>> {
 
             if (pdtCat.has()) {
                 auto pdtNum = InferPdt<>{}.inferProductDefinitionTemplateNumber(pdtCat.get());
-                
+
                 if (templateNumber.has() && templateNumber.get() != pdtNum) {
                     std::ostringstream oss;
                     oss << "EncoderProduct has a template number and PDT categories specified, but the generated PDT "

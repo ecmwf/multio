@@ -115,7 +115,7 @@ PARAM_LEVTYPE_SFC = [
     # cloudbase
     partialRule(
         [matchType("levtype", "sfc"), matchParam([228023])],
-        [PointInTime(), levelConfig("cloudbase")],
+        [PointInTime(), levelConfig("cloudBase")],
     ),
     # entireAtmosphere
     partialRule(
@@ -994,11 +994,11 @@ PARAM_LEVTYPE_ML_SH = [
 PL_LEVEL_CONFIGS = [
     partialRule(
         [typeGE("levelist", 100)],
-        [levelConfig("isobaricinhpa")],
+        [levelConfig("isobaricInhPa")],
     ),
     partialRule(
         [typeLT("levelist", 100)],
-        [levelConfig("isobaricinpa")],
+        [levelConfig("isobaricInPa")],
     ),
 ]
 

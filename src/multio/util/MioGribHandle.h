@@ -3,18 +3,19 @@
 #include <cstdint>
 #include <memory>
 
-#include "metkit/codes/GribHandle.h"
 #include "eckit/filesystem/PathName.h"
+#include "metkit/codes/GribHandle.h"
 
 #include "eccodes.h"
 
 namespace multio::util {
 
-// TODO 
+// TODO
 // Comment from Philipp Geier:
 //   The whole metkit::grib::GribHandle needs a proper refactoring to support all necessary methods and to
-//   be properly constructed from a `std::unique_ptr<codes_handle>` that can be passed around and supports proper moving to pass ownership.
-//   The C++ wrapper should just add methods and no further members/state. Currently we end up using `unique_ptr<GribHandle>`
+//   be properly constructed from a `std::unique_ptr<codes_handle>` that can be passed around and supports proper moving
+//   to pass ownership. The C++ wrapper should just add methods and no further members/state. Currently we end up using
+//   `unique_ptr<GribHandle>`
 class MioGribHandle : public metkit::grib::GribHandle {
 public:
     // owning constructor
@@ -22,11 +23,41 @@ public:
     MioGribHandle(const eckit::PathName&);
     // Non owning constructor
     MioGribHandle(codes_handle& hdl);
-    
+
     ~MioGribHandle() = default;
-    using metkit::grib::GribHandle::setDataValues;
     using metkit::grib::GribHandle::raw;
+    using metkit::grib::GribHandle::setDataValues;
     std::unique_ptr<MioGribHandle> duplicate() const;
+    
+    static std::unique_ptr<MioGribHandle> makeDefault();
+
+    // Check if key is defined and not missing
+    bool hasKey(const char* key) const;
+    bool hasKey(const std::string& key) const;
+
+    // Check if key is defined
+    bool isDefined(const char* key) const;
+    bool isDefined(const std::string& key) const;
+
+    // Check if key is missing
+    bool isMissing(const char* key) const;
+    bool isMissing(const std::string& key) const;
+
+    std::string getString(const std::string& key) const;
+    std::string getString(const char* key) const;
+    long getLong(const std::string& key) const;
+    long getLong(const char* key) const;
+    double getDouble(const std::string& key) const;
+    double getDouble(const char* key) const;
+    std::size_t getSize(const std::string& key) const;
+    std::size_t getSize(const char* key) const;
+    std::vector<double> getDoubleArray(const std::string& key) const;
+    std::vector<double> getDoubleArray(const char* key) const;
+    std::vector<long> getLongArray(const char* key) const;
+    
+    // getStringArray is missing...
+
+
     void setValue(const char* key, std::int64_t value);
     void setValue(const char* key, std::int32_t value);
     void setValue(const char* key, std::int16_t value);

@@ -27,8 +27,10 @@ namespace multio::datamod {
 
 
 using TimeDuration = std::variant<std::chrono::hours, std::chrono::seconds>;
+std::ostream& operator<<(std::ostream&, const TimeDuration&);
 
 
+// To be renamed and kept internal - 
 enum class Repres : std::size_t
 {
     GG,
@@ -38,8 +40,27 @@ enum class Repres : std::size_t
              // of the others...
 };
 
-std::ostream& operator<<(std::ostream&, const TimeDuration&);
 std::ostream& operator<<(std::ostream&, const Repres&);
+
+
+// To be renamed and kept internal - 
+enum class LevType : std::size_t
+{
+    ML,
+    PL,
+    PV,
+    PT,
+    SOL,
+    SFC,
+    O2D,
+    O3D,
+    HL,
+    HHL,
+    HPL,
+    AL
+};
+
+std::ostream& operator<<(std::ostream&, const LevType&);
 }  // namespace multio::datamod
 
 
@@ -47,6 +68,10 @@ namespace multio::util {
 template <>
 struct TypeToString<datamod::Repres> {
     std::string operator()() const { return "datamod::Repres"; };
+};
+template <>
+struct TypeToString<datamod::LevType> {
+    std::string operator()() const { return "datamod::LevType"; };
 };
 }  // namespace multio::util
 
@@ -77,6 +102,17 @@ struct ReadSpec<Repres> {
 
 
 Repres represFromGrid(const std::string& grid);
+
+template <>
+struct WriteSpec<LevType> {
+    static std::string write(LevType);
+};
+
+template <>
+struct ReadSpec<LevType> {
+    static inline LevType read(LevType v) noexcept { return v; };
+    static LevType read(const std::string& s);
+};
 
 
 namespace mapper {

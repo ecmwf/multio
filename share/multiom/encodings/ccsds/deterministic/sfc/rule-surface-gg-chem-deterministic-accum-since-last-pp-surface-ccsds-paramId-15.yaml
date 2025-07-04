@@ -69,7 +69,6 @@ encoder:
     time-statistics-configurator:
       type: since-last-post-processing-step
       type-of-statistical-processing: accumul
-      encode-step-zero: true
     param-configurator:
       type: paramId
     model-configurator:

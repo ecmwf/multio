@@ -49,7 +49,7 @@ multio::message::Metadata makeMarsMetadata() {
                                      {"class", "od"},        {"origin", "ecmf"},   {"anoffset", 20240101},
                                      {"packing", "packing"}, {"number", 4},        {"ident", 5},
                                      {"instrument", 6},      {"channel", 7},       {"chem", 500},
-                                     {"param", 3},           {"model", "model"},   {"levtype", "heightAboveGround"},
+                                     {"param", 3},           {"model", "model"},   {"levtype", "hl"},
                                      {"levelist", 0},        {"direction", 1},     {"frequency", 2},
                                      {"date", 20220103},     {"time", 180000},     {"step", 4},
                                      {"timespan", 1},        {"hdate", 20240101},  {"grid", "O320"},

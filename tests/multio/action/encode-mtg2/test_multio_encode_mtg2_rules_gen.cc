@@ -80,19 +80,19 @@ CASE("Test rules gen matchers") {
     static auto ruleSet = exclusiveRuleList(
         // Branch for grids
         chainedRuleList(
-            rule(all(Has<MarsKeys::GRID>{}, NoneOf<MarsKeys::LEVTYPE>{{"al"}})),
+            rule(all(Has<MarsKeys::GRID>{}, NoneOf<MarsKeys::LEVTYPE>{{LevType::AL}})),
             rule(OneOf<MarsKeys::PARAM>{{1, 3, 4}},
                  setAll(setKey<PDTCatDef::TimeExtent, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
                             {TimeExtent::PointInTime}),  //
-                        setKey<EncoderLevelDef::Type, EncoderSectionsDef::Product, EncoderProductDef::Level>(
-                            {"heightAboveGround"})  //
+                        setKey<LevelDef::Type, EncoderSectionsDef::Product, EncoderProductDef::Level>(
+                            {TypeOfLevel::HeightAboveGround})  //
                         ))),
 
         // Branch for spherical harmonics
-        chainedRuleList(rule(all(Has<MarsKeys::TRUNCATION>{}, NoneOf<MarsKeys::LEVTYPE>{{"al"}}))),
+        chainedRuleList(rule(all(Has<MarsKeys::TRUNCATION>{}, NoneOf<MarsKeys::LEVTYPE>{{LevType::AL}}))),
 
         // Branch for abstract level
-        chainedRuleList(rule(OneOf<MarsKeys::LEVTYPE>{{"al"}})));
+        chainedRuleList(rule(OneOf<MarsKeys::LEVTYPE>{{LevType::AL}})));
 
     {
         auto mars = MarsKeyValueSet{};
@@ -110,9 +110,8 @@ CASE("Test rules gen matchers") {
         EncoderSections sections;
 
         EXPECT(ruleSet(mars, sections));
-        EXPECT_EQUAL(
-            (keyPath<EncoderSectionsDef::Product, EncoderProductDef::Level, EncoderLevelDef::Type>(sections).get()),
-            "heightAboveGround");
+        EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::Level, LevelDef::Type>(sections).get())
+               == TypeOfLevel::HeightAboveGround);
         EXPECT_EQUAL(
             (keyPath<EncoderSectionsDef::Product, EncoderProductDef::PDTCat, PDTCatDef::TimeExtent>(sections).get()),
             TimeExtent::PointInTime);

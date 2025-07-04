@@ -1,0 +1,22 @@
+name: 'map fixed-range-mean lightning flash density to generic param'
+
+tag: 'fixed-range mean lightning flash density'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 228051, 228057, 228058 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 235326

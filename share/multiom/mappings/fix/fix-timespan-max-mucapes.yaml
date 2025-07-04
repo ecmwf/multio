@@ -1,0 +1,23 @@
+
+name: 'map fixed-range-max cape shear to generic param'
+
+tag: 'fixed-range max cape shear'
+
+filter:
+  type: 'param'
+  operation: 'match'
+  values: [ 228036 ]
+
+assignment:
+  type: 'composed'
+  chained: true
+  assignments:
+    - type: 'copy'
+    - type: 'composed'
+      chained: false
+      assignments:
+        - type: 'message-int'
+          name: 'param'
+          expression:
+            type: 'constant'
+            value: 237321

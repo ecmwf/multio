@@ -26,6 +26,7 @@ filter:
       values:
         - "235033:235038"
         - 235189
+        - 235326
     - type: packing
       operation: match
       value: ccsds

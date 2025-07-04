@@ -174,7 +174,7 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([201])],
+        [matchType("levtype", "sfc"), matchParam([201, 237167])],
         [
             levelConfig("heightAboveGroundAt2m"),
             paramConfig("paramId"),
@@ -186,7 +186,7 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([202])],
+        [matchType("levtype", "sfc"), matchParam([202, 238167])],
         [
             levelConfig("heightAboveGroundAt2m"),
             paramConfig("paramId"),
@@ -224,7 +224,7 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([49])],
+        [matchType("levtype", "sfc"), matchParam([49, 237207, 237318])],
         [
             levelConfig("heightAboveGroundAt10m"),
             paramConfig("paramId"),
@@ -640,7 +640,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - time-mean
     partialRule(
-        [matchType("levtype", "sfc"), matchParam(["235033:235038", 235189])],
+        [matchType("levtype", "sfc"), matchParam(["235033:235038", 235189, 235326])],
         [
             TimeRange(
                 type="since-last-post-processing-step",
@@ -708,6 +708,19 @@ PARAM_LEVTYPE_SFC = [
             ),
         ],
     ),
+    # surface -- severity since last pp
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([260683])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="mode",
+                descriptiveName="mode-since-last-pp",
+            ),
+        ],
+    ),
     # surface - severity over last 1h
     partialRule(
         [matchType("levtype", "sfc"), matchParam([260318])],
@@ -747,6 +760,19 @@ PARAM_LEVTYPE_SFC = [
                 typeOfStatisticalProcessing="severity",
                 overallLengthOfTimeRange="6h",
                 descriptiveName="severity-over-last-6h",
+            ),
+        ],
+    ),
+    # surface -- severity since last pp
+    partialRule(
+        [matchType("levtype", "sfc"), matchParam([260682])],
+        [
+            levelConfig("surface"),
+            paramConfig("paramId"),
+            TimeRange(
+                type="since-last-post-processing-step",
+                typeOfStatisticalProcessing="severity",
+                descriptiveName="severity-since-last-pp",
             ),
         ],
     ),
@@ -862,7 +888,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - max since last pp
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228226, 237055])],
+        [matchType("levtype", "sfc"), matchParam([228226, 237013, 237055, 237117, 237321])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -876,7 +902,7 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - min since last pp
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228227, 238055])],
+        [matchType("levtype", "sfc"), matchParam([228227, 238055, 238013])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),

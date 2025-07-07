@@ -27,6 +27,8 @@ filter:
       operation: match
       values:
         - 49
+        - 237207
+        - 237318
     - type: packing
       operation: match
       value: ccsds

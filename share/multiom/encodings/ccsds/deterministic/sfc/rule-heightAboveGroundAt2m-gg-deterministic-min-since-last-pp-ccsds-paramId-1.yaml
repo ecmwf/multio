@@ -27,6 +27,7 @@ filter:
       operation: match
       values:
         - 202
+        - 238167
     - type: packing
       operation: match
       value: ccsds

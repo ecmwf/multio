@@ -28,6 +28,7 @@ filter:
         - 207
         - 228029
         - "228131:228132"
+        - 260260
     - type: packing
       operation: match
       value: ccsds

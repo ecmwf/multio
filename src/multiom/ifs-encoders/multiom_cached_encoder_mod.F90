@@ -19,7 +19,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'multiom_encoder_mod.F90'
+#define PP_FILE_NAME 'multiom_cached_encoder_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'MULTIOM_CACHED_ENCODER_MOD'
 MODULE MULTIOM_CACHED_ENCODER_MOD

@@ -476,6 +476,50 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  !> Match the filter
+  IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+
+    MATCH = .FALSE.
+    SELECT CASE( THIS%FILTER_TYPE_ )
+    CASE( FLT_INT_MATCH_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_IGNORE_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_GT_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_GE_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_LE_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_LT_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_HAS_E )
+
+      MATCH = .FALSE.
+
+    CASE( FLT_INT_LACKS_E )
+
+      MATCH = .TRUE.
+
+    CASE DEFAULT
+
+      PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_OPERATION )
+
+    END SELECT
+
+  ELSE
 
   !> Evaluate the operation
   SELECT CASE( THIS%FILTER_TYPE_ )
@@ -550,6 +594,7 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_OPERATION )
 
   END SELECT
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

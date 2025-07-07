@@ -526,7 +526,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'setLocalDefinition', 1 )
 
   ! Set the number of local definitions
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'localDefinitionNumber', 14 )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'localDefinitionNumber', 24 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )

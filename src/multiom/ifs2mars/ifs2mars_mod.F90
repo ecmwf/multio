@@ -36,11 +36,11 @@ MODULE PROCEDURE ATM2MARS_SET_STREAM
 MODULE PROCEDURE WAM2MARS_SET_STREAM
 END INTERFACE
 
-
 INTERFACE IFS2MARS_SET_DATETIME
 MODULE PROCEDURE ATM2MARS_SET_DATETIME
 MODULE PROCEDURE WAM2MARS_SET_DATETIME
 END INTERFACE
+
 
 ! Whitelist of public symbols
 PUBLIC :: IFS2MARS_SET_TABLES_VERSION ! TABLES_VERSION
@@ -62,6 +62,7 @@ PUBLIC :: IFS2MARS_SET_GEOMETRY       ! GRID/REPRES
 PUBLIC :: WAM2MARS_SET_DIRFREQ        ! DIRECTION/FREQUENCY
 PUBLIC :: IFS2MARS_SET_IDENTIFICATION ! PAR::TYPE_OF_PROCESSED_DATA
 PUBLIC :: IFS2MARS_SET_MODEL          ! PAR::GENERATING_PROCESS_IDENTIFIER
+PUBLIC :: IFS2MARS_SET_SYSTEM_METHOD  ! SYSTEM/METHOD
 
 CONTAINS
 
@@ -1657,6 +1658,10 @@ PP_THREAD_SAFE FUNCTION IFS2MARS_SET_ENSEMBLE( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS
   USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
   USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSF_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MSMM_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSA_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_WASF_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1681,6 +1686,7 @@ IMPLICIT NONE
 
   ! Local variables
   LOGICAL :: IS_ENSEMBLE
+  LOGICAL, DIMENSION(4) :: CONDITIONS
 
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IS_ENSEMBLE=1_JPIB_K
@@ -1705,23 +1711,25 @@ IMPLICIT NONE
   ! TODO: this check is very naive, it should be replaced with a more complex one
   PP_TRYCALL(ERRFLAG_IS_ENSEMBLE) IFS2MARS_IS_ENSEMBLE( IFS_MSG, IFS_PAR, IS_ENSEMBLE, HOOKS )
 
+  ! Conditions for multimethod simulations
+  CONDITIONS(1) = MSG%STREAM .EQ. STREAM_MMSF_E
+  CONDITIONS(2) = MSG%STREAM .EQ. STREAM_MSMM_E
+  CONDITIONS(3) = MSG%STREAM .EQ. STREAM_MMSA_E
+  CONDITIONS(4) = MSG%STREAM .EQ. STREAM_WASF_E
+
   ! If it is analysis configure mars and context
   IF ( IS_ENSEMBLE ) THEN
-!    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_MARS) MSG%SET( 'number', IFS_PAR%SIM_%NENSFNB )
-!    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION) PAR%SET( 'typeOfEnsembleForecast', IFS_PAR%SIM_%NENSFNB )
-!    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION) PAR%SET( 'numberOfForecastsInEnsemble', IFS_PAR%SIM_%NENSFNB )
 
     MSG%NUMBER = IFS_PAR%SIM_%NENSFNB
     PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ = 1_JPIB_K
     PAR%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = IFS_PAR%SIM_%NTOTENS
 
-    ! For Seasonal forecast data we need to set the system number and method number
-    PAR%ENSEMBLE%SYSTEM_NUMBER_  = IFS_PAR%SIM_%NSYSTEM
-    PAR%ENSEMBLE%METHOD_NUMBER_ = IFS_PAR%SIM_%NMETHOD
-!  ELSE
-!    MSG%NUMBER = UNDEF_PARAM_E
-!    PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ = UNDEF_PARAM_E
-!    PAR%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = UNDEF_PARAM_E
+  ELSEIF ( ANY(CONDITIONS) ) THEN
+
+    MSG%NUMBER = 0_JPIB_K
+    PAR%ENSEMBLE%TYPE_OF_ENSEMBLE_FORECAST_ = 255_JPIB_K
+    PAR%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = 0_JPIB_K
+
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -1771,6 +1779,143 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION IFS2MARS_SET_ENSEMBLE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFS2MARS_SET_SYSTEM_METHOD'
+PP_THREAD_SAFE FUNCTION IFS2MARS_SET_SYSTEM_METHOD( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_BASE_MSG_A
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSF_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MSMM_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSA_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_WASF_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(OM_BASE_MSG_A),    INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),       INTENT(IN)    :: IFS_PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: IS_ENSEMBLE
+  LOGICAL, DIMENSION(4) :: CONDITIONS
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IS_ENSEMBLE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_MARS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! TODO: this check is very naive, it should be replaced with a more complex one
+  PP_TRYCALL(ERRFLAG_IS_ENSEMBLE) IFS2MARS_IS_ENSEMBLE( IFS_MSG, IFS_PAR, IS_ENSEMBLE, HOOKS )
+
+  ! Conditions for setting system and method
+  CONDITIONS(1) = MSG%STREAM .EQ. STREAM_MMSF_E
+  CONDITIONS(2) = MSG%STREAM .EQ. STREAM_MSMM_E
+  CONDITIONS(3) = MSG%STREAM .EQ. STREAM_MMSA_E
+  CONDITIONS(4) = MSG%STREAM .EQ. STREAM_WASF_E
+
+  ! If it is analysis configure mars and context
+  IF ( IS_ENSEMBLE  ) THEN
+
+    ! For Seasonal forecast data we need to set the system number and method number
+    MSG%SYSTEM = IFS_PAR%SIM_%NSYSTEM
+    MSG%METHOD = IFS_PAR%SIM_%NMETHOD
+
+  ELSEIF ( ANY(CONDITIONS) ) THEN
+
+    ! For Seasonal forecast data we need to set the system number and method number
+    MSG%SYSTEM = IFS_PAR%SIM_%NSYSTEM
+    MSG%METHOD = IFS_PAR%SIM_%NMETHOD
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_IS_ENSEMBLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in calling IFS2MARS_IS_ENSEMBLE' )
+    CASE(ERRFLAG_UNABLE_TO_SET_MARS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in setting the number of ensemble' )
+    CASE(ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in setting the parametrization' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IFS2MARS_SET_SYSTEM_METHOD
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

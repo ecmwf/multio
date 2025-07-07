@@ -5,7 +5,7 @@ tag: 'fixed-range max wind gust'
 filter:
   type: 'param'
   operation: 'match'
-  values: [ 123, 228028 ]
+  values: [ 123, 228028, 49 ]
 
 assignment:
   type: 'composed'
@@ -19,4 +19,4 @@ assignment:
           name: 'param'
           expression:
             type: 'constant'
-            value: 49
+            value: 237318

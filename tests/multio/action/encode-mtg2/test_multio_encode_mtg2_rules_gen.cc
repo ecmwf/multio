@@ -23,54 +23,10 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Metadata.h"
 
+#include "test_multio_encode_mtg2_helper.h"
+
 
 namespace multio::test {
-
-auto mkAifsSingleBaseMd() {
-    return message::Metadata{
-        {"class", "ai"},  {"model", "aifs-single"}, {"expver", "0001"}, {"type", "fc"},   {"stream", "oper"},
-        {"repres", "gg"}, {"packing", "ccsds"},     {"levelist", 700},  {"grid", "N320"}, {"step", 6},
-        {"time", 0},      {"date", 20230901},       {"levtype", "pl"},  {"param", 133}};
-}
-
-auto mkMd() {
-    return mkAifsSingleBaseMd();
-}
-
-
-std::vector<message::Metadata> aifsSingleParams() {
-    std::vector<message::Metadata> res;
-
-    // SFC params
-    for (auto param : std::vector<int>{{134, 151, 165, 166, 167, 168, 235, 141, 136, 143, 228}}) {
-        res.push_back({{"param", param}, {"levtype", "sfc"}});
-    }
-
-    // PL params
-    for (auto param : std::vector<int>{{129, 130, 131, 132, 133, 135}}) {
-        for (auto levelist : std::vector<int>{{50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000}}) {
-            res.push_back({{"param", param}, {"levtype", "pl"}, {"levelist", levelist}});
-        }
-    }
-
-    return res;
-}
-
-std::vector<message::Metadata> mkAifsSingleMd() {
-    std::vector<message::Metadata> res;
-    for (auto step : std::vector<int>{{6, 12, 18, 24, 32}}) {
-        auto md = mkAifsSingleBaseMd();
-        md.set("step", step);
-
-        for (auto param : aifsSingleParams()) {
-            md.updateOverwrite(param);
-            res.push_back(std::move(md));
-        }
-    }
-
-    return res;
-}
-
 
 CASE("Test rules gen matchers") {
     using namespace multio::action::rules;
@@ -138,6 +94,7 @@ CASE("Test real rules matchers with AIFS single keys") {
     for (auto md : mkAifsSingleMd()) {
         auto mars = read(MarsKeySet{}, md);
         EncoderSections sections;
+        
 
         EXPECT(action::rules::allRules()(mars, sections));
         // std::cout << "After rule apply: " << sections << std::endl;
@@ -145,6 +102,16 @@ CASE("Test real rules matchers with AIFS single keys") {
         // std::cout << "After alter: " << sections << std::endl;
         // EXPECT_EQUAL((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).get()), 0);
         EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
+        
+        EncoderSections expectedSections = expectedAIFSSingleEncoderSections(mars);
+
+        // std::cout << "Sections for mars: ";
+        // eckit::JSON json(std::cout);
+        // json << write<eckit::LocalConfiguration>(mars);
+        // std::cout << " -- sections: ";
+        // json << write<eckit::LocalConfiguration>(sections);
+        // std::cout << std::endl;
+        EXPECT_EQUAL(sections, expectedSections);
     }
 }
 

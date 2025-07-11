@@ -194,7 +194,7 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
                 selectorsForVal = [s for s in mappedSelectorList if filterSelector(s[0])]
                 
                 enumVal= val if val is None else camelToPascalCase(val)
-                kvStr = f"KeyValue<{pdtCatEnumName}::{enumName}>{{{enumName}::{enumVal}}}"
+                kvStr = f"set<{pdtCatEnumName}::{enumName}>({enumName}::{enumVal})"
 
                 for (subEnums, pdtVal) in buildDecisionMapString(subCatList[1:], {cat: val, **selector}, selectorsForVal):
                     # Remove this if cond when None/default should be explicitly in the list
@@ -208,7 +208,7 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
     decisionMapCases=buildDecisionMapString(categoryHandleOrder, {}, categorySelectorsWithMappedPdt)
     
-    decisionMapCasesStr=",\n".join([f"""{{make({", ".join(subEnums)}), {pdtVal} }}""" for (subEnums, pdtVal) in decisionMapCases])
+    decisionMapCasesStr=",\n".join([f"""{{make({pdtCatName}{{}}.{".".join(subEnums)}), {pdtVal} }}""" for (subEnums, pdtVal) in decisionMapCases])
     decisionMap=f"""{{{decisionMapCasesStr}}}""" # Wrapped in initializer list
     return f"""
 #pragma once
@@ -272,10 +272,8 @@ struct InferPdt {{
 
 {decisionMapTypeString}
 
-template<typename ... Args>
-static {pdtCatName} make(Args&& ... args) {{
+static {pdtCatName} make({pdtCatName} pdt) {{
     using namespace multio::datamod;
-    auto pdt = write<{pdtCatName}>(std::make_tuple(std::forward<Args>(args)...));
     alterAndValidate(pdt);
     return pdt;
 }}

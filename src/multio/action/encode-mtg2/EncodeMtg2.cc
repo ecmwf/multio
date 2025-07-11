@@ -22,6 +22,7 @@
 #include "multio/action/encode-mtg2/Options.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/datamod/Glossary.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
@@ -63,19 +64,12 @@ void EncodeMtg2::executeImpl(Message msg) {
         miscKeys.keySet.unscoped();
         write(miscKeys, par);
 
-        // Handle geometry
-        auto geo = withScopedGeometryKeySet(marsKeys, [&](Repres repres, std::string scope, auto geoKeySet) {
-            const auto& grid = key<MarsKeys::GRID>(marsKeys);
-            if (!grid.isMissing()) {
-                const auto& global = message::Parametrization::instance().get();
-                const auto& geoFromAtlas = key<EncodeMtg2Def::GeoFromAtlas>(conf_);
-                if (geoFromAtlas.get() && (global.find(scope) == global.end())) {
-                    extract::AtlasGeoSetter::handleGrid(scope, grid.get());
-                }
-            }
 
+        auto geo = ([&](){
+            // Setup MultIOM dict
+            const auto& repres = key<MarsKeys::REPRES>(marsKeys);
             MultIOMDict geom{([&]() {
-                switch (repres) {
+                switch (repres.get()) {
                     case Repres::GG:
                         return MultIOMDictKind::ReducedGG;
                     case Repres::HEALPix:
@@ -88,10 +82,31 @@ void EncodeMtg2::executeImpl(Message msg) {
                 throw EncodeMtg2Exception("unkown repres", Here());
             })()};
 
-            auto geoKeys = read(geoKeySet, md);
-            write(geoKeys.unscoped(), geom);
+            // Get geometry keyset variant
+            auto geoKeySets = getGeometryKeySet(marsKeys);
+
+            // If grid.. check if atlas is given
+            const auto& grid = key<MarsKeys::GRID>(marsKeys);
+            if (!grid.isMissing()) {
+                auto optScope = std::visit([](const auto& k) { return k.getScope(); }, geoKeySets);
+                if (optScope) {
+                    std::string scope{*optScope};
+                    const auto& global = message::Parametrization::instance().get();
+                    const auto& geoFromAtlas = key<EncodeMtg2Def::GeoFromAtlas>(conf_);
+                    if (geoFromAtlas.get() && (global.find(scope) == global.end())) {
+                        extract::AtlasGeoSetter::handleGrid(scope, grid.get());
+                    }
+                }
+            }
+
+            std::visit(
+                [&](auto& geoKeySet) {
+                    auto geoKeys = read(geoKeySet, md);
+                    write(geoKeys.unscoped(), geom);
+                },
+                geoKeySets);
             return geom;
-        });
+        })();
 
 
         // @Mirco here we get the cached raw encoder

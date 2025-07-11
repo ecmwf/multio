@@ -13,6 +13,7 @@
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/DataModellingException.h"
 #include "multio/datamod/MarsTypes.h"
+#include "multio/util/TypeTraits.h"
 
 #include <sstream>
 
@@ -350,13 +351,47 @@ MULTIO_KEY_SET_DESCRIPTION(
 // Evaluate geometry from mars
 //-----------------------------------------------------------------------------
 
-using Geometry = std::variant<KeyValueSet<GeoGG>, KeyValueSet<GeoSH>, KeyValueSet<GeoHEALPix>>;
+using GeometryEnums = util::TypeList<GeoGG, GeoSH, GeoHEALPix>;
+using GeometryKeySets = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeySet, GeometryEnums>>;
+using Geometry
+    = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeyValueSet, util::MapTypeList_t<KeySet, GeometryEnums>>>;
 
-template <typename KVS, typename Func>
-decltype(auto) withScopedGeometryKeySet(const KVS& kvs, Func&& func) {
-    const auto& grid = key<MarsKeys::GRID>(kvs);
-    const auto& trunc = key<MarsKeys::TRUNCATION>(kvs);
-    const auto& repres = key<MarsKeys::REPRES>(kvs);
+template<typename KVS, std::enable_if_t<std::is_same_v<std::decay_t<KVS>, MarsKeyValueSet>, bool> = true>
+GeometryKeySets getGeometryKeySet(const KVS& mars) {
+    const auto& grid = key<MarsKeys::GRID>(mars);
+    const auto& trunc = key<MarsKeys::TRUNCATION>(mars);
+    const auto& repres = key<MarsKeys::REPRES>(mars);
+
+    switch (repres.get()) {
+        case Repres::GG: {
+            std::string scope = std::string("geo-") + grid.get();
+            return keySet<GeoGG>().scoped(scope);
+        }
+        case Repres::HEALPix: {
+            std::string scope = std::string("geo-") + grid.get();
+            return keySet<GeoHEALPix>().scoped(scope);
+        }
+        case Repres::SH: {
+            std::string scope = std::string("geo-TCO") + std::to_string(trunc.get());
+            return keySet<GeoSH>().scoped(scope);
+        }
+        // TODO uncomment once there are keys specified...
+        // case Repres::GG: {
+        //     std::string scope = std::string("geo-") + grid.get();
+        //     std::forward<Func>(func)(Repres::GG, scope, keySet<GeoGG>().scoped(scope));
+        //     return;
+        // }
+        default:
+            throw DataModellingException(
+                std::string("getGeometryKeySet: Unhandled repres ") + Writer<Repres>::write(repres.get()), Here());
+    }
+}
+
+template <typename Func>
+decltype(auto) withScopedGeometryKeySet(const MarsKeyValueSet& mars, Func&& func) {
+    const auto& grid = key<MarsKeys::GRID>(mars);
+    const auto& trunc = key<MarsKeys::TRUNCATION>(mars);
+    const auto& repres = key<MarsKeys::REPRES>(mars);
 
     switch (repres.get()) {
         case Repres::GG: {

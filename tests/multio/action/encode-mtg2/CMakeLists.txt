@@ -19,15 +19,18 @@ ecbuild_add_test( TARGET    test_multio_encode_mtg2_conf
                   SOURCES   test_multio_encode_mtg2_conf.cc
                   LIBS      multio multio-action-encode-mtg2)
 
-
 ecbuild_add_test( TARGET    test_multio_encode_mtg2_infer_pdt
                   SOURCES   test_multio_encode_mtg2_infer_pdt.cc
                   LIBS      multio multio-action-encode-mtg2)
 
-
-
 ecbuild_add_test( TARGET    test_multio_encode_mtg2_rules_gen
                   SOURCES   test_multio_encode_mtg2_rules_gen.cc
+                  TEST_REQUIRES  test_multio_encode_mtg2_infer_pdt test_multio_encode_mtg2_conf
+                  LIBS      multio multio-action-encode-mtg2)
+
+ecbuild_add_test( TARGET    test_multio_encode_mtg2_setters
+                  SOURCES   test_multio_encode_mtg2_setters.cc
+                  TEST_REQUIRES  test_multio_encode_mtg2_rules_gen 
                   LIBS      multio multio-action-encode-mtg2)
 
 

@@ -22,7 +22,7 @@
 #include "multiom/api/c/api.h"
 
 extern "C" {
-int multio_grib2_raw_encoder_open(void* options, void** handle, void* eckit_conf);
+int multio_grib2_raw_encoder_open(void* options, void* eckit_conf, void** handle);
 int multio_grib2_raw_encoder_close(void** handle);
 int multio_grib2_raw_encoder_prepare(void* handle, const void* mars_dict, const void* par_dict, const void* geom_dict,
                                      void* grib_handle);

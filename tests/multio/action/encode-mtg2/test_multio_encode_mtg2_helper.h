@@ -7,7 +7,6 @@
 
 #include <sstream>
 
-
 namespace multio::test {
 
 auto mkAifsSingleBaseMd() {

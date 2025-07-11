@@ -69,6 +69,8 @@ public:
     void check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
                    const datamod::Geometry&) const override;
 
+    void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const datamod::MarsKeyValueSet&) const override;
+
     
     LevelSetter(const LevelKeyValueSet& conf): conf_{conf} {}
     virtual ~LevelSetter() = default;

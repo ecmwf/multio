@@ -15,15 +15,15 @@
 
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <memory>  // unique_ptr
 #include <optional>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <variant>
 #include <vector>
-#include <chrono>
-#include <string>
 
 namespace multio::util {
 
@@ -54,6 +54,13 @@ struct TypeList {
         return (false || ... || std::is_same_v<T, TI>);
     }
 };
+
+
+template <typename T>
+struct ToTypeList;
+
+template <typename T>
+using ToTypeList_t = typename ToTypeList<T>::type;
 
 
 //-------------------------------------
@@ -181,8 +188,7 @@ struct SaneOverloadResolution<From, TI, TS...>
                          IgnoredOverloadForResolution<TI>> {
     using SaneOverloadResolution<From, TS...>::operator();
     using std::conditional_t<NotNarrowConstructible_v<From, TI>, BaseOverloadForResolution<TI>,
-                             IgnoredOverloadForResolution<TI>>::
-    operator();
+                             IgnoredOverloadForResolution<TI>>::operator();
 };
 
 
@@ -320,6 +326,12 @@ template <typename T>
 inline constexpr bool IsVariant_v = IsVariant<T>::value;
 
 
+template <typename... T>
+struct ToTypeList<std::variant<T...>> {
+    using type = TypeList<T...>;
+};
+
+
 //-----------------------------------------------------------------------------
 
 template <typename T>
@@ -333,6 +345,13 @@ struct IsTuple<std::tuple<T...>> {
 
 template <typename T>
 inline constexpr bool IsTuple_v = IsTuple<T>::value;
+
+
+template <typename... T>
+struct ToTypeList<std::tuple<T...>> {
+    using type = TypeList<T...>;
+};
+
 
 
 // Apply a function for each element in a tuple

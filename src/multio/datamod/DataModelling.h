@@ -12,6 +12,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <variant>
 #include "eckit/utils/Overloaded.h"
 #include "multio/datamod/DataModellingException.h"
 #include "multio/datamod/ReaderWriter.h"
@@ -458,9 +459,22 @@ inline constexpr bool KeyDefHasDefaultValueFunctor_v = KeyDef_t<id_>::hasDefault
 
 //-----------------------------------------------------------------------------
 
+struct DynKeyInfo {
+    using KeyType = util::PrehashedKey<std::string>;
+
+    virtual const KeyType& key() const = 0;
+    virtual std::string keyInfo() const = 0;
+
+    // Returns the initial scope the key was defined in
+    virtual std::string_view initScope() const = 0;
+
+    // This forces constexpr to be compiled in
+    virtual const std::optional<std::string_view>& description() const = 0;
+};
+
 // Virtual key description to avoid to much code specialization for io with containers
 template <typename ValueType_, typename Mapper_, KVTag tag_, bool hasDefaultValueFunctor_>
-struct DynamicKey {
+struct DynamicKey : DynKeyInfo {
     using KeyType = util::PrehashedKey<std::string>;
 
     using ValueType = ValueType_;
@@ -476,9 +490,7 @@ struct DynamicKey {
     operator const KeyType&() const { return key(); }
     operator const std::string&() const { return key(); }
 
-    virtual const KeyType& key() const = 0;
     virtual ValueType defaultValue() const = 0;
-    virtual std::string keyInfo() const = 0;
 };
 
 template <typename T>
@@ -529,6 +541,12 @@ struct ScopedKey
     operator const std::string&() const { return key_; }
 
     const KeyType& key() const override { return key_; }
+    std::string_view initScope() const override { return KeySetName_v<decltype(id_)>; }
+
+    // Making it virtual forces the description to be added to the compilation unit...
+    const std::optional<std::string_view>& description() const noexcept override {
+        return keyDef<id_>().description();
+    };
 
     ValueType defaultValue() const override {
         if constexpr (hasDefaultValueFunctor) {
@@ -536,8 +554,6 @@ struct ScopedKey
         }
         throw DataModellingException(std::string("Critical. No default functor given for key: ") + keyInfo(), Here());
     }
-    const std::optional<std::string_view>& description() const noexcept { return keyDef<id_>().description(); }
-
 
     std::string keyInfo() const override {
         return std::string(key()) + std::string(" (") + util::typeToString<ValueType>() + std::string(", ")
@@ -639,19 +655,23 @@ public:
     using TupleType = std::decay_t<decltype(GetKeyPolicy::getKeys())>;
 
     This& unscoped() {
-        scope_ = KeySetScope::None;
+        scopeType_ = KeySetScope::None;
+        scope_ = {};
+        customScopedKeys_ = {};
         return static_cast<Derived&>(*this);
     };
 
     // Set scope in place
     This& scoped(std::optional<std::string> customScope = {}) {
         if (customScope) {
-            scope_ = KeySetScope::Custom;
+            scopeType_ = KeySetScope::Custom;
+            scope_ = std::move(customScope);
             customScopedKeys_
-                = util::map([&](const auto& kdef) { return toScopedKey(kdef, *customScope); }, GetKeyPolicy::getKeys());
+                = util::map([&](const auto& kdef) { return toScopedKey(kdef, *scope_); }, GetKeyPolicy::getKeys());
         }
         else {
-            scope_ = KeySetScope::Default;
+            scopeType_ = KeySetScope::Default;
+            scope_ = {};
         }
         return static_cast<Derived&>(*this);
     };
@@ -673,7 +693,7 @@ public:
 
 
     const TupleType& keys() const {
-        switch (scope_) {
+        switch (scopeType_) {
             case KeySetScope::Default:
                 return GetKeyPolicy::getScopedKeys();
             case KeySetScope::Custom:
@@ -683,9 +703,16 @@ public:
         }
     }
 
+    std::optional<std::string_view> getScope() const {
+        if (scope_) {
+            return *scope_;
+        }
+        return GetKeyPolicy::getScope();
+    }
 
 private:
-    KeySetScope scope_{KeySetScope::None};
+    KeySetScope scopeType_{KeySetScope::None};
+    std::optional<std::string> scope_{};
     std::optional<TupleType> customScopedKeys_{};
 };
 
@@ -696,6 +723,7 @@ struct KeySetGetKeysPolicy {
 
     static const auto& getKeys() { return StaticKeySetStore<EnumType>::keys(); }
     static const auto& getScopedKeys() { return StaticKeySetStore<EnumType>::scopedKeys(); }
+    static std::optional<std::string_view> getScope() { return KeySetName_v<EnumType>; }
 };
 
 
@@ -714,6 +742,8 @@ struct CustomKeySetGetKeysPolicy {
         static const auto scopedKeys = std::make_tuple(toScopedKey(keyDef<Ids>(), KeySetName_v<decltype(Ids)>)...);
         return scopedKeys;
     }
+
+    static std::optional<std::string_view> getScope() { return {}; }
 };
 
 
@@ -1042,6 +1072,14 @@ template <typename T>
 inline constexpr bool IsKeyValue_v = IsKeyValue<T>::value;
 
 
+template <typename T>
+struct IsAnyKeyValue {
+    static constexpr bool value = IsKeyValue_v<T> || IsBaseKeyValue_v<T>;
+};
+template <typename T>
+inline constexpr bool IsAnyKeyValue_v = IsAnyKeyValue<T>::value;
+
+
 template <typename KVD, std::enable_if_t<IsKeyDefinition_v<KVD>, bool> = true>
 KeyValueFromKey_t<KVD> toMissingValue(const KVD&) {
     return KeyValueFromKey_t<KVD>{MissingValue{}};
@@ -1108,10 +1146,11 @@ decltype(auto) toKeyValue(const KVD& kvd, V&& v) {
 
 
 // Takes a tuple of KeyDefinition and creates an instance of the keyset with all fields set to missing
-template <typename DescTup, std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
-                                              && IsKeyDefinition_v<std::tuple_element_t<0, std::decay_t<DescTup>>>),
-                                             bool>
-                            = true>
+template <typename DescTup,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
+                            && util::TypeListAll_v<IsKeyDefinition, util::ToTypeList_t<std::decay_t<DescTup>>>),
+                           bool>
+          = true>
 decltype(auto) reify(DescTup&& tup) {
     return util::map([&](const auto& kvd) { return toMissingValue(kvd); }, std::forward<DescTup>(tup));
 }
@@ -1154,6 +1193,37 @@ struct KeyValueSet {
         ret.scoped(customScope);
         return ret;
     };
+    
+    // Usability 
+    // Inline setting
+    template<auto id>
+    decltype(auto) key() const& {
+        return key<id>(values);
+    }
+    template<auto id>
+    decltype(auto) key() & {
+        return key<id>(values);
+    }
+    template<auto id>
+    decltype(auto) key() && {
+        return key<id>(std::move(values));
+    }
+    
+    template<auto id>
+    decltype(auto) get() const {
+        return datamod::key<id>(values).get();
+    }
+    
+    template<auto id>
+    decltype(auto) modify() {
+        return datamod::key<id>(values).modify();
+    }
+
+    template<auto id, typename Val>
+    This& set(Val&& val) {
+        datamod::key<id>(values).set(std::forward<Val>(val));
+        return *this;
+    }
 
     static void alter(This& v) { AlterKeySetFunctor<KeySet_>{}(v); }
 };
@@ -1195,8 +1265,7 @@ decltype(auto) key(KVS&& keyValueSet) {
 
 // Takes a tuple of KeyValues and converts all references to value by copying
 template <typename Tup, std::enable_if_t<(util::IsTuple_v<std::decay_t<Tup>>
-                                          && (IsKeyValue_v<std::tuple_element_t<0, Tup>>
-                                              || IsBaseKeyValue_v<std::tuple_element_t<0, Tup>>)),
+                                          && util::TypeListAll_v<IsAnyKeyValue, util::ToTypeList_t<std::decay_t<Tup>>>),
                                          bool>
                         = true>
 Tup& acquire(Tup& tup) {
@@ -1327,20 +1396,22 @@ void validate(const KVS& kvs) {
 }
 
 // Takes a tuple of KeyValue and verifies that all required keys are set
-template <
-    typename ValTup,
-    std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>> && IsKeyValue_v<std::tuple_element_t<0, ValTup>>), bool>
-    = true>
+template <typename ValTup,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>>
+                            && util::TypeListAll_v<IsAnyKeyValue, util::ToTypeList_t<std::decay_t<ValTup>>>),
+                           bool>
+          = true>
 void validate(const ValTup& tup) {
     util::forEach([&](const auto& kv) { validate(kv); }, tup);
 }
 
 
 // Takes a tuple of KeyValue and verifies that all required keys are set
-template <
-    typename ValTup,
-    std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>> && IsKeyValue_v<std::tuple_element_t<0, ValTup>>), bool>
-    = true>
+template <typename ValTup,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>>
+                            && util::TypeListAll_v<IsAnyKeyValue, util::ToTypeList_t<std::decay_t<ValTup>>>),
+                           bool>
+          = true>
 ValTup& alter(ValTup& tup) {
     util::forEach([&](const auto& kv) { alter(kv); }, tup);
     return tup;
@@ -1377,10 +1448,11 @@ KVS& alterAndValidate(KVS& kvs) {
 }
 
 // Takes a tuple of KeyValue and verifies that all required keys are set
-template <
-    typename ValTup,
-    std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>> && IsKeyValue_v<std::tuple_element_t<0, ValTup>>), bool>
-    = true>
+template <typename ValTup,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<ValTup>>
+                            && util::TypeListAll_v<IsAnyKeyValue, util::ToTypeList_t<std::decay_t<ValTup>>>),
+                           bool>
+          = true>
 ValTup& alterAndValidate(ValTup& tup) {
     alter(tup);
     validate(tup);
@@ -1451,7 +1523,7 @@ struct KeyValueReader<std::tuple<KeyValue<someId>, KVS...>> : BaseKeyValueReader
 
     template <auto id, typename KVD, typename KVTup,
               std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && util::IsTuple_v<std::decay_t<KVTup>>
-                                && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>),
+                                && util::TypeListAll_v<IsKeyValue, util::ToTypeList_t<std::decay_t<KVTup>>>),
                                bool>
               = true>
     static KeyValue<id> getByRef(KeyId<id>, const KVD& kvd, KVTup&& kv) {
@@ -1514,7 +1586,7 @@ struct KeyValueWriter<std::tuple<KeyValue<otherId>, KVS...>>
     template <auto id, typename KVD, typename KV, typename KVTup,
               std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV>>
                                 && util::IsTuple_v<std::decay_t<KVTup>>
-                                && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>),
+                                && util::TypeListAll_v<IsKeyValue, util::ToTypeList_t<std::decay_t<KVTup>>>),
                                bool>
               = true>
     static void set(KeyId<id>, const KVD& kvd, KV&& kv, KVTup& kvTup) {
@@ -1568,7 +1640,7 @@ decltype(auto) readByValue(KVD&& kvd, Container&& c) {
 // Takes a tuple of KeyDefinition and a container from which to read/create an object from
 template <typename DescTup, typename Container,
           std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
-                            && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>
+                            && util::TypeListAll_v<IsScopedKey, util::ToTypeList_t<std::decay_t<DescTup>>>
                             && KeyValueReader<std::decay_t<Container>>::isSpecialized),
                            bool>
           = true>
@@ -1578,7 +1650,7 @@ decltype(auto) read(DescTup&& tup, Container&& c) {
 }
 template <typename DescTup, typename Container,
           std::enable_if_t<(util::IsTuple_v<std::decay_t<DescTup>>
-                            && IsScopedKey_v<std::tuple_element_t<0, std::decay_t<DescTup>>>
+                            && util::TypeListAll_v<IsScopedKey, util::ToTypeList_t<std::decay_t<DescTup>>>
                             && KeyValueReader<std::decay_t<Container>>::isSpecialized),
                            bool>
           = true>
@@ -1592,7 +1664,7 @@ template <
     typename KS, typename Container,
     std::enable_if_t<(IsKeySet_v<std::decay_t<KS>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
     = true>
-decltype(auto) read(KS&& ks, Container&& c) {
+KeyValueSet<std::decay_t<KS>> read(KS&& ks, Container&& c) {
     auto values = read(ks.keys(), std::forward<Container>(c));
     KeyValueSet<std::decay_t<KS>> ret{std::forward<KS>(ks), std::move(values)};
     alterAndValidate(ret);
@@ -1603,11 +1675,40 @@ template <
     typename KS, typename Container,
     std::enable_if_t<(IsKeySet_v<std::decay_t<KS>> && KeyValueReader<std::decay_t<Container>>::isSpecialized), bool>
     = true>
-decltype(auto) readByValue(KS&& ks, Container&& c) {
+KeyValueSet<std::decay_t<KS>> readByValue(KS&& ks, Container&& c) {
     auto values = readByValue(ks.keys(), std::forward<Container>(c));
     KeyValueSet<std::decay_t<KS>> ret{std::forward<KS>(ks), std::move(values)};
     alterAndValidate(ret);
     return ret;
+}
+
+
+template <typename VKS, typename Container,
+          std::enable_if_t<(util::IsVariant_v<std::decay_t<VKS>>
+                            && util::TypeListAll_v<IsKeySet, util::ToTypeList_t<std::decay_t<VKS>>>
+                            && KeyValueReader<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
+decltype(auto) read(VKS&& vks, Container&& c) {
+    using RetValue
+        = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeyValueSet, util::ToTypeList_t<std::decay_t<VKS>>>>;
+    return std::visit(
+        [&](auto&& ks) -> RetValue { return read(std::forward<decltype(ks)>(ks), std::forward<Container>(c)); },
+        std::forward<VKS>(vks));
+}
+
+template <typename VKS, typename Container,
+          std::enable_if_t<(util::IsVariant_v<std::decay_t<VKS>>
+                            && util::TypeListAll_v<IsKeySet, util::ToTypeList_t<std::decay_t<VKS>>>
+                            && KeyValueReader<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
+decltype(auto) readByValue(VKS&& vks, Container&& c) {
+    using RetValue
+        = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeyValueSet, util::ToTypeList_t<std::decay_t<VKS>>>>;
+    return std::visit(
+        [&](auto&& ks) -> RetValue { return readByValue(std::forward<decltype(ks)>(ks), std::forward<Container>(c)); },
+        std::forward<VKS>(vks));
 }
 
 
@@ -1651,22 +1752,22 @@ void write(KV&& kv, Container& c) {
     write(key<std::decay_t<KV>::id>(), std::forward<decltype(kv)>(kv), c);
 }
 
-template <
-    typename KVTup, typename Container,
-    std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>
-                      && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
-                     bool>
-    = true>
+template <typename KVTup, typename Container,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>>
+                            && util::TypeListAll_v<IsKeyValue, util::ToTypeList_t<std::decay_t<KVTup>>>
+                            && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
 void write(KVTup&& tup, Container& c) {
     util::forEach([&](auto&& kv) { write(std::forward<decltype(kv)>(kv), c); }, std::forward<KVTup>(tup));
 }
 
-template <
-    typename Container, typename KVTup,
-    std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>> && IsKeyValue_v<std::tuple_element_t<0, std::decay_t<KVTup>>>
-                      && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
-                     bool>
-    = true>
+template <typename Container, typename KVTup,
+          std::enable_if_t<(util::IsTuple_v<std::decay_t<KVTup>>
+                            && util::TypeListAll_v<IsKeyValue, util::ToTypeList_t<std::decay_t<KVTup>>>
+                            && KeyValueWriter<std::decay_t<Container>>::isSpecialized),
+                           bool>
+          = true>
 Container write(KVTup&& tup) {
     Container c{};
     write(std::forward<KVTup>(tup), c);

@@ -61,7 +61,6 @@ dependencies = [
 ]
 
 optional-dependencies.all = [ 
-  "pymultio",
   "multiolib", # TODO we need to make this dynamic, effectively pin to the exact version
 ]
 

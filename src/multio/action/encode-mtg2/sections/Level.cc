@@ -1,5 +1,6 @@
 #include "multio/action/encode-mtg2/sections/Level.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
+#include "multio/action/encode-mtg2/sections/SectionSetter.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/GribKeys.h"
@@ -84,19 +85,19 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
 
         const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
         const bool isSFC = levtype.has() && levtype.get() == LevType::SFC;
-        key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(typeOfFirstFixedSurface);
-        key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(255);
+        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
+        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
 
         if (fixedLevel.has()) {
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(fixedLevel.get());
-            key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(fixedLevel.get());
+            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
         }
         if (isSFC) {
             if (levelist.isMissing()) {
                 throwLevelistMissing();
             }
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(levelist.get());
-            key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get());
+            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
         }
         alterAndValidate(ret);
         return ret;
@@ -106,37 +107,41 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
     auto handle2SurfacesWithoutLevel
         = [&](std::int64_t typeOfFirstFixedSurface, std::int64_t typeOfSecondFixedSurface) {
               HorizontalKeyValueSet ret;
-              key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(typeOfFirstFixedSurface);
-              key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(typeOfSecondFixedSurface);
+              ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
+              ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(typeOfSecondFixedSurface);
               alterAndValidate(ret);
               return ret;
           };
 
     auto handle1SurfaceWithoutLevel = [&](std::int64_t typeOfFirstFixedSurface) {
         HorizontalKeyValueSet ret;
-        key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(typeOfFirstFixedSurface);
-        key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(255);
+        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
+        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
         alterAndValidate(ret);
         return ret;
     };
 
-    auto handle1SurfaceWithLevel = [&](std::int64_t typeOfFirstFixedSurface) {
+    auto handle1SurfaceWithLevel = [&](std::int64_t typeOfFirstFixedSurface, std::optional<std::string> pressureUnits = {}) {
         HorizontalKeyValueSet ret;
 
+        if (pressureUnits) {
+            ret.set<HorizontalKeys::PressureUnits>(std::move(*pressureUnits));
+        }
+
         const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-        key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(typeOfFirstFixedSurface);
-        key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(255);
+        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
+        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
 
         if (fixedLevel.has()) {
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(fixedLevel.get());
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(fixedLevel.get());
         }
         else {
             if (levelist.isMissing()) {
                 throwLevelistMissing();
             }
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(levelist.get());
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get());
         }
-        key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
+        ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
         alterAndValidate(ret);
         return ret;
     };
@@ -146,12 +151,12 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
         if (levelist.isMissing()) {
             throwLevelistMissing();
         }
-        key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(typeOfSurface);
-        key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(typeOfSurface);
-        key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(levelist.get() - 1);
-        key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
-        key<HorizontalKeys::ScaledValueOfSecondFixedSurface>(ret).set(levelist.get());
-        key<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(ret).set(0);
+        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfSurface);
+        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(typeOfSurface);
+        ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get() - 1);
+        ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
+        ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(levelist.get());
+        ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
         alterAndValidate(ret);
         return ret;
     };
@@ -199,7 +204,7 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
         case TypeOfLevel::Tropopause:
             return handle1SurfaceWithoutLevel(7);
         case TypeOfLevel::Hybrid:
-            return handle1SurfaceWithLevel(105);
+            return handle1SurfaceWithLevel(105, "hPa");
         case TypeOfLevel::PotentialVorticity:
             return handle1SurfaceWithLevel(109);
         case TypeOfLevel::Theta:
@@ -207,43 +212,37 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
         case TypeOfLevel::Snow:
             return handle1SurfaceWithLevel(114);  // Might be wrong... to be checked how level are set
         case TypeOfLevel::IsobaricInPa: {
-            auto ret = handle1SurfaceWithLevel(100);
-            key<HorizontalKeys::PressureUnits>(ret).set("pa");
-            alterAndValidate(ret);
-            return ret;
+            return handle1SurfaceWithLevel(100, "pa");
         }
         case TypeOfLevel::IsobaricInhPa: {
-            auto ret = handle1SurfaceWithLevel(100);
-            key<HorizontalKeys::PressureUnits>(ret).set("hPa");
-            alterAndValidate(ret);
-            return ret;
+            return handle1SurfaceWithLevel(100, "hPa");
         }
         case TypeOfLevel::HighCloudLayer: {
             HorizontalKeyValueSet ret;
-            key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(100);
-            key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(8);
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(45000);
-            key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
+            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(100);
+            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(8);
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(45000);
+            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
             alterAndValidate(ret);
             return ret;
         }
         case TypeOfLevel::MediumCloudLayer: {
             HorizontalKeyValueSet ret;
-            key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(100);
-            key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(100);
-            key<HorizontalKeys::ScaledValueOfFirstFixedSurface>(ret).set(80000);
-            key<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(ret).set(0);
-            key<HorizontalKeys::ScaledValueOfSecondFixedSurface>(ret).set(45000);
-            key<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(ret).set(0);
+            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(100);
+            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(100);
+            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(80000);
+            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
+            ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(45000);
+            ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
             alterAndValidate(ret);
             return ret;
         }
         case TypeOfLevel::LowCloudLayer: {
             HorizontalKeyValueSet ret;
-            key<HorizontalKeys::TypeOfFirstFixedSurface>(ret).set(1);
-            key<HorizontalKeys::TypeOfSecondFixedSurface>(ret).set(100);
-            key<HorizontalKeys::ScaledValueOfSecondFixedSurface>(ret).set(80000);
-            key<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(ret).set(0);
+            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(1);
+            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(100);
+            ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(80000);
+            ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
             alterAndValidate(ret);
             return ret;
         }
@@ -273,14 +272,17 @@ std::optional<datamod::VerticalKeyValueSet> verticalForTypeOfLevel(const LevelKe
         case TypeOfLevel::Snow: {
             if (levtype.has() && levtype.get() == LevType::ML) {
                 datamod::VerticalKeyValueSet ret;
+                ASSERT(key<MiscKeys::Pv>(misc).holdsReference());
                 const auto& pv = key<MiscKeys::Pv>(misc);
+
                 if (pv.isMissing()) {
                     std::ostringstream oss;
                     oss << "Missing key " << key<MiscKeys::Pv>().keyInfo()
                         << " to set vertical information for typeOfLevel " << tol << ". Mars keys: " << mars;
                     throw EncodeMtg2Exception(oss.str(), Here());
                 };
-                key<VerticalKeys::PV>(ret).set(pv);
+
+                key<VerticalKeys::PV>(ret).setRef(pv.get());
                 ASSERT(key<VerticalKeys::PV>(ret).holdsReference());
                 alterAndValidate(ret);
                 return ret;
@@ -339,7 +341,67 @@ void LevelSetter::check(const util::MioGribHandle& h, const datamod::MarsKeyValu
     auto inferedHoriz = horizontalForTypeOfLevel(conf_, mars, misc);
     auto horiz = read(datamod::HorizontalKeySet{}, h);
     if (inferedHoriz != horiz) {
-        throw EncodeMtg2Exception("", Here());
+        std::ostringstream oss;
+        oss << "LevelSetter{" << conf_ << "}::check- inferred and read horizontal keys are different: " << std::endl;
+        oss << "Expected: " << inferedHoriz << std::endl;
+        oss << "Read: " << horiz << std::endl;
+        oss << "Mars keys: " << mars << std::endl;
+        throw EncodeMtg2Exception(oss.str(), Here());
+    }
+}
+
+void LevelSetter::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const datamod::MarsKeyValueSet& mars) const {
+    using namespace datamod;
+    addKeyInfo<MarsKeys::LEVTYPE>(req);
+
+    auto tol = key<LevelDef::Type>(conf_).get();
+    const auto& fixedLevel = key<LevelDef::FixedLevel>(conf_);
+    const auto& levelist = key<MarsKeys::LEVELIST>(mars);
+
+    // Check if levelist is required
+    switch (tol) {
+        // The 2m and 10m entries can be removed once the fortran encoder is removed
+        case TypeOfLevel::HeightAboveSea:
+        case TypeOfLevel::HeightAboveSeaAt10m:
+        case TypeOfLevel::HeightAboveGroundAt2m:
+        case TypeOfLevel::HeightAboveGroundAt10m:
+        case TypeOfLevel::HeightAboveGround: {
+            const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
+            const bool isSFC = levtype.has() && levtype.get() == LevType::SFC;
+
+            if (fixedLevel.isMissing() && isSFC) {
+                addKeyInfo<MarsKeys::LEVELIST>(req);
+            }
+            break;
+        }
+        case TypeOfLevel::Snow:
+        case TypeOfLevel::SnowLayer:
+        case TypeOfLevel::SoilLayer:
+        case TypeOfLevel::SeaIceLayer:
+        case TypeOfLevel::IsobaricInPa:
+        case TypeOfLevel::PotentialVorticity:
+        case TypeOfLevel::Theta:
+        case TypeOfLevel::Hybrid:
+        case TypeOfLevel::IsobaricInhPa: {
+            addKeyInfo<MarsKeys::LEVELIST>(req);
+            break;
+        }
+        default:
+            break;
+    }
+
+    // Check if vertical information is required
+    switch (tol) {
+        case TypeOfLevel::Hybrid:
+        case TypeOfLevel::Snow: {
+            const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
+            if (levtype.has() && levtype.get() == LevType::ML) {
+                addKeyInfo<MiscKeys::Pv>(req);
+            }
+            break;
+        }
+        default:
+            break;
     }
 }
 

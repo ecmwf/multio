@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/util/MioGribHandle.h"
 
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -24,6 +26,14 @@
 
 
 namespace multio::action::sections {
+
+using KeyInfoList = std::vector<std::reference_wrapper<const datamod::DynKeyInfo>>;
+
+template <auto id_>
+void addKeyInfo(KeyInfoList& l) {
+    l.push_back(std::cref(static_cast<const datamod::DynKeyInfo&>(datamod::key<id_>())));
+}
+
 
 struct DynSectionSetter {
     struct Config {
@@ -50,11 +60,14 @@ struct DynSectionSetter {
     // Default implementation is to do nothing
     virtual void runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
                          const datamod::Geometry&) const;
-                         
-                         
-    // Implement a check method that is throwing on inconsistencies                 
+
+
+    // Implement a check method that is throwing on inconsistencies
     virtual void check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                         const datamod::Geometry&) const = 0;
+                       const datamod::Geometry&) const;
+
+    // Implement a check method that is adding dynamic key information to give feed back on requirements
+    virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const datamod::MarsKeyValueSet&) const;
 
     virtual ~DynSectionSetter() = default;
 };
@@ -73,9 +86,13 @@ public:
                 const datamod::Geometry&) const;
     void runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
                  const datamod::Geometry&) const;
-                 
-    void check(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                 const datamod::Geometry&) const;
+
+    void check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
+               const datamod::Geometry&) const;
+
+    void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const datamod::MarsKeyValueSet&) const;
+
+    void writeKeyInfo(std::ostream&, const datamod::MarsKeyValueSet&) const;
 
 private:
     // Storage of all sections

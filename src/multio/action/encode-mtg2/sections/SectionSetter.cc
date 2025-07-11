@@ -27,6 +27,9 @@ void DynSectionSetter::preset(util::MioGribHandle&, const datamod::MarsKeyValueS
                               const datamod::Geometry&) const {}
 void DynSectionSetter::runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
                                const datamod::Geometry&) const {}
+void DynSectionSetter::check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&,
+                             const datamod::MiscKeyValueSet&, const datamod::Geometry&) const {}
+void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const datamod::MarsKeyValueSet&) const {}
 
 
 void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
@@ -45,6 +48,9 @@ void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
     }
     if (config.registerRuntime) {
         runtime_.push_back(secRef);
+    }
+    if (config.registerCheck) {
+        check_.push_back(secRef);
     }
 }
 
@@ -74,6 +80,53 @@ void SectionCollector::runtime(util::MioGribHandle& h, const datamod::MarsKeyVal
     for (auto secRef : runtime_) {
         secRef.get().runtime(h, mars, misc, geo);
     }
+}
+
+void SectionCollector::check(const util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
+                             const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+    for (auto secRef : runtime_) {
+        secRef.get().check(h, mars, misc, geo);
+    }
+}
+
+void SectionCollector::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const datamod::MarsKeyValueSet& mars) const {
+    for (auto secRef : runtime_) {
+        secRef.get().collectKeyInfo(req, opt, mars);
+    }
+}
+
+
+void SectionCollector::writeKeyInfo(std::ostream& os, const datamod::MarsKeyValueSet& mars) const {
+    KeyInfoList req;
+    KeyInfoList opt;
+    collectKeyInfo(req, opt, mars);
+
+    auto printKey = [&](const auto& dynKey) {
+        os << "  - key: " << dynKey.key() << std::endl;
+        os << "    scope: " << dynKey.initScope() << std::endl;
+        auto descr = dynKey.description();
+        if (descr) {
+            os << "    description: " << *descr << std::endl;
+        }
+        os << std::endl;
+    };
+
+    auto printKeys = [&](const auto& l) {
+        if (l.size() == 0) {
+            os << "None";
+        }
+        else {
+            for (auto ref : l) {
+                printKey(ref.get());
+           }
+        }
+    };
+
+    os << "Required keys for this mars set: " << std::endl;
+    printKeys(req);
+
+    os << "Optional keys for this mars set: " << std::endl;
+    printKeys(opt);
 }
 
 

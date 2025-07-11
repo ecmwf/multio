@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-
-/// @author Philipp Geier
-
 #include "eckit/testing/Test.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/EncoderConf.h"

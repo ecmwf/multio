@@ -159,11 +159,11 @@ enum class VerticalKeys : std::uint64_t
 };
 
 
-MULTIO_KEY_SET_DESCRIPTION(VerticalKeys,                                                                              //
-                           "vertical",                                                                                //
-                                                                                                                      //
-                           KeyDef<VerticalKeys::PVPresent, bool>{"PVPresent"}.tagOptional(),                          //
-                           KeyDef<VerticalKeys::PV, std::vector<double>>{"typeOfSecondFixedSurface"}.tagOptional());  //
+MULTIO_KEY_SET_DESCRIPTION(VerticalKeys,                                                        //
+                           "vertical",                                                          //
+                                                                                                //
+                           KeyDef<VerticalKeys::PVPresent, bool>{"PVPresent"}.tagOptional(),    //
+                           KeyDef<VerticalKeys::PV, std::vector<double>>{"pv"}.tagOptional());  // TODO use misc key?
 
 
 using VerticalKeySet = KeySet<VerticalKeys>;

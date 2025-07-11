@@ -832,7 +832,7 @@ IMPLICIT NONE
 &        LOC_WRAPPER(1)%BUF_SIZE, &
 &        C_LOC(CURR_CHECKSUM) )
     ! MIVAL: Code to debug interoperability issues
-    ! WRITE(*,*) 'Current checksum:', CURR_CHECKSUM, 'Expected checksum:', LOC_WRAPPER(1)%HASH
+    WRITE(*,*) 'Current checksum:', CURR_CHECKSUM, 'Expected checksum:', LOC_WRAPPER(1)%HASH
     PP_DEBUG_CRITICAL_COND_THROW( LOC_WRAPPER(1)%HASH.NE.CURR_CHECKSUM, ERRFLAG_UNABLE_TO_COMPUTE_CHECKSUM )
   ENDIF
 

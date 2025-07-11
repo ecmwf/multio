@@ -22,8 +22,8 @@ namespace multio::action {
 MultIOMRawEncoder::MultIOMRawEncoder(const MultIOMDict& options, const eckit::LocalConfiguration& conf) {
     void* handle = NULL;
     if (multio_grib2_raw_encoder_open(
-            options.get(), &handle,
-            static_cast<void*>(const_cast<eckit::Configuration*>(static_cast<const eckit::Configuration*>(&conf))))
+            options.get(), 
+            static_cast<void*>(const_cast<eckit::Configuration*>(static_cast<const eckit::Configuration*>(&conf))), &handle)
         != 0) {
         std::ostringstream oss;
         oss << "Can not create encoder from conf: " << conf;

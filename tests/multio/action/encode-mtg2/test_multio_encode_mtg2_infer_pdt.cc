@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-
-/// @author Philipp Geier
-
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"

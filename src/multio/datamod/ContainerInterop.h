@@ -250,7 +250,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
         if (!conf.has(kvd.key())) {
             if constexpr (KVD::tag == KVTag::Required) {
                 std::ostringstream oss;
-                oss << "Configuration has no key " << kvd.keyInfo() << ": " << conf << std::endl;
+                oss << "eckit::Configuration has no key " << kvd.keyInfo() << ": " << conf << std::endl;
                 throw DataModellingException(oss.str(), Here());
             }
             return toMissingOrDefaultValue(kvd);
@@ -259,7 +259,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
         if (conf.isNull(kvd.key())) {
             if constexpr (KVD::tag == KVTag::Required) {
                 std::ostringstream oss;
-                oss << "Key \"" << kvd.key() << "\" in configuration should have a non-null value: " << conf;
+                oss << "Key \"" << kvd.key() << "\" in eckit::Configuration should have a non-null value: " << conf;
                 throw DataModellingException(oss.str(), Here());
             }
             return toMissingOrDefaultValue(kvd);
@@ -270,7 +270,8 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
             kvd.key(), conf,
             eckit::Overloaded{[&]() {
                                   std::ostringstream oss;
-                                  oss << "Unsupported value for key " << kvd.keyInfo() << " in configuration: " << conf;
+                                  oss << "Unsupported value for key " << kvd.keyInfo()
+                                      << " in eckit::Configuration: " << conf;
                                   throw DataModellingException(oss.str(), Here());
 
                                   return toMissingValue(kvd);  // unreachable
@@ -283,7 +284,7 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
                                   else {
                                       std::ostringstream oss;
                                       oss << "Unsupported type " << util::typeToString<Type>() << " for key "
-                                          << kvd.keyInfo() << " in configuration: " << conf;
+                                          << kvd.keyInfo() << " in eckit::Configuration: " << conf;
                                       throw DataModellingException(oss.str(), Here());
                                   }
                                   return toMissingValue(kvd);  // unreachable
@@ -346,6 +347,7 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
               = true>
     static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, GH&& handle) {
         using RW = typename KVD::ReadWrite;
+        using ValueType = typename KeyValueFromKey_t<KVD>::ValueType;
         // For codes we always copy - no value by ref
 
         if (!handle.isDefined(kvd.key())) {
@@ -418,6 +420,14 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
                 // TODO add support for string vectors?
                 if constexpr (RW::template CanCreateFromValue_v<std::string>) {
                     return toKeyValue(kvd, handle.getString(kvd.key()));
+                }
+                else if constexpr (std::is_integral_v<ValueType>
+                                   && RW::template CanCreateFromValue_v<long>) {
+                    return toKeyValue(kvd, handle.getLong(kvd.key()));
+                }
+                else if constexpr (std::is_floating_point_v<ValueType>
+                                   && RW::template CanCreateFromValue_v<double>) {
+                    return toKeyValue(kvd, handle.getDouble(kvd.key()));
                 }
                 else {
                     throwWrongType(util::typeToString<std::string>());

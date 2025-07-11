@@ -32,6 +32,8 @@
 MODULE CGRIB_METADATA_MOD
 
   ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
 
@@ -43,6 +45,7 @@ IMPLICIT NONE
 
 ! Default visibility
 PRIVATE
+
 
 !> @brief Definition of the `CGRIB_METADATA_T` derived type.
 !>
@@ -61,7 +64,7 @@ TYPE, EXTENDS(METADATA_BASE_A) :: CGRIB_METADATA_T
   LOGICAL :: INITIALIZED_ = .FALSE.
 
   !> @brief Grib handle
-  INTEGER(KIND=JPIM_K) :: IGRIB_HANDLE_ = -99_JPIM_K
+  TYPE(C_PTR) :: CGRIB_HANDLE_ = C_NULL_PTR
 
 CONTAINS
 
@@ -73,6 +76,7 @@ CONTAINS
 
   !> @brief Bind a grib handle to this object.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: BIND_HANDLE => CGRIB_METADATA_BIND_HANDLE
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: UNBIND_HANDLE => CGRIB_METADATA_UNBIND_HANDLE
 
   !> @brief Initializes the object with default values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT_DEFAULT => CGRIB_METADATA_INIT_DEFAULT
@@ -238,6 +242,10 @@ END FUNCTION CGRIB_METADATA_INITIALIZED
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_GET_HANDLE'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_GET_HANDLE( THIS, HANDLE, HOOKS, TAKE ) RESULT(RET)
 
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -256,9 +264,9 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIM_K),   INTENT(OUT)   :: HANDLE
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
-  LOGICAL, OPTIONAL,      INTENT(IN)    :: TAKE
+  TYPE(C_PTR),             INTENT(OUT)   :: HANDLE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+  LOGICAL, OPTIONAL,       INTENT(IN)    :: TAKE
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -284,6 +292,9 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Initialize the handle to null pointer
+  HANDLE = C_NULL_PTR
+
   ! Handle optional arguments
   IF ( PRESENT(TAKE) ) THEN
     LOC_TAKE = TAKE
@@ -295,11 +306,11 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_NOT_INITIALIZED )
 
   ! Read the sample and set the initialization flag to .true.
-  HANDLE = THIS%IGRIB_HANDLE_
+  HANDLE = THIS%CGRIB_HANDLE_
 
   ! If TAKE is .TRUE., set the handle to -1
   IF ( LOC_TAKE ) THEN
-    THIS%IGRIB_HANDLE_ = -1_JPIM_K
+    THIS%CGRIB_HANDLE_ = C_NULL_PTR
     THIS%INITIALIZED_ = .FALSE.
   ENDIF
 
@@ -363,6 +374,10 @@ END FUNCTION CGRIB_METADATA_GET_HANDLE
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_BIND_HANDLE'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_BIND_HANDLE( THIS, HANDLE, HOOKS ) RESULT(RET)
 
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -381,7 +396,7 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIM_K),    INTENT(IN)    :: HANDLE
+  TYPE(C_PTR),             INTENT(IN)    :: HANDLE
   TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   ! Function result
@@ -409,7 +424,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( THIS%INITIALIZED_, ERRFLAG_ALREADY_INITIALIZED )
 
   ! Read the sample and set the initialization flag to .true.
-  THIS%IGRIB_HANDLE_ = HANDLE
+  THIS%CGRIB_HANDLE_ = HANDLE
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -458,35 +473,27 @@ END FUNCTION CGRIB_METADATA_BIND_HANDLE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-
 !>
-!> @brief Initializes the object by copying metadata from another object.
+!> @brief Retrive the grib handle wrapped by this object.
 !>
-!> This routine initializes the object by copying metadata from another
-!> metadata object.
+!> This procedure return the grib handle
 !>
-!> @attention This method is not yet implemented and serves as a placeholder.
+!> @param [inout] this The object to be initialized.
 !>
-!> @note This functionality is currently not required in the existing workflow.
-!>       If a user finds a need for this feature, they are encouraged to
-!>       provide an implementation.
-!>
-!> @param [inout] this         The object to be initialized.
-!> @param [in]    metadata     Metadata object to be used for data copy.
+!> @result handle The grib handle wrapped by the object.
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'CGRIB_METADATA_INIT_FROM_METADATA'
-PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_FROM_METADATA( THIS, METADATA, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'CGRIB_METADATA_UNBIND_HANDLE'
+PP_THREAD_SAFE FUNCTION CGRIB_METADATA_UNBIND_HANDLE( THIS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
-  USE :: METADATA_BASE_MOD, ONLY: METADATA_BASE_A
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_CLONE
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -500,25 +507,14 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_FROM_METADATA( THIS, METADATA, HOOKS
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(CGRIB_METADATA_T),          INTENT(INOUT) :: THIS
-  CLASS(METADATA_BASE_A), POINTER, INTENT(IN)    :: METADATA
-  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+  CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  ! Local variables
-  LOGICAL :: IS_INITIALIZED
-  INTEGER(KIND=JPIM_K) :: KRET
-  INTEGER(KIND=JPIM_K) :: IGRIB_HANDLE
-
-  ! Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_INITIALIZATION=0_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA_NOT_INITIALIZED=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_CLONE_FAILED=3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_HANDLE=5_JPIB_K
+  !> Local error flag
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_INITIALIZED=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -535,35 +531,12 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Check dummy arguments
-  PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
+  ! This procedure can be called only if the object is not initialized
+  PP_DEBUG_CRITICAL_COND_THROW( THIS%INITIALIZED_, ERRFLAG_ALREADY_INITIALIZED )
 
-  ! Check if the metadata object is initialized
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_INITIALIZATION) METADATA%INITIALIZED( IS_INITIALIZED, HOOKS )
-  PP_DEBUG_DEVELOP_COND_THROW( .NOT.IS_INITIALIZED, ERRFLAG_METADATA_NOT_INITIALIZED )
-
-  ! This procedure has been defined only for some specific implementations
-  SELECT TYPE( MD => METADATA )
-
-  !---------------------------------------------------------------------
-  ! Initialize from grib metadata
-  CLASS IS( CGRIB_METADATA_T )
-
-    ! Extract the metadata from the grib handle
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_HANDLE) MD%GET_HANDLE( IGRIB_HANDLE, HOOKS )
-
-    ! Clone the grib handle
-    CALL GRIB_CLONE( IGRIB_HANDLE, THIS%IGRIB_HANDLE_, STATUS=KRET )
-    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_CLONE_FAILED )
-
-    ! Set the initialization flag to .true.
-    THIS%INITIALIZED_ = .TRUE.
-
-  !---------------------------------------------------------------------
-  ! Not implemented
-  CLASS DEFAULT
-    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
-  END SELECT
+  ! Read the sample and set the initialization flag to .true.
+  THIS%CGRIB_HANDLE_ = C_NULL_PTR
+  THIS%INITIALIZED_ = .FALSE.
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -583,28 +556,137 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ALREADY_INITIALIZED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle is already initialized' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CGRIB_METADATA_UNBIND_HANDLE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+!>
+!> @brief Initializes the object by copying metadata from another object.
+!>
+!> This routine initializes the object by copying metadata from another
+!> metadata object.
+!>
+!> @attention This method is not yet implemented and serves as a placeholder.
+!>
+!> @note This functionality is currently not required in the existing workflow.
+!>       If a user finds a need for this feature, they are encouraged to
+!>       provide an implementation.
+!>
+!> @param [inout] this         The object to be initialized.
+!> @param [in]    metadata     Metadata object to be used for data copy.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CGRIB_METADATA_INIT_FROM_METADATA'
+PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_FROM_METADATA( THIS, METADATA, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: METADATA_BASE_MOD, ONLY: METADATA_BASE_A
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(CGRIB_METADATA_T),         INTENT(INOUT) :: THIS
+  CLASS(METADATA_BASE_A), POINTER, INTENT(IN)    :: METADATA
+  TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: IS_INITIALIZED
+  INTEGER(KIND=JPIM_K) :: KRET
+  TYPE(C_PTR) :: CGRIB_HANDLE
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Check dummy arguments
+  PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
+
+  ! On purpose not implemented this module should be used only for c++ interfacing,
+  ! hence the metadata is not initialized from a sample name
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
 
     ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE (ERRFLAG_UNABLE_TO_CHECK_INITIALIZATION)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to check if the metadata object is initialized' )
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle already initialized' )
-    CASE (ERRFLAG_METADATA_NOT_INITIALIZED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Try to clone an object which is not initialized' )
-    CASE (ERRFLAG_GRIB_CLONE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set real64 value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE (ERRFLAG_NOT_IMPLEMENTED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Initialization not implemented from the input type' )
-    CASE (ERRFLAG_UNABLE_TO_GET_HANDLE)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the handle from the metadata object' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -658,15 +740,6 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_FROM_SAMPLE_NAME( THIS, SAMPLE_NAME,
   USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
   USE :: HOOKS_MOD,             ONLY: HOOKS_T
 
-  ! Symbols imported from external libraries
-  USE :: GRIB_API,    ONLY: GRIB_GET
-  USE :: GRIB_API,    ONLY: GRIB_SET
-  USE :: GRIB_API,    ONLY: GRIB_OPEN_FILE
-  USE :: GRIB_API,    ONLY: GRIB_CLOSE_FILE
-  USE :: GRIB_API,    ONLY: GRIB_NEW_FROM_SAMPLES
-  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
-  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
-
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
 
@@ -686,27 +759,9 @@ IMPLICIT NONE
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  ! Local variables
-  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(SAMPLE_NAME)+1), TARGET :: C_SAMPLE_NAME
-  TYPE(C_PTR) :: C_GRIB_HANDLE
-  TYPE(C_PTR) :: C_SAMPLE_NAME_P
-  INTEGER(KIND=JPIM_K) :: KRET
-  INTEGER(KIND=C_LONG) :: NVALUES
-  INTEGER(KIND=JPIB_K) :: STAT
-  INTEGER(KIND=JPIM_K) :: SAMPLEFILE
-  INTEGER(KIND=JPIM_K) :: I
-  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
-  CHARACTER(LEN=512) :: IOMSG
-  REAL(KIND=C_DOUBLE), ALLOCATABLE, DIMENSION(:) :: DUMMY_FIELD
-
-  !> Local erro codes
+  ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_NEW_FROM_SAMPLES_FAILED=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_GET_FAILED=3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOCATE_FAILED=4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEALLOCATE_FAILED=6_JPIB_K
-
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -717,17 +772,6 @@ IMPLICIT NONE
   ! Local variables declared by the preprocessor for tracing purposes
   PP_TRACE_DECL_VARS
 
-  INTERFACE
-    FUNCTION CGRIB_HANDLE_NEW_FROM_SAMPLES( CGRIB_CONTEXT, CSAMPLE_NAME ) &
-&      RESULT(CGRIB_HANDLE) BIND(C, NAME='grib_handle_new_from_samples')
-      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
-    IMPLICIT NONE
-      TYPE(C_PTR), VALUE, INTENT(IN) :: CGRIB_CONTEXT
-      TYPE(C_PTR), VALUE, INTENT(IN) :: CSAMPLE_NAME
-      TYPE(C_PTR) :: CGRIB_HANDLE
-    END FUNCTION CGRIB_HANDLE_NEW_FROM_SAMPLES
-  END INTERFACE
-
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
@@ -737,58 +781,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is not initialized
   PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  CALL GRIB_NEW_FROM_SAMPLES( THIS%IGRIB_HANDLE_, TRIM(ADJUSTL(SAMPLE_NAME)), STATUS=KRET )
-
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_NEW_FROM_SAMPLES_FAILED )
-
-  ! Set the grib handle
-  DO I = 1, LEN(C_SAMPLE_NAME)
-    C_SAMPLE_NAME(I:I) = SAMPLE_NAME(I:I)
-  ENDDO
-  I = LEN(C_SAMPLE_NAME) + 1
-  C_SAMPLE_NAME(I:I) = C_NULL_CHAR
-  C_SAMPLE_NAME_P = C_LOC(C_SAMPLE_NAME)
-  C_GRIB_HANDLE = C_NULL_PTR
-  C_GRIB_HANDLE = CGRIB_HANDLE_NEW_FROM_SAMPLES( C_NULL_PTR, C_SAMPLE_NAME_P )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GRIB_HANDLE), ERRFLAG_GRIB_NEW_FROM_SAMPLES_FAILED )
-
-  ! Logging the sample name
-  PP_LOG_DEVELOP_STR( ' + Init from sample name: '//TRIM(ADJUSTL(SAMPLE_NAME)) )
-
-  ! ------------------------------------------------------------------------------------------------
-  ! ** Patch to fix the fact that the samples are not all stripped from values
-  ! ------------------------------------------------------------------------------------------------
-  CALL GRIB_GET( THIS%IGRIB_HANDLE_, 'numberOfValues', NVALUES, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_GET_FAILED )
-
-  ! Allocate a temporary buffer to strip the values the values
-  ALLOCATE( DUMMY_FIELD(NVALUES), STAT=STAT, ERRMSG=ERRMSG )
-  PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_ALLOCATE_FAILED )
-  DUMMY_FIELD = 0.0_C_DOUBLE
-
-  ! Set the values to the handle
-  CALL GRIB_SET( THIS%IGRIB_HANDLE_, 'values', DUMMY_FIELD, STATUS=KRET )
-  PP_DEBUG_DEVELOP_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
-
-  ! Free temporary buffer
-  DEALLOCATE( DUMMY_FIELD, STAT=STAT, ERRMSG=ERRMSG )
-  PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, ERRFLAG_DEALLOCATE_FAILED )
-
-  ! Set the values to the handle
-  CALL GRIB_SET( THIS%IGRIB_HANDLE_, 'bitmapPresent', 0_C_LONG, STATUS=KRET )
-  PP_DEBUG_DEVELOP_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
-
-  ! NOTE: An alternative is to set the bitmapPresent to 1 and the missing value set to the same value
-  ! used to initialize the array (Chat with Eugen and Shahram 25/07/2024)
-  ! ------------------------------------------------------------------------------------------------
-
-  ! Check error message
-  IF ( ALLOCATED(ERRMSG) ) THEN
-    DEALLOCATE(ERRMSG)
-  ENDIF
-
-  ! Set the initialization flag to .true.
-  THIS%INITIALIZED_ = .TRUE.
+  ! On purpose not implemented this module should be used only for c++ interfacing,
+  ! hence the metadata is not initialized from a sample name
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -808,40 +803,14 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle already initialized' )
-    CASE (ERRFLAG_GRIB_NEW_FROM_SAMPLES_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to load the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'sample name: '//TRIM(ADJUSTL(SAMPLE_NAME)) )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
-    CASE (ERRFLAG_GRIB_GET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read "numberOfValues" the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
-    CASE (ERRFLAG_ALLOCATE_FAILED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error allocating space for temporary buffer' )
-      IF ( ALLOCATED(ERRMSG) ) THEN
-        PP_DEBUG_PUSH_MSG_TO_FRAME(  TRIM(ADJUSTL(ERRMSG)) )
-        DEALLOCATE(ERRMSG)
-      ENDIF
-    CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set "values".' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
-    CASE (ERRFLAG_DEALLOCATE_FAILED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error deallocating temporary buffer -> '//TRIM(ADJUSTL(ERRMSG)) )
-      DEALLOCATE(ERRMSG)
+    CASE (ERRFLAG_NOT_IMPLEMENTED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -880,14 +849,14 @@ END FUNCTION CGRIB_METADATA_INIT_FROM_SAMPLE_NAME
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_INIT_FROM_SAMPLE'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_FROM_SAMPLE( THIS, SAMPLE_NAME, SAMPLE_HANDLE, HOOKS ) RESULT(RET)
 
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_NULL_PTR
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API,    ONLY: GRIB_CLONE
-  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
-  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -902,9 +871,9 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),       INTENT(IN)    :: SAMPLE_NAME
-  INTEGER(KIND=JPIM_K),   INTENT(IN)    :: SAMPLE_HANDLE
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*),        INTENT(IN)    :: SAMPLE_NAME
+  INTEGER(KIND=JPIM_K),    INTENT(IN)    :: SAMPLE_HANDLE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -912,9 +881,10 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIM_K) :: KRET
 
+
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_CLONE_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -939,8 +909,7 @@ IMPLICIT NONE
   PP_LOG_DEVELOP_STR( ' + Init from sample' )
 
   ! Read the sample ad if it's necessary distribute it
-  CALL GRIB_CLONE( SAMPLE_HANDLE, THIS%IGRIB_HANDLE_, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_CLONE_FAILED )
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -961,20 +930,14 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle already initialized' )
-    CASE (ERRFLAG_GRIB_CLONE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to clone the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+    CASE (ERRFLAG_NOT_IMPLEMENTED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1009,6 +972,10 @@ END FUNCTION CGRIB_METADATA_INIT_FROM_SAMPLE
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_INIT_DEFAULT'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_INIT_DEFAULT( THIS, HOOKS ) RESULT(RET)
 
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
   ! Symbols imported from other modules within the project.
   USE :: HOOKS_MOD, ONLY: HOOKS_T
 
@@ -1025,7 +992,7 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -1052,7 +1019,7 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
   ! Default initialization has an invalid grib_handle and initialization flag set to .false.
-  THIS%IGRIB_HANDLE_ = -99
+  THIS%CGRIB_HANDLE_ = C_NULL_PTR
   THIS%INITIALIZED_ = .FALSE.
 
   ! Trace end of procedure (on success)
@@ -1112,14 +1079,13 @@ END FUNCTION CGRIB_METADATA_INIT_DEFAULT
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_DESTROY'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_DESTROY( THIS, HOOKS ) RESULT(RET)
 
+  ! Symbols imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_RELEASE
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1139,12 +1105,21 @@ IMPLICIT NONE
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_HANDLE_DELETE( HANDLE ) &
+&    RESULT(RET) BIND(C, NAME='grib_handle_delete')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_HANDLE_DELETE
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_RELEASE_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_HANDLE=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1165,11 +1140,11 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
   ! Set the value into the handle
-  CALL GRIB_RELEASE( THIS%IGRIB_HANDLE_, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_RELEASE_FAILED )
+  PP_TRYCALL(ERRFLAG_DELETE_HANDLE) &
+&    C_GRIB_HANDLE_DELETE( THIS%CGRIB_HANDLE_ )
 
   ! Reset object internal status
-  THIS%IGRIB_HANDLE_ = -99
+  THIS%CGRIB_HANDLE_ = C_NULL_PTR
   THIS%INITIALIZED_ = .FALSE.
 
   ! Trace end of procedure (on success)
@@ -1190,20 +1165,14 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
-    CASE (ERRFLAG_GRIB_RELEASE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+    CASE (ERRFLAG_DELETE_HANDLE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to release grib handle.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1239,14 +1208,25 @@ END FUNCTION CGRIB_METADATA_DESTROY
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_SET_MISSING'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_MISSING( THIS, KEY, HOOKS ) RESULT(RET)
 
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_MISSING
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1268,11 +1248,28 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(KIND=C_LONG) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_MISSING( HANDLE, KEY) &
+&    RESULT(RET) BIND(C, NAME='grib_set_missing')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_MISSING
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_MISSING_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_MISSING_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1292,9 +1289,15 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the handle
-  CALL GRIB_SET_MISSING( THIS%IGRIB_HANDLE_, KEY, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_MISSING_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_MISSING_FAILED) &
+& C_GRIB_SET_MISSING( THIS%CGRIB_HANDLE_, C_LOC(C_KEY) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1314,9 +1317,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -1324,11 +1324,8 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_MISSING_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set missing value.' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'key: '//TRIM(ADJUSTL(KEY)) )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1364,14 +1361,17 @@ END FUNCTION CGRIB_METADATA_SET_MISSING
 #define PP_PROCEDURE_NAME 'CGRIB_METADATA_SET_STRING'
 PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_STRING( THIS, KEY, VAL, HOOKS ) RESULT(RET)
 
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_STRING
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1394,11 +1394,31 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T), TARGET :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(VAL)+1), TARGET :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_STRING( HANDLE, KEY, VALUES, LENGTH ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_string')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      TYPE(C_PTR), VALUE, INTENT(IN) :: VALUES
+      TYPE(C_PTR), VALUE, INTENT(IN) :: LENGTH
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_STRING
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_STRING_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1418,9 +1438,22 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the handle
-  CALL GRIB_SET_STRING( THIS%IGRIB_HANDLE_, KEY, VAL, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_STRING_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_LENGTH = INT(LEN_TRIM(VAL), KIND=C_SIZE_T)
+  DO I = 1, C_LENGTH
+    C_VALUE(I) = VAL(I:I)
+  ENDDO
+  C_VALUE(C_LENGTH+1) = C_NULL_CHAR
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_STRING( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_LOC(C_VALUE), C_LOC(C_LENGTH) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1440,20 +1473,14 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
-    CASE (ERRFLAG_GRIB_SET_STRING_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+    CASE (ERRFLAG_GRIB_SET_FAILED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set string value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1491,15 +1518,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_BOOL( THIS, KEY, VAL, HOOKS ) RESULT(
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_LONG
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1522,12 +1551,30 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
-  INTEGER(KIND=INT64)  :: TMP
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(C_LONG) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_LONG( HANDLE, KEY, VALUES ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_long')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      INTEGER(C_LONG), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_LONG
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1549,14 +1596,20 @@ IMPLICIT NONE
 
   ! Convert bool to int64
   IF ( VAL ) THEN
-    TMP = 1_INT64
+    C_VALUE = 1_C_LONG
   ELSE
-    TMP = 0_INT64
+    C_VALUE = 0_C_LONG
   ENDIF
 
   ! Set the value into the grib handle
-  CALL GRIB_SET_LONG( THIS%IGRIB_HANDLE_, KEY, TMP, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_LONG( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_VALUE )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1576,9 +1629,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -1586,10 +1636,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set bool value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1851,16 +1898,18 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT32( THIS, KEY, VAL, HOOKS ) RESULT
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT32
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_INT
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1883,11 +1932,30 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(C_LONG) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_LONG( HANDLE, KEY, VALUES ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_long')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      INTEGER(C_LONG), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_LONG
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1907,9 +1975,18 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_INT( THIS%IGRIB_HANDLE_, KEY, VAL, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_VALUE = INT(VAL, KIND=C_LONG)
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_LONG( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_VALUE )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1929,9 +2006,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -1939,10 +2013,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set int32 value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1980,16 +2051,18 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT64( THIS, KEY, VAL, HOOKS ) RESULT
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_LONG
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2004,19 +2077,38 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-  INTEGER(KIND=INT64),    INTENT(IN)    :: VAL
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*),        INTENT(IN)    :: KEY
+  INTEGER(KIND=INT64),     INTENT(IN)    :: VAL
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(KIND=C_LONG) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_LONG( HANDLE, KEY, VALUES ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_long')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      INTEGER(C_LONG), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_LONG
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2036,9 +2128,18 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_LONG( THIS%IGRIB_HANDLE_, KEY, VAL, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_VALUE = INT(VAL, KIND=C_LONG)
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_LONG( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_VALUE )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2058,7 +2159,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
     CHARACTER(LEN=32)   :: CTMP
     INTEGER(KIND=JPIB_K) :: WRITE_STAT
 
@@ -2070,14 +2170,11 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
       CTMP = REPEAT(' ', 32)
       WRITE(CTMP, '(I32)', IOSTAT=WRITE_STAT) VAL
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set int64 value.' )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: '//TRIM(ADJUSTL(KEY)) )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Value: '//TRIM(ADJUSTL(CTMP)) )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -2115,15 +2212,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL32( THIS, KEY, VAL, HOOKS ) RESUL
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_REAL4
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2138,19 +2237,38 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-  REAL(KIND=REAL32),      INTENT(IN)    :: VAL
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*),        INTENT(IN)    :: KEY
+  REAL(KIND=REAL32),       INTENT(IN)    :: VAL
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  REAL(KIND=C_DOUBLE) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_DOUBLE( HANDLE, KEY, VALUES ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_double')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
+    IMPLICIT NONE
+      TYPE(C_PTR),   VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR),   VALUE, INTENT(IN) :: KEY
+      REAL(C_DOUBLE), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_DOUBLE
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2170,9 +2288,19 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_REAL4( THIS%IGRIB_HANDLE_, KEY, VAL, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_VALUE = REAL(VAL, KIND=C_DOUBLE)
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_DOUBLE( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_VALUE )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2192,9 +2320,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -2202,10 +2327,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set real64 value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -2243,15 +2365,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL64( THIS, KEY, VAL, HOOKS ) RESUL
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API,    ONLY: GRIB_SET_REAL8
-  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
-  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2266,19 +2390,38 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-  REAL(KIND=REAL64),      INTENT(IN)    :: VAL
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*),        INTENT(IN)    :: KEY
+  REAL(KIND=REAL64),       INTENT(IN)    :: VAL
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  REAL(KIND=C_DOUBLE) :: C_VALUE
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_REAL8( HANDLE, KEY, VALUES ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_double')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      REAL(C_DOUBLE), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_REAL8
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2298,9 +2441,19 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_REAL8( THIS%IGRIB_HANDLE_, KEY, VAL, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_VALUE = REAL(VAL, KIND=C_DOUBLE)
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_REAL8( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_VALUE )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2320,9 +2473,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -2330,10 +2480,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set real64 value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -2822,15 +2969,16 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT32_ARRAY( THIS, KEY, VALUES, HOOKS
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT32
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_INT_ARRAY
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2844,7 +2992,7 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT32_ARRAY( THIS, KEY, VALUES, HOOKS
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(CGRIB_METADATA_T),            INTENT(INOUT) :: THIS
+  CLASS(CGRIB_METADATA_T),           INTENT(INOUT) :: THIS
   CHARACTER(LEN=*),                  INTENT(IN)    :: KEY
   INTEGER(KIND=INT32), DIMENSION(:), INTENT(IN)    :: VALUES
   TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
@@ -2855,9 +3003,32 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIM_K) :: KRET
 
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(KIND=C_INT), DIMENSION(SIZE(VALUES,1)), TARGET :: C_VALUES
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_INT_ARRAY( HANDLE, KEY, VALUES, LENGTH ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_long_array')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      TYPE(C_PTR), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_SIZE_T), VALUE, INTENT(IN) :: LENGTH
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_INT_ARRAY
+  END INTERFACE
+
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2877,9 +3048,22 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_INT_ARRAY( THIS%IGRIB_HANDLE_, KEY, VALUES, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_LENGTH = SIZE(VALUES,1)
+
+  DO I = 1, C_LENGTH
+    C_VALUES(I) = INT(VALUES(I), KIND=C_INT)
+  END DO
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+&   C_GRIB_SET_INT_ARRAY( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_LOC(C_VALUES), C_LENGTH )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2899,9 +3083,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -2909,10 +3090,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set int32 array value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -2952,15 +3130,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT64_ARRAY( THIS, KEY, VALUES, HOOKS
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_LONG_ARRAY
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2974,7 +3154,7 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_INT64_ARRAY( THIS, KEY, VALUES, HOOKS
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(CGRIB_METADATA_T),            INTENT(INOUT) :: THIS
+  CLASS(CGRIB_METADATA_T),           INTENT(INOUT) :: THIS
   CHARACTER(LEN=*),                  INTENT(IN)    :: KEY
   INTEGER(KIND=INT64), DIMENSION(:), INTENT(IN)    :: VALUES
   TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
@@ -2985,9 +3165,32 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIM_K) :: KRET
 
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  INTEGER(KIND=C_LONG), DIMENSION(SIZE(VALUES,1)), TARGET :: C_VALUES
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_LONG_ARRAY( HANDLE, KEY, VALUES, LENGTH ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_long_array')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      TYPE(C_PTR), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_SIZE_T), VALUE, INTENT(IN) :: LENGTH
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_LONG_ARRAY
+  END INTERFACE
+
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3007,9 +3210,22 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_LONG_ARRAY( THIS%IGRIB_HANDLE_, KEY, VALUES, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_LENGTH = SIZE(VALUES,1)
+
+  DO I = 1, C_LENGTH
+    C_VALUES(I) = INT(VALUES(I), KIND=C_LONG)
+  END DO
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+&   C_GRIB_SET_LONG_ARRAY( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_LOC(C_VALUES), C_LENGTH )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -3029,9 +3245,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -3039,10 +3252,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set int64 array value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -3082,15 +3292,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL32_ARRAY( THIS, KEY, VALUES, HOOK
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_FLOAT
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_REAL4_ARRAY
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3104,7 +3316,7 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL32_ARRAY( THIS, KEY, VALUES, HOOK
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(CGRIB_METADATA_T),          INTENT(INOUT) :: THIS
+  CLASS(CGRIB_METADATA_T),         INTENT(INOUT) :: THIS
   CHARACTER(LEN=*),                INTENT(IN)    :: KEY
   REAL(KIND=REAL32), DIMENSION(:), INTENT(IN)    :: VALUES
   TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
@@ -3115,9 +3327,32 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIM_K) :: KRET
 
-  !  Local error codes
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  REAL(KIND=C_FLOAT), DIMENSION(SIZE(VALUES,1)), TARGET :: C_VALUES
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_REAL4_ARRAY( HANDLE, KEY, VALUES, LENGTH ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_float_array')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      TYPE(C_PTR), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_SIZE_T), VALUE, INTENT(IN) :: LENGTH
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_REAL4_ARRAY
+  END INTERFACE
+
+  ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3137,9 +3372,22 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_REAL4_ARRAY( THIS%IGRIB_HANDLE_, KEY, VALUES, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_LENGTH = SIZE(VALUES,1)
+
+  DO I = 1, C_LENGTH
+    C_VALUES(I) = REAL(VALUES(I), KIND=C_FLOAT)
+  END DO
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_REAL4_ARRAY( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_LOC(C_VALUES), C_LENGTH )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -3159,9 +3407,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -3169,10 +3414,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set real64 array value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -3212,15 +3454,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL64_ARRAY( THIS, KEY, VALUES, HOOK
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_SET_REAL8_ARRAY
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3234,7 +3478,7 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SET_REAL64_ARRAY( THIS, KEY, VALUES, HOOK
 IMPLICIT NONE
 
   ! Dummy arguments
-  CLASS(CGRIB_METADATA_T),          INTENT(INOUT) :: THIS
+  CLASS(CGRIB_METADATA_T),         INTENT(INOUT) :: THIS
   CHARACTER(LEN=*),                INTENT(IN)    :: KEY
   REAL(KIND=REAL64), DIMENSION(:), INTENT(IN)    :: VALUES
   TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
@@ -3243,11 +3487,31 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_SIZE_T) :: C_LENGTH
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(KEY)+1), TARGET :: C_KEY
+  REAL(KIND=C_DOUBLE), DIMENSION(SIZE(VALUES,1)), TARGET :: C_VALUES
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_SET_REAL8_ARRAY( HANDLE, KEY, VALUES, LENGTH ) &
+&    RESULT(RET) BIND(C, NAME='grib_set_double_array')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: KEY
+      TYPE(C_PTR), VALUE, INTENT(IN) :: VALUES
+      INTEGER(KIND=C_SIZE_T), VALUE, INTENT(IN) :: LENGTH
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_SET_REAL8_ARRAY
+  END INTERFACE
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_THIS_NOT_INITIALIZED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_CSTRING=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GRIB_SET_FAILED=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3267,9 +3531,22 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
 
-  ! Set the value into the grib handle
-  CALL GRIB_SET_REAL8_ARRAY( THIS%IGRIB_HANDLE_, KEY, VALUES, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_SET_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(KEY)
+    C_KEY(I) = KEY(I:I)
+  ENDDO
+  C_KEY(LEN_TRIM(KEY)+1) = C_NULL_CHAR
+
+  ! Prepare input for c-api
+  C_LENGTH = SIZE(VALUES,1)
+
+  DO I = 1, C_LENGTH
+    C_VALUES(I) = REAL(VALUES(I), KIND=C_DOUBLE)
+  END DO
+
+  ! Call the c-api function to set the real64 array
+  PP_TRYCALL(ERRFLAG_GRIB_SET_FAILED) &
+& C_GRIB_SET_REAL8_ARRAY( THIS%CGRIB_HANDLE_, C_LOC(C_KEY), C_LOC(C_VALUES), C_LENGTH )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -3289,9 +3566,6 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
@@ -3299,10 +3573,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_THIS_NOT_INITIALIZED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set real64 array value.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -3341,19 +3612,17 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_DUMP_SAMPLE( THIS, NAME, HOOKS ) RESULT(R
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LOC
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_NULL_CHAR
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_SIZE_T
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_OPEN_FILE
-  USE :: GRIB_API, ONLY: GRIB_GET
-  USE :: GRIB_API, ONLY: GRIB_WRITE
-  USE :: GRIB_API, ONLY: GRIB_CLOSE_FILE
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIM_K
+  USE :: HOOKS_MOD,             ONLY: HOOKS_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3368,21 +3637,34 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),       INTENT(IN)    :: NAME
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*),        INTENT(IN)    :: NAME
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: GRIB_FILE_HANDLE
-  INTEGER(KIND=JPIM_K) :: KRET
-  INTEGER(KIND=JPIB_K) :: PDT
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(LEN(NAME)+1), TARGET :: C_NAME
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(2), TARGET :: C_MODE
+  INTEGER(KIND=JPIB_K) :: I
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_WRITE_MESSAGE( HANDLE, NAME, MODE ) &
+&    RESULT(RET) BIND(C, NAME='grib_write_message')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+    IMPLICIT NONE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: HANDLE
+      TYPE(C_PTR), VALUE, INTENT(IN) :: NAME
+      TYPE(C_PTR), VALUE, INTENT(IN) :: MODE
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_WRITE_MESSAGE
+  END INTERFACE
 
   ! Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OPEN_FILE_FAILED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_FAILED=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CLOSE_FILE_FAILED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_STRING=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_MESSAGE=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3399,17 +3681,18 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Open the grib file
-  CALL GRIB_OPEN_FILE( GRIB_FILE_HANDLE, TRIM(NAME), 'a', STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_OPEN_FILE_FAILED )
+  ! Copy filename to character array
+  DO I = 1, LEN_TRIM(NAME)
+    C_NAME(I) = NAME(I:I)
+  ENDDO
+  C_NAME(LEN_TRIM(NAME)+1) = C_NULL_CHAR
 
-  ! Write to the grib file
-  CALL GRIB_WRITE( THIS%IGRIB_HANDLE_, GRIB_FILE_HANDLE, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_WRITE_FAILED )
+  C_MODE(1) = 'a'
+  C_MODE(2) = C_NULL_CHAR
 
-  ! Close the grib file
-  CALL GRIB_CLOSE_FILE( GRIB_FILE_HANDLE, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_CLOSE_FILE_FAILED )
+  ! Write message
+  PP_TRYCALL(ERRFLAG_WRITE_MESSAGE) &
+&   C_GRIB_WRITE_MESSAGE( THIS%CGRIB_HANDLE_, C_LOC(C_NAME), C_LOC(C_MODE) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -3429,28 +3712,12 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
-    CASE (ERRFLAG_OPEN_FILE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to open the file.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
-    CASE (ERRFLAG_WRITE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+    CASE (ERRFLAG_WRITE_MESSAGE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to write the file.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
-    CASE (ERRFLAG_CLOSE_FILE_FAILED)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to close the file.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -3489,16 +3756,13 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SAMPLE_SIZE( THIS, SIZE, HOOKS ) RESULT(R
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_GET_MESSAGE_SIZE
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3513,19 +3777,33 @@ IMPLICIT NONE
 
   ! Dummy arguments
   CLASS(CGRIB_METADATA_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(OUT)   :: SIZE
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: DATA_LENGTH
-  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=C_SIZE_T) :: DATA_LENGTH
+  INTEGER(KIND=C_INT) :: KRET
 
   !> Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_SIZE=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_LENGTH=2_JPIB_K
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GET_MESSAGE_SIZE( HANDLE, SIZE ) &
+&    RESULT(RET) BIND(C, NAME='grib_get_message_size')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+    IMPLICIT NONE
+      TYPE(C_PTR),            INTENT(IN) :: HANDLE
+      INTEGER(KIND=C_SIZE_T), INTENT(OUT) :: SIZE
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GET_MESSAGE_SIZE
+  END INTERFACE
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3544,9 +3822,8 @@ IMPLICIT NONE
 
 
   ! Get encoded grib message size
-  KRET = GRIB_SUCCESS
-  CALL GRIB_GET_MESSAGE_SIZE( THIS%IGRIB_HANDLE_, DATA_LENGTH, STATUS=KRET)
-  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_GET_SIZE)
+  KRET = C_GET_MESSAGE_SIZE( THIS%CGRIB_HANDLE_, DATA_LENGTH )
+  ! PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_GET_SIZE)
   PP_DEBUG_CRITICAL_COND_THROW(DATA_LENGTH.LE.0, ERRFLAG_INVALID_LENGTH)
 
   ! Cast the size
@@ -3570,18 +3847,12 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_UNABLE_TO_GET_SIZE)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the size of the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE (ERRFLAG_INVALID_LENGTH)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid length of the sample.' )
     CASE DEFAULT
@@ -3614,17 +3885,14 @@ PP_THREAD_SAFE FUNCTION CGRIB_METADATA_SAFE_LOAD( THIS, HOOKS ) RESULT(RET)
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_NULL_PTR
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported from external libraries
-  USE :: GRIB_API, ONLY: GRIB_RELEASE
-  USE :: GRIB_API, ONLY: GRIB_CLONE
-  USE :: GRIB_API, ONLY: GRIB_SUCCESS
-  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -3645,12 +3913,32 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
-  INTEGER(KIND=JPIM_K) :: TMPHANDLE = -99_JPIM_K
+  INTEGER(KIND=C_INT) :: KRET
+  TYPE(C_PTR) :: TMPHANDLE
 
   !> Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CLONE_SAMPLE=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_RELEASE_SAMPLE=2_JPIB_K
+
+  ! Local interfaces
+  INTERFACE
+    FUNCTION C_GRIB_CLONE( HANDLE ) &
+&     RESULT(CLONE_HANDLE) BIND(C, NAME='grib_handle_clone')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+    IMPLICIT NONE
+      TYPE(C_PTR), INTENT(IN) :: HANDLE
+      TYPE(C_PTR) :: CLONE_HANDLE
+    END FUNCTION C_GRIB_CLONE
+
+    FUNCTION C_GRIB_RELEASE( HANDLE )&
+&     RESULT(RET) BIND(C, NAME='grib_handle_delete')
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+    IMPLICIT NONE
+      TYPE(C_PTR), INTENT(IN) :: HANDLE
+      INTEGER(KIND=C_INT) :: RET
+    END FUNCTION C_GRIB_RELEASE
+  END INTERFACE
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -3669,20 +3957,15 @@ IMPLICIT NONE
 
 
   ! Get encoded grib message size
+  TMPHANDLE = THIS%CGRIB_HANDLE_
+  THIS%CGRIB_HANDLE_ = C_NULL_PTR
 
-  TMPHANDLE = THIS%IGRIB_HANDLE_
-  THIS%IGRIB_HANDLE_ = -1
+  ! Clone the handle
+  THIS%CGRIB_HANDLE_ = C_GRIB_CLONE( TMPHANDLE )
 
-  KRET = GRIB_SUCCESS
-  CALL GRIB_CLONE(  TMPHANDLE, THIS%IGRIB_HANDLE_, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_CLONE_SAMPLE)
-
-  KRET = GRIB_SUCCESS
-  CALL GRIB_RELEASE( TMPHANDLE, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_RELEASE_SAMPLE)
-
-  ! Cast the size
-  ! SIZE = INT(DATA_LENGTH, KIND=JPIB_K)
+  ! Release the old handle
+  KRET = C_GRIB_RELEASE( TMPHANDLE )
+  ! PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_RELEASE_SAMPLE)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -3702,23 +3985,14 @@ PP_ERROR_HANDLER
   BLOCK
 
     ! Error handling variables
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_UNABLE_TO_CLONE_SAMPLE)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to clone the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE (ERRFLAG_UNABLE_TO_RELEASE_SAMPLE)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to release the sample.' )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

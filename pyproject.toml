@@ -58,10 +58,12 @@ dependencies = [
   "pyyaml",
   "numpy",
   "findlibs",
-  "multiolib", # TODO we need to make this dynamic, effectively pin to the exact version
 ]
 
-optional-dependencies.all = [ "pymultio" ]
+optional-dependencies.all = [ 
+  "pymultio",
+  "multiolib", # TODO we need to make this dynamic, effectively pin to the exact version
+]
 
 optional-dependencies.tests = [ "pytest", "pytest-cov", "pytest-flakes" ]
 

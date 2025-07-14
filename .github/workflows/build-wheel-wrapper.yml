@@ -11,10 +11,22 @@ name: Build Python Wrapper Wheel
 
 on:
   # Trigger the workflow manually
-  workflow_dispatch: ~
+  workflow_dispatch:
+    inputs:
+      use_test_pypi:
+        description: Use test pypi instead of the regular one
+        required: false
+        type: boolean
+        default: false
 
-  # Allow to be called from another workflow -- currently from cd-pypi
-  workflow_call: ~
+  # Allow to be called from another workflow -- eg `cd.yml`
+  workflow_call:
+    inputs:
+      use_test_pypi:
+        description: Use test pypi instead of the regular one
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   python-wrapper-wheel:
@@ -22,4 +34,5 @@ jobs:
     uses: ecmwf/reusable-workflows/.github/workflows/python-wrapper-wheel.yml@main
     with:
       wheel_directory: python/multiolib
+      use_test_pypi: ${{ inputs.use_test_pypi }}
     secrets: inherit

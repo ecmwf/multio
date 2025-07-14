@@ -16,3 +16,4 @@ CMAKE_PARAMS2="-DENABLE_ATLAS_IO=1"
 CMAKE_PARAMS="$CMAKE_PARAMS1 $CMAKE_PARAMS2"
 PYPROJECT_DIR="python/multiolib"
 DEPENDENCIES='["eckitlib", "eccodeslib", "metkitlib", "atlaslib-ecmwf", "fdb5lib", "mirlib", "fckitlib"]'
+export VERSION_MICROINCR="no"

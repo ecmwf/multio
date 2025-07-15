@@ -1,5 +1,7 @@
 set(MULTIOM_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+
+
 # Enter in the module
 message("${OFFSET} + tools sources: ${MULTIOM_TOOLS_DIR}")
 
@@ -67,33 +69,6 @@ ecbuild_add_executable(
   LINKER_LANGUAGE Fortran
 
 )
-
-
-ecbuild_add_executable(
-
-  TARGET multiom-cmd-args
-
-  SOURCES
-    ${MULTIOM_TOOLS_DIR}/multiom_cmd_args_prog.F90
-
-
-  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
-
-  INCLUDES
-      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
-
-  LIBS
-    fckit
-    eccodes
-    eccodes_f90
-    multio-fapi
-    multiom
-    multiom-tools-utils
-
-  LINKER_LANGUAGE Fortran
-
-)
-
 
 
 

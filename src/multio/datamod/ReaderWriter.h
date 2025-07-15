@@ -13,8 +13,8 @@
 #include <type_traits>
 #include <utility>
 
-// This file describes an interface for customization mapping methods to read/write (or encode/decode) for existing types
-// through specilization of classes `ReadSpec<>` or `WriteSpec<>` with the static methods `read` and `write`.
+// This file describes an interface for customization mapping methods to read/write (or encode/decode) for existing
+// types through specilization of classes `ReadSpec<>` or `WriteSpec<>` with the static methods `read` and `write`.
 //
 // For user defined types, instead of customizing `ReadSpec<>` appropriate constructors can be added.
 // However, for some types (e.g. Enum) it may be convenient to have this external specialization method.
@@ -24,19 +24,28 @@
 // Sometimes specific keys are representable through a simple type (e.g. an integer or string) and should
 // remain being simple, then it may be convenient to create a custom Mapper type that exposes `read` and `write`.
 //
+// # Illustration
+//
+//   INPUT                      Internal        Output
+//
+//   TYPE read(INP_TYPE_A)                      TYPE     write(TYPE) (default id function)
+//        ...            )  =>   TYPE       =>  OUT_TYPE write(TYPE)
+//   TYPE read(INP_TYPE_X)                      OUT_TYPE write<Container>(TYPE)
+//                                                    (specialization of output type for specific containers)
+//
 // # How to use for reading
-// Parsing a field of type `ValueType`: `Reader<ValueType>`::read(...)
-// Parsing a field of type `ValueType` with supplied CustomMapper: `Reader<ValueType, CustomMapper>`::read(...)
-// Conditionally check at compile time if a `ValueType` can be parsed from a given `InputType`:
-// HasRead_v<Reader<ValueType>, InputType>
+// * Parsing a field of type `ValueType`: `Reader<ValueType>`::read(...)
+// * Parsing a field of type `ValueType` with supplied CustomMapper: `Reader<ValueType, CustomMapper>`::read(...)
+// * Conditionally check at compile time if a `ValueType` can be parsed from a given `InputType`:
+// * HasRead_v<Reader<ValueType>, InputType>
 //
 // # How to use for writing
-// Dumping a field of type `ValueType`: `Writer<ValueType>`::write(...)
-// Dumping a field of type `ValueType` with supplied CustomMapper: `Writer<ValueType, void, CustomMapper>`::write(...)
-// Dumping a field of type `ValueType` to a container `Container`: `Writer<ValueType, Container>`::write(...)
-// Dumping a field of type `ValueType` to a container `Container` with supplied CustomMapper: `Writer<ValueType,
-// Container, CustomMapper>`::write(...) Conditionally check at compile time if a `ValueType` can be parsed from a given
-// `InputType`: HasWrite_v<Writer<ValueType>, const ValueType&>
+// * Dumping a field of type `ValueType`: `Writer<ValueType>`::write(...)
+// * Dumping a field of type `ValueType` with supplied CustomMapper: `Writer<ValueType, void, CustomMapper>`::write(...)
+// * Dumping a field of type `ValueType` to a container `Container`: `Writer<ValueType, Container>`::write(...)
+// * Dumping a field of type `ValueType` to a container `Container` with supplied CustomMapper: `Writer<ValueType,
+// * Container, CustomMapper>`::write(...) Conditionally check at compile time if a `ValueType` can be parsed from a
+// given `InputType`: HasWrite_v<Writer<ValueType>, const ValueType&>
 //
 // Dumping with the note of a Container is useful to specialize formatting layout for given containers
 

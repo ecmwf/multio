@@ -8,7 +8,11 @@
  * does it submit to any jurisdiction.
  */
 
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/testing/Test.h"
+
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/EncoderConf.h"
 #include "multio/action/encode-mtg2/Rules.h"
@@ -83,34 +87,138 @@ CASE("Test rules gen matchers") {
     }
 };
 
+// KeyValueSets can be comprade directly, but here
+// we want to exclude comparision of specific sections in detail until fully migrated
+// Moreover this mechanism shows more detailed errors
+template <typename KS>
+void detailedCompare(const multio::datamod::KeyValueSet<KS>& computed,
+                     const multio::datamod::KeyValueSet<KS>& expected) {
+    using namespace multio::datamod;
+    using namespace multio::action;
+
+    util::forEach(
+        [&](const auto& kvd) {
+            constexpr auto ID = std::decay_t<decltype(kvd)>::id;
+            // Exclude comparison for specific fields
+            if constexpr (  //
+                !std::is_same_v<KeyId<ID>, KeyId<EncoderProductDef::PDTCat>>
+                && !std::is_same_v<KeyId<ID>, KeyId<LevelDef::FixedLevel>>  //
+            ) {
+                const auto& compEntry = key<ID>(computed);
+                const auto& exptEntry = key<ID>(expected);
+                if constexpr (IsKeyValueSet_v<KeyDefValueType_t<ID>>) {
+                    if (compEntry.has() && exptEntry.isMissing()) {
+                        std::ostringstream oss;
+                        oss << "Nested key value set " << kvd.keyInfo()
+                            << " is given but expected to be missing. Computed: " << compEntry << std::endl;
+                        throw eckit::Exception(oss.str(), Here());
+                    }
+                    if (compEntry.isMissing() && exptEntry.has()) {
+                        std::ostringstream oss;
+                        oss << "Nested key value set " << kvd.keyInfo()
+                            << " is missing but expected to be given. Expected: " << exptEntry << std::endl;
+                        throw eckit::Exception(oss.str(), Here());
+                    }
+                    if (compEntry.has() && exptEntry.has()) {
+                        detailedCompare(compEntry.get(), exptEntry.get());
+                    }
+                }
+                else {
+                    EXPECT_EQUAL(compEntry, exptEntry);
+                }
+            }
+        },
+        KS{});
+}
+
 CASE("Test real rules matchers with AIFS single keys") {
     using namespace multio::action::rules;
     using namespace multio::action;
     using namespace multio::datamod;
 
     for (auto md : mkAifsSingleMd()) {
-        auto mars = read(MarsKeySet{}, md);
-        EncoderSections sections;
-        
+        try {
+            auto mars = read(MarsKeySet{}, md);
+            EncoderSections sections;
 
-        EXPECT(action::rules::allRules()(mars, sections));
-        // std::cout << "After rule apply: " << sections << std::endl;
-        EXPECT_NO_THROW(alterAndValidate(sections));
-        // std::cout << "After alter: " << sections << std::endl;
-        // EXPECT_EQUAL((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).get()), 0);
-        EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
-        
-        EncoderSections expectedSections = expectedAIFSSingleEncoderSections(mars);
 
-        // std::cout << "Sections for mars: ";
-        // eckit::JSON json(std::cout);
-        // json << write<eckit::LocalConfiguration>(mars);
-        // std::cout << " -- sections: ";
-        // json << write<eckit::LocalConfiguration>(sections);
-        // std::cout << std::endl;
-        EXPECT_EQUAL(sections, expectedSections);
+            EXPECT(action::rules::allRules()(mars, sections));
+            EXPECT_NO_THROW(alterAndValidate(sections));
+            
+            EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
+
+            EncoderSections expectedSections = expectedAIFSSingleEncoderSections(mars);
+
+            detailedCompare(sections, expectedSections);
+        }
+        catch (...) {
+            std::cout << "Error while generating & comparing message: " << md << std::endl;
+            throw;
+        }
     }
-}
+};
+
+
+CASE("Test real rules matchers with AIFS ens keys") {
+    using namespace multio::action::rules;
+    using namespace multio::action;
+    using namespace multio::datamod;
+
+    for (auto md : mkAifsEnsMd()) {
+        try {
+            auto mars = read(MarsKeySet{}, md);
+            EncoderSections sections;
+
+
+            EXPECT(action::rules::allRules()(mars, sections));
+            EXPECT_NO_THROW(alterAndValidate(sections));
+            
+            EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
+
+            EncoderSections expectedSections = expectedAIFSEnsEncoderSections(mars);
+
+            detailedCompare(sections, expectedSections);
+        }
+        catch (...) {
+            std::cout << "Error while generating & comparing message: " << md << std::endl;
+            throw;
+        }
+    }
+};
+
+
+CASE("Test real rules matchers with JSON rules") {
+    using namespace multio::action::rules;
+    using namespace multio::action;
+    using namespace multio::datamod;
+
+    auto marsMessages
+        = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test.json"}}}.getSubConfigurations(
+            "rules");
+
+    std::size_t i = 0;
+    for (auto subConf : marsMessages) {
+        ++i;
+        eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
+        try {
+            MarsKeyValueSet mars = read(MarsKeySet{}, marsConf);
+            EncoderSections expectedSections = read(EncoderSectionsKeySet{}, subConf.getSubConfiguration("rule"));
+
+            EncoderSections computedSections;
+
+            EXPECT(action::rules::allRules()(mars, computedSections));
+            EXPECT_NO_THROW(alterAndValidate(computedSections));
+
+            detailedCompare(computedSections, expectedSections);
+        }
+        catch (...) {
+            // Print additional information and rethrow
+            std::cout << i << "/" << marsMessages.size() << ": error for mars conf: " << marsConf << std::endl;
+            std::cout << subConf << std::endl;
+            throw;
+        };
+    }
+};
 
 }  // namespace multio::test
 

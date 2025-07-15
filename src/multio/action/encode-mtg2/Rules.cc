@@ -110,16 +110,19 @@ auto overallLengthOfTimeRange(const std::string& l) {
 }
 
 auto ensemble() {
-    return setKey<PDTCatDef::ProcessSubType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
-        {ProcessSubType::Ensemble});
+    return setAll(setKey<PDTCatDef::ProcessSubType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
+                      {ProcessSubType::Ensemble}),
+                  setKey<EncoderProductDef::Process, EncoderSectionsDef::Product>());
 }
 auto largeEnsemble() {
-    return setKey<PDTCatDef::ProcessSubType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
-        {ProcessSubType::LargeEnsemble});
+    return setAll(setKey<PDTCatDef::ProcessSubType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
+                      {ProcessSubType::LargeEnsemble}),
+                  setKey<EncoderProductDef::Process, EncoderSectionsDef::Product>());
 }
 auto reforecast() {
-    return setKey<PDTCatDef::ProcessType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
-        {ProcessType::Reforecast});
+    return setAll(setKey<PDTCatDef::ProcessType, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
+                      {ProcessType::Reforecast}),
+                  setKey<EncoderProductDef::Process, EncoderSectionsDef::Product>());
 }
 
 auto chemical() {

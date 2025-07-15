@@ -169,7 +169,7 @@ CASE("Test parsing and comparing rule files") {
         
         auto readConf = loadedRule.conf.getSubConfiguration("encoder");
         // Delete key "type" because we don't consider it
-        readConf.remove("type");
+        // readConf.remove("type");
 
         auto rewriteConf = write<eckit::LocalConfiguration>(key<EncoderInfoDef::Sections>(encoderInf).get());
         EXPECT(compareLocalConf(readConf, rewriteConf));

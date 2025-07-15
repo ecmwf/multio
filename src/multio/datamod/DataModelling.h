@@ -322,7 +322,7 @@ struct KeyDef : BaseKeyDef<ValueType_, Mapper_, tag_, DefaultValueFunctor> {
     }
     // Sets the description of the value
     constexpr auto withDescription(std::string_view descr) const {
-        return This{Base::key_, Base::description_, std::move(Base::defaultFunctor_)};
+        return This{Base::key_, descr, std::move(Base::defaultFunctor_)};
     }
 };
 
@@ -1198,15 +1198,15 @@ struct KeyValueSet {
     // Inline setting
     template<auto id>
     decltype(auto) key() const& {
-        return key<id>(values);
+        return datamod::key<id>(values);
     }
     template<auto id>
     decltype(auto) key() & {
-        return key<id>(values);
+        return datamod::key<id>(values);
     }
     template<auto id>
     decltype(auto) key() && {
-        return key<id>(std::move(values));
+        return datamod::key<id>(std::move(values));
     }
     
     template<auto id>
@@ -1859,10 +1859,15 @@ decltype(auto) keyPath(KVS& conf) {
     return datamod::key<id_>(conf);
 }
 
-template <auto id1, auto... idx, typename KVS, std::enable_if_t<(sizeof...(idx) > 0), bool> = true>
+template <auto id1, auto... idx, typename KVS, std::enable_if_t<((sizeof...(idx) > 0) && std::is_const_v<std::remove_reference_t<KVS>>), bool> = true>
 decltype(auto) keyPath(KVS& conf) {
     auto& v1 = datamod::key<id1>(conf);
-    return keyPath<idx...>(v1.get());
+        return keyPath<idx...>(v1.get());
+}
+template <auto id1, auto... idx, typename KVS, std::enable_if_t<((sizeof...(idx) > 0) && !std::is_const_v<std::remove_reference_t<KVS>>), bool> = true>
+decltype(auto) keyPath(KVS& conf) {
+    auto& v1 = datamod::key<id1>(conf);
+    return keyPath<idx...>(v1.modify());
 }
 
 //-----------------------------------------------------------------------------

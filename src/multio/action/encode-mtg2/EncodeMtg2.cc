@@ -116,7 +116,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             using Precision = typename decltype(pt)::type;
 
             auto beg = reinterpret_cast<const Precision*>(msg.payload().data());
-            sample->setDataValues(beg, msg.globalSize());
+            sample->setDataValues(beg, msg.payload().size()/sizeof(Precision));
 
             // msg.header().acquireMetadata();
             // const auto& metadata = msg.metadata();

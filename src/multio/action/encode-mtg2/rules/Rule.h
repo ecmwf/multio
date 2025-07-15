@@ -236,20 +236,6 @@ ChainedRuleList<typename Rule_::MatchKeySet> chainedRuleList(Rule_&& rule, Rules
     return res;
 }
 
-// template <typename MatchKeySet_>
-// ChainedRuleList<MatchKeySet_> mergeRuleList(ChainedRuleList<MatchKeySet_>&& res) {
-//     return res;
-// }
-
-// template <typename MatchKeySet_, typename... More>
-// ChainedRuleList<MatchKeySet_> mergeRuleList(ChainedRuleList<MatchKeySet_>&& res, ChainedRuleList<MatchKeySet_>&&
-// next,
-//                                             More&&... more) {
-//     res.rules.insert(res.rules.end(), std::make_move_iterator(next.rules.begin()),
-//                       std::make_move_iterator(next.rules.end()));
-
-//     return mergeRuleList(std::move(res), std::forward<More>(more)...);
-// }
 
 template <typename MatchKeySet>
 std::ostream& operator<<(std::ostream& os, const ChainedRuleList<MatchKeySet>& r) {

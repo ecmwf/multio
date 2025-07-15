@@ -8,11 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date July 2023
-
-
 #pragma once
 
 #include <chrono>

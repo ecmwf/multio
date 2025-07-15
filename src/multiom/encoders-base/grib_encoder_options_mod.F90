@@ -27,6 +27,7 @@ TYPE :: GRIB_ENCODER_OPTIONS_T
   LOGICAL :: PRINT_WHOLE_ERROR_STACK = .FALSE. ! If .FALSE. just print the last frame
   LOGICAL :: DUMP_DICTIONARIES = .FALSE.
   LOGICAL :: WRITE_DEBUG_FIELDS = .FALSE.
+  LOGICAL :: GENERATE_TEST_CASES = .FALSE.
   CHARACTER(LEN=256) :: DUMP_PATH = '.'
 
   ! Variables used to control the size of the cache

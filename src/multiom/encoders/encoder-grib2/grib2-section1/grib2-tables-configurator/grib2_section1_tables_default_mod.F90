@@ -625,7 +625,7 @@ IMPLICIT NONE
     CLASS DEFAULT
 
       ! If the metadata is not a GRIB metadata, we cannot set the tables version
-      PP_DEBUG_CRITICAL_THROW( ERRFLAG_METADATA )
+      ! PP_DEBUG_CRITICAL_THROW( ERRFLAG_METADATA )
 
     END SELECT
 

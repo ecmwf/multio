@@ -514,7 +514,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   !> Local error flag
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_INITIALIZED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALREADY_UNINITIALIZED=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -532,7 +532,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! This procedure can be called only if the object is not initialized
-  PP_DEBUG_CRITICAL_COND_THROW( THIS%INITIALIZED_, ERRFLAG_ALREADY_INITIALIZED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.THIS%INITIALIZED_, ERRFLAG_ALREADY_UNINITIALIZED )
 
   ! Read the sample and set the initialization flag to .true.
   THIS%CGRIB_HANDLE_ = C_NULL_PTR
@@ -560,8 +560,8 @@ PP_ERROR_HANDLER
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
-    CASE (ERRFLAG_ALREADY_INITIALIZED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle is already initialized' )
+    CASE (ERRFLAG_ALREADY_UNINITIALIZED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle is already uninitialized' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

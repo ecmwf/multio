@@ -32,6 +32,12 @@ std::string WriteSpec<TimeDuration>::write(const TimeDuration& td) {
         td);
 }
 
+std::string WriteSpec<Origin>::write(const Origin& td) {
+    return std::visit(eckit::Overloaded{[&](const std::int64_t& o) { return std::to_string(o); },
+                                        [&](const std::string& s) { return s; }},
+                      td);
+}
+
 
 TimeDuration ReadSpec<TimeDuration>::read(std::int64_t hours) noexcept {
     return std::chrono::hours{hours};
@@ -143,7 +149,9 @@ std::string WriteSpec<LevType>::write(LevType v) {
         case LevType::AL:
             return "al";
         default:
-            throw DataModellingException("WriteSpec<LevType>::write: Unexpected value for LevType", Here());
+            throw DataModellingException(
+                "WriteSpec<LevType>::write: Unexpected enum value for LevType " + std::to_string(std::int64_t(v)),
+                Here());
     }
 }
 
@@ -187,6 +195,14 @@ LevType ReadSpec<LevType>::read(const std::string& val) {
     throw DataModellingException(std::string("ReadSpec<LevType>::read Unknown value for LevType: ") + val, Here());
 }
 
+const std::vector<LevType>& allLevTypes() {
+    static const std::vector<LevType> all{LevType::ML,  LevType::PL,  LevType::PV,  LevType::PT,
+                                          LevType::SOL, LevType::SFC, LevType::O2D, LevType::O3D,
+                                          LevType::HL,  LevType::HHL, LevType::HPL, LevType::AL};
+
+    return all;
+}
+
 
 namespace mapper {
 
@@ -214,6 +230,11 @@ std::ostream& operator<<(std::ostream& os, const LevType& t) {
 
 std::ostream& operator<<(std::ostream& os, const TimeDuration& t) {
     os << Writer<TimeDuration>::write(t);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Origin& t) {
+    os << Writer<Origin>::write(t);
     return os;
 }
 

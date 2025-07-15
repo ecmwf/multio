@@ -73,7 +73,7 @@ MULTIO_KEY_SET_DESCRIPTION(
     KeyDef<MarsKeys::TYPE, std::string>{"type"},                               //
     KeyDef<MarsKeys::CLASS, std::string>{"class"},                             //
     KeyDef<MarsKeys::PARAM, std::int64_t, mapper::ParamMapper>{"param"},       //
-    KeyDef<MarsKeys::ORIGIN, std::string>{"origin"}.withDefault("ecmf"),       //
+    KeyDef<MarsKeys::ORIGIN, Origin>{"origin"}.withDefault("ecmf"),       //
     KeyDef<MarsKeys::ANOFFSET, std::int64_t>{"anoffset"}.tagOptional(),        //
     KeyDef<MarsKeys::PACKING, std::string>{"packing"}.tagOptional(),           //
     KeyDef<MarsKeys::NUMBER, std::int64_t>{"number"}.tagOptional(),            //
@@ -106,7 +106,7 @@ MULTIO_KEY_SET_DESCRIPTION(
     // official mars key
     KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
         "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical harmonics) "
-        "without defining resolution. It can derived from `grid` and `truncation`. If passed its value is compared "
+        "without defining resolution. It can be derived from `grid` and `truncation`. If passed its value is compared "
         "against the derived value."));
 
 using MarsKeySet = KeySet<MarsKeys>;
@@ -123,14 +123,14 @@ struct KeySetAlter<MarsKeySet> {
 
         if (grid.isMissing() && trunc.isMissing()) {
             std::ostringstream oss;
-            oss << "Either mars key 'grid' (x)or 'truncation' must to be given to describe geometry - both are "
+            oss << "Either mars key 'grid' (x)or 'truncation' need to be given to describe geometry - both are "
                    "missing: "
                 << mars;
             throw DataModellingException(oss.str(), Here());
         }
         if (!grid.isMissing() && !trunc.isMissing()) {
             std::ostringstream oss;
-            oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both ore "
+            oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both are "
                    "given: "
                 << mars;
             throw DataModellingException(oss.str(), Here());

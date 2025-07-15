@@ -8,10 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date July 2023
-
 
 #pragma once
 
@@ -141,6 +137,29 @@ using TypeListContains = TypeListAny<TypeListContainsExpr<Type>::template Expr, 
 
 template <typename Type, typename TypeList>
 inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::value;
+
+
+//-----------------------------------------------------------------------------
+
+template <typename TL, typename Processed = TypeList<>>
+struct UniqueTypeList;
+
+template <typename... TP>
+struct UniqueTypeList<TypeList<>, TypeList<TP...>> {
+    using type = TypeList<TP...>;
+};
+
+
+template <typename TL, typename Processed = TypeList<>>
+using UniqueTypeList_t = typename UniqueTypeList<TL, Processed>::type;
+
+template <typename T1, typename... TX, typename... TP>
+struct UniqueTypeList<TypeList<T1, TX...>, TypeList<TP...>> {
+    using type = UniqueTypeList_t<TypeList<TX...>,                                             //
+                                  std::conditional_t<TypeListContains_v<T1, TypeList<TP...>>,  //
+                                                     TypeList<TP...>,                          //
+                                                     TypeList<TP..., T1>>>;
+};
 
 //-----------------------------------------------------------------------------
 
@@ -351,7 +370,6 @@ template <typename... T>
 struct ToTypeList<std::tuple<T...>> {
     using type = TypeList<T...>;
 };
-
 
 
 // Apply a function for each element in a tuple

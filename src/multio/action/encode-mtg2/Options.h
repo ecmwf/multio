@@ -36,14 +36,25 @@ namespace datamod {
 
 using action::EncodeMtg2Def;
 
-MULTIO_KEY_SET_DESCRIPTION(EncodeMtg2Def,                                                                       //
-                           "encode-mtg2",                                                                       //
-                                                                                                                //
-                           KeyDef<EncodeMtg2Def::KnowledgeRoot, eckit::PathName>{"knowledge-root"}.tagDefaulted(),  //
-                           KeyDef<EncodeMtg2Def::SamplesPath, eckit::PathName>{"samples-path"}.tagDefaulted(),      //
-                           KeyDef<EncodeMtg2Def::EncodingRules, eckit::PathName>{"encoding-rules"}.tagDefaulted(),  //
-                           KeyDef<EncodeMtg2Def::MappingRules, eckit::PathName>{"mapping-rules"}.tagDefaulted(),    //
-                           KeyDef<EncodeMtg2Def::GeoFromAtlas, bool>{"geo-from-atlas"}.withDefault(false))
+MULTIO_KEY_SET_DESCRIPTION(
+    EncodeMtg2Def,  //
+    "encode-mtg2",  //
+                    //
+    KeyDef<EncodeMtg2Def::KnowledgeRoot, eckit::PathName>{"knowledge-root"}
+        .withDefault([]() { return multio::LibMultio::instance().libraryHome(); })
+        .withDescription("Path to where ./share/multiom/ is located. Default is to the library home."),  //
+    KeyDef<EncodeMtg2Def::SamplesPath, eckit::PathName>{"samples-path"}                                  //
+        .tagDefaulted()
+        .withDescription("Path to samples. Default is <knowledge-root>/share/multiom/samples"),  //
+    KeyDef<EncodeMtg2Def::EncodingRules, eckit::PathName>{"encoding-rules"}                      //
+        .tagDefaulted()
+        .withDescription(
+            "Path to mappings file. Default is <knowledge-root/share/multiom/mappings/mapping-rules.yaml"),  //
+    KeyDef<EncodeMtg2Def::MappingRules, eckit::PathName>{"mapping-rules"}                                    //
+        .tagDefaulted()
+        .withDescription(
+            "Path to encoding file. Default is <knowledge-root/share/multiom/encodings/encodung-rules-nested.yaml"),  //
+    KeyDef<EncodeMtg2Def::GeoFromAtlas, bool>{"geo-from-atlas"}.withDefault(false))
 
 
 template <>

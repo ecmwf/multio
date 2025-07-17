@@ -45,72 +45,45 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     auto& md = msg.metadata();
 
-    // TODO MIVAL : to be removed
-    // std::cout << "Encoding message with metadata: " << md << std::endl;
-
-    // TO encoding
-    MultIOMDict mars{MultIOMDictKind::MARS};
-    MultIOMDict par{MultIOMDictKind::Parametrization};
-
     {
         using namespace datamod;
         // Read and set unscoped mars keys
         auto marsKeys = read(keySet<MarsKeys>().unscoped(), md);
-        write(marsKeys, mars);
 
         // Read scoped misc keys
         auto miscKeys = read(keySet<MiscKeys>().scoped(), md);
         // Write unscoped misc keys
         miscKeys.keySet.unscoped();
-        write(miscKeys, par);
-
-
-        auto geo = ([&](){
-            // Setup MultIOM dict
-            const auto& repres = key<MarsKeys::REPRES>(marsKeys);
-            MultIOMDict geom{([&]() {
-                switch (repres.get()) {
-                    case Repres::GG:
-                        return MultIOMDictKind::ReducedGG;
-                    case Repres::HEALPix:
-                        return MultIOMDictKind::HEALPix;
-                    case Repres::LL:
-                        return MultIOMDictKind::RegularLL;
-                    case Repres::SH:
-                        return MultIOMDictKind::SH;
-                }
-                throw EncodeMtg2Exception("unkown repres", Here());
-            })()};
-
-            // Get geometry keyset variant
-            auto geoKeySets = getGeometryKeySet(marsKeys);
-
-            // If grid.. check if atlas is given
-            const auto& grid = key<MarsKeys::GRID>(marsKeys);
-            if (!grid.isMissing()) {
-                auto optScope = std::visit([](const auto& k) { return k.getScope(); }, geoKeySets);
-                if (optScope) {
-                    std::string scope{*optScope};
-                    const auto& global = message::Parametrization::instance().get();
-                    const auto& geoFromAtlas = key<EncodeMtg2Def::GeoFromAtlas>(conf_);
-                    if (geoFromAtlas.get() && (global.find(scope) == global.end())) {
-                        extract::AtlasGeoSetter::handleGrid(scope, grid.get());
-                    }
+        
+        auto geoKeySets = getGeometryKeySet(marsKeys);
+        
+        // If grid.. check if atlas is given.
+        const auto& grid = key<MarsKeys::GRID>(marsKeys);
+        if (!grid.isMissing()) {
+            auto optScope = std::visit([](const auto& k) { return k.getScope(); }, geoKeySets);
+            if (optScope) {
+                std::string scope{*optScope};
+                const auto& global = message::Parametrization::instance().get();
+                const auto& geoFromAtlas = key<EncodeMtg2Def::GeoFromAtlas>(conf_);
+                // Fetch atlas and store in global parametrization (by scoping keys...)
+                // Scoping here may be refactored
+                if (geoFromAtlas.get() && (global.find(scope) == global.end())) {
+                    extract::AtlasGeoSetter::handleGrid(scope, grid.get());
                 }
             }
-
-            std::visit(
-                [&](auto& geoKeySet) {
-                    auto geoKeys = read(geoKeySet, md);
-                    write(geoKeys.unscoped(), geom);
-                },
-                geoKeySets);
-            return geom;
-        })();
-
+        }
+        
+        // Read & unscope geo keys from metadata
+        auto geoKeys = std::visit(
+            [&](auto& geoKeySet) -> Geometry {
+                auto geoKeys = read(geoKeySet, md);
+                geoKeys.keySet.unscoped();
+                return geoKeys;
+            },
+            geoKeySets);
 
         // @Mirco here we get the cached raw encoder
-        std::unique_ptr<util::MioGribHandle> sample = cache_.getSample(marsKeys, mars, par, geo);
+        std::unique_ptr<util::MioGribHandle> sample = cache_.getSample(marsKeys, miscKeys, geoKeys);
 
         executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
             using Precision = typename decltype(pt)::type;

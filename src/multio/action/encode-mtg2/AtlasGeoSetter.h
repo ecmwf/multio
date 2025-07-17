@@ -25,6 +25,7 @@
 #include "atlas/parallel/mpi/mpi.h"
 
 #include "multio/datamod/DataModelling.h"
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
@@ -45,25 +46,23 @@ GridType createGrid(const std::string& atlasNamedGrid) {
     return GridType(structuredGrid);
 }
 
-
-struct AtlasGeoSetter {
-    using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
-
-    static void handleGG(const std::string& scope, const std::string& gridName) {
-        message::Metadata md{{scope, true}};
-
-        // std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
-        // bool isReducedGaussian = std::regex_match(gridName, reducedGaussianMatch);
-
-        // TODO use MarsKeySet in future...
-        const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
-
-        // getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
+template<typename KS>
+struct SetKeysFromAtlas {
+    void operator()(datamod::KeyValueSet<KS>& ks, const std::string& gridName) const {
+        // No error for now...
+        // std::ostringstream oss;
+        // oss << "GeoFromAtlas: functionality not implemented yet for " << gridName << std::endl;
+        // throw multio::message::MetadataException(oss.str(), Here());
+    }
+};
+template<>
+struct SetKeysFromAtlas<datamod::KeySet<datamod::GeoGG>> {
+    void operator()(datamod::KeyValueSet<datamod::KeySet<datamod::GeoGG>>& geoGG, const std::string& gridName) const {
         using namespace datamod;
-        auto geoGG = reify(keySet<GeoGG>().scoped(scope));
+        
+        const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
         key<GeoGG::NumberOfParallelsBetweenAPoleAndTheEquator>(geoGG).set(gaussianGrid.N());
-        // getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
-
+        
         {
             auto it = gaussianGrid.lonlat().begin();
 
@@ -89,9 +88,28 @@ struct AtlasGeoSetter {
 
         // Explicitly validate after manual setting
         alterAndValidate(geoGG);
+    }
+};
+
+template<typename KS>
+void setKeysFromAtlas(datamod::KeyValueSet<KS>& gks, const std::string& gridName) {
+    return SetKeysFromAtlas<KS>{}(gks, gridName);
+}
+
+
+struct AtlasGeoSetter {
+    using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
+
+    static void handleGG(const std::string& scope, const std::string& gridName) {
+        using namespace datamod;
+        message::Metadata md{{scope, true}};
+
+        auto geoGG = reify(keySet<GeoGG>().scoped(scope));
+        
+        setKeysFromAtlas(geoGG, gridName);
 
         write(geoGG, md);
-        // Todo - update parametrization directly with KeyValueSet ?
+        
         message::Parametrization::instance().update(md);
     }
 

@@ -30,11 +30,8 @@ public:
     EncoderCache(const EncodeMtg2Conf& opts);
     EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options);
     
-
-    
+    std::unique_ptr<util::MioGribHandle> getSample(const datamod::MarsKeyValueSet& marsKeys, const datamod::MiscKeyValueSet& miscKeys, const datamod::Geometry& geoKeys);
     std::unique_ptr<util::MioGribHandle> getSample(const datamod::MarsKeyValueSet& marsKeys, const MultIOMDict& marsDict, const MultIOMDict& parDict, const MultIOMDict& geoDict);
-    
-
 private:
     struct CacheEntry {
         EncoderSections sections;

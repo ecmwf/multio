@@ -37,7 +37,8 @@ EncoderCache::EncoderCache(const EncodeMtg2Conf& opts) : EncoderCache(opts, Mult
 
 
 EncoderCache::EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options) :
-    // conf_{conf}, options_{std::move(options)}, rules_{options_, conf_}, baseSample_{loadSample(conf_, "sample.tmpl")} {}
+    // conf_{conf}, options_{std::move(options)}, rules_{options_, conf_}, baseSample_{loadSample(conf_, "sample.tmpl")}
+    // {}
     conf_{conf}, options_{std::move(options)}, baseSample_{loadSample(conf_, "sample.tmpl")} {}
 
 
@@ -90,6 +91,37 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getSample(const datamod::Mars
                                                              const MultIOMDict& geo) {
     CacheEntry& entry = makeOrGetEntry(marsKeys, mars, par, geo);
     return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, par, geo);
+}
+
+std::unique_ptr<util::MioGribHandle> EncoderCache::getSample(const datamod::MarsKeyValueSet& marsKeys,
+                                                             const datamod::MiscKeyValueSet& miscKeys,
+                                                             const datamod::Geometry& geoKeys) {
+    MultIOMDict mars{MultIOMDictKind::MARS};
+    MultIOMDict misc{MultIOMDictKind::Parametrization};
+
+    using namespace datamod;
+    write(marsKeys, mars);
+    write(miscKeys, misc);
+
+    // Setup MultIOM dict
+    const auto& repres = key<MarsKeys::REPRES>(marsKeys);
+    MultIOMDict geom{([&]() {
+        switch (repres.get()) {
+            case Repres::GG:
+                return MultIOMDictKind::ReducedGG;
+            case Repres::HEALPix:
+                return MultIOMDictKind::HEALPix;
+            case Repres::LL:
+                return MultIOMDictKind::RegularLL;
+            case Repres::SH:
+                return MultIOMDictKind::SH;
+        }
+        throw EncodeMtg2Exception("unkown repres", Here());
+    })()};
+
+    std::visit([&](auto& specificGeoKeys) { write(specificGeoKeys, geom); }, geoKeys);
+
+    return getSample(marsKeys, mars, misc, geom);
 }
 
 

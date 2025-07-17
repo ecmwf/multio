@@ -1877,7 +1877,7 @@ decltype(auto) keyPath(KVS& conf) {
 
 template <typename KeySet_>
 std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValueSet<KeySet_>& kvs) {
-    os << "{";
+    os << "{ ";
     bool first = true;
     multio::util::forEach(
         [&](const auto& key, const auto& value) {
@@ -1890,13 +1890,14 @@ std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValueSet<Ke
                 os << ", ";
             }
 
-            os << key.key() << "=";
+            os << key.key() << ": ";
             if (value.isMissing()) {
                 os << "<MISSING>";
             }
             else {
                 os << ReadWrite::template write<std::ostream>(value.get());
             }
+            os << "\n";
         },
         kvs);
     os << "}";

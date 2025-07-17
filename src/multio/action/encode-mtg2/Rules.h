@@ -11,6 +11,7 @@
 #pragma once
 
 #include "multio/action/encode-mtg2/rules/Rule.h"
+#include "multio/action/encode-mtg2/EncoderConf.h"
 #include "multio/datamod/MarsMiscGeo.h"
 
 
@@ -19,5 +20,7 @@ using namespace rules;
 using namespace datamod;
 
 const ExclusiveRuleList<MarsKeySet>& allRules();
+
+EncoderSections buildEncoderConf(const MarsKeyValueSet&);
 
 }  // namespace multio::action::rules_gen

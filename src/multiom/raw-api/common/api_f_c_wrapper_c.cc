@@ -94,11 +94,15 @@ int c_free_wrapper( void** mem ){
 }
 
 int hash_int8_array(const int8_t* data, size_t len, size_t* hash ) {
-    *hash = 14695981039346656037ull; // FNV offset basis
+
+    const uint32_t fnv_prime = 16777619u; // FNV prime
+    const uint32_t fnv_offset = 2166136261u; // FNV offset basis
+    uint32_t fnv_hash = fnv_offset;
     for (size_t i = 0; i < len; ++i) {
-        *hash ^= (uint8_t)data[i];          // cast to uint8_t for consistency
-        *hash *= 1099511628211ull;          // FNV prime
+        fnv_hash ^= (uint32_t)(uint8_t)data[i];          // cast to uint8_t for consistency
+        fnv_hash *= fnv_prime;          // FNV prime
     }
+    *hash = (size_t)fnv_hash; // cast to size_t for compatibility
     // MIVAL: code for debug interoperability on different compilers
     // printf( "compute hash: %llu, %p, %llu\n", *hash, data, len );
     return 0;

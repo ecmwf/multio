@@ -1,4 +1,5 @@
 #include "multio/action/encode-mtg2/Rules.h"
+#include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/EncoderConf.h"
 #include "multio/action/encode-mtg2/generated/InferPDT.h"
 #include "multio/action/encode-mtg2/rules/Matcher.h"
@@ -283,15 +284,15 @@ auto paramSFCRules() {
              typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),  //
         rule(all(matchLevType(LevType::SFC), matchParams(228028)),               //
              timeRange(TimeRangeType::FixedTimeRange, TypeOfStatisticalProcessing::Maximum),
-             overallLengthOfTimeRange("3h"),                                                               //
-             typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),                            //
-        rule(all(matchLevType(LevType::SFC), matchParams(49, 237207, 237318)),                             //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Maximum),  //
-             typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),                            //
-        rule(all(matchLevType(LevType::SFC), matchParams(235087, 235088, 235136, 235137, 235288)),         //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Average),  //
-             typeOfLevel(TypeOfLevel::EntireAtmosphere)),                                                  //
-        rule(all(matchLevType(LevType::SFC), matchParams(228005, 235165, 235166)),                         //
+             overallLengthOfTimeRange("3h"),                                                                //
+             typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),                             //
+        rule(all(matchLevType(LevType::SFC), matchParams(49, 237207, 237318)),                              //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Maximum),   //
+             typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),                             //
+        rule(all(matchLevType(LevType::SFC), matchParams(235087, 235088, 235136, 235137, 235288, 235383)),  //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Average),   //
+             typeOfLevel(TypeOfLevel::EntireAtmosphere)),                                                   //
+        rule(all(matchLevType(LevType::SFC), matchParams(228005, 235165, 235166)),                          //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Average),
              typeOfLevel(TypeOfLevel::HeightAboveGroundAt10m), fixedLevel(10)),                            //
         rule(all(matchLevType(LevType::SFC), matchParams(235151)),                                         //
@@ -302,7 +303,7 @@ auto paramSFCRules() {
              typeOfLevel(TypeOfLevel::NominalTop)),                                                        //
         rule(all(matchLevType(LevType::SFC),                                                               //
                  matchParams(235020, 235021, 235031, paramRange(235033, 235038), paramRange(235041, 235043), 235051,
-                             235052, 235055, 235078, 235079, 235134)),                                       //
+                             235052, 235055, 235078, 235079, 235134, 235283)),                               //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TypeOfStatisticalProcessing::Average),    //
              typeOfLevel(TypeOfLevel::Surface)),                                                             //
         rule(all(matchLevType(LevType::SFC), matchParams(260683)),                                           //
@@ -459,8 +460,8 @@ auto paramSFCRules() {
                      210200, 210201, 210202, 228003, 228012, paramRange(210186, 210191), 210262, 210263, 210264,
                      paramRange(228015, 228020), 228024, 228032, paramRange(228046, 228048), 228141,
                      paramRange(228217, 228221), 260004, 260005, 260015, 260048, 260109, 260121, 260123, 260255, 260289,
-                     260509, 261001, 261002, 261014, 261015, 261016, 261018, 262000, 262100, 262139, 262140, 262144,
-                     262124)),                             //
+                     260509, 260688, 261001, 261002, 261014, 261015, 261016, 261018, 262000, 262100, 262139, 262140,
+                     262144, 262124)),                     //
              pointInTime(),                                //
              typeOfLevel(TypeOfLevel::Surface)),           //
         rule(all(matchLevType(LevType::SFC),               //
@@ -472,13 +473,13 @@ auto paramSFCRules() {
         rule(all(matchLevType(LevType::SFC),      //
                  matchParams(                     //
                      paramRange(140098, 140105), paramRange(140112, 140113), paramRange(140121, 140129),
-                     paramRange(140207, 140209), paramRange(140211, 140212), paramRange(140214, 140232),
-                     paramRange(140234, 140239), 140244, paramRange(140252, 140254))),  //
-             pointInTime(),                                                             //
-             typeOfLevel(TypeOfLevel::Surface)),                                        //
-        rule(all(matchLevType(LevType::SFC),                                            //
-                 matchParams(paramRange(140114, 140120))),                              //
-             pointInTime(),                                                             //
+                     paramRange(140131, 140134), paramRange(140207, 140209), paramRange(140211, 140212),
+                     paramRange(140214, 140232), paramRange(140234, 140239), 140244, paramRange(140252, 140254))),  //
+             pointInTime(),                                                                                         //
+             typeOfLevel(TypeOfLevel::Surface)),                                                                    //
+        rule(all(matchLevType(LevType::SFC),                                                                        //
+                 matchParams(paramRange(140114, 140120))),                                                          //
+             pointInTime(),                                                                                         //
              periodRange(),
              typeOfLevel(TypeOfLevel::Surface)),                                                           //
         rule(all(matchLevType(LevType::SFC),                                                               //
@@ -750,6 +751,16 @@ const ExclusiveRuleList<MarsKeySet>& allRules() {
             packingRules()                    //
             ));
     return all_;
+}
+
+EncoderSections buildEncoderConf(const MarsKeyValueSet& mars) {
+    EncoderSections sections;
+    if (!allRules()(mars, sections)) {
+        std::ostringstream oss;
+        oss << "Cannot map mars keys. None of the outermost rules apply: " << allRules();
+        throw EncodeMtg2Exception(oss.str(), Here());
+    }
+    return sections;
 }
 
 }  // namespace multio::action::rules

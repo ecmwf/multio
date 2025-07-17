@@ -105,6 +105,7 @@ MULTIO_KEY_SET_DESCRIPTION(
     // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as
     // official mars key
     KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
+        "DEPRECATED - internal key that got expanded to support HEALpix and differs from usual values "
         "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical harmonics) "
         "without defining resolution. It can be derived from `grid` and `truncation`. If passed its value is compared "
         "against the derived value."));

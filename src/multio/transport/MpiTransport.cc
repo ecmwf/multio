@@ -145,7 +145,19 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
     pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_},
-    streamQueue_{1024} {}
+    streamQueue_{1024} {
+    const auto& otherGroup
+        = compConf.multioConfig().localPeerTag() == config::LocalPeerTag::Server ? clientGroup_ : serverGroup_;
+    if (getMpiPoolSize(compConf) < otherGroup.size()) {
+        throw eckit::UserError(
+            "Pool size of the client and server must be at least equal to the size of the other MPI communicator. "
+            "Consider unsetting or increasing the values of the following environment variables:\n"
+            "    MULTIO_CLIENT_MPI_POOL_SIZE\n"
+            "    MULTIO_SERVER_MPI_POOL_SIZE\n"
+            "    MULTIO_MPI_POOL_SIZE",
+            Here());
+    }
+}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
 

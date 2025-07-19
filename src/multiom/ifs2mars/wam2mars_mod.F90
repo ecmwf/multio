@@ -42,7 +42,7 @@ CASE(NGRBMX2T,NGRB10FG,NGRBMXTPR)
   !       these parameters are max since the last post-processing step
   CALL IGRIB_SET_VALUE(KGRIB_HANDLE,'stepType','max')
   ISECSTART = MAX(KPREVPP*NINT(PTSTEP)+ISEC0,ISEC0)
-  TIMEPROC = ISEC-ISECSTART
+  TIMESPAN = ISEC-ISECSTART
 CASE(NGRBMN2T,NGRBMNTPR)
   !       these parameters are min since the last post-processing step
   CALL IGRIB_SET_VALUE(KGRIB_HANDLE,'stepType','min')

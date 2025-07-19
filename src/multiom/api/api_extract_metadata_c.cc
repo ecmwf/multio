@@ -510,7 +510,7 @@ int multio_grib2_encoder_extract_metadata(void* multio_grib2, void* grib, void**
         return ret;
     }
 
-    ret = getAndSet(h, *mars_dict, "timeproc");
+    ret = getAndSet(h, *mars_dict, "timespan");
     if (ret != 0) {
         return ret;
     }

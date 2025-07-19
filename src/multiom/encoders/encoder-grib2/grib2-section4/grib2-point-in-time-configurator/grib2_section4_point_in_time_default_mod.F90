@@ -877,7 +877,7 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
 
-  ! Compute current time (Part of effort to move away from time history since now in mars there is the timeproc keyword)
+  ! Compute current time (Part of effort to move away from time history since now in mars there is the timespan keyword)
   !! ISEC =  MSG%STEP*PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ + MSG%STEP*PAR%TIME%INITIAL_STEP_ * HOURS2SECONDS
 
   ! Error handling

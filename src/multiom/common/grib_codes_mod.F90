@@ -35,8 +35,8 @@ IMPLICIT NONE
 ! NGRBCL   -  26 Lake cover
 ! NGRBCVL  -  27 Low vegetation cover
 ! NGRBCVH  -  28 High vegetation cover
-! NGRBFWET -  200026 Wetland Fraction (experimental)
-! NGRBCUR  -  200199 Urban Cover (experimental)
+! NGRBFWET -  229007 Wetland Fraction
+! NGRBCUR  -  229001 Urban Cover
 ! NGRBTVL  -  29 Low vegetation type
 ! NGRBTVH  -  30 High vegetation type
 ! NGRBCI   -  31 Sea ice cover
@@ -59,7 +59,6 @@ IMPLICIT NONE
 ! NGRBSNOM -  3099 Snowmelt
 ! NGRBDSRP -  47 Direct solar radiation
 !                Incident on a plane perpendicular to the Sun's direction
-! NGRB10FG -  49 gust at 10 m level
 ! NGRBLSPF -  50 Large-scale precipitation fraction
 
 ! NGRBMONT  - 53 Montgomery Geopotential
@@ -73,8 +72,6 @@ IMPLICIT NONE
 ! NGRBMUCAPE - 228235 Most Unstable CAPE (using Tv)
 ! NGRBMUDEPL  - 228237 Departure level (Pa) of Most Unstable CAPE
 ! NGRBCAPES-  228044 wind shear*sqrt(cape)
-! NGRBMXCAP6- 228035 maximum CAPE in the last 6 hours
-! NGRBMXCAPS6-228036 maximum CAPES in the last 6 hours
 
 ! NGRBPV   -  60 Potential Vorticity
 ! NGRBLAIL -  66 Leaf Area Index Low vegitation
@@ -123,13 +120,7 @@ IMPLICIT NONE
 ! Codes for 2D and 3D extra fields
 ! NGRBMINXTRA  to NGRBMAXXTRA
 
-! NGRBMX2T3 - 228026 Maximum temperature at 2 m since last 3 hours
-! NGRBMN2T3 - 228027 Minimum temperature at 2 m since last 3 hours
-! NGRB10FG3 - 228028 Wind gust at 10 metres since last 3 hours
 ! NGRBI10FG - 228029 Wind gust at 10 metres ("instantaneous")
-! NGRBMX2T6 - 121 Maximum temperature at 2 m since last 6 hours
-! NGRBMN2T6 - 122 Minimum temperature at 2 m since last 6 hours
-! NGRB10FG6 - 123 Wind gust at 10 metres since last 6 hours
 ! NGRBEMIS  - 124 Surface Longwave emissivity # has replaced NGRB212
 
 ! NGRBETADOT - 77 Etadotdpdeta
@@ -143,7 +134,7 @@ IMPLICIT NONE
 ! NGRBWDIR - 3031 Wind direction
 ! NGRBUCUR - 262140 Eastward surface sea water velocity
 ! NGRBVCUR - 262139 Northward surface sea water velocity
-! NGRBSSS  - 151130 sea surface salinity, (ocean table 151)
+! NGRBSSS  - 262500 sea surface salinity, g kg-1
 
 ! NGRBQ    - 133 Specific humidity
 ! NGRBSP   - 134 Surface pressure
@@ -152,7 +143,6 @@ IMPLICIT NONE
 ! NGRBTCWV - 137 Total column water vapour
 ! NGRBVO   - 138 Vorticity (relative)
 ! NGRBSTL1 - 139 Surface temperature level 1
-! NGRBSDSL - 141 Snow depth (total)
 ! NGRBSD   - 228141 Snow depth (multi-layer)
 ! NGRBWSN  - 228038 Snow liquid water (multi-layer)
 ! NGRBLSP  - 3062   Large-scale precipitation
@@ -205,6 +195,7 @@ IMPLICIT NONE
 ! NGRB2R   - 260242 2 metre relative humidity
 ! NGRB2SH  - 174096 2 metre specific humidity
 ! NGRB2RHW - 228037 2 metre relative humidity wrt water
+! NGRBROL  - 260688 Reciprocal Obukhow Length
 ! NGRBSSRD - 169 Surface solar radiation downwards
 ! NGRBSTL2 - 170 Soil temperature level 2
 ! NGRBLSM  - 172 Land/sea mask
@@ -240,13 +231,12 @@ IMPLICIT NONE
 ! NGRBSRCON - 160198 Skin reservoir content
 ! NGRBVEG  - 199 Percentage of vegetation
 ! NGRBVSO  - 200 variance of sub-grid scale orogrophy
-! NGRBMX2T - 201 Maximum temperature at 2m since last post-processing
-! NGRBMN2T - 202 Minimum temperature at 2m since last post-processing
 ! NGRBO3   - 203 Ozone mixing ratio (EC prognostic ozone)
 ! NGRBPAW  - 204 Precipitation analysis weights
 ! NGRBROWE - 231002 Runoff water equivalent (surface plus subsurface)
 ! NGRBTCIOZ - 260132 Total column ozone
 ! NGRB10SI - 207 10m wind speed
+! NGRB10WDIR - 260260 10m wind direction
 ! NGRBTSRC - 208 Top solar radiation clear sky
 ! NGRBTTRC - 209 Top thermal radiation clear sky
 ! NGRBSSRC - 210 Surface solar radiation clear sky
@@ -287,28 +277,16 @@ IMPLICIT NONE
 ! NGRBLSRR   - 228219 Large scale rain rate
 ! NGRBCSFR   - 228220 Convective snowfall rate water equivalent
 ! NGRBLSSFR  - 228221 Large scale snowfall rate water equivalent
-! NGRBMXTPR3 - 228222 Max precip rate in last 3 hours
-! NGRBMNTPR3 - 228223 Min precip rate in last 3 hours
-! NGRBMXTPR6 - 228224 Max precip rate in last 6 hours
-! NGRBMNTPR6 - 228225 Min precip rate in last 6 hours
-! NGRBMXTPR  - 228226 Max precip rate since last post-processing
-! NGRBMNTPR  - 228227 Min precip rate since last post-processing
 ! NGRBPTYPE  - 260015 Precipitation type
 
 ! NGRBACF  - 241 Not used
 ! NGRBALW  - 242 Not used
-! NGRBAL  - 260509 Forecast albedo
+! NGRBFAL  - 260509 Forecast albedo
 ! NGRBFSR  - 244 Forecast surface roughness
 ! NGRBFLSR - 245 Forecast logarithm of surface roughness for heat
 ! NGRBCLWC - 246 Cloud liquid water content
 ! NGRBCIWC - 247 Cloud ice water content
 ! NGRBCC   - 248 Cloud cover
-! NGRB100U - 228246 100m u wind
-! NGRB100V - 228247 100m v wind
-! NGRB100SI - 228249 100m wind speed
-! NGRB200U - 228239 200m u wind
-! NGRB200V - 228240 200m v wind
-! NGRB200SI - 228241 200m wind speed
 ! NGRBDNDZN - 228015 Minimum refractivity gradient inside trapping layer
 ! NGRBDNDZA - 228016 Mean refractivity gradient inside trapping layer
 ! NGRBDCTB  - 228017 Duct base height
@@ -515,30 +493,20 @@ IMPLICIT NONE
 !
 ! Lightning fields
 ! NGRBLITOTI  - 228050 Instantaneous total lightning flash density
-! NGRBLITOTA1 - 228051 1h averaged total lightning flash density
-! NGRBLITOTA3 - 228057 3h averaged total lightning flash density
-! NGRBLITOTA6 - 228058 6h averaged total lightning flash density
 ! NGRBLICGI   - 228052 Instantaneous cloud-to-ground lightning flash density
-! NGRBLICGA1  - 228053 1h averaged cloud-to-ground lightning flash density
-! NGRBLICGA3  - 228059 3h averaged cloud-to-ground lightning flash density
-! NGRBLICGA6  - 228060 6h averaged cloud-to-ground lightning flash density
 
 ! Precipitation type most frequent (mode) and most severe
-! NGRBPTYPESEVR1 - 260318 Precipitation type (most severe) in the last 1 hour
-! NGRBPTYPESEVR3 - 260319 Precipitation type (most severe) in the last 3 hours
-! NGRBPTYPESEVR6 - 260338 Precipitation type (most severe) in the last 6 hours
-! NGRBPTYPEMODE1 - 260320 Precipitation type (most frequent) in the last 1 hour
-! NGRBPTYPEMODE3 - 260321 Precipitation type (most frequent) in the last 3 hours
-! NGRBPTYPEMODE6 - 260339 Precipitation type (most frequent) in the last 6 hours
+! NGRBSEV_PTYPE  - 260682 Time-severity precipitation type (most severe)
+! NGRBFREQ_PTYPE - 260683 Time-mode precipitation type (most frequent)
 
 ! Ocean fields
-! NGRBICETK  - 174098 Ice thickness
-! NGRBMLD    - 151148 Mixed layer depth
-! NGRBSL     - 151145 Sea lavel
-! NGRB20D    - 151163 20 degree isotherm depth
-! NGRBSSS0   - 151130 Sea surface salinity
-! NGRBTEM300 - 151164 Mean temparature over 300m
-! NGRBSAL300 - 151175 Mean salinity content over 300m
+! NGRBSITHICK- 262000 Ice thickness
+! NGRBMLD    - 262113 Mixed layer depth
+! NGRBSL     - 262124 Sea level
+! NGRB20D    - 262104 20 degree isotherm depth
+! NGRBSSSO   - 262500 Sea surface salinity g kg-1
+! NGRBTEM300 - 262144 Mean temparature over 300m
+! NGRBSAL300 - 262118 Mean salinity content over 300m
 
 !---------------------------------------------------
 ! NGRBGHG(JPGHG)   - 210061 GHG1: Carbon dioxide
@@ -548,7 +516,20 @@ IMPLICIT NONE
 !                  - 210065 Total column GHG2: Methane
 !                  - 210066 Total column GHG3: Nitrous Oxide
 
-!---------------------------------------------------
+! Time-mean parameters
+! NGRBAVG_LITOTI   - 235326 Time-mean total lightning flash density
+! NGRBAVG_LICGI    - 235383 Time-mean cloud-to-ground lightning flash density
+
+! Time-maximum  parameters
+! NGRBMAX_TPRATE   - 237055 Time-minimum total precipitation rate
+! NGRBMAX_I10FG    - 237318 Time-maximum 10 metre wind gust
+! NGRBMAX_2T       - 237167 Time-maximum 2 metre temperature
+! NGRBMAX_MUCAPE   - 237117 Time-maximum most-unstable CAPE
+! NGRBMAX_CAPES    - 237321 Time-maxumum convective available potential energy shear
+
+! Time-minimum  parameters
+! NGRBMIN_TPRATE   - 238055 Time-minimum total precipitation rate
+! NGRBMIN_2T       - 238167 Time-minimum 2 metre temperature
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTRF  =  1
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVP    =  2
@@ -576,8 +557,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCL    = 26
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCVL   = 27
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCO2TYP= 129172
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCVH   = 28
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBFWET  = 200026
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCUR   = 200199
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBFWET  = 229007
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCUR   = 229001
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTVL   = 29
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTVH   = 30
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCI    = 31
@@ -598,7 +579,6 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSIT   = 262024
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSLT   = 43
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBESWE  = 231003
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSNOM  = 3099
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10FG  = 49
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSPF  = 50
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMONT  = 53
@@ -612,8 +592,6 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMLCAPE50 = 228231
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMLCAPE100= 228233
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMUDEPL = 228237
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCAPES = 228044
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMXCAP6= 228035
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMXCAPS6=228036
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPV    = 60
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLAIL  = 66
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLAIH  = 67
@@ -693,13 +671,7 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRB118  = 118
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB119  = 119
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB120  = 120
 
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMX2T3 = 228026
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMN2T3 = 228027
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10FG3 = 228028
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBI10FG = 228029
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMX2T6 = 121
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMN2T6 = 122
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10FG6 = 123
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBEMIS  = 124
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAT   = 127
@@ -720,8 +692,7 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTCWV = 137
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVO   = 138
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTL1 = 139
 
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSDSL = 141  ! back-comp single-layer
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSD   = 228141 ! grib2 multi-layer
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSD   = 228141
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBWSN  = 228038
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSP  = 3062
@@ -770,17 +741,12 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBZTWETB1 = 228048
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVISIH= 3020
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10NU = 228131
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10NV = 228132
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB100U = 228246
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB100V = 228247
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB100SI= 228249
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB200U = 228239
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB200V = 228240
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB200SI= 228241
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2T   = 167
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2D   = 168
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2R   = 260242
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2SH  = 174096
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2RHW = 228037
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBROL  = 260688
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSRD = 169
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTL2 = 170
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSM  = 172
@@ -816,13 +782,12 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBGWD  = 197
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSRCON = 160198
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVEG  = 199
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVSO  = 200
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMX2T = 201
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMN2T = 202
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBO3   = 203
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPAW  = 204
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBROWE = 231002
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTCIOZ = 260132
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10SI = 207
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRB10WDIR = 260260
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTSRC = 208
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTTRC = 209
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSRC = 210
@@ -860,12 +825,6 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCRR    = 228218
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSRR   = 228219
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCSFR   = 228220
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSSFR  = 228221
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMXTPR3 = 228222
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMNTPR3 = 228223
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMXTPR6 = 228224
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMNTPR6 = 228225
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMXTPR  = 228226
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMNTPR  = 228227
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPE  = 260015
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBACF  = 241
@@ -1109,20 +1068,10 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBNOXLOG = 210121    ! use NO2 for C-IFS
 !INTEGER(KIND=JPIB_K), PARAMETER :: NGRBNOXLOG = 210129    ! use NOX for coupled system
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLITOTI  = 228050
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLITOTA1 = 228051
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLITOTA3 = 228057
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLITOTA6 = 228058
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICGI   = 228052
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICGA1  = 228053
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICGA3  = 228059
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICGA6  = 228060
 
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPESEVR1 = 260318
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPESEVR3 = 260319
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPESEVR6 = 260338
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPEMODE1 = 260320
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPEMODE3 = 260321
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBPTYPEMODE6 = 260339
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSEV_PTYPE  = 260682
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBFREQ_PTYPE = 260683
 
 !--Further aerosol diagnostics -- Table 215 --------
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBACCAOD550 = 215089
@@ -1134,26 +1083,50 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAAOT532 = 215095
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT355  = 215180
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT532  = 215181
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT1064 = 215182
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT910  = 216019
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT340  = 216025
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT440  = 216026
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEREXT800  = 216027
+
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATTOA355  = 215183
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATTOA532  = 215184
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATTOA1064 = 215185
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATTOA910  = 216021
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATGND355  = 215186
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATGND532  = 215187
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATGND1064 = 215188
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAERBACKSCATGND910  = 216022
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAEODSOA =215226
 
+!-- Time-mean parameters
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAVG_LITOTI = 235326
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBAVG_LICGI  = 235383
+
+!-- Time-maximum parameters
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAX_TPRATE = 237055
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAX_I10FG  = 237318
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAX_2T     = 237167
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAX_MUCAPE = 237117
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAX_CAPES  = 237321
+
+!-- Time-minimum parameters
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMIN_TPRATE = 238055
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMIN_2T     = 238167
+
+
 !-- Ocean model output on IFS grid ---
 
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBICETK = 174098
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMLD   = 151148
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSL    = 151145
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRB20D   = 151163
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSSO  = 151130
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTEM300= 151164
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSAL300= 151175
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSITHICK = 262000 ! Used both for ocean model output on IFS grid (levtype=sfc),
+                                                    ! and thickness of ice layers in IFS thermodynamic sea-ice module (levtype=sol)
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMLD   = 262113
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSL    = 262124
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRB20D   = 262104
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSSO  = 262500
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTEM300= 262144
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSAL300= 262118
 
 !-- Ocean coupled parameters ---
 
@@ -1165,6 +1138,5 @@ INTEGER(KIND=JPIB_K), PARAMETER, DIMENSION(3) :: NGRBGHG = (/&
 INTEGER(KIND=JPIB_K),  PARAMETER,DIMENSION(3) :: NGRBTCGHG = (/&
  & 210064, 210065, 210066/)
 !     ------------------------------------------------------------------
-
 
 END MODULE GRIB_CODES_MOD

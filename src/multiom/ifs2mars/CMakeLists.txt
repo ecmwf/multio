@@ -9,7 +9,6 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 set( MULTIOM_IFS2MARS_MAIN_SOURCES
   ${MULTIOM_IFS2MARS_DIR}/ifs2mars_mod.F90
-#  ${MULTIOM_IFS2MARS_DIR}/wam2mars_mod.F90
 )
 
 # Collect source files in module2

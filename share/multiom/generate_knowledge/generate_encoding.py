@@ -237,7 +237,7 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288])],
+        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288, 235383])],
         [
             levelConfig("entireAtmosphere"),
             paramConfig("paramId"),

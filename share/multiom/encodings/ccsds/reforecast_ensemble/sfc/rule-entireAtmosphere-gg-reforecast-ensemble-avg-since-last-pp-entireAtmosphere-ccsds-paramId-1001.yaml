@@ -29,6 +29,7 @@ filter:
         - 235136
         - 235137
         - 235288
+        - 235383
     - type: packing
       operation: match
       value: ccsds

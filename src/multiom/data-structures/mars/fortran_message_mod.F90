@@ -1262,7 +1262,7 @@ IMPLICIT NONE
   LO=1_JPIB_K
   HI=8_JPIB_K
   OUT_JSON = REPEAT( ' ', TOTLEN )
-  OUT_JSON(1:8) = 'message:'
+  OUT_JSON(1:8) = '"mars":'
   SEP='{ '
   DO I = 1, CNT
     LO=HI+1

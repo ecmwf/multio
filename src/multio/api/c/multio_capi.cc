@@ -551,6 +551,23 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
+int multio_synchronize(multio_handle_t* mio, multio_metadata_t* md) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, md]() {
+            ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
+
+            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Synchronization);
+            mio->synchronize();
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(

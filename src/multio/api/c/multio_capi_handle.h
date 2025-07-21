@@ -36,6 +36,18 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md);
  */
 int multio_notify(multio_handle_t* mio, multio_metadata_t* md);
 
+/** Synchronization with all other clients and servers.
+ * \note This method must be called from all clients separately
+ * \note This method is blocking until all clients and servers are
+ *       synchronized
+ * \warning This is an experimental feature and may significantly
+ *          harm performance!
+ * \param mio Handle to the multio (client) instance
+ * \param md Metadata information about the domain
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_synchronize(multio_handle_t* mio, multio_metadata_t* md);
+
 
 /** Writes static metadata information to clients and all servers
  * \param mio Handle to the multio (client) instance

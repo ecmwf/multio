@@ -64,6 +64,8 @@ public:
     void openConnections();
     void closeConnections();
 
+    void synchronize();
+
     void dispatch(message::SharedMetadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
     void dispatch(message::SharedMetadata metadata, const message::PayloadReference& payload,
                   message::Message::Tag tag);

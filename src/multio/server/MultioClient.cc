@@ -173,6 +173,11 @@ void MultioClient::closeConnections() {
                         []() { return std::string("MultioClient::closeConnections"); });
 }
 
+void MultioClient::synchronize() {
+    withFailureHandling([]() { transport::TransportRegistry::instance().synchronize(); },
+                        []() { return std::string("MultioClient::synchronize"); });
+}
+
 void MultioClient::dispatch(message::SharedMetadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
     ASSERT(tag < Message::Tag::ENDTAG);
     dispatch(Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)});

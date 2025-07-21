@@ -250,6 +250,10 @@ void MpiTransport::bufferedSend(const Message& msg) {
 }
 
 void MpiTransport::synchronize() {
+    for (auto& server : serverPeers()) {  // What if we are on the server?!
+        pool_.sendBuffer(*server, 0);
+    }
+    pool_.waitAll();
     comm().barrier();
 }
 

@@ -39,7 +39,8 @@ std::string Message::tag2str(Tag t) {
                                            {Tag::Field, "Field"},
                                            {Tag::Flush, "Flush"},
                                            {Tag::Notification, "Notification"},
-                                           {Tag::Parametrization, "Parametrization"}};
+                                           {Tag::Parametrization, "Parametrization"},
+                                           {Tag::Synchronization, "Synchronization"}};
 
     ASSERT(t < Tag::ENDTAG);
 

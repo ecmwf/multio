@@ -249,6 +249,10 @@ void MpiTransport::bufferedSend(const Message& msg) {
     encodeMessage(pool_.getStream(msg), msg);
 }
 
+void MpiTransport::synchronize() {
+    comm().barrier();
+}
+
 void MpiTransport::createPeers() const {
     auto parentSize = comm().size();
     std::vector<int> parentRanks(parentSize);

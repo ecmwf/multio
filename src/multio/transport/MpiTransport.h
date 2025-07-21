@@ -58,6 +58,8 @@ private:
 
     void bufferedSend(const Message& msg) override;
 
+    void synchronize() override;
+
     void createPeers() const override;
 
     void print(std::ostream& os) const override;

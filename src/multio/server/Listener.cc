@@ -103,7 +103,7 @@ using util::ScopedThread;
 
 Listener::Listener(const config::ComponentConfiguration& compConf, Transport& trans) :
     FailureAware(compConf),
-    dispatcher_{std::make_unique<Dispatcher>(compConf, msgQueue_)},
+    dispatcher_{std::make_unique<Dispatcher>(compConf, msgQueue_, trans)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024 * 1024)) {}
@@ -148,6 +148,21 @@ void Listener::start() {
                         << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
                         << std::endl;
                     break;
+
+                case Message::Tag::Synchronization: {
+                    auto flushMetadata = message::Metadata{{
+                        {"domain", "synchronization"},
+                        {"flushKind", "default"}
+                    }};
+                    auto flushMessage = Message{{Message::Tag::Flush, msg.source(), msg.destination(), std::move(flushMetadata)}, eckit::Buffer{0}};
+                    msgQueue_.emplace(std::move(flushMessage));
+
+                    if (++syncFlushCount_ == clientCount_) {
+                        msgQueue_.emplace(std::move(msg));
+                        syncFlushCount_ = 0;
+                    }
+                    break;
+                }
 
                 case Message::Tag::Domain:
                 case Message::Tag::Parametrization:

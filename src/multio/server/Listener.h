@@ -81,6 +81,7 @@ private:
     size_t openedCount_ = 0;
     size_t clientCount_ = 0;
 
+    size_t syncFlushCount_ = 0;
 
     std::set<message::Peer> connections_;
     mutable eckit::Queue<message::Message>

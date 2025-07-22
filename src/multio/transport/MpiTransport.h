@@ -75,6 +75,9 @@ private:
 
     void encodeMessage(eckit::Stream& strm, const Message& msg);
 
+    size_t getMpiPoolSize(const ComponentConfiguration& compConf);
+    size_t getMpiBufferSize(const ComponentConfiguration& compConf);
+
     MpiPeer local_;
     eckit::mpi::Group parentGroup_;
     eckit::mpi::Group clientGroup_;

@@ -54,7 +54,6 @@ Message decodeMessage(eckit::Stream& stream) {
 }
 
 const size_t defaultBufferSize = 64 * 1024 * 1024;
-const size_t defaultPoolSize = 128;
 
 MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
     const std::string& groupName = compConf.parsedConfig().getString("group", "multio");
@@ -136,82 +135,6 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
     return MpiPeerSetup(MpiPeer{groupName, groupComm.rank()}, parentGroup, clientGroup, serverGroup);
 }
 
-size_t getMpiPoolSize(const ComponentConfiguration& compConf) {
-
-    switch (compConf.multioConfig().localPeerTag()) {
-        case config::LocalPeerTag::Server: {
-            auto pServ = util::getEnv("MULTIO_SERVER_MPI_POOL_SIZE");
-            if (pServ) {
-                return eckit::translate<size_t>(std::string{*pServ});
-            };
-            auto pMul = util::getEnv("MULTIO_MPI_POOL_SIZE");
-            if (pMul) {
-                return eckit::translate<size_t>(std::string{*pMul});
-            };
-            return defaultPoolSize;
-        }
-
-        case config::LocalPeerTag::Client: {
-            auto pClient = util::getEnv("MULTIO_CLIENT_MPI_POOL_SIZE");
-            if (pClient) {
-                return eckit::translate<size_t>(std::string{*pClient});
-            };
-            auto pMul = util::getEnv("MULTIO_MPI_POOL_SIZE");
-            if (pMul) {
-                return eckit::translate<size_t>(std::string{*pMul});
-            };
-            return defaultPoolSize;
-        }
-
-        default:
-            std::ostringstream oss;
-            oss << "getMpiPoolSize: localPeerTag is neither Server ("
-                << static_cast<unsigned>(config::LocalPeerTag::Server) << ") nor Client ("
-                << static_cast<unsigned>(config::LocalPeerTag::Client)
-                << "). Value: " << static_cast<unsigned>(compConf.multioConfig().localPeerTag()) << std::endl;
-            throw TransportException("", Here());
-    }
-}
-
-size_t getMpiBufferSize(const ComponentConfiguration& compConf) {
-
-    switch (compConf.multioConfig().localPeerTag()) {
-
-        case config::LocalPeerTag::Server: {
-            auto pServ = util::getEnv("MULTIO_SERVER_MPI_BUFFER_SIZE");
-            if (pServ) {
-                return eckit::translate<size_t>(std::string{*pServ});
-            };
-            auto pMul = util::getEnv("MULTIO_MPI_BUFFER_SIZE");
-            if (pMul) {
-                return eckit::translate<size_t>(std::string{*pMul});
-            };
-            return defaultBufferSize;
-        }
-
-        case config::LocalPeerTag::Client: {
-            auto pClient = util::getEnv("MULTIO_CLIENT_MPI_BUFFER_SIZE");
-            if (pClient) {
-                return eckit::translate<size_t>(std::string{*pClient});
-            };
-            auto pMul = util::getEnv("MULTIO_MPI_BUFFER_SIZE");
-            if (pMul) {
-                return eckit::translate<size_t>(std::string{*pMul});
-            };
-            return defaultBufferSize;
-        }
-
-        default:
-            std::ostringstream oss;
-            oss << "getMpiBufferSize: localPeerTag is neither Server ("
-                << static_cast<unsigned>(config::LocalPeerTag::Server) << ") nor Client ("
-                << static_cast<unsigned>(config::LocalPeerTag::Client)
-                << "). Value: " << static_cast<unsigned>(compConf.multioConfig().localPeerTag()) << std::endl;
-            throw TransportException("", Here());
-    }
-}
-
-
 }  // namespace
 
 
@@ -222,7 +145,19 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
     pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_},
-    streamQueue_{1024} {}
+    streamQueue_{1024} {
+    const auto& otherGroup
+        = compConf.multioConfig().localPeerTag() == config::LocalPeerTag::Server ? clientGroup_ : serverGroup_;
+    if (getMpiPoolSize(compConf) < otherGroup.size()) {
+        throw eckit::UserError(
+            "Pool size of the client and server must be at least equal to the size of the other MPI communicator. "
+            "Consider unsetting or increasing the values of the following environment variables:\n"
+            "    MULTIO_CLIENT_MPI_POOL_SIZE\n"
+            "    MULTIO_SERVER_MPI_POOL_SIZE\n"
+            "    MULTIO_MPI_POOL_SIZE",
+            Here());
+    }
+}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
 
@@ -406,6 +341,78 @@ void MpiTransport::encodeMessage(eckit::Stream& strm, const Message& msg) {
     util::ScopedTiming timing{statistics_.encodeTiming_};
 
     msg.encode(strm);
+}
+
+size_t MpiTransport::getMpiPoolSize(const ComponentConfiguration& compConf) {
+    switch (compConf.multioConfig().localPeerTag()) {
+        case config::LocalPeerTag::Server: {
+            auto pServ = util::getEnv("MULTIO_SERVER_MPI_POOL_SIZE");
+            if (pServ) {
+                return eckit::translate<size_t>(std::string{*pServ});
+            };
+            auto pMul = util::getEnv("MULTIO_MPI_POOL_SIZE");
+            if (pMul) {
+                return eckit::translate<size_t>(std::string{*pMul});
+            };
+            return clientGroup_.size();
+        }
+
+        case config::LocalPeerTag::Client: {
+            auto pClient = util::getEnv("MULTIO_CLIENT_MPI_POOL_SIZE");
+            if (pClient) {
+                return eckit::translate<size_t>(std::string{*pClient});
+            };
+            auto pMul = util::getEnv("MULTIO_MPI_POOL_SIZE");
+            if (pMul) {
+                return eckit::translate<size_t>(std::string{*pMul});
+            };
+            return 2 * serverGroup_.size();
+        }
+
+        default:
+            std::ostringstream oss;
+            oss << "getMpiPoolSize: localPeerTag is neither Server ("
+                << static_cast<unsigned>(config::LocalPeerTag::Server) << ") nor Client ("
+                << static_cast<unsigned>(config::LocalPeerTag::Client)
+                << "). Value: " << static_cast<unsigned>(compConf.multioConfig().localPeerTag()) << std::endl;
+            throw TransportException("", Here());
+    }
+}
+
+size_t MpiTransport::getMpiBufferSize(const ComponentConfiguration& compConf) {
+    switch (compConf.multioConfig().localPeerTag()) {
+        case config::LocalPeerTag::Server: {
+            auto pServ = util::getEnv("MULTIO_SERVER_MPI_BUFFER_SIZE");
+            if (pServ) {
+                return eckit::translate<size_t>(std::string{*pServ});
+            };
+            auto pMul = util::getEnv("MULTIO_MPI_BUFFER_SIZE");
+            if (pMul) {
+                return eckit::translate<size_t>(std::string{*pMul});
+            };
+            return defaultBufferSize;
+        }
+
+        case config::LocalPeerTag::Client: {
+            auto pClient = util::getEnv("MULTIO_CLIENT_MPI_BUFFER_SIZE");
+            if (pClient) {
+                return eckit::translate<size_t>(std::string{*pClient});
+            };
+            auto pMul = util::getEnv("MULTIO_MPI_BUFFER_SIZE");
+            if (pMul) {
+                return eckit::translate<size_t>(std::string{*pMul});
+            };
+            return defaultBufferSize;
+        }
+
+        default:
+            std::ostringstream oss;
+            oss << "getMpiBufferSize: localPeerTag is neither Server ("
+                << static_cast<unsigned>(config::LocalPeerTag::Server) << ") nor Client ("
+                << static_cast<unsigned>(config::LocalPeerTag::Client)
+                << "). Value: " << static_cast<unsigned>(compConf.multioConfig().localPeerTag()) << std::endl;
+            throw TransportException("", Here());
+    }
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");

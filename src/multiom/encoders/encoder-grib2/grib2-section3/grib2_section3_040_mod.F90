@@ -533,7 +533,7 @@ IMPLICIT NONE
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA_NOT_ASSOCIATED )
-#if 0
+
   PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(PAR%GEOMETRY%REPRES), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
 
   ! Enable section 3
@@ -583,7 +583,6 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
 
   END SELECT
-#endif
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -759,66 +758,9 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-#if 0
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(PAR%GEO%GG), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
 
-  ! Initialize the index (In general this index should com from a search procedure that uses the MARS
-  ! keyword "grid" to look for the index of the proper gg grid inside the parametrization)
-  IDX = 1
-
-  ! Search the index of the gg grid inside the parametrization. MSG%GRID is the mars keyword "grid" i.e. grid='O400'
-  ! PP_TRYCALL(ERRFLAG_SEARCH_GRID_DEFINITION_INDEX) PAR%GEO%GG%SEARCH_GRID_DEFINITION_INDEX( IDX, MSG%GRID, HOOKS )
-
-  ! Check that the index is correct
-  PP_DEBUG_CRITICAL_COND_THROW( IDX < 1 .OR. IDX > SIZE(PAR%GEO%GG), ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-  PP_DEBUG_CRITICAL_COND_THROW( IDX < 1 .OR. IDX > SIZE(PAR%GEO%GG), ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-
-  ! Extract the number of points and the number of latitudes
-  NPTS = PAR%GEO%GG(IDX)%NPTS ! Sum of the pl array
-  NLAT = PAR%GEO%GG(IDX)%NLAT
-  NLAT_BETWEEN_POLE_AND_EQUATOR = NLAT/2
-
-  LAT_FIRST_GP_DEG=180.0_JPRD_K/(2.0_JPRD_K*ASIN(1.0_JPRD_K))*PAR%GEO%GG(IDX)%NORTH
-  LAT_LAST_GP_DEG=180.0_JPRD_K/(2.0_JPRD_K*ASIN(1.0_JPRD_K))*PAR%GEO%GG(IDX)%SOUTH
-  LON_FIRST_GP_DEG=0.0_JPRD_K
-  LON_LAST_GP_DEG=360.0_JPRD_K-360.0_JPRD_K/REAL(PAR%GEO%GG(IDX)%NLON,JPRD_K)
-
-  ! Preset Earth geometry
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'shapeOfTheEarth', 6 )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfRadiusOfSphericalEarth' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfRadiusOfSphericalEarth' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfEarthMajorAxis' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfEarthMajorAxis' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfEarthMinorAxis' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfEarthMinorAxis' )
-
-  ! Preset grid size
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'Ni' )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'Nj', NLAT ) ! numberOfPointsAlongAMeridian
-
-  ! Preset grid resolution
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'basicAngleOfTheInitialProductionDomain', 0 )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'subdivisionsOfBasicAngle' )
-
-
-  ! Preset grid spacing
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'latitudeOfFirstGridPointInDegrees', LAT_FIRST_GP_DEG )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'longitudeOfFirstGridPointInDegrees', LON_FIRST_GP_DEG )
-
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'resolutionAndComponentFlags', 0 )
-
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'latitudeOfLastGridPointInDegrees', LAT_LAST_GP_DEG )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'longitudeOfLastGridPointInDegrees', LON_LAST_GP_DEG )
-
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'iDirectionIncrement' )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'N', NLAT_BETWEEN_POLE_AND_EQUATOR ) ! numberOfParallelsBetweenAPoleAndTheEquator
-
-  ! Reset the pl array another time just to be sure (in any case it is done at the beginning of the simulation)
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scanningMode', 0 )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pl', PAR%GEO%GG(IDX)%PL )
-#endif
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

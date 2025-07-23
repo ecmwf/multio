@@ -234,11 +234,11 @@ int main() {
     free(readVal);
     readVal = NULL;
 
-    ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has1);     // TODO find valid timeproc
-    ret = multio_grib2_dict_set(dictionary_01, "timeproc", "4");       // TODO find valid timeproc
-    ret = multio_grib2_dict_has(dictionary_01, "timeproc", &has2);     // TODO find valid timeproc
-    ret = multio_grib2_dict_get(dictionary_01, "timeproc", &readVal);  // TODO find valid timeproc
-    printf("timeproc: %s, %d, %d, %d\n", readVal, has1, has2, ret);
+    ret = multio_grib2_dict_has(dictionary_01, "timespan", &has1);     // TODO find valid timespan
+    ret = multio_grib2_dict_set(dictionary_01, "timespan", "4");       // TODO find valid timespan
+    ret = multio_grib2_dict_has(dictionary_01, "timespan", &has2);     // TODO find valid timespan
+    ret = multio_grib2_dict_get(dictionary_01, "timespan", &readVal);  // TODO find valid timespan
+    printf("timespan: %s, %d, %d, %d\n", readVal, has1, has2, ret);
     assert(strcmp(readVal, "4") == 0);
     free(readVal);
     readVal = NULL;

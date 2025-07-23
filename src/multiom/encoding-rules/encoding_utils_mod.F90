@@ -155,7 +155,7 @@ IMPLICIT NONE
     !> TODO: This can be put into a separate fucntion
     LO=1
     HI=23
-    JSON_RULES(LO:HI) = 'encoding-rules:{"rules"'
+    JSON_RULES(LO:HI) = '"encoding-rules":{"rules"'
     SEP = ':['
     DO I = 1, SIZE(ENCODERS)
       TAG = REPEAT(' ',256)
@@ -171,6 +171,15 @@ IMPLICIT NONE
     JSON_RULES(LO:HI) = ']}'
 
     PP_DEBUG_CRITICAL_COND_THROW( SIZE(ENCODERS) .GT. 1, ERRFLAG_MULTIPLE_ENCODERS_FOR_SAME_FIELD )
+
+  ENDIF
+
+  IF ( ENCODER_OPTIONS%GENERATE_TEST_CASES ) THEN
+    OPEN( UNIT=127, FILE='test-cases.json', STATUS='UNKNOWN', ACTION='WRITE', POSITION='APPEND' )
+    WRITE( 127, '(A)' ) '"test":{ '// &
+&      TRIM(ADJUSTL(JSON_MSG))//', '// &
+&      TRIM(ADJUSTL(JSON_RULES))//'}'
+    CLOSE( UNIT=127 )
   ENDIF
 
   !> Encoder initialization

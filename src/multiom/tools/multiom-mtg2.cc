@@ -549,7 +549,7 @@ void handleParamId(codes_handle* h, MultiOMDict& marsDict) {
     // Taken from eccodes
     // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
     static const std::unordered_map<long, std::tuple<long, Map>> paramIdMap{
-        {55, {228004, {{"timeproc", 24l}}}},
+        {55, {228004, {{"timespan", 24l}}}},
         {56, {235168, {}}},
         {130232, {235135, {}}},
         {151130, {262100, {}}},
@@ -672,7 +672,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
         long stepRange = endStep - startStep;
         if (stepRange > 0) {
             // TODO to be renamed to timespan
-            marsDict.set("timeproc", std::to_string(stepRange));
+            marsDict.set("timespan", std::to_string(stepRange));
         }
     }
     // ... key truncation is not given officially ??

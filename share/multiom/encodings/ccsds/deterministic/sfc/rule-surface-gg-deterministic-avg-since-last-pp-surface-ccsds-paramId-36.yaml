@@ -35,6 +35,7 @@ filter:
         - 235078
         - 235079
         - 235134
+        - 235283
     - type: packing
       operation: match
       value: ccsds

@@ -237,7 +237,7 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288])],
+        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288, 235383])],
         [
             levelConfig("entireAtmosphere"),
             paramConfig("paramId"),
@@ -300,7 +300,7 @@ PARAM_LEVTYPE_SFC = [
         [
             matchType("levtype", "sfc"),
             matchParam([235020, 235021, 235031, "235033:235038", "235041:235043",
-                        235051, 235052, 235055, 235078, 235079, 235134])],
+                        235051, 235052, 235055, 235078, 235079, 235134, 235283])],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -833,6 +833,7 @@ PARAM_LEVTYPE_SFC = [
                     260255,
                     260289,
                     260509,
+                    260688,
                     261001,
                     261002,
                     261014,
@@ -869,6 +870,7 @@ PARAM_LEVTYPE_SFC = [
                     "140098:140105",
                     "140112:140113",
                     "140121:140129",
+                    "140131:140134",
                     "140207:140209",
                     "140211:140212",
                     "140214:140232",

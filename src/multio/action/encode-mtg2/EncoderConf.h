@@ -31,6 +31,11 @@ namespace multio {
 // search mechanism while keeping the fortran encoders.
 // Often the structures of the configs have a subconfiguration where to only available key-value is "type": "default"
 // These have to be refactored to something less but more expressive
+//
+// TODO: After the migration this should become a proper struct with optionals
+//       Encoding/Parsing will not be needed then.
+//       It was a quick way to represent the current encoder configuration and
+//       to set keys on it
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------

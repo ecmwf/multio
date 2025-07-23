@@ -154,19 +154,18 @@ CASE("Test static asserts") {
 CASE("Test reify single description") {
     using namespace multio::datamod;
 
-    auto key1 = toMissingValue(key<TestKeys::Key1>());
+    KeyValue<TestKeys::Key1> key1{};
     EXPECT_THROWS(validate(key1));
-    auto key2 = toMissingValue(key<TestKeys::Key2>());
+    KeyValue<TestKeys::Key2> key2{};
     EXPECT_THROWS(validate(key2));
-    auto key3 = toMissingValue(key<TestKeys::Key3>());
+    KeyValue<TestKeys::Key3> key3{};
     EXPECT_THROWS(validate(key3));
 
     // Optional should not throw
-    auto key4 = toMissingValue(key<TestKeys::Key4>());
+    KeyValue<TestKeys::Key4> key4{};
     EXPECT_NO_THROW(validate(key4));
 
-    //
-    auto key5 = toMissingValue(key<TestKeys::Key5>());
+    KeyValue<TestKeys::Key5> key5{};
     EXPECT_THROWS(validate(key5));
 };
 

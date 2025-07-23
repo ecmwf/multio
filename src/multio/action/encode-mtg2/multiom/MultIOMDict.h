@@ -16,6 +16,7 @@
 
 #include "multio/action/encode-mtg2/Options.h"
 #include "multio/datamod/DataModelling.h"
+#include "multio/util/VariantHelpers.h"
 #include "multiom/api/c/api.h"
 
 // extern "C" {
@@ -92,7 +93,7 @@ struct MultIOMDict {
     void set(const std::string& key, const double* val, std::size_t len);
     void set(const std::string& key, const std::vector<std::int64_t>& val);
     void set(const std::string& key, const std::vector<double>& val);
-    
+
     std::string toJSON() const;
 
     // Set geoemtry on parametrization
@@ -124,11 +125,13 @@ struct datamod::KeyValueWriter<action::MultIOMDict> : BaseKeyValueWriter<action:
     static void set(const KVD& kvd, KV_&& kv, action::MultIOMDict& md) {
         using KV = std::decay_t<KV_>;
         using RW = typename KVD::ReadWrite;
-        std::forward<KV_>(kv).visit(eckit::Overloaded{
-            [&](MissingValue v) {},
-            [&](auto&& v) {
-                md.set(kvd.key(), RW::template write<action::MultIOMDict>(std::forward<decltype(v)>(v)));
-            }});
+        std::forward<KV_>(kv).visit(  //
+            eckit::Overloaded{[&](MissingValue v) {},
+                              [&](auto&& v) {
+                                  RW::template writeAndVisit<action::MultIOMDict>(
+                                      std::forward<decltype(v)>(v),
+                                      [&](auto&& vi) { md.set(kvd.key(), std::forward<decltype(vi)>(vi)); });
+                              }});
     }
 };
 

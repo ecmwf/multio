@@ -23,6 +23,10 @@
 
 namespace multio::action::rules {
 
+// Matchers are defined on a key that serves as accessor and transports type information ... this saves defining a lot
+// functions. 
+// Alternatively they could be defined for a given value type.
+
 // Range of values to match
 template <auto Id_>
 struct Range {
@@ -233,6 +237,12 @@ std::ostream& operator<<(std::ostream& os, const LessEqual<id_>& m) {
     os << "LessEqual<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << m.value << ")";
     return os;
 }
+
+
+//-----------------------------------------------------------------------------
+// Composed matchers ...
+// these should not be templated
+//-----------------------------------------------------------------------------
 
 
 // Compose a set of matchers with a fold AND expression

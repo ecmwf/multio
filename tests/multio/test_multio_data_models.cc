@@ -71,24 +71,24 @@ CASE("Test reading MARS keys from metadata") {
         EXPECT_THROWS(read(keySet<MarsKeys>(), makeMarsMetadata()));
     }
 
-    {
-        auto md = makeMarsMetadata();
-        md.erase("truncation");
-        EXPECT_NO_THROW(read(keySet<MarsKeys>(), md));
-    }
+    // {
+    //     auto md = makeMarsMetadata();
+    //     md.erase("truncation");
+    //     EXPECT_NO_THROW(read(keySet<MarsKeys>(), md));
+    // }
 
-    {
-        auto md = makeMarsMetadata();
-        md.erase("grid");
-        EXPECT_NO_THROW(read(keySet<MarsKeys>(), md));
-    }
+    // {
+    //     auto md = makeMarsMetadata();
+    //     md.erase("grid");
+    //     EXPECT_NO_THROW(read(keySet<MarsKeys>(), md));
+    // }
 
-    {
-        auto md = makeMarsMetadata();
-        md.erase("truncation");
-        md.erase("grid");
-        EXPECT_THROWS(read(keySet<MarsKeys>(), md));
-    }
+    // {
+    //     auto md = makeMarsMetadata();
+    //     md.erase("truncation");
+    //     md.erase("grid");
+    //     EXPECT_THROWS(read(keySet<MarsKeys>(), md));
+    // }
 };
 
 

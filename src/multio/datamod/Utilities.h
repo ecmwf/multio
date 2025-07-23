@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <tuple>
 #include <type_traits>
 #include <variant>
 #include "multio/datamod/ReaderWriter.h"
@@ -23,9 +24,8 @@
 #include "multio/datamod/core/KeyValueReader.h"
 #include "multio/datamod/core/KeyValueWriter.h"
 
-#include "multio/datamod/core/Hash.h"
-#include "multio/datamod/core/TypeToString.h"
-
+#include "multio/util/Hash.h"
+#include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 
 // TLDR:
@@ -483,3 +483,37 @@ std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValue<id_>&
 
 }  // namespace multio::datamod
 
+
+//-----------------------------------------------------------------------------
+// Hashing of KeyValueSets
+//-----------------------------------------------------------------------------
+
+template <>
+struct std::hash<multio::datamod::MissingValue> {
+    std::size_t operator()(const multio::datamod::MissingValue&) const noexcept { return 0; }
+};
+
+template <auto id>
+struct std::hash<multio::datamod::KeyValue<id>> {
+    std::size_t operator()(const multio::datamod::KeyValue<id>& kv) const
+        noexcept(noexcept(multio::util::hash(std::declval<typename multio::datamod::KeyValue<id>::ValueType>()))) {
+        return kv.visit([&](const auto& v) -> std::size_t { return multio::util::hash(v); });
+    }
+};
+
+template <auto id, typename... KVS>
+struct std::hash<std::tuple<multio::datamod::KeyValue<id>, KVS...>> {
+    std::size_t operator()(const std::tuple<multio::datamod::KeyValue<id>, KVS...>& t) const
+        noexcept(noexcept(multio::util::hashCombine(std::declval<multio::datamod::KeyValue<id>>(),
+                                                    std::declval<KVS>()...))) {
+        return std::apply([](const auto&... args) { return multio::util::hashCombine(args...); }, t);
+    }
+};
+
+template <typename KeySet>
+struct std::hash<multio::datamod::KeyValueSet<KeySet>> {
+    std::size_t operator()(const multio::datamod::KeyValueSet<KeySet>& kvs) const
+        noexcept(noexcept(multio::util::hash(std::declval<multio::datamod::KeyValueSet<KeySet>>().values))) {
+        return multio::util::hash(kvs.values);
+    }
+};

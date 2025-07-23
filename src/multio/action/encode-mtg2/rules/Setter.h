@@ -15,29 +15,38 @@
 #include "multio/datamod/DataModelling.h"
 
 #include <iostream>
+#include <memory>
 
+// TODO: This is using the datamod enum key mechanism to set things.
+//       The overall number of keys is not to much. After C++ migration (when we do not need to write to a local
+//       configuration), The setters will set keys of a struct
 
 namespace multio::action::rules {
 
-// First id_ is the key to be set. idx is the path to it
-struct NoOp {
-    void operator()(EncoderSections& conf) const {}
+struct DynSetter {
+    // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
+    // If nothing matches only false is returned
+    virtual void set(EncoderSections&) const = 0;
+    virtual void print(std::ostream&) const = 0;
+
+    virtual ~DynSetter() = default;
 };
 
 
-template <typename NoOp_, std::enable_if_t<std::is_same_v<NoOp_, NoOp>, bool> = true>
-std::ostream& operator<<(std::ostream& os, NoOp_) {
-    os << "NoOp{}";
-    return os;
-}
+// First id_ is the key to be set. idx is the path to it
+struct NoOp : DynSetter {
+    void set(EncoderSections& conf) const override {}
+    void print(std::ostream& os) const override { os << "NoOp"; };
+};
 
 
 // First id_ is the key to be set. idx is the path to it
 template <auto id_, auto... idx>
-struct SetKey {
+struct SetKey : DynSetter {
     datamod::KeyValue<id_> value;
 
-    void operator()(EncoderSections& conf) const { datamod::alteredKeyPath<idx..., id_>(conf) = value; }
+    void set(EncoderSections& conf) const override { datamod::alteredKeyPath<idx..., id_>(conf) = value; }
+    void print(std::ostream& os) const override { os << "SetKey(" << value << ")"; }
 };
 
 // Constructor for SetKey - if no argument is passed it means that we set the value (even when it is marked as optional)
@@ -45,37 +54,41 @@ struct SetKey {
 template <auto id_, auto... idx>
 SetKey<id_, idx...> setKey(datamod::KeyValue<id_> val = datamod::KeyValue<id_>{datamod::KeyDefValueType_t<id_>{}}) {
     alter(val);
-    return SetKey<id_, idx...>{std::move(val)};
-}
-
-template <auto id_, auto... idx>
-std::ostream& operator<<(std::ostream& os, const SetKey<id_, idx...>& sk) {
-    os << "SetKey(" << sk.value << ")";
-    return os;
+    SetKey<id_, idx...> ret;
+    ret.value = std::move(val);
+    return ret;
 }
 
 
-template <typename... Setters>
-struct SetAll {
-    std::tuple<Setters...> setters;
+struct SetAll : DynSetter {
+    std::vector<std::unique_ptr<DynSetter>> setters;
 
-    void operator()(EncoderSections& conf) const {
-        std::apply([&](const auto&... setter) { (setter(conf), ...); }, setters);
+    void set(EncoderSections& conf) const override {
+        for (const auto& dynSetter : setters) {
+            dynSetter.get()->set(conf);
+        }
+    }
+    void print(std::ostream& os) const override {
+        os << "setAll(";
+        bool first = true;
+        for (const auto& dynSetter : setters) {
+            if (first) {
+                first = false;
+            }
+            else {
+                os << ", ";
+            }
+            dynSetter.get()->print(os);
+        }
+        os << ")";
     }
 };
 
 template <typename... Setters>
 auto setAll(Setters&&... setters) {
-    return SetAll<std::decay_t<Setters>...>{std::make_tuple(std::forward<Setters>(setters)...)};
-}
-
-
-template <typename... Setters>
-std::ostream& operator<<(std::ostream& os, const SetAll<Setters...>& sk) {
-    os << "setAll(";
-    std::apply([&](const auto&... setters) { ((os << setters << ", "), ...); }, sk.setters);
-    os << ")";
-    return os;
+    SetAll res;
+    (res.setters.emplace_back(std::make_unique<std::decay_t<Setters>>(std::forward<Setters>(setters))), ...);
+    return res;
 }
 
 

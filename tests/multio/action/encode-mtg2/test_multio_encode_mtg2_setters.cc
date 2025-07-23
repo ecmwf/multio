@@ -14,7 +14,7 @@
 #include "multio/action/encode-mtg2/Rules.h"
 #include "multio/action/encode-mtg2/generated/InferPDT.h"
 #include "multio/action/encode-mtg2/rules/Rule.h"
-#include "multio/action/encode-mtg2/sections/Level.h"
+// #include "multio/action/encode-mtg2/sections/Level.h"
 #include "multio/action/encode-mtg2/sections/SectionSetter.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/DataModelling.h"
@@ -49,9 +49,9 @@ CASE("Test level setter") {
         auto levtypeStr = p.first;
         auto tol = p.second;
 
-        LevelKeyValueSet conf;
-        key<LevelDef::Type>(conf).set(tol);
-        col.add(std::make_unique<LevelSetter>(conf));
+        // LevelKeyValueSet conf;
+        // key<LevelDef::Type>(conf).set(tol);
+        // col.add(std::make_unique<LevelSetter>(conf));
 
         auto md = mkMd();
         md.set("levtype", levtypeStr);

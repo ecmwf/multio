@@ -29,7 +29,7 @@ struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
     virtual bool apply(const datamod::KeyValueSet<MatchKeySet_>& keys, EncoderSections&) const = 0;
-    virtual std::ostream& print(std::ostream&) const = 0;
+    virtual void print(std::ostream&) const = 0;
     
     virtual ~DynRule() = default;
 };
@@ -49,9 +49,8 @@ struct DerivedRule : DynRule<MatchKeySet_> {
         return static_cast<const Derived&>(*this)(keys, conf);
     }
 
-    std::ostream& print(std::ostream& os) const override {
+    void print(std::ostream& os) const override {
         os << static_cast<const Derived&>(*this);
-        return os;
     }
 };
 
@@ -69,7 +68,7 @@ struct Rule : DerivedRule<typename Matcher::KeySet, Rule<Matcher, Setter>> {
     // Match and set
     bool operator()(const datamod::KeyValueSet<MatchKeySet>& kvs, EncoderSections& conf) const {
         if (matcher(kvs)) {
-            setter(conf);
+            setter.set(conf);
             return true;
         }
         return false;
@@ -104,7 +103,9 @@ auto rule(Matcher_&& matcher, Setters_&&... setters) {
 
 template <typename Matcher, typename Setter>
 std::ostream& operator<<(std::ostream& os, const Rule<Matcher, Setter>& r) {
-    os << "rule(" << r.matcher << ", " << r.setter << ")";
+    os << "rule(" << r.matcher << ", ";
+    r.setter.print(os);
+    os << ")";
     return os;
 }
 

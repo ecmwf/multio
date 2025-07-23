@@ -12,8 +12,8 @@
 
 #include "multio/datamod/ReaderWriter.h"
 #include "multio/util/Hash.h"
-#include "multio/util/TypeTraits.h"
 #include "multio/util/TypeToString.h"
+#include "multio/util/TypeTraits.h"
 #include "multio/util/VariantHelpers.h"
 
 #include <chrono>
@@ -31,11 +31,11 @@ using TimeDuration = std::variant<std::chrono::hours, std::chrono::seconds>;
 std::ostream& operator<<(std::ostream&, const TimeDuration&);
 
 // TODO Represent origin as enum and add mapping from stringified origin to enum with int values
-using Origin = std::variant<std::int64_t, std::string>;
-std::ostream& operator<<(std::ostream&, const Origin&);
+using IntOrString = std::variant<std::int64_t, std::string>;
+std::ostream& operator<<(std::ostream&, const IntOrString&);
 
 
-// To be renamed and kept internal - 
+// To be renamed and kept internal -
 enum class Repres : std::size_t
 {
     GG,
@@ -48,7 +48,7 @@ enum class Repres : std::size_t
 std::ostream& operator<<(std::ostream&, const Repres&);
 
 
-// To be renamed and kept internal - 
+// To be renamed and kept internal -
 enum class LevType : std::size_t
 {
     ML,
@@ -86,13 +86,9 @@ namespace multio::datamod {
 
 template <>
 struct WriteSpec<TimeDuration> {
-    static std::string write(const TimeDuration&);
+    static std::variant<std::int64_t, std::string> write(const TimeDuration&);
 };
 
-template <>
-struct WriteSpec<Origin> {
-    static std::string write(const Origin&);
-};
 
 template <>
 struct ReadSpec<TimeDuration> {

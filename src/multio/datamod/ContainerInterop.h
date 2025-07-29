@@ -22,7 +22,6 @@
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
-#include "multio/util/VariantHelpers.h"
 
 namespace multio::datamod {
 
@@ -83,7 +82,6 @@ struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseM
 
     template <typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
     static KeyValueFromKey_t<KVD> defaultOrThrow(const KVD& kvd, const message::BaseMetadata& md) {
-        using Ret = KeyValueFromKey_t<KVD>;
         if constexpr (KVD::tag == KVTag::Required) {
             throwMissingRequiredKey(kvd.keyInfo(), md);
         }
@@ -279,7 +277,6 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
 
     template <typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
     static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, const eckit::Configuration& conf) {
-        using Ret = KeyValueFromKey_t<KVD>;
         using RW = typename KVD::ReadWrite;
         if (!conf.has(kvd.key())) {
             if constexpr (KVD::tag == KVTag::Required) {
@@ -383,7 +380,6 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
     static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, const util::MioGribHandle& handle) {
         using RW = typename KVD::ReadWrite;
         using ValueType = typename KeyValueFromKey_t<KVD>::ValueType;
-        using Ret = KeyValueFromKey_t<KVD>;
 
         // For codes we always copy - no value by ref
         if (!handle.isDefined(kvd.key())) {

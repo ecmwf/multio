@@ -13,36 +13,3 @@ ecbuild_add_test(
 )
 
 
-list( APPEND _encode-mtg2_test_data
-  "mars-encoder-conf-test.tar.xz"
-)
-
-ecbuild_get_test_multidata(
-    EXTRACT TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/mars2grib
-    DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
-    NAMES ${_encode-mtg2_test_data}
-)
-
-
-# Test to reparse MULTIOM configs in c++
-# Will be removed after C++ migration
-ecbuild_add_test( TARGET    test_multio_encode_mtg2_conf
-                  SOURCES   test_multio_encode_mtg2_conf.cc
-                  LIBS      multio multio-action-encode-mtg2)
-
-ecbuild_add_test( TARGET    test_multio_encode_mtg2_infer_pdt
-                  SOURCES   test_multio_encode_mtg2_infer_pdt.cc
-                  LIBS      multio multio-action-encode-mtg2)
-
-ecbuild_add_test( TARGET    test_multio_encode_mtg2_rules_gen
-                  SOURCES   test_multio_encode_mtg2_rules_gen.cc
-                  TEST_REQUIRES  test_multio_encode_mtg2_infer_pdt test_multio_encode_mtg2_conf ${PREFIX}_get_data
-                  LIBS      multio multio-action-encode-mtg2)
-
-ecbuild_add_test( TARGET    test_multio_encode_mtg2_setters
-                  SOURCES   test_multio_encode_mtg2_setters.cc
-                  TEST_REQUIRES  test_multio_encode_mtg2_rules_gen 
-                  LIBS      multio multio-action-encode-mtg2)
-
-

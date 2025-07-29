@@ -15,16 +15,17 @@
 #include <variant>
 #include "multio/datamod/ReaderWriter.h"
 
-#include "multio/datamod/core/KeyDef.h"
-#include "multio/datamod/core/KeySetDef.h"
 #include "multio/datamod/core/Key.h"
+#include "multio/datamod/core/KeyDef.h"
 #include "multio/datamod/core/KeySet.h"
+#include "multio/datamod/core/KeySetDef.h"
 #include "multio/datamod/core/KeyValue.h"
-#include "multio/datamod/core/KeyValueSet.h"
 #include "multio/datamod/core/KeyValueReader.h"
+#include "multio/datamod/core/KeyValueSet.h"
 #include "multio/datamod/core/KeyValueWriter.h"
 
 #include "multio/util/Hash.h"
+#include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 
@@ -157,13 +158,11 @@
 // * All printing and stringifying should be put in a compilation unit
 // * Reading with id only useful for mapping groups of keys - it can have a special operation
 // * Mappers may not be needed or properly typed??
-// * It may be worth forcing types to express values they can be read and written from by a variant or typelist? as 
+// * It may be worth forcing types to express values they can be read and written from by a variant or typelist? as
 //   suitable intermediate type representation to read from containers? (don't know how references are handled then)
 //
 // * properly implement something like `is visitable`
 //
-
-
 
 
 namespace multio::datamod {
@@ -278,9 +277,9 @@ struct ReadSpec<KeyValueSet<KeySet_>> {
     template <typename Val, std::enable_if_t<KeyValueReader<std::decay_t<Val>>::isSpecialized, bool> = true>
     static KeyValueSet<KeySet_> read(Val&& val) noexcept(noexcept(datamod::read(KeySet_{}, std::forward<Val>(val)))) {
         // TODO find a mechanism to determine whether by value or ref is the better default
-        // Currently, for nested structures this behaviour can not be propagated unless the `ReadSpec<>` is extended to a readRef call.
-        // The outer call may be `read` or `readByValue`, at this point we don't know, hence it's safer to `readByValue`
-        // Also key modifications may be considered?
+        // Currently, for nested structures this behaviour can not be propagated unless the `ReadSpec<>` is extended to
+        // a readRef call. The outer call may be `read` or `readByValue`, at this point we don't know, hence it's safer
+        // to `readByValue` Also key modifications may be considered?
         return datamod::readByValue(KeySet_{}, std::forward<Val>(val));
     }
 };
@@ -429,59 +428,63 @@ decltype(auto) keyPath(KVS& conf) {
     return keyPath<idx...>(v1.modify());
 }
 
+}  // namespace multio::datamod
+
 //-----------------------------------------------------------------------------
 // Utilities
 //-----------------------------------------------------------------------------
 
+namespace multio::util {
 
 template <typename KeySet_>
-std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValueSet<KeySet_>& kvs) {
-    os << "{ ";
-    bool first = true;
-    multio::util::forEach(
-        [&](const auto& key, const auto& value) {
-            using ReadWrite = typename std::decay_t<decltype(value)>::ReadWrite;
+struct Print<datamod::KeyValueSet<KeySet_>> {
+    static void print(std::ostream& os, const multio::datamod::KeyValueSet<KeySet_>& kvs) {
+        os << "{ ";
+        bool first = true;
+        multio::util::forEach(
+            [&](const auto& key, const auto& value) {
+                using ReadWrite = typename std::decay_t<decltype(value)>::ReadWrite;
 
-            if (first) {
-                first = false;
-            }
-            else {
-                os << ", ";
-            }
+                if (first) {
+                    first = false;
+                }
+                else {
+                    os << ", ";
+                }
 
-            os << key.key() << ": ";
-            if (value.isMissing()) {
-                os << "<MISSING>";
-            }
-            else {
-                os << ReadWrite::template write<std::ostream>(value.get());
-            }
-            os << "\n";
-        },
-        kvs);
-    os << "}";
-    return os;
-}
+                os << key.key() << ": ";
+                if (value.isMissing()) {
+                    os << "<MISSING>";
+                }
+                else {
+                    os << ReadWrite::template write<std::ostream>(value.get());
+                }
+                os << "\n";
+            },
+            kvs);
+        os << "}";
+    }
+};
 
 
 // Printing something readable to ostream
 template <auto id_>
-std::ostream& operator<<(std::ostream& os, const multio::datamod::KeyValue<id_>& kv) {
-    using ReadWrite = typename multio::datamod::KeyValue<id_>::ReadWrite;
+struct Print<datamod::KeyValue<id_>> {
+    static void print(std::ostream& os, const multio::datamod::KeyValue<id_>& kv) {
+        using ReadWrite = typename multio::datamod::KeyValue<id_>::ReadWrite;
 
-    // os << KeySetName_v<decltype(id_)> << "::" << key<id_>().key() << "=";
-    os << util::typeToString<KeyId<id_>>() << "=";
-    if (kv.isMissing()) {
-        os << "<MISSING>";
+        // os << KeySetName_v<decltype(id_)> << "::" << key<id_>().key() << "=";
+        os << util::typeToString<datamod::KeyId<id_>>() << "=";
+        if (kv.isMissing()) {
+            os << "<MISSING>";
+        }
+        else {
+            os << ReadWrite::template write<std::ostream>(kv.get());
+        }
     }
-    else {
-        os << ReadWrite::template write<std::ostream>(kv.get());
-    }
-    return os;
-}
+};
 
-
-}  // namespace multio::datamod
+}  // namespace multio::util
 
 
 //-----------------------------------------------------------------------------

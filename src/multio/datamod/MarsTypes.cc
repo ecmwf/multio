@@ -21,7 +21,7 @@
 namespace multio::datamod {
 
 
-std::variant<std::int64_t, std::string> WriteSpec<TimeDuration>::write(const TimeDuration& td) {
+IntOrString WriteSpec<TimeDuration>::write(const TimeDuration& td) {
     using Ret = std::variant<std::int64_t, std::string>;
     return std::visit(eckit::Overloaded{[&](const std::chrono::hours& h) -> Ret { return h.count(); },
                                         [&](const std::chrono::seconds& s) -> Ret {
@@ -209,25 +209,23 @@ std::int64_t ParamMapper::read(const std::string& str) {
 
 }  // namespace mapper
 
-std::ostream& operator<<(std::ostream& os, const Repres& t) {
-    os << Writer<Repres>::write(t);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const LevType& t) {
-    os << Writer<LevType>::write(t);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const TimeDuration& t) {
-    os << Writer<TimeDuration>::write(t);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const IntOrString& t) {
-    os << Writer<IntOrString>::write(t);
-    return os;
-}
-
-
 }  // namespace multio::datamod
+
+
+namespace multio::util {
+
+void Print<datamod::Repres>::print(std::ostream& os, const datamod::Repres& t) {
+    util::print(os, datamod::Writer<datamod::Repres>::write(t));
+}
+
+void util::Print<datamod::LevType>::print(std::ostream& os, const datamod::LevType& t) {
+    util::print(os, datamod::Writer<datamod::LevType>::write(t));
+}
+
+void util::Print<datamod::TimeDuration>::print(std::ostream& os, const datamod::TimeDuration& t) {
+    util::print(os, datamod::Writer<datamod::TimeDuration>::write(t));
+}
+
+
+}  // namespace multio::util
+

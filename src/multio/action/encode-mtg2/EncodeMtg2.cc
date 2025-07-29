@@ -18,11 +18,11 @@
 #include "multio/LibMultio.h"
 #include "multio/action/encode-mtg2/AtlasGeoSetter.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
-#include "multio/action/encode-mtg2/EncoderCache.h"
-#include "multio/action/encode-mtg2/Options.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/datamod/Glossary.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/mars2grib/EncoderCache.h"
+#include "multio/mars2grib/Options.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
@@ -34,7 +34,7 @@ using message::Peer;
 
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, conf_{datamod::readByValue(EncodeMtg2KeySet{}, compConf.parsedConfig())}, cache_{conf_} {}
+    ChainedAction{compConf}, conf_{datamod::readByValue(mars2grib::EncodeMtg2KeySet{}, compConf.parsedConfig())}, cache_{conf_} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {
@@ -54,9 +54,9 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto miscKeys = read(keySet<MiscKeys>().scoped(), md);
         // Write unscoped misc keys
         miscKeys.keySet.unscoped();
-        
+
         auto geoKeySets = getGeometryKeySet(marsKeys);
-        
+
         // If grid.. check if atlas is given.
         const auto& grid = key<MarsKeys::GRID>(marsKeys);
         if (!grid.isMissing()) {
@@ -72,7 +72,7 @@ void EncodeMtg2::executeImpl(Message msg) {
                 }
             }
         }
-        
+
         // Read & unscope geo keys from metadata
         auto geoKeys = std::visit(
             [&](auto& geoKeySet) -> Geometry {
@@ -89,7 +89,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             using Precision = typename decltype(pt)::type;
 
             auto beg = reinterpret_cast<const Precision*>(msg.payload().data());
-            sample->setDataValues(beg, msg.payload().size()/sizeof(Precision));
+            sample->setDataValues(beg, msg.payload().size() / sizeof(Precision));
 
             // msg.header().acquireMetadata();
             // const auto& metadata = msg.metadata();
@@ -109,7 +109,8 @@ void EncodeMtg2::executeImpl(Message msg) {
 
 void EncodeMtg2::print(std::ostream& os) const {
     os << "EncodeMtg2(";
-    os << "options=" << conf_;
+    os << "options=";
+    util::print(os, conf_);
     os << ")";
 }
 

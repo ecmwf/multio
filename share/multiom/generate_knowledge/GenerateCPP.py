@@ -42,13 +42,6 @@ enum class {enumName}: std::uint64_t
 
 }}
 
-namespace multio::util {{
-template <>
-struct TypeToString<{namespace}::{enumName}> {{
-    std::string operator()() const {{ return "{namespace}::{enumName}"; }};
-}};
-}}  // namespace multio::util
-
 namespace multio::datamod {{
 
 template <>
@@ -58,7 +51,7 @@ struct WriteSpec<{namespace}::{enumName}> {{
         switch (v) {{
             {writeCaseStr}
             default:
-                throw multio::action::EncodeMtg2Exception("WriteSpec<{enumName}>::write: Unexpected value for {enumName}", Here());
+                throw multio::mars2grib::Mars2GribException("WriteSpec<{enumName}>::write: Unexpected value for {enumName}", Here());
         }}
     }}
 }};
@@ -68,24 +61,29 @@ struct ReadSpec<{namespace}::{enumName}> {{
     static {namespace}::{enumName} read(const std::string& s) {{
         using namespace {namespace};
         {readIfElseStr}
-        throw multio::action::EncodeMtg2Exception{{std::string("ReadSpec<{enumName}>::read(\"") + s + std::string("\"): {errReadEnumStr}"), Here()}};
+        throw multio::mars2grib::Mars2GribException{{std::string("ReadSpec<{enumName}>::read(\"") + s + std::string("\"): {errReadEnumStr}"), Here()}};
     }}
 }};
 
 }}
 
 
+namespace multio::util {{
 
-namespace {namespace} {{
+template<>
+struct Print<{namespace}::{enumName}> {{
+    static void print(std::ostream& os, const {namespace}::{enumName}& t) {{
+      util::print(os, multio::datamod::Writer<{namespace}::{enumName}>::write(t));
+    }}
+}};
 
-// Use templaet & SFINAE to generate a header file only - otherwis we have to split definition
-template<typename ET, std::enable_if_t<std::is_same_v<std::decay_t<ET>, {enumName}>, bool> = true>
-std::ostream& operator<<(std::ostream& os, const ET& t) {{
-  os << multio::datamod::Writer<{enumName}>::write(t);
-  return os;
-}}
+template <>
+struct TypeToString<{namespace}::{enumName}> {{
+    std::string operator()() const {{ return "{namespace}::{enumName}"; }};
+}};
 
-}}
+}}  // namespace multio::util
+
 
 """
 
@@ -254,9 +252,11 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 #include "multio/util/Hash.h"
 #include "multio/util/TypeTraits.h"
 #include "multio/util/TypeToString.h"
+#include "multio/util/Print.h"
+
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/ReaderWriter.h"
-#include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
+#include "multio/mars2grib/Mars2GribException.h"
 
 {enums}
 
@@ -288,8 +288,9 @@ std::int64_t inferProductDefinitionTemplateNumber(const {pdtCatName}& pdtCat) co
     }}
     
     std::ostringstream oss;
-    oss << "PDT categories can not be mapped to a pdt number: " << pdtCat;
-    throw multio::action::EncodeMtg2Exception(oss.str(), Here());
+    oss << "PDT categories can not be mapped to a pdt number: ";
+    util::print(oss, pdtCat);
+    throw Mars2GribException(oss.str(), Here());
 }}
 
 }};
@@ -325,20 +326,20 @@ const static std::vector<PdtWithSelector> mappedPdtAndSelectors{{
 """
 
 
-namespace="multio::action::rules"
+namespace="multio::mars2grib::rules"
 
 def clangFormat(fname):
     os.system(f"clang-format -i {fname}")
 
 # Gen C++
-cppFile='../../../src/multio/action/encode-mtg2/generated/InferPDT.h'
+cppFile='../../../src/multio/mars2grib/generated/InferPDT.h'
 with open(cppFile, "w") as outFile:
     cppString = generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPossibleValues, namespace=namespace)
     outFile.write(cppString)
 clangFormat(cppFile)
     
 
-cppTestFile='../../../src/multio/action/encode-mtg2/generated/InferPDTTest.h'
+cppTestFile='../../../src/multio/mars2grib/generated/InferPDTTest.h'
 with open(cppTestFile, "w") as outFile:
     cppString = generateCPPTestInclude(categorySelectorsWithMappedPdt, namespace=namespace)
     outFile.write(cppString)

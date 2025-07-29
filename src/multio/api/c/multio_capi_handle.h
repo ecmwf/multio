@@ -43,10 +43,9 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md);
  * \warning This is an experimental feature and may significantly
  *          harm performance!
  * \param mio Handle to the multio (client) instance
- * \param md Metadata information about the domain
  * \returns Return code (#MultioErrorValues)
  */
-int multio_synchronize(multio_handle_t* mio, multio_metadata_t* md);
+int multio_synchronize(multio_handle_t* mio);
 
 
 /** Writes static metadata information to clients and all servers

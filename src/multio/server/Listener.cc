@@ -150,16 +150,13 @@ void Listener::start() {
                     break;
 
                 case Message::Tag::Synchronization: {
-                    auto flushMetadata = message::Metadata{{
-                        {"domain", "synchronization"},
-                        {"flushKind", "default"}
-                    }};
-                    auto flushMessage = Message{{Message::Tag::Flush, msg.source(), msg.destination(), std::move(flushMetadata)}, eckit::Buffer{0}};
-                    msgQueue_.emplace(std::move(flushMessage));
-
-                    if (++syncFlushCount_ == clientCount_) {
+                    checkConnection(msg.source());
+                    LOG_DEBUG_LIB(LibMultio)
+                        << "*** SYNCHRONIZATION received from " << msg.source() << ":    Received "
+                        << syncCount_ + 1 << " / " << clientCount_ << " synchronization messages" << std::endl;
+                    if (++syncCount_ == clientCount_) {
                         msgQueue_.emplace(std::move(msg));
-                        syncFlushCount_ = 0;
+                        syncCount_ = 0;
                     }
                     break;
                 }

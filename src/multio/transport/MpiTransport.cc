@@ -179,6 +179,22 @@ void MpiTransport::closeConnections() {
     pool_.waitAll();
 }
 
+void MpiTransport::synchronize() {
+    // TODO: Maybe we can restructure this a bit as clearly the behaviour is different
+    //       depending on which side (client or server) is calling this method.
+
+    if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
+        for (auto& server : serverPeers()) {
+            Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
+            bufferedSend(msg);
+            pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+        }
+        pool_.waitAll();
+    }
+
+    comm().barrier();
+}
+
 Message MpiTransport::receive() {
     util::ScopedTiming timing{statistics_.totReturnTiming_};
     /**
@@ -247,14 +263,6 @@ void MpiTransport::send(const Message& msg) {
 void MpiTransport::bufferedSend(const Message& msg) {
     std::lock_guard<std::mutex> lock{mutex_};
     encodeMessage(pool_.getStream(msg), msg);
-}
-
-void MpiTransport::synchronize() {
-    for (auto& server : serverPeers()) {  // What if we are on the server?!
-        pool_.sendBuffer(*server, 0);
-    }
-    pool_.waitAll();
-    comm().barrier();
 }
 
 void MpiTransport::createPeers() const {

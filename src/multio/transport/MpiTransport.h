@@ -50,6 +50,8 @@ private:
     void openConnections() override;
     void closeConnections() override;
 
+    void synchronize() override;
+
     Message receive() override;
 
     void abort(std::exception_ptr) override;
@@ -57,8 +59,6 @@ private:
     void send(const Message& msg) override;
 
     void bufferedSend(const Message& msg) override;
-
-    void synchronize() override;
 
     void createPeers() const override;
 

@@ -551,14 +551,18 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
-int multio_synchronize(multio_handle_t* mio, multio_metadata_t* md) {
+int multio_synchronize(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
-        [mio, md]() {
+        [mio]() {
             ASSERT(mio != nullptr);
-            ASSERT(md != nullptr);
 
-            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Synchronization);
+            multio::message::Metadata md;
+            md.set("flushKind", "default");
+            md.set("toAllServers", true);
+            md.set("domain", "global");
+            mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+
             mio->synchronize();
         },
         mio);

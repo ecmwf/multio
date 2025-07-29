@@ -448,16 +448,18 @@ TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(std::int
     };
 }
 
-
-std::ostream& operator<<(std::ostream& os, const TypeOfLevel& t) {
-    os << Writer<TypeOfLevel>::write(t);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const TypeOfStatisticalProcessing& t) {
-    os << Writer<TypeOfStatisticalProcessing>::write(t);
-    return os;
-}
-
-
 }  // namespace multio::datamod
+
+
+namespace multio {
+
+void util::Print<datamod::TypeOfLevel>::print(std::ostream& os, const datamod::TypeOfLevel& t) {
+    util::print(os, datamod::Writer<datamod::TypeOfLevel>::write(t));
+}
+
+void util::Print<datamod::TypeOfStatisticalProcessing>::print(std::ostream& os, const datamod::TypeOfStatisticalProcessing& t) {
+    util::print(os, datamod::Writer<datamod::TypeOfStatisticalProcessing>::write(t));
+}
+
+}  // namespace multio
+

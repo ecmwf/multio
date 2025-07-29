@@ -13,6 +13,7 @@
 #include "multio/datamod/ReaderWriter.h"
 #include "multio/util/Hash.h"
 #include "multio/util/MioGribHandle.h"
+#include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 
 
@@ -146,13 +147,20 @@ enum class TypeOfStatisticalProcessing : std::size_t
     IndexProcessing = 102,
 };
 
-std::ostream& operator<<(std::ostream&, const TypeOfLevel&);
-std::ostream& operator<<(std::ostream&, const TypeOfStatisticalProcessing&);
-
 }  // namespace multio::datamod
 
 
 namespace multio::util {
+
+template <>
+struct Print<datamod::TypeOfLevel> {
+    static void print(std::ostream&, const datamod::TypeOfLevel&);
+};
+template <>
+struct Print<datamod::TypeOfStatisticalProcessing> {
+    static void print(std::ostream&, const datamod::TypeOfStatisticalProcessing&);
+};
+
 template <>
 struct TypeToString<datamod::TypeOfLevel> {
     std::string operator()() const { return "datamod::TypeOfLevel"; };

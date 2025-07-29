@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include <type_traits>
 #include <string_view>
+#include <type_traits>
 #include "multio/datamod/ReaderWriter.h"
 
 
@@ -70,7 +70,7 @@ struct BaseKeyDef {
     const std::string_view& key() const noexcept { return key_; }
     ValueType defaultValue() const noexcept {
         static_assert(hasDefaultValueFunctor, "No default functor given");
-        return defaultFunctor_();
+        return (*defaultFunctor_)();
     }
     const std::optional<std::string_view>& description() const noexcept { return description_; }
 
@@ -81,8 +81,8 @@ struct BaseKeyDef {
 
     // Members - all "simple" to be constexpr constructable. Would be more relaxed with C++20, but it's all we need
     std::string_view key_;
-    std::optional<std::string_view> description_;
-    DefaultValueFunctor defaultFunctor_;
+    std::optional<DefaultValueFunctor> defaultFunctor_{}; // This is optional to savely allow default initialization
+    std::optional<std::string_view> description_{};
 };
 
 
@@ -112,16 +112,19 @@ struct KeyDef : BaseKeyDef<ValueType_, Mapper_, tag_, DefaultValueFunctor> {
     // Make the key-value pair optional - meaning it can be missing after alter & validation
     constexpr auto tagOptional() const {
         static_assert(tag_ != KVTag::Defaulted, "Definition is already defaulted and can not be made optional");
-        return KeyDef<id_, ValueType_, Mapper_, KVTag::Optional, DefaultValueFunctor>{Base::key_, Base::description_,
-                                                                                      Base::defaultFunctor_};
+        return KeyDef<id_, ValueType_, Mapper_, KVTag::Optional, DefaultValueFunctor>{Base::key_, Base::defaultFunctor_,
+                                                                                      Base::description_};
     }
 
     // Make the key-value pair defaulted - meaning it will be set through default functor or alter function and is
     // guaranteed to contain a value after validation
     constexpr auto tagDefaulted() const {
         static_assert(tag_ != KVTag::Defaulted, "Definition is already defaulted");
-        return KeyDef<id_, ValueType_, Mapper_, KVTag::Optional, DefaultValueFunctor>{Base::key_, Base::description_,
-                                                                                      Base::defaultFunctor_};
+        return KeyDef<id_, ValueType_, Mapper_, KVTag::Optional, DefaultValueFunctor>{
+            Base::key_,
+            Base::defaultFunctor_,
+            Base::description_,
+        };
     }
 
     // Make the key-value pair defaulted and set a functon that generates a default value
@@ -132,7 +135,7 @@ struct KeyDef : BaseKeyDef<ValueType_, Mapper_, tag_, DefaultValueFunctor> {
               = true>
     constexpr auto withDefault(NewDefValFtor&& ftor) const {
         return KeyDef<id_, ValueType_, Mapper_, KVTag::Defaulted, std::decay_t<NewDefValFtor>>{
-            Base::key_, Base::description_, std::forward<NewDefValFtor>(ftor)};
+            Base::key_, std::forward<NewDefValFtor>(ftor), Base::description_};
     }
 
     // Make the key-value pair defaulted and set a default value (need to be constexpr literal type, or wrap generation
@@ -143,7 +146,7 @@ struct KeyDef : BaseKeyDef<ValueType_, Mapper_, tag_, DefaultValueFunctor> {
     }
     // Sets the description of the value
     constexpr auto withDescription(std::string_view descr) const {
-        return This{Base::key_, descr, std::move(Base::defaultFunctor_)};
+        return This{Base::key_, std::move(Base::defaultFunctor_), descr};
     }
 };
 

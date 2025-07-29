@@ -72,7 +72,7 @@
 //   Note that the `Container` template argument must always be given here
 //
 // Dumping with the note of a Container is useful to specialize formatting layout for given containers
-// E.g. We are setting lowlevel GRIB2 keys (like time unit) that are represented by an enum with integer representation 
+// E.g. We are setting lowlevel GRIB2 keys (like time unit) that are represented by an enum with integer representation
 
 namespace multio::datamod {
 
@@ -214,8 +214,7 @@ struct Writer {
 
     template <typename Val, typename Func>
     static decltype(auto) writeAndVisit(Val&& val, Func&& func) {
-        return util::visitOrForward(std::forward<Func>(func),
-                                    Writer<ValueType, Container, CustomMapper>::write(std::forward<Val>(val)));
+        return util::visitOrForward(std::forward<Func>(func), write(std::forward<Val>(val)));
     }
 };
 

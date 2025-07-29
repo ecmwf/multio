@@ -2,6 +2,7 @@ add_subdirectory( multio )
 
 if ( BUILD_MULTIOM )
     add_subdirectory( multiom )
+    add_subdirectory( multio/mars2grib )
     add_subdirectory( multio/action/encode-mtg2 )
 endif()
 

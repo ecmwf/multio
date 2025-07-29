@@ -12,8 +12,8 @@
 
 
 #include "multio/action/ChainedAction.h"
-#include "multio/action/encode-mtg2/EncoderCache.h"
-#include "multio/action/encode-mtg2/Options.h"
+#include "multio/mars2grib/EncoderCache.h"
+#include "multio/mars2grib/Options.h"
 
 
 namespace multio::action {
@@ -31,8 +31,9 @@ private:
 
     void print(std::ostream& os) const override;
 
-    EncodeMtg2Conf conf_;
-    EncoderCache cache_;
+    // TODO this option will be renamed and the action should get it own struct with parsing capabilities again
+    mars2grib::EncodeMtg2Conf conf_;
+    mars2grib::EncoderCache cache_;
 };
 
 

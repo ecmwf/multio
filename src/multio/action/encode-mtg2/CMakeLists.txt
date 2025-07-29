@@ -9,29 +9,6 @@ ecbuild_add_library(
         EncodeMtg2Exception.cc
         EncodeMtg2Exception.h
         AtlasGeoSetter.h
-        Options.h
-        EncoderCache.cc
-        EncoderCache.h
-        EncoderConf.h
-        Rules.cc
-        Rules.h
-        multiom/MultIOMDict.cc
-        multiom/MultIOMDict.h
-        multiom/MultIOMRawEncoder.cc
-        multiom/MultIOMRawEncoder.h
-        multiom/MultIOMRules.cc
-        multiom/MultIOMRules.h
-        rules/Matcher.h
-        rules/Setter.h
-        rules/Rule.h
-        sections/SectionSetter.cc
-        sections/SectionSetter.h
-        sections/SectionTypes.cc
-        sections/SectionTypes.h
-        sections/Level.cc
-        sections/Level.h
-        generated/InferPDT.h
-        generated/InferPDTTest.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -40,7 +17,7 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        multiom-encoders
+        multio-mars2grib
         eccodes
         atlas
 )

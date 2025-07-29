@@ -13,6 +13,8 @@
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/DataModellingException.h"
 #include "multio/datamod/MarsTypes.h"
+
+#include "multio/util/Print.h"
 #include "multio/util/TypeTraits.h"
 
 #include <sstream>
@@ -100,8 +102,8 @@ MULTIO_KEY_SET_DESCRIPTION(
     KeyDef<MarsKeys::DATASET, std::string>{"dataset"}.tagOptional(),           //
     KeyDef<MarsKeys::METHOD, std::int64_t>{"method"}.tagOptional(),            //
     KeyDef<MarsKeys::SYSTEM, std::int64_t>{"system"}.tagOptional(),            //
-    KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),  //
-    KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),  //
+    KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),                 //
+    KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),    //
     // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as
     // official mars key
     KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
@@ -126,14 +128,14 @@ struct KeySetAlter<MarsKeySet> {
             std::ostringstream oss;
             oss << "Either mars key 'grid' (x)or 'truncation' need to be given to describe geometry - both are "
                    "missing: ";
-                // << mars;
+            // << mars;
             throw DataModellingException(oss.str(), Here());
         }
         if (!grid.isMissing() && !trunc.isMissing()) {
             std::ostringstream oss;
             oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both are "
                    "given: ";
-                // << mars;
+            // << mars;
             // TODO print properly
             throw DataModellingException(oss.str(), Here());
         }
@@ -142,8 +144,11 @@ struct KeySetAlter<MarsKeySet> {
             auto detRepres = represFromGrid(grid.get());
             if (!repres.isMissing() && (detRepres != repres.get())) {
                 std::ostringstream oss;
-                oss << "Passed value for repres is " << repres.get() << " but derived value  " << detRepres
-                    << " from grid " << grid.get();
+                oss << "Passed value for repres is ";
+                util::print(oss, repres.get());
+                oss << " but derived value  ";
+                util::print(oss, detRepres);
+                oss << " from grid " << grid.get();
                 throw DataModellingException(oss.str(), Here());
             }
             repres.set(detRepres);
@@ -152,8 +157,11 @@ struct KeySetAlter<MarsKeySet> {
             auto detRepres = Repres::SH;
             if (!repres.isMissing() && (detRepres != repres.get())) {
                 std::ostringstream oss;
-                oss << "Passed value for repres is " << repres.get() << " but derived value  " << detRepres
-                    << " from truncation " << std::to_string(trunc.get());
+                oss << "Passed value for repres is ";
+                util::print(oss, repres.get());
+                oss << " but derived value  ";
+                util::print(oss, detRepres);
+                oss << " from truncation " << std::to_string(trunc.get());
                 throw DataModellingException(oss.str(), Here());
             }
             repres.set(detRepres);

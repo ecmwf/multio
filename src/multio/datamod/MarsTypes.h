@@ -11,7 +11,9 @@
 #pragma once
 
 #include "multio/datamod/ReaderWriter.h"
+
 #include "multio/util/Hash.h"
+#include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 #include "multio/util/VariantHelpers.h"
@@ -28,11 +30,9 @@ namespace multio::datamod {
 
 
 using TimeDuration = std::variant<std::chrono::hours, std::chrono::seconds>;
-std::ostream& operator<<(std::ostream&, const TimeDuration&);
 
 // TODO Represent origin as enum and add mapping from stringified origin to enum with int values
 using IntOrString = std::variant<std::int64_t, std::string>;
-std::ostream& operator<<(std::ostream&, const IntOrString&);
 
 
 // To be renamed and kept internal -
@@ -45,7 +45,6 @@ enum class Repres : std::size_t
              // of the others...
 };
 
-std::ostream& operator<<(std::ostream&, const Repres&);
 
 
 // To be renamed and kept internal -
@@ -66,12 +65,27 @@ enum class LevType : std::size_t
 };
 
 const std::vector<LevType>& allLevTypes();
-
-std::ostream& operator<<(std::ostream&, const LevType&);
 }  // namespace multio::datamod
 
 
 namespace multio::util {
+
+template <>
+struct Print<datamod::TimeDuration> {
+    static void print(std::ostream& os, const datamod::TimeDuration& v);
+};
+
+template <>
+struct Print<datamod::Repres> {
+    static void print(std::ostream& os, const datamod::Repres& v);
+};
+
+template <>
+struct Print<datamod::LevType> {
+    static void print(std::ostream& os, const datamod::LevType& v);
+};
+
+
 template <>
 struct TypeToString<datamod::Repres> {
     std::string operator()() const { return "datamod::Repres"; };

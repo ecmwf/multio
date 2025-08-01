@@ -31,7 +31,6 @@ public:
 
 private:
     MpiOutputStream& createNewStream(const message::Peer& dest);
-    MpiOutputStream& replaceStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;
 

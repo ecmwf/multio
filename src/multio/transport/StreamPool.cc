@@ -62,11 +62,6 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
 
     sendBuffer(dest, static_cast<int>(msg.tag()));
 
-    return replaceStream(dest);
-}
-
-MpiOutputStream& StreamPool::replaceStream(const message::Peer& dest) {
-    streams_.erase(dest);
     return createNewStream(dest);
 }
 
@@ -89,6 +84,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
 
     strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
     strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
+    streams_.erase(dest);
 
     ::gettimeofday(&tstamp, 0);
     mSecs = tstamp.tv_usec;

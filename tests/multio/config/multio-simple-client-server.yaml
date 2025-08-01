@@ -1,0 +1,17 @@
+client:
+  on-error: abort-transport
+  plans:
+    - name: client-plan
+      actions:
+        - type: transport
+          target: server
+
+server:
+  transport: mpi
+  on-error: abort-transport
+  plans:
+    - name: server-plan
+      actions:
+        - type: aggregate
+        - type: sink
+          sinks: []

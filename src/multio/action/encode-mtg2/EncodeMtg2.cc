@@ -23,6 +23,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2grib/EncoderCache.h"
 #include "multio/mars2grib/Options.h"
+#include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
@@ -34,7 +35,9 @@ using message::Peer;
 
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, conf_{datamod::readByValue(mars2grib::EncodeMtg2KeySet{}, compConf.parsedConfig())}, cache_{conf_} {}
+    ChainedAction{compConf},
+    conf_{datamod::readByValue(mars2grib::EncodeMtg2KeySet{}, compConf.parsedConfig())},
+    cache_{conf_} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {
@@ -82,26 +85,45 @@ void EncodeMtg2::executeImpl(Message msg) {
             },
             geoKeySets);
 
-        // @Mirco here we get the cached raw encoder
-        std::unique_ptr<util::MioGribHandle> sample = cache_.getSample(marsKeys, miscKeys, geoKeys);
+
+        // Apply mappings
+        auto mappingResult = mars2mars::applyMappings(marsKeys, miscKeys);
+
+        // TODO use upcoming C++ interface
+        std::unique_ptr<util::MioGribHandle> sample = cache_.getHandle(marsKeys, miscKeys, geoKeys);
+
+        if (msg.payload().size() == 0) {
+            throw EncodeMtg2Exception("Message has empty payload - no values to encode", Here());
+        }
 
         executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
             using Precision = typename decltype(pt)::type;
+            size_t size = msg.payload().size() / sizeof(Precision);
 
-            auto beg = reinterpret_cast<const Precision*>(msg.payload().data());
-            sample->setDataValues(beg, msg.payload().size() / sizeof(Precision));
+            // Check if values need scaling
+            if (mappingResult && mappingResult->valuesScaleFactor) {
+                msg.payload().acquire();
+                auto values = static_cast<Precision*>(msg.payload().modifyData());
+                ASSERT(values);
 
-            // msg.header().acquireMetadata();
-            // const auto& metadata = msg.metadata();
-            // auto offsetByValue = metadata.getOpt<double>("offsetValuesBy");
-            // if (offsetByValue) {
-            //     setValue("offsetValuesBy", *offsetByValue);
-            // }
+                const auto scaleFactor = *(mappingResult->valuesScaleFactor);
+                std::transform(values, values + size, values,
+                               [&](const Precision& value) -> Precision { return value * scaleFactor; });
+
+                sample->setDataValues(values, size);
+            }
+            else {
+                // No scaling
+                auto values = static_cast<const Precision*>(msg.payload().data());
+                sample->setDataValues(values, size);
+            }
 
             eckit::Buffer buf{sample->length()};
             sample->write(buf);
 
-            return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
+            // TODO write mapped metadata
+            return Message{Message::Header{Message::Tag::Field, Peer{msg.source()}, Peer{msg.destination()},
+                                           write<message::Metadata>(marsKeys)},
                            std::move(buf)};
         }));
     }

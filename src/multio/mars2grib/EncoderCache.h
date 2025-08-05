@@ -27,13 +27,20 @@ using PrehashedMarsKeys = util::PrehashedKey<datamod::EncoderCacheMarsKeyValueSe
 
 class EncoderCache {
 public:
+    EncoderCache();
     EncoderCache(const EncodeMtg2Conf& opts);
     EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options);
 
-    std::unique_ptr<util::MioGribHandle> getSample(const datamod::MarsKeyValueSet& marsKeys,
+    // Try to infer geometry and then prepare a grib handle
+    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
+                                                   const datamod::MiscKeyValueSet& miscKeys);
+    // Perpare a grib handle
+    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                    const datamod::MiscKeyValueSet& miscKeys,
                                                    const datamod::Geometry& geoKeys);
-    std::unique_ptr<util::MioGribHandle> getSample(const datamod::MarsKeyValueSet& marsKeys,
+                                                   
+    // Prepare a grib handle with already mapped MultIOM dicts
+    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                    const MultIOMDict& marsDict, const MultIOMDict& parDict,
                                                    const MultIOMDict& geoDict);
 

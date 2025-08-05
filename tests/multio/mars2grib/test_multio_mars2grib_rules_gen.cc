@@ -23,6 +23,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Metadata.h"
 
+#include "multio/util/SampleMetadataGen.h"
 #include "test_multio_mars2grib_helper.h"
 
 
@@ -59,7 +60,7 @@ CASE("Test rules gen matchers") {
     }
 
     {
-        auto md = mkMd();
+        auto md = util::sample_gen::mkMd();
         md.set("param", 1);
 
         auto mars = read(MarsKeySet{}, md);
@@ -68,13 +69,12 @@ CASE("Test rules gen matchers") {
         EXPECT(ruleSet(mars, sections));
         EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::Level, LevelDef::Type>(sections).get())
                == TypeOfLevel::HeightAboveGround);
-        EXPECT((
-            (keyPath<EncoderSectionsDef::Product, EncoderProductDef::PDTCat, PDTCatDef::TimeExtent>(sections).get()) ==
-            TimeExtent::PointInTime));
+        EXPECT(((keyPath<EncoderSectionsDef::Product, EncoderProductDef::PDTCat, PDTCatDef::TimeExtent>(sections).get())
+                == TimeExtent::PointInTime));
     }
 
     {
-        auto md = mkMd();
+        auto md = util::sample_gen::mkMd();
         md.set("param", 42);  // Not included in rule
 
         auto mars = read(MarsKeySet{}, md);
@@ -140,7 +140,7 @@ CASE("Test real rules matchers with AIFS single keys") {
     using namespace multio::mars2grib;
     using namespace multio::datamod;
 
-    for (auto md : mkAifsSingleMd()) {
+    for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
             auto mars = read(MarsKeySet{}, md);
             EncoderSections sections;
@@ -168,7 +168,7 @@ CASE("Test real rules matchers with AIFS ens keys") {
     using namespace multio::mars2grib;
     using namespace multio::datamod;
 
-    for (auto md : mkAifsEnsMd()) {
+    for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
             auto mars = read(MarsKeySet{}, md);
             EncoderSections sections;

@@ -31,6 +31,12 @@ ecbuild_add_test( TARGET    ${PREFIX}_rules_gen
                   TEST_REQUIRES  ${PREFIX}_infer_pdt ${PREFIX}_conf ${PREFIX}_get_data
                   LIBS      multio multio-mars2grib)
 
+ecbuild_add_test( TARGET    ${PREFIX}_encode
+                  SOURCES   test_multio_mars2grib_encode.cc
+                  TEST_REQUIRES  ${PREFIX}_rules_gen
+                  LIBS      multio multio-mars2grib)
+
+# TBD
 ecbuild_add_test( TARGET    ${PREFIX}_setters
                   SOURCES   test_multio_mars2grib_setters.cc
                   TEST_REQUIRES  ${PREFIX}_rules_gen 

@@ -11,6 +11,8 @@
 #include "multio/mars2grib/EncoderCache.h"
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/AtlasGeo.h"
+#include "multio/datamod/core/KeyValueSet.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/Rules.h"
@@ -34,6 +36,13 @@ std::unique_ptr<util::MioGribHandle> loadSample(const EncodeMtg2Conf& conf, cons
 
 
 EncoderCache::EncoderCache(const EncodeMtg2Conf& opts) : EncoderCache(opts, MultIOMDict::makeOptions(opts)) {}
+
+EncoderCache::EncoderCache() :
+    EncoderCache(([]() {
+        EncodeMtg2Conf res{};
+        datamod::alterAndValidate(res);
+        return res;
+    })()) {}
 
 
 EncoderCache::EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options) :
@@ -84,14 +93,14 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyVal
 }
 
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getSample(const datamod::MarsKeyValueSet& marsKeys,
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                              const MultIOMDict& mars, const MultIOMDict& par,
                                                              const MultIOMDict& geo) {
     CacheEntry& entry = makeOrGetEntry(marsKeys, mars, par, geo);
     return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, par, geo);
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getSample(const datamod::MarsKeyValueSet& marsKeys,
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                              const datamod::MiscKeyValueSet& miscKeys,
                                                              const datamod::Geometry& geoKeys) {
     MultIOMDict mars{MultIOMDictKind::MARS};
@@ -119,7 +128,13 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getSample(const datamod::Mars
 
     std::visit([&](auto& specificGeoKeys) { write(specificGeoKeys, geom); }, geoKeys);
 
-    return getSample(marsKeys, mars, misc, geom);
+    return getHandle(marsKeys, mars, misc, geom);
+}
+
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
+                                                             const datamod::MiscKeyValueSet& miscKeys) {
+    auto geo = makeGeometry(marsKeys, true);
+    return getHandle(marsKeys, miscKeys, geo);
 }
 
 

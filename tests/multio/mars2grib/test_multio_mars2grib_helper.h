@@ -1,78 +1,12 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/EncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
-#include "multio/message/Metadata.h"
 
 #include <sstream>
 
 namespace multio::test {
-
-auto mkAifsSingleBaseMd() {
-    return message::Metadata{
-        {"class", "ai"},  {"model", "aifs-single"}, {"expver", "0001"}, {"type", "fc"},   {"stream", "oper"},
-        {"repres", "gg"}, {"packing", "ccsds"},     {"levelist", 700},  {"grid", "N320"}, {"step", 6},
-        {"time", 0},      {"date", 20230901},       {"levtype", "pl"},  {"param", 133}};
-}
-
-auto mkMd() {
-    return mkAifsSingleBaseMd();
-}
-
-
-std::vector<message::Metadata> aifsSingleParams() {
-    std::vector<message::Metadata> res;
-
-    // SFC params
-    for (auto param : std::vector<int>{{134, 151, 165, 166, 167, 168, 235, 141, 136, 143, 228}}) {
-        res.push_back({{"param", param}, {"levtype", "sfc"}});
-    }
-
-    // PL params
-    for (auto param : std::vector<int>{{129, 130, 131, 132, 133, 135}}) {
-        for (auto levelist : std::vector<int>{{50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000}}) {
-            res.push_back({{"param", param}, {"levtype", "pl"}, {"levelist", levelist}});
-        }
-    }
-
-    return res;
-}
-
-std::vector<message::Metadata> aifsEnsParams() {
-    auto res = aifsSingleParams();
-    for (auto& md : res) {
-        md.set("number", 27);
-    }
-    return res;
-}
-
-std::vector<message::Metadata> combineWithBaseMd(std::vector<message::Metadata> res) {
-    for (auto& md : res) {
-        md.updateNoOverwrite(mkAifsSingleBaseMd());
-    }
-    return res;
-}
-std::vector<message::Metadata> addSteps(const std::vector<message::Metadata>& inp) {
-    std::vector<message::Metadata> res;
-    for (auto step : std::vector<int>{{6, 12, 18, 24, 32}}) {
-        for (auto md : inp) {
-            md.set("step", step);
-            res.push_back(std::move(md));
-        }
-    }
-
-    return res;
-}
-
-std::vector<message::Metadata> mkAifsSingleMd() {
-    return combineWithBaseMd(addSteps(aifsSingleParams()));
-}
-std::vector<message::Metadata> mkAifsEnsMd() {
-    return combineWithBaseMd(addSteps(aifsEnsParams()));
-}
-
 
 mars2grib::EncoderSections expectedAIFSSingleEncoderSections(const datamod::MarsKeyValueSet& mars) {
     using namespace datamod;

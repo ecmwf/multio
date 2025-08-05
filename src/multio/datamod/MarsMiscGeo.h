@@ -214,28 +214,22 @@ enum class MiscKeys : std::uint64_t
     TablesVersion,
     GeneratingProcessIdentifier,
     Typeofprocesseddata,
-    EncodeStepZero,
     InitialStep,
-    LengthOfTimeRange,
-    LengthOfTimeStep,
-    LengthOfTimeRangeInSeconds,
-    LengthOfTimeStepInSeconds,
-    ValuesScaleFactor,
-    Pv,
-    NumberOfMissingValues,
-    ValueOfMissingValues,
-    TypeOfEnsembleForecast,
-    NumberOfForecastsInEnsemble,
+    TimeIncrement,
+    TimeIncrementInSeconds,
     LengthOfTimeWindow,
     LengthOfTimeWindowInSeconds,
-    BitsPerValue,
-    PeriodMin,
-    PeriodMax,
-    WaveDirections,
-    WaveFrequencies,
+    BitmapPresent,
+    MissingValue,
+    TypeOfEnsembleForecast,
+    NumberOfForecastsInEnsemble,
     SatelliteSeries,
     ScaleFactorOfCentralWavenumber,
-    ScaledValueOfCentralWavenumber
+    ScaledValueOfCentralWavenumber,
+    Pv,
+    WaveDirections,
+    WaveFrequencies,
+    BitsPerValue,
 };
 
 
@@ -244,33 +238,26 @@ MULTIO_KEY_SET_DESCRIPTION(
     "misc",                                                                                                    //
     KeyDef<MiscKeys::TablesVersion, std::int64_t>{"tablesVersion"}.tagOptional(),                              //
     KeyDef<MiscKeys::GeneratingProcessIdentifier, std::int64_t>{"generatingProcessIdentifier"}.tagOptional(),  //
-    KeyDef<MiscKeys::Typeofprocesseddata, std::int64_t>{"typeofprocesseddata"}.tagOptional(),                  //
-    KeyDef<MiscKeys::EncodeStepZero, bool, mapper::IntToBoolMapper>{"encodeStepZero"}.tagOptional(),           //
+    KeyDef<MiscKeys::Typeofprocesseddata, std::int64_t>{"typeOfProcessedData"}.tagOptional(),                  //
     KeyDef<MiscKeys::InitialStep, std::int64_t>{"initialStep"}.withDefault(0),                                 //
-    KeyDef<MiscKeys::LengthOfTimeRange, std::int64_t>{"lengthOfTimeRange"}.tagOptional(),                      //
-    KeyDef<MiscKeys::LengthOfTimeStep, std::int64_t>{"lengthOfTimeStep"}.tagOptional(),                        //
-    KeyDef<MiscKeys::LengthOfTimeRangeInSeconds, std::int64_t>{"lengthOfTimeRangeInSeconds"}.tagOptional(),    //
-    KeyDef<MiscKeys::LengthOfTimeStepInSeconds, std::int64_t>{"lengthOfTimeStepInSeconds"}.withDefault(3600),  //
-    KeyDef<MiscKeys::ValuesScaleFactor, double>{"valuesScaleFactor"}.tagOptional(),                            //
-    KeyDef<MiscKeys::Pv, std::vector<double>>{"pv"}.tagOptional(),                                             //
-    KeyDef<MiscKeys::NumberOfMissingValues, std::int64_t>{"numberOfMissingValues"}.tagOptional(),              //
-    KeyDef<MiscKeys::ValueOfMissingValues, double>{"valueOfMissingValues"}.tagOptional(),                      //
-    KeyDef<MiscKeys::TypeOfEnsembleForecast, std::int64_t>{"typeOfEnsembleForecast"}.tagOptional(),            //
-    KeyDef<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>{"numberOfForecastsInEnsemble"}.tagOptional(),  //
+    KeyDef<MiscKeys::TimeIncrement, std::int64_t>{"lengthOfTimeStep"}.tagOptional(),                           //
+    KeyDef<MiscKeys::TimeIncrementInSeconds, std::int64_t>{"lengthOfTimeStepInSeconds"}.withDefault(3600),     //
     KeyDef<MiscKeys::LengthOfTimeWindow, std::int64_t>{"lengthOfTimeWindow"}.tagOptional(),                    //
     KeyDef<MiscKeys::LengthOfTimeWindowInSeconds, std::int64_t>{"lengthOfTimeWindowInSeconds"}.tagOptional(),  //
-    KeyDef<MiscKeys::BitsPerValue, std::int64_t>{"bitsPerValue"}.tagOptional(),                                //
-    KeyDef<MiscKeys::PeriodMin, std::int64_t>{"periodMin"}.tagOptional().withDescription(
-        "`periodMin` usually is depending on `paramId` and derived by ECCODES. in some cases it is "
-        "passed through."),  //
-    KeyDef<MiscKeys::PeriodMax, std::int64_t>{"periodMax"}.tagOptional().withDescription(
-        "`periodMax` usually is depending on `paramId` and derived by ECCODES. In some cases it is "
-        "passed through."),                                                                                          //
-    KeyDef<MiscKeys::WaveDirections, std::vector<double>>{"waveDirections"}.tagOptional(),                           //
-    KeyDef<MiscKeys::WaveFrequencies, std::vector<double>>{"waveFrequencies"}.tagOptional(),                         //
+    KeyDef<MiscKeys::BitmapPresent, bool, mapper::IntToBoolMapper>{"bitmapPresent"}.tagOptional(),             //
+    KeyDef<MiscKeys::MissingValue, double>{"missingValue"}.tagOptional(),                                      //
+    KeyDef<MiscKeys::TypeOfEnsembleForecast, std::int64_t>{"typeOfEnsembleForecast"}.tagOptional(),            //
+    KeyDef<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>{"numberOfForecastsInEnsemble"}.tagOptional(),  //
+
     KeyDef<MiscKeys::SatelliteSeries, std::int64_t>{"satelliteSeries"}.tagOptional(),                                //
     KeyDef<MiscKeys::ScaleFactorOfCentralWavenumber, std::int64_t>{"scaleFactorOfCentralWavenumber"}.tagOptional(),  //
-    KeyDef<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>{"scaledValueOfCentralWavenumber"}.tagOptional())  //
+    KeyDef<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>{"scaledValueOfCentralWavenumber"}.tagOptional(),  //
+
+    KeyDef<MiscKeys::Pv, std::vector<double>>{"pv"}.tagOptional(),                            //
+    KeyDef<MiscKeys::WaveDirections, std::vector<double>>{"waveDirections"}.tagOptional(),    //
+    KeyDef<MiscKeys::WaveFrequencies, std::vector<double>>{"waveFrequencies"}.tagOptional(),  //
+
+    KeyDef<MiscKeys::BitsPerValue, std::int64_t>{"bitsPerValue"}.tagOptional())  //
 
 
 using MiscKeySet = KeySet<MiscKeys>;

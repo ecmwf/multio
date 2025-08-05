@@ -6,6 +6,7 @@
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/rules/Matcher.h"
+#include "multio/mars2grib/rules/ParamMatcher.h"
 #include "multio/mars2grib/rules/Rule.h"
 #include "multio/mars2grib/rules/Setter.h"
 #include "multio/mars2grib/sections/SectionTypes.h"
@@ -39,54 +40,6 @@ auto matchChemicalOptical() {
 
 auto matchLevType(datamod::LevType lt) {
     return OneOf<MarsKeys::LEVTYPE>{{lt}};
-}
-
-
-//-----------------------------------------------------------------------------
-// Param matchers
-//-----------------------------------------------------------------------------
-
-Range<MarsKeys::PARAM> paramRange(KeyDefValueType_t<MarsKeys::PARAM> start, KeyDefValueType_t<MarsKeys::PARAM> end) {
-    return Range<MarsKeys::PARAM>{start, end};
-}
-
-using ParamMatcher = Any<OneOf<MarsKeys::PARAM>, Ranges<MarsKeys::PARAM>>;
-
-ParamMatcher matchParams(std::vector<KeyDefValueType_t<MarsKeys::PARAM>> params) {
-    return ParamMatcher{std::make_tuple(OneOf<MarsKeys::PARAM>{std::move(params)}, Ranges<MarsKeys::PARAM>{{}})};
-}
-
-ParamMatcher matchParams(KeyDefValueType_t<MarsKeys::PARAM> param) {
-    return matchParams(std::vector{param});
-}
-
-ParamMatcher matchParams(Range<MarsKeys::PARAM> range) {
-    return ParamMatcher{std::make_tuple(OneOf<MarsKeys::PARAM>{{}}, Ranges<MarsKeys::PARAM>{{range}})};
-}
-
-ParamMatcher matchParams(ParamMatcher m) {
-    return m;
-}
-
-ParamMatcher matchParams(ParamMatcher m1, ParamMatcher&& m2) {
-    auto& m1Vec = std::get<0>(m1.matchers).values;
-    auto& m2Vec = std::get<0>(m2.matchers).values;
-
-    m1Vec.insert(m1Vec.end(), std::make_move_iterator(m2Vec.begin()), std::make_move_iterator(m2Vec.end()));
-
-
-    auto& m1Ranges = std::get<1>(m1.matchers).ranges;
-    auto& m2Ranges = std::get<1>(m2.matchers).ranges;
-
-    m1Ranges.insert(m1Ranges.end(), std::make_move_iterator(m2Ranges.begin()), std::make_move_iterator(m2Ranges.end()));
-
-    return m1;
-}
-
-template <typename Arg, typename Arg2, typename... More>
-ParamMatcher matchParams(Arg&& arg, Arg2&& arg2, More&&... more) {
-    return matchParams(matchParams(matchParams(std::forward<Arg>(arg)), matchParams(std::forward<Arg2>(arg2))),
-                       std::forward<More>(more)...);
 }
 
 

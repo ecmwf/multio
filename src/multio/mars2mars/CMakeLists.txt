@@ -1,14 +1,16 @@
 ecbuild_add_library(
-    TARGET multio-action-encode-mtg2
+    TARGET multio-mars2mars
 
     TYPE SHARED # Due to reliance on factory self registration this library cannot be static
 
     SOURCES
-        EncodeMtg2.cc
-        EncodeMtg2.h
-        EncodeMtg2Exception.cc
-        EncodeMtg2Exception.h
-        AtlasGeoSetter.h
+        Mars2MarsException.cc
+        Mars2MarsException.h
+        Rules.cc
+        Rules.h
+        rules/Setter.h
+        rules/Rule.h
+        rules/Rule.cc
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -17,8 +19,5 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        multio-mars2grib
-        multio-mars2mars
         eccodes
-        atlas
 )

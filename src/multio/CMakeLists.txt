@@ -43,6 +43,8 @@ list( APPEND multio_util_srcs
     util/PrehashedKey.h
     util/TypeTraits.h
     util/TypeToString.h
+    util/SampleMetadataGen.h
+    util/Print.h
 )
 
 if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
@@ -254,6 +256,8 @@ add_subdirectory(maestro)
 add_subdirectory(action)
 # add_subdirectory(api)
 add_subdirectory(tools)
+
+add_subdirectory(mars2mars)
 
 if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
     install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}

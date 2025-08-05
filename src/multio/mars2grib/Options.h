@@ -21,6 +21,8 @@
 
 namespace multio {
 
+// TODO rewrite with plain struct and split
+
 namespace mars2grib {
 enum class EncodeMtg2Def : std::uint64_t
 {

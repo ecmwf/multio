@@ -11,8 +11,8 @@
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/DataModelling.h"
-#include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/rules/Rule.h"
@@ -24,7 +24,8 @@
 #include "multio/message/Metadata.h"
 
 #include "multio/util/MioGribHandle.h"
-#include "test_multio_mars2grib_helper.h"
+
+#include "multio/util/SampleMetadataGen.h"
 
 #include <iostream>
 
@@ -53,7 +54,7 @@ CASE("Test level setter") {
         key<LevelDef::Type>(conf).set(tol);
         col.add(std::make_unique<LevelSetter>(conf));
 
-        auto md = mkMd();
+        auto md = util::sample_gen::mkMd();
         md.set("levtype", levtypeStr);
         md.set("misc-pv", std::vector<double>{{0.1, 0.2, 0.3}});
 

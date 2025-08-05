@@ -18,6 +18,7 @@ ecbuild_add_library(
         multiom/MultIOMRawEncoder.h
         multiom/MultIOMRules.cc
         multiom/MultIOMRules.h
+        rules/ParamMatcher.h
         rules/Matcher.h
         rules/Setter.h
         rules/Rule.h
@@ -39,4 +40,5 @@ ecbuild_add_library(
         multio
         multiom-encoders
         eccodes
+        atlas # To infer geo .... will be replaced by eckit-geo in future
 )

@@ -1,0 +1,81 @@
+/*
+ * (C) Copyright 1996- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation nor
+ * does it submit to any jurisdiction.
+ */
+
+#include "eckit/testing/Test.h"
+
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/DataModelling.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/KeyValueSet.h"
+#include "multio/mars2grib/EncoderCache.h"
+
+#include "multio/datamod/AtlasGeo.h"
+
+#include "multio/mars2grib/Options.h"
+#include "multio/message/Metadata.h"
+
+#include "multio/util/SampleMetadataGen.h"
+
+
+namespace multio::test {
+
+CASE("Test cache.getHandle with AIFS single keys") {
+    using namespace multio::mars2grib::rules;
+    using namespace multio::mars2grib;
+    using namespace multio::datamod;
+
+    EncoderCache cache{};
+    MiscKeyValueSet misc;
+    alterAndValidate(misc);
+
+    for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
+        try {
+            auto mars = read(MarsKeySet{}, md);
+
+            auto geo = makeGeometry(mars, true);
+
+            auto handle = cache.getHandle(mars, misc, geo);
+        }
+        catch (...) {
+            std::cout << "Error while generating & comparing message: " << md << std::endl;
+            throw;
+        }
+    }
+};
+
+CASE("Test cache.getHandle with AIFS ens keys") {
+    using namespace multio::mars2grib::rules;
+    using namespace multio::mars2grib;
+    using namespace multio::datamod;
+
+    EncoderCache cache{};
+    MiscKeyValueSet misc;
+    key<MiscKeys::TypeOfEnsembleForecast>(misc).set(1);
+    key<MiscKeys::NumberOfForecastsInEnsemble>(misc).set(50);
+    alterAndValidate(misc);
+
+    for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
+        try {
+            auto mars = read(MarsKeySet{}, md);
+            auto geo = makeGeometry(mars, true);
+            auto handle = cache.getHandle(mars, misc, geo);
+        }
+        catch (...) {
+            std::cout << "Error while generating & comparing message: " << md << std::endl;
+            throw;
+        }
+    }
+};
+
+}  // namespace multio::test
+
+int main(int argc, char** argv) {
+    return eckit::testing::run_tests(argc, argv);
+}

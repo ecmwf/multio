@@ -528,7 +528,7 @@ CASE("Test fixTimespanMax2T") {
     using namespace multio::mars2grib;
     using namespace multio::datamod;
 
-    std::vector<std::int64_t> paramIds{{122, 228026, 201}};
+    std::vector<std::int64_t> paramIds{{121, 228026, 201}};
 
     for (auto paramId : paramIds) {
         MarsKeyValueSet mars;
@@ -643,7 +643,7 @@ CASE("Test fixTimespanMin2T") {
     using namespace multio::mars2grib;
     using namespace multio::datamod;
 
-    std::vector<std::int64_t> paramIds{{121, 228027, 202}};
+    std::vector<std::int64_t> paramIds{{122, 228027, 202}};
 
     for (auto paramId : paramIds) {
         MarsKeyValueSet mars;

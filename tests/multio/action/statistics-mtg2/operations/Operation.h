@@ -37,13 +37,13 @@ public:
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 2; ++i) {
             pls[i] = getPayload(SIZE, step);
-            EXPECT_NO_THROW(env.plan().process(getMessage(pls[i], step)));
+            EXPECT_NO_THROW(env.process(getMessage(pls[i], step)));
             step += 24;
         }
         EXPECT_EQUAL(env.debugSink().size(), 0);
 
         // Flush last-step should trigger emitting the statistics message
-        EXPECT_NO_THROW(env.plan().process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
+        EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
         // Check the result
@@ -64,13 +64,13 @@ public:
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 45; ++i) {
             pls[i] = getPayload(SIZE, step);
-            EXPECT_NO_THROW(env.plan().process(getMessage(pls[i], step)));
+            EXPECT_NO_THROW(env.process(getMessage(pls[i], step)));
             step += 24;
         }
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
         // Flush last-step should trigger emitting the last statistics message
-        EXPECT_NO_THROW(env.plan().process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
+        EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
         EXPECT_EQUAL(env.debugSink().size(), 4);
 
         // Check the results

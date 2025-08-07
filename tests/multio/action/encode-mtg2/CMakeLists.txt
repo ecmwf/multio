@@ -13,3 +13,12 @@ ecbuild_add_test(
 )
 
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_encode-mtg2_with_sample_data
+    SOURCES test_encode-mtg2_with_sample_data.cc
+    NO_AS_NEEDED
+    LIBS multio-action-encode-mtg2 multio-action-debug-sink
+    ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
+)
+
+

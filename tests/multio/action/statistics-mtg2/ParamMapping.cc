@@ -102,11 +102,11 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
     });
     auto pl = eckit::Buffer();
     auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
-    EXPECT_NO_THROW(env.plan().process(msg));
+    EXPECT_NO_THROW(env.process(std::move(msg)));
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
     // Send a flush last-step to trigger emitting the statistics message
-    EXPECT_NO_THROW(env.plan().process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
+    EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
     EXPECT_EQUAL(env.debugSink().size(), 2);
 
     // Return the output parameter ID of the statistics message

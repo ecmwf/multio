@@ -188,7 +188,7 @@ auto fixSnowfallWaterEquivParam() {
 //-----------------------------------------------------------------------------
 
 auto fixTimespanMax2T() {
-    return rule(all(matchParams(122, 228026, 201)),  //
+    return rule(all(matchParams(121, 228026, 201)),  //
                 setKey<MarsKeys::PARAM>(237167));    //
 }
 
@@ -218,7 +218,7 @@ auto fixTimespanMeanFlashDensity() {
 }
 
 auto fixTimespanMin2T() {
-    return rule(all(matchParams(121, 228027, 202)),  //
+    return rule(all(matchParams(122, 228027, 202)),  //
                 setKey<MarsKeys::PARAM>(238167));    //
 }
 

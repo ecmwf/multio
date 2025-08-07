@@ -22,9 +22,9 @@
 
 namespace multio::test::statistics_mtg2 {
 
-using multio::test::MultioTestEnvironment;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::test::MultioTestEnvironment;
 
 
 CASE("simple checkpoint and restart") {
@@ -56,42 +56,34 @@ CASE("simple checkpoint and restart") {
 
         for (int step = 0; step < 6; ++step) {
             const double val = 1.0;
-            Metadata md{{
-                {"param", 130},
-                {"levtype", "sfc"},
-                {"grid", "custom"},
-                {"startDate", 20250430},
-                {"startTime", 0000},
-                {"step", step},
-                {"misc-precision", "double"}
-            }};
+            Metadata md{{{"param", 130},
+                         {"levtype", "sfc"},
+                         {"grid", "custom"},
+                         {"startDate", 20250430},
+                         {"startTime", 0000},
+                         {"step", step},
+                         {"misc-precision", "double"}}};
             eckit::Buffer pl{&val, sizeof(double)};
             Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
-            EXPECT_NO_THROW(env.plan().process(msg));
+            EXPECT_NO_THROW(env.process(std::move(msg)));
             EXPECT_EQUAL(env.debugSink().size(), 0);
         }
 
         {
-            Metadata md{{
-                {"flushKind", "step-and-restart"},
-                {"step", 5}
-            }};
+            Metadata md{{{"flushKind", "step-and-restart"}, {"step", 5}}};
             eckit::Buffer pl{};
             Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, std::move(pl)};
 
-            EXPECT_NO_THROW(env.plan().process(msg));
+            EXPECT_NO_THROW(env.process(std::move(msg)));
             EXPECT_EQUAL(env.debugSink().size(), 1);
             EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
             env.debugSink().pop();
         }
         {
-            Metadata md{{
-                {"flushKind", "end-of-simulation"},
-                {"step", 5}
-            }};
+            Metadata md{{{"flushKind", "end-of-simulation"}, {"step", 5}}};
             eckit::Buffer pl{};
             Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, std::move(pl)};
-            EXPECT_NO_THROW(env.plan().process(msg));
+            EXPECT_NO_THROW(env.process(std::move(msg)));
             EXPECT_EQUAL(env.debugSink().size(), 1);
             EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
             env.debugSink().pop();
@@ -127,28 +119,23 @@ CASE("simple checkpoint and restart") {
 
         for (int step = 6; step < 12; ++step) {
             const double val = 3.0;
-            Metadata md{{
-                {"param", 130},
-                {"levtype", "sfc"},
-                {"grid", "custom"},
-                {"startDate", 20250430},
-                {"startTime", 0000},
-                {"step", step},
-                {"misc-precision", "double"}
-            }};
+            Metadata md{{{"param", 130},
+                         {"levtype", "sfc"},
+                         {"grid", "custom"},
+                         {"startDate", 20250430},
+                         {"startTime", 0000},
+                         {"step", step},
+                         {"misc-precision", "double"}}};
             eckit::Buffer pl{&val, sizeof(double)};
             Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
-            EXPECT_NO_THROW(env.plan().process(msg));
+            EXPECT_NO_THROW(env.process(std::move(msg)));
             EXPECT_EQUAL(env.debugSink().size(), 0);
         }
         {
-            Metadata md{{
-                {"flushKind", "last-step"},
-                {"step", 11}
-            }};
+            Metadata md{{{"flushKind", "last-step"}, {"step", 11}}};
             eckit::Buffer pl{};
             Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, std::move(pl)};
-            EXPECT_NO_THROW(env.plan().process(msg));
+            EXPECT_NO_THROW(env.process(std::move(msg)));
             EXPECT_EQUAL(env.debugSink().size(), 2);
             EXPECT(env.debugSink().front().tag() == Message::Tag::Field);
             const double* payload = static_cast<const double*>(env.debugSink().front().payload().data());
@@ -165,7 +152,7 @@ CASE("simple checkpoint and restart") {
 }
 
 
-}  // multio::test::statistics_mtg2
+}  // namespace multio::test::statistics_mtg2
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

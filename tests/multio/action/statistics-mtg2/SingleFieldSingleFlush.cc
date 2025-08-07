@@ -59,7 +59,7 @@ void testSingleFieldSingleFlush(std::string flushKind) {
         }};
         eckit::Buffer pl{};
         Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
-        EXPECT_NO_THROW(env.plan().process(msg));
+        EXPECT_NO_THROW(env.process(std::move(msg)));
         EXPECT_EQUAL(env.debugSink().size(), 0);
     }
     {
@@ -69,7 +69,7 @@ void testSingleFieldSingleFlush(std::string flushKind) {
         }};
         eckit::Buffer pl{};
         Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, pl};
-        EXPECT_NO_THROW(env.plan().process(msg));
+        EXPECT_NO_THROW(env.process(std::move(msg)));
         EXPECT_EQUAL(env.debugSink().size(), 1);
         EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
     }
@@ -114,7 +114,7 @@ void testSingleFieldSingleFlushLastStep() {
         }};
         eckit::Buffer pl{};
         Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
-        EXPECT_NO_THROW(env.plan().process(msg));
+        EXPECT_NO_THROW(env.process(std::move(msg)));
         EXPECT_EQUAL(env.debugSink().size(), 0);
     }
     {
@@ -124,7 +124,7 @@ void testSingleFieldSingleFlushLastStep() {
         }};
         eckit::Buffer pl{};
         Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, pl};
-        EXPECT_NO_THROW(env.plan().process(msg));
+        EXPECT_NO_THROW(env.process(std::move(msg)));
         EXPECT_EQUAL(env.debugSink().size(), 2);
         EXPECT(env.debugSink().front().tag() == Message::Tag::Field);
         env.debugSink().pop();

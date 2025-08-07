@@ -60,13 +60,13 @@ CASE("Statistics Action Difference Static") {
     std::vector<double> payloadLast{{9, 8, 7, 6, 5, 4, 3, 2, 1, 0}};
     auto payloadExpected = expectedPayloadDifference<double>(payloadFirst, payloadLast);
 
-    EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(0, payloadFirst)));
+    EXPECT_NO_THROW(env.process(createStatisticsMessage(0, payloadFirst)));
     for (size_t step = 1; step <= 23; ++step) {
         auto payloadRandom = randomVector<double>(10, 0, 10, step);
-        EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloadRandom)));
+        EXPECT_NO_THROW(env.process(createStatisticsMessage(step, payloadRandom)));
     }
     EXPECT_EQUAL(env.debugSink().size(), 0);
-    EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(24, payloadLast)));
+    EXPECT_NO_THROW(env.process(createStatisticsMessage(24, payloadLast)));
     EXPECT_EQUAL(env.debugSink().size(), 1);
 
     auto& payload = env.debugSink().front().payload();
@@ -90,10 +90,10 @@ CASE("Statistics Action Difference Random") {
     auto payloadExpected = expectedPayloadDifference(payloads[0], payloads[payloads.size() - 1]);
 
     for (size_t step = 0; step <= 23; ++step) {
-        EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloads[step])));
+        EXPECT_NO_THROW(env.process(createStatisticsMessage(step, payloads[step])));
     }
     EXPECT_EQUAL(env.debugSink().size(), 0);
-    EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(24, payloads[24])));
+    EXPECT_NO_THROW(env.process(createStatisticsMessage(24, payloads[24])));
     EXPECT_EQUAL(env.debugSink().size(), 1);
 
     auto& payload = env.debugSink().front().payload();
@@ -120,10 +120,10 @@ CASE("Statistics Action Difference Random Multiple Windows") {
     // Run first window
     {
         for (size_t step = 0; step <= 23; ++step) {
-            EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloads[step])));
+            EXPECT_NO_THROW(env.process(createStatisticsMessage(step, payloads[step])));
         }
         EXPECT_EQUAL(env.debugSink().size(), 0);
-        EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(24, payloads[24])));
+        EXPECT_NO_THROW(env.process(createStatisticsMessage(24, payloads[24])));
         EXPECT_EQUAL(env.debugSink().size(), 1);
 
         auto& payload = env.debugSink().front().payload();
@@ -140,10 +140,10 @@ CASE("Statistics Action Difference Random Multiple Windows") {
     // Run second window (continue)
     {
         for (size_t step = 25; step <= 47; ++step) {
-            EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(step, payloads[step])));
+            EXPECT_NO_THROW(env.process(createStatisticsMessage(step, payloads[step])));
         }
         EXPECT_EQUAL(env.debugSink().size(), 0);
-        EXPECT_NO_THROW(env.plan().process(createStatisticsMessage(48, payloads[48])));
+        EXPECT_NO_THROW(env.process(createStatisticsMessage(48, payloads[48])));
         EXPECT_EQUAL(env.debugSink().size(), 1);
 
         auto& payload = env.debugSink().front().payload();

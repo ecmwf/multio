@@ -39,7 +39,7 @@ void* MultIOMRawEncoder::get() const {
 }
 
 
-std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::prepare(std::unique_ptr<util::MioGribHandle> workSample,
+std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::allocateAndPreset(std::unique_ptr<util::MioGribHandle> workSample,
                                                                 const MultIOMDict& mars, const MultIOMDict& par,
                                                                 const MultIOMDict& geo) {
     if (multio_grib2_raw_encoder_prepare(encoder_.get(), mars.get(), par.get(), geo.get(), workSample->raw()) != 0) {

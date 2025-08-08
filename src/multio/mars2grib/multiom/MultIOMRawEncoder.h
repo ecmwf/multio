@@ -62,7 +62,7 @@ struct MultIOMRawEncoder {
 
     // Calls prepare, allocate and preset on a sample
     // TODO: Should not take parametrization - will be changed after C++ migration
-    std::unique_ptr<util::MioGribHandle> prepare(std::unique_ptr<util::MioGribHandle>, const MultIOMDict& mars,
+    std::unique_ptr<util::MioGribHandle> allocateAndPreset(std::unique_ptr<util::MioGribHandle>, const MultIOMDict& mars,
                                                  const MultIOMDict& par, const MultIOMDict& geo);
 
     // Applies runtime changes on a prepared samel

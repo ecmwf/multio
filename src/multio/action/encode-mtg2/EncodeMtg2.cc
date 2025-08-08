@@ -57,6 +57,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto miscKeys = read(keySet<MiscKeys>().scoped(), md);
         // Write unscoped misc keys
         miscKeys.keySet.unscoped();
+        
 
         auto geoKeySets = getGeometryKeySet(marsKeys);
 
@@ -84,10 +85,11 @@ void EncodeMtg2::executeImpl(Message msg) {
                 return geoKeys;
             },
             geoKeySets);
-
+            
 
         // Apply mappings
         auto mappingResult = mars2mars::applyMappings(marsKeys, miscKeys);
+       
 
         // TODO use upcoming C++ interface
         std::unique_ptr<util::MioGribHandle> sample = cache_.getHandle(marsKeys, miscKeys, geoKeys);

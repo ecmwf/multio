@@ -213,9 +213,8 @@ enum class MiscKeys : std::uint64_t
 {
     TablesVersion,
     GeneratingProcessIdentifier,
-    Typeofprocesseddata,
+    TypeOfProcessedData,
     InitialStep,
-    TimeIncrement,
     TimeIncrementInSeconds,
     LengthOfTimeWindow,
     LengthOfTimeWindowInSeconds,
@@ -238,14 +237,15 @@ MULTIO_KEY_SET_DESCRIPTION(
     "misc",                                                                                                    //
     KeyDef<MiscKeys::TablesVersion, std::int64_t>{"tablesVersion"}.tagOptional(),                              //
     KeyDef<MiscKeys::GeneratingProcessIdentifier, std::int64_t>{"generatingProcessIdentifier"}.tagOptional(),  //
-    KeyDef<MiscKeys::Typeofprocesseddata, std::int64_t>{"typeOfProcessedData"}.tagOptional(),                  //
+    KeyDef<MiscKeys::TypeOfProcessedData, std::int64_t>{"typeOfProcessedData"}.tagOptional(),                  //
     KeyDef<MiscKeys::InitialStep, std::int64_t>{"initialStep"}.withDefault(0),                                 //
-    KeyDef<MiscKeys::TimeIncrement, std::int64_t>{"lengthOfTimeStep"}.tagOptional(),                           //
-    KeyDef<MiscKeys::TimeIncrementInSeconds, std::int64_t>{"lengthOfTimeStepInSeconds"}.withDefault(3600),     //
+    KeyDef<MiscKeys::TimeIncrementInSeconds, std::int64_t>{"timeIncrementInSeconds"}.withDefault(3600),        //
     KeyDef<MiscKeys::LengthOfTimeWindow, std::int64_t>{"lengthOfTimeWindow"}.tagOptional(),                    //
     KeyDef<MiscKeys::LengthOfTimeWindowInSeconds, std::int64_t>{"lengthOfTimeWindowInSeconds"}.tagOptional(),  //
-    KeyDef<MiscKeys::BitmapPresent, bool, mapper::IntToBoolMapper>{"bitmapPresent"}.tagOptional(),             //
-    KeyDef<MiscKeys::MissingValue, double>{"missingValue"}.tagOptional(),                                      //
+
+    KeyDef<MiscKeys::BitmapPresent, bool, mapper::IntToBoolMapper>{"bitmapPresent"}.tagOptional(),  //
+    KeyDef<MiscKeys::MissingValue, double>{"missingValue"}.tagOptional(),                           //
+
     KeyDef<MiscKeys::TypeOfEnsembleForecast, std::int64_t>{"typeOfEnsembleForecast"}.tagOptional(),            //
     KeyDef<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>{"numberOfForecastsInEnsemble"}.tagOptional(),  //
 

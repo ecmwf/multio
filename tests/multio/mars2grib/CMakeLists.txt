@@ -5,7 +5,8 @@ set(PREFIX multio_tests_mars2grib)
 file(REAL_PATH "../../../../" IFS_INSTALL_DIR BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 list( APPEND _mars2grib_test_data
-  "mars-encoder-conf-test.tar.xz"
+  "mars-encoder-conf-test-aifs.tar.xz"
+  "mars-encoder-conf-test-era6-5220.tar.xz"
 )
 
 ecbuild_get_test_multidata(

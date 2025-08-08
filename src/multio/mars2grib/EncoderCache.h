@@ -38,7 +38,8 @@ public:
     std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                    const datamod::MiscKeyValueSet& miscKeys,
                                                    const datamod::Geometry& geoKeys);
-                                                   
+
+protected:
     // Prepare a grib handle with already mapped MultIOM dicts
     std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                    const MultIOMDict& marsDict, const MultIOMDict& parDict,

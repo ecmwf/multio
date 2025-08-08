@@ -196,7 +196,7 @@ auto packingRules() {
 }
 auto packingRulesSH() {
     return exclusiveRuleList(  //
-        rule(OneOf<MarsKeys::PACKING>{{"complex"}}, dataRepres(52)));
+        rule(OneOf<MarsKeys::PACKING>{{"complex"}}, dataRepres(51)));
 }
 
 
@@ -336,7 +336,6 @@ auto paramSFCRules() {
                      231001, 231002, 231003, 231005, 231010, 231012, 231057, 231058, paramRange(233000, 233031),
                      260259)),  //
              timeRange(TimeRangeType::SinceBeginningOfForecast, TypeOfStatisticalProcessing::Accumulation),
-             overallLengthOfTimeRange("1h"),      //
              typeOfLevel(TypeOfLevel::Surface)),  //
         rule(all(matchLevType(LevType::SFC),      //
                  matchParams(228051, 228053)),    //
@@ -448,8 +447,7 @@ auto paramSFCRules() {
         rule(all(matchLevType(LevType::SFC),                                                               //
                  matchParams(140251)),                                                                     //
              pointInTime(),                                                                                //
-             dirFreq(),                                                                                    //
-             typeOfLevel(TypeOfLevel::Surface)),                                                           //
+             dirFreq()),                                                                                   //
         rule(all(matchLevType(LevType::SFC),                                                               //
                  matchParams(262104)),                                                                     //
              pointInTime(),                                                                                //
@@ -645,6 +643,12 @@ auto paramSatelliteRules() {
 //-----------------------------------------------------------------------------
 // Final composed param rules
 //-----------------------------------------------------------------------------
+
+// TODO can be optimized by pulling the levtype check one level out -
+// exclusiveRuleList(
+//    chainedRuleList(rule(matchLevType(XXX)), paramXXXRules()),
+//    ....
+// )
 
 auto paramRules() {
     return mergeRuleList(      //

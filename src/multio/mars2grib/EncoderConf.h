@@ -333,7 +333,7 @@ using mars2grib::EncoderChemDef;
 MULTIO_KEY_SET_DESCRIPTION(EncoderChemDef,                                                            //
                            "chemistry-configurator",                                                  //
                                                                                                       //
-                           KeyDef<EncoderChemDef::Type, std::string>{"type"}.withDefault("default"))  //
+                           KeyDef<EncoderChemDef::Type, std::string>{"type"}.withDefault("chemical"))  //
 };  // namespace datamod
 
 

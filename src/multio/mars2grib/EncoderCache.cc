@@ -9,22 +9,54 @@
  */
 
 #include "multio/mars2grib/EncoderCache.h"
+#include <exception>
+#include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/core/KeyValueSet.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
-#include "multio/mars2grib/multiom/MultIOMRules.h"
 #include "multio/util/MioGribHandle.h"
 
 #include "eckit/filesystem/PathName.h"
 
+#include <sstream>
+
 namespace multio::mars2grib {
 
 namespace {
+
+std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGribHandle> sample,
+                                                   const datamod::MarsKeyValueSet& marsKeys) {
+
+    switch (datamod::key<datamod::MarsKeys::REPRES>(marsKeys).get()) {
+        case datamod::Repres::SH: {
+            sample->setValue("numberOfDataPoints", 6);
+            sample->setValue("numberOfValues", 6);
+            sample->setValue("bitsPerValue", 16);
+            sample->setValue("typeOfFirstFixedSurface", 105);
+            sample->setValue("scaleFactorOfFirstFixedSurface", 0);
+            sample->setValue("scaledValueOfFirstFixedSurface", 0);
+            sample->setValue("gridDefinitionTemplateNumber", 50);
+            sample->setValue("J", 1);
+            sample->setValue("K", 1);
+            sample->setValue("M", 1);
+            sample->setValue("spectralType", 1);
+            sample->setValue("spectralMode", 1);
+            sample->setValue("dataRepresentationTemplateNumber", 51);
+            return sample;
+        }
+        case datamod::Repres::GG: {
+            sample->setValue("gridType", std::string("reduced_gg"));
+            return sample;
+        }
+        default: {
+            return sample;
+        }
+    }
+}
 
 std::unique_ptr<util::MioGribHandle> loadSample(const EncodeMtg2Conf& conf, const std::string& sample) {
     using namespace datamod;
@@ -81,7 +113,8 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyVal
     auto sample = baseSample_->duplicate();
 
     // Prepare sample
-    sample = encoder.prepare(std::move(sample), mars, par, geo);
+    sample = prepareSample(std::move(sample), marsKeys);
+    sample = encoder.allocateAndPreset(std::move(sample), mars, par, geo);
 
     // Move encoder and prepared sample to cache
     // return cache_
@@ -103,32 +136,45 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::Mars
 std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
                                                              const datamod::MiscKeyValueSet& miscKeys,
                                                              const datamod::Geometry& geoKeys) {
-    MultIOMDict mars{MultIOMDictKind::MARS};
-    MultIOMDict misc{MultIOMDictKind::Parametrization};
+    try {
+        MultIOMDict mars{MultIOMDictKind::MARS};
+        MultIOMDict misc{MultIOMDictKind::Parametrization};
 
-    using namespace datamod;
-    write(marsKeys, mars);
-    write(miscKeys, misc);
+        using namespace datamod;
+        write(marsKeys, mars);
+        write(miscKeys, misc);
 
-    // Setup MultIOM dict
-    const auto& repres = key<MarsKeys::REPRES>(marsKeys);
-    MultIOMDict geom{([&]() {
-        switch (repres.get()) {
-            case Repres::GG:
-                return MultIOMDictKind::ReducedGG;
-            case Repres::HEALPix:
-                return MultIOMDictKind::HEALPix;
-            case Repres::LL:
-                return MultIOMDictKind::RegularLL;
-            case Repres::SH:
-                return MultIOMDictKind::SH;
-        }
-        throw Mars2GribException("unkown repres", Here());
-    })()};
+        // Setup MultIOM dict
+        const auto& repres = key<MarsKeys::REPRES>(marsKeys);
+        MultIOMDict geom{([&]() {
+            switch (repres.get()) {
+                case Repres::GG:
+                    return MultIOMDictKind::ReducedGG;
+                case Repres::HEALPix:
+                    return MultIOMDictKind::HEALPix;
+                case Repres::LL:
+                    return MultIOMDictKind::RegularLL;
+                case Repres::SH:
+                    return MultIOMDictKind::SH;
+            }
+            throw Mars2GribException("unkown repres", Here());
+        })()};
 
-    std::visit([&](auto& specificGeoKeys) { write(specificGeoKeys, geom); }, geoKeys);
+        std::visit([&](auto& specificGeoKeys) { write(specificGeoKeys, geom); }, geoKeys);
 
-    return getHandle(marsKeys, mars, misc, geom);
+        return getHandle(marsKeys, mars, misc, geom);
+    }
+    catch (...) {
+        std::ostringstream oss;
+        oss << "Failure in EncoderCache::getSample" << std::endl;
+        oss << "Mars: ";
+        util::print(oss, marsKeys);
+        oss << std::endl << "Misc: ";
+        util::print(oss, miscKeys);
+        oss << std::endl << "Geo: ";
+        util::print(oss, geoKeys);
+        std::throw_with_nested(mars2grib::Mars2GribException(oss.str(), Here()));
+    }
 }
 
 std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,

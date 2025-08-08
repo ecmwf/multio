@@ -20,6 +20,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/Action.h"
 #include "multio/config/PlanConfiguration.h"
+#include "multio/message/Parametrization.h"
 #include "multio/util/Substitution.h"
 #include "multio/util/Timing.h"
 
@@ -116,6 +117,7 @@ void Plan::process(message::Message msg) {
                         [this, lmsg = std::move(lmsg)]() {
                             std::ostringstream oss;
                             oss << "Plan \"" << name_ << "\" with Message: " << lmsg << std::endl;
+                            oss << "Parametrization: " << message::Parametrization::instance().get() << std::endl;
                             return oss.str();
                         });
 }

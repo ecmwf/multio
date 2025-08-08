@@ -128,7 +128,15 @@ void detailedCompare(const multio::datamod::KeyValueSet<KS>& computed,
                     }
                 }
                 else {
-                    EXPECT((compEntry == exptEntry));
+                    if (compEntry != exptEntry) {
+                        std::ostringstream oss;
+                        oss << "Entries do not compare - got: ";
+                        util::print(oss, compEntry);
+                        oss << " - expected: ";
+                        util::print(oss, exptEntry);
+                        oss << std::endl;
+                        throw eckit::Exception(oss.str(), Here());
+                    }
                 }
             }
         },
@@ -191,13 +199,50 @@ CASE("Test real rules matchers with AIFS ens keys") {
 };
 
 
-CASE("Test real rules matchers with JSON rules") {
+CASE("Test real rules matchers with AIFS JSON rules") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
     using namespace multio::datamod;
 
     auto marsMessages
-        = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test.json"}}}
+        = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-aifs.json"}}}
+              .getSubConfigurations("rules");
+
+    std::size_t i = 0;
+    for (auto subConf : marsMessages) {
+        ++i;
+        eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
+        try {
+            MarsKeyValueSet mars = read(MarsKeySet{}, marsConf);
+            EncoderSections expectedSections = read(EncoderSectionsKeySet{}, subConf.getSubConfiguration("rule"));
+
+            EncoderSections computedSections;
+
+            EXPECT(mars2grib::rules::allRules()(mars, computedSections));
+            EXPECT_NO_THROW(alterAndValidate(computedSections));
+
+            detailedCompare(computedSections, expectedSections);
+        }
+        catch (...) {
+            // Print additional information and rethrow
+            std::cout << i << "/" << marsMessages.size() << ": error for mars conf: ";
+            util::print(std::cout, marsConf);
+            std::cout << std::endl;
+            util::print(std::cout, subConf);
+            std::cout << std::endl;
+            throw;
+        };
+    }
+};
+
+
+CASE("Test real rules matchers with era6 5220 JSON rules") {
+    using namespace multio::mars2grib::rules;
+    using namespace multio::mars2grib;
+    using namespace multio::datamod;
+
+    auto marsMessages
+        = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-era6-5220.json"}}}
               .getSubConfigurations("rules");
 
     std::size_t i = 0;

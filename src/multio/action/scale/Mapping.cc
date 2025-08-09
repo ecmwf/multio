@@ -11,7 +11,7 @@
 
 namespace multio::action::scale {
 
-using datamod::glossary;
+namespace dm = multio::datamod;
 
 ScaleMapping::ScaleMapping(const config::ComponentConfiguration& compConf) : hasMapping_(false), scaleMap_{} {
 
@@ -35,8 +35,8 @@ void ScaleMapping::applyMapping(message::Metadata& md) const {
 
         auto it = scaleMap_.find(cparam);
         if (it != scaleMap_.end()) {
-            md.set(glossary().paramId, std::stoll(it->second));
-            md.set(glossary().param, it->second.c_str());
+            md.set(dm::legacy::ParamId, std::stoll(it->second));
+            md.set(dm::legacy::Param, it->second.c_str());
         }
     }
 }

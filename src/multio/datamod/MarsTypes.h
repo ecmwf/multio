@@ -10,16 +10,14 @@
 
 #pragma once
 
-#include "multio/datamod/ReaderWriter.h"
+#include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/core/TypeParserDumper.h"
 
 #include "multio/util/Hash.h"
 #include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
-#include "multio/util/TypeTraits.h"
-#include "multio/util/VariantHelpers.h"
 
 #include <chrono>
-#include <sstream>
 #include <string>
 #include <variant>
 
@@ -29,7 +27,46 @@ namespace multio::datamod {
 //-----------------------------------------------------------------------------
 
 
-using TimeDuration = std::variant<std::chrono::hours, std::chrono::seconds>;
+using TimeDurationVariant = std::variant<std::chrono::hours, std::chrono::seconds>;
+
+// Time duration will get a proper type because printing it has a special domain specific meaning
+// that goes beyond chrono::hours and chrono::seconds
+class TimeDuration : public TimeDurationVariant {
+public:
+    using TimeDurationVariant::TimeDurationVariant;
+    using TimeDurationVariant::operator=;
+
+    TimeDuration(const TimeDuration& other) = default;
+    TimeDuration(TimeDuration&&) noexcept = default;
+
+    TimeDuration& operator=(const TimeDuration& other) = default;
+    TimeDuration& operator=(TimeDuration&& other) noexcept = default;
+
+    template <typename Func>
+    decltype(auto) visit(Func&& func) const {
+        return std::visit(std::forward<Func>(func), static_cast<const TimeDurationVariant&>(*this));
+    }
+    template <typename Func>
+    decltype(auto) visit(Func&& func) {
+        return std::visit(std::forward<Func>(func), static_cast<TimeDurationVariant&>(*this));
+    }
+};
+
+}  // namespace multio::datamod
+
+
+namespace std {
+template <>
+struct variant_size<multio::datamod::TimeDuration> : variant_size<multio::datamod::TimeDurationVariant> {};
+
+template <std::size_t I>
+struct variant_alternative<I, multio::datamod::TimeDuration>
+    : variant_alternative<I, multio::datamod::TimeDurationVariant> {};
+}  // namespace std
+
+//-----------------------------------------------------------------------------
+
+namespace multio::datamod {
 
 // TODO Represent origin as enum and add mapping from stringified origin to enum with int values
 using IntOrString = std::variant<std::int64_t, std::string>;
@@ -44,7 +81,6 @@ enum class Repres : std::size_t
     HEALPix  // We added it here because we use repres as an intermediate type. Officially healpix is not mapped to any
              // of the others...
 };
-
 
 
 // To be renamed and kept internal -
@@ -72,20 +108,24 @@ namespace multio::util {
 
 template <>
 struct Print<datamod::TimeDuration> {
-    static void print(std::ostream& os, const datamod::TimeDuration& v);
+    static void print(PrintStream& ps, const datamod::TimeDuration& v);
 };
 
 template <>
 struct Print<datamod::Repres> {
-    static void print(std::ostream& os, const datamod::Repres& v);
+    static void print(PrintStream& ps, const datamod::Repres& v);
 };
 
 template <>
 struct Print<datamod::LevType> {
-    static void print(std::ostream& os, const datamod::LevType& v);
+    static void print(PrintStream& ps, const datamod::LevType& v);
 };
 
 
+template <>
+struct TypeToString<datamod::TimeDuration> {
+    std::string operator()() const { return "datamod::TimeDuration"; };
+};
 template <>
 struct TypeToString<datamod::Repres> {
     std::string operator()() const { return "datamod::Repres"; };
@@ -99,41 +139,41 @@ struct TypeToString<datamod::LevType> {
 namespace multio::datamod {
 
 template <>
-struct WriteSpec<TimeDuration> {
-    static std::variant<std::int64_t, std::string> write(const TimeDuration&);
+struct DumpType<TimeDuration> {
+    static std::variant<std::int64_t, std::string> dump(const TimeDuration&);
 };
 
 
 template <>
-struct ReadSpec<TimeDuration> {
-    static TimeDuration read(std::int64_t hours) noexcept;
-    static TimeDuration read(const std::string& s);
+struct ParseType<TimeDuration> {
+    static TimeDuration parse(std::int64_t hours) noexcept;
+    static TimeDuration parse(const std::string& s);
 };
 
 
 template <>
-struct WriteSpec<Repres> {
-    static std::string write(Repres);
+struct DumpType<Repres> {
+    static std::string dump(Repres);
 };
 
 template <>
-struct ReadSpec<Repres> {
-    static inline Repres read(Repres v) noexcept { return v; };
-    static Repres read(const std::string& s);
+struct ParseType<Repres> {
+    static inline Repres parse(Repres v) noexcept { return v; };
+    static Repres parse(const std::string& s);
 };
 
 
 Repres represFromGrid(const std::string& grid);
 
 template <>
-struct WriteSpec<LevType> {
-    static std::string write(LevType);
+struct DumpType<LevType> {
+    static std::string dump(LevType);
 };
 
 template <>
-struct ReadSpec<LevType> {
-    static inline LevType read(LevType v) noexcept { return v; };
-    static LevType read(const std::string& s);
+struct ParseType<LevType> {
+    static inline LevType parse(LevType v) noexcept { return v; };
+    static LevType parse(const std::string& s);
 };
 
 
@@ -143,15 +183,15 @@ namespace mapper {
 // Currently `metkit::Param` is used to create a paramId from string
 // There is also the existing type `metkit::ParamID` which (unfortunately) can not be constructed from an eisting int.
 struct ParamMapper {
-    static std::int64_t write(std::int64_t) noexcept;
-    static std::int64_t read(std::int64_t) noexcept;
-    static std::int64_t read(const std::string&);
+    static std::int64_t dump(std::int64_t) noexcept;
+    static std::int64_t parse(std::int64_t) noexcept;
+    static std::int64_t parse(const std::string&);
 };
 
 struct IntToBoolMapper {
-    static inline bool write(bool v) noexcept { return v; };
-    static inline bool read(bool v) noexcept { return v; };
-    static inline bool read(std::int64_t v) { return v > 0; };
+    static inline bool dump(bool v) noexcept { return v; };
+    static inline bool parse(bool v) noexcept { return v; };
+    static inline bool parse(std::int64_t v) { return v > 0; };
 };
 
 }  // namespace mapper
@@ -162,9 +202,8 @@ struct IntToBoolMapper {
 template <>
 struct std::hash<multio::datamod::TimeDuration> {
     std::size_t operator()(const multio::datamod::TimeDuration& td) const noexcept {
-        return std::visit(
-            eckit::Overloaded{[&](const std::chrono::hours& h) { return multio::util::hashCombine(h.count(), 'h'); },
-                              [&](const std::chrono::seconds& s) { return multio::util::hashCombine(s.count(), 's'); }},
-            td);
+        return td.visit(eckit::Overloaded{
+            [&](const std::chrono::hours& h) { return multio::util::hashCombine(h.count(), 'h'); },
+            [&](const std::chrono::seconds& s) { return multio::util::hashCombine(s.count(), 's'); }});
     }
 };

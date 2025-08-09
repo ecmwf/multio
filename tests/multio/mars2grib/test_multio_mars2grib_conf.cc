@@ -13,7 +13,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/EncoderConf.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/util/Substitution.h"
@@ -23,14 +23,15 @@
 
 namespace multio::test {
 
+namespace dm = multio::datamod;
+
 mars2grib::EncodeMtg2Conf getConf() {
-    using namespace datamod;
-
     mars2grib::EncodeMtg2Conf opts;
-    datamod::alterAndValidate(opts);
+    dm::applyRecordDefaults(opts);
+    dm::validateRecord(opts);
 
-    auto& root = key<datamod::EncodeMtg2Def::KnowledgeRoot>(opts).get();
-    key<EncodeMtg2Def::EncodingRules>(opts).set(root + "/share/multiom/encodings/encoding-rules.yaml");
+    auto& root = opts.knowledgeRoot.get();
+    opts.encodingRules.set(root + "/share/multiom/encodings/encoding-rules.yaml");
 
     setenv("IFS_INSTALL_DIR", std::string(root).c_str(), 0);
 
@@ -139,8 +140,7 @@ bool compareLocalConf(const eckit::LocalConfiguration& lhs, const eckit::LocalCo
 };
 
 std::vector<LoadedConf> loadRuleFiles(const mars2grib::EncodeMtg2Conf& opts) {
-    using namespace datamod;
-    auto rules = eckit::LocalConfiguration{eckit::YAMLConfiguration{key<EncodeMtg2Def::EncodingRules>(opts).get()}};
+    auto rules = eckit::LocalConfiguration{eckit::YAMLConfiguration{opts.encodingRules.get()}};
     if (!rules.has("encoding-rules")) {
         std::ostringstream oss;
         oss << "No key \"encoding-rules\" in rules file " << rules << std::endl;
@@ -165,14 +165,13 @@ CASE("Test parsing and comparing rule files") {
         using namespace datamod;
         std::cout << "Parsing and comparing rule: " << loadedRule.file << std::endl;
 
-        auto encoderInf = read(mars2grib::EncoderInfoKeySet{}, loadedRule.conf);
-
-        auto readConf = loadedRule.conf.getSubConfiguration("encoder");
+        auto encoderConf = loadedRule.conf.getSubConfiguration("encoder");
+        auto sections = dm::readRecord<mars2grib::SectionsConf>(encoderConf);
         // Delete key "type" because we don't consider it
-        // readConf.remove("type");
+        // encoderConf.remove("type");
 
-        auto rewriteConf = write<eckit::LocalConfiguration>(key<EncoderInfoDef::Sections>(encoderInf).get());
-        EXPECT(compareLocalConf(readConf, rewriteConf));
+        auto rewriteConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
+        EXPECT(compareLocalConf(encoderConf, rewriteConf));
     }
 };
 

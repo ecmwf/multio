@@ -1,8 +1,8 @@
 #include "multio/mars2grib/sections/Level.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/GribKeys.h"
 #include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/core/Compare.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/sections/SectionSetter.h"
 
@@ -10,60 +10,54 @@
 
 namespace multio::mars2grib::sections {
 
-std::optional<datamod::KeyDefValueType_t<datamod::MarsKeys::LEVELIST>> levelForTypeOfLevel(
-    const LevelKeyValueSet& levelConf, const datamod::MarsKeyValueSet& mars, const datamod::MiscKeyValueSet& misc) {
-    using namespace datamod;
-    auto tol = key<LevelDef::Type>(levelConf).get();
-    const auto& fixedLevel = key<LevelDef::FixedLevel>(levelConf);
-    const auto& levelist = key<MarsKeys::LEVELIST>(mars);
-
+std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf, const dm::MarsRecord& mars,
+                                              const dm::MiscRecord& misc) {
     auto throwLevelistMissing = [&]() {
         std::ostringstream oss;
         oss << "Missing levelist to extract level for typeOfLevel ";
-        util::print(oss, tol);
+        util::print(oss, levelConf.type);
         oss << ". Passed MARS keys: ";
         util::print(oss, mars);
         throw Mars2GribException(oss.str(), Here());
     };
-    switch (tol) {
+    switch (levelConf.type) {
         // The 2m and 10m entries can be removed once the fortran encoder is removed
-        case TypeOfLevel::HeightAboveSea:
-        case TypeOfLevel::HeightAboveSeaAt10m:
-        case TypeOfLevel::HeightAboveGroundAt2m:
-        case TypeOfLevel::HeightAboveGroundAt10m:
-        case TypeOfLevel::HeightAboveGround: {
-            const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-            const bool isSFC = levtype.has() && levtype.get() == LevType::SFC;
+        case dm::TypeOfLevel::HeightAboveSea:
+        case dm::TypeOfLevel::HeightAboveSeaAt10m:
+        case dm::TypeOfLevel::HeightAboveGroundAt2m:
+        case dm::TypeOfLevel::HeightAboveGroundAt10m:
+        case dm::TypeOfLevel::HeightAboveGround: {
+            const bool isSFC = mars.levtype.has() && mars.levtype.get() == dm::LevType::SFC;
 
-            if (fixedLevel.has()) {
-                return fixedLevel.get();
+            if (levelConf.fixedLevel.has()) {
+                return levelConf.fixedLevel.get();
             }
             if (isSFC) {
-                if (!levelist.has()) {
+                if (!mars.levelist.has()) {
                     throwLevelistMissing();
                 }
-                return levelist.get();
+                return mars.levelist.get();
             }
             return {};
         }
-        case TypeOfLevel::Snow:
-        case TypeOfLevel::SnowLayer:
-        case TypeOfLevel::SoilLayer:
-        case TypeOfLevel::SeaIceLayer:
-        case TypeOfLevel::IsobaricInPa:
-        case TypeOfLevel::PotentialVorticity:
-        case TypeOfLevel::Theta:
-        case TypeOfLevel::Hybrid: {
-            if (!levelist.has()) {
+        case dm::TypeOfLevel::Snow:
+        case dm::TypeOfLevel::SnowLayer:
+        case dm::TypeOfLevel::SoilLayer:
+        case dm::TypeOfLevel::SeaIceLayer:
+        case dm::TypeOfLevel::IsobaricInPa:
+        case dm::TypeOfLevel::PotentialVorticity:
+        case dm::TypeOfLevel::Theta:
+        case dm::TypeOfLevel::Hybrid: {
+            if (!mars.levelist.has()) {
                 throwLevelistMissing();
             }
-            return levelist.get();
+            return mars.levelist.get();
         }
-        case TypeOfLevel::IsobaricInhPa: {
-            if (!levelist.has()) {
+        case dm::TypeOfLevel::IsobaricInhPa: {
+            if (!mars.levelist.has()) {
                 throwLevelistMissing();
             }
-            return levelist.get() / 100;
+            return mars.levelist.get() / 100;
         }
         default:
             return {};
@@ -71,197 +65,197 @@ std::optional<datamod::KeyDefValueType_t<datamod::MarsKeys::LEVELIST>> levelForT
 }
 
 
-datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& levelConf,
-                                                        const datamod::MarsKeyValueSet& mars,
-                                                        const datamod::MiscKeyValueSet& misc) {
-    using namespace datamod;
-    auto tol = key<LevelDef::Type>(levelConf).get();
-    const auto& fixedLevel = key<LevelDef::FixedLevel>(levelConf);
-    const auto& levelist = key<MarsKeys::LEVELIST>(mars);
-
+dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelConf, const dm::MarsRecord& mars,
+                                                const dm::MiscRecord& misc) {
     auto throwLevelistMissing = [&]() {
         std::ostringstream oss;
         oss << "Missing levelist to extract horizontal keys for typeOfLevel ";
-        util::print(oss, tol);
+        util::print(oss, levelConf.type);
         oss << ". Passed MARS keys: ";
         util::print(oss, mars);
         throw Mars2GribException(oss.str(), Here());
     };
 
     auto handleHeightAbove = [&](std::int64_t typeOfFirstFixedSurface) {
-        HorizontalKeyValueSet ret;
+        dm::HorizontalGribKeys ret;
 
-        const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-        const bool isSFC = levtype.has() && levtype.get() == LevType::SFC;
-        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
-        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
+        const bool isSFC = mars.levtype.has() && mars.levtype.get() == dm::LevType::SFC;
+        ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
+        ret.typeOfSecondFixedSurface.set(255);
 
-        if (fixedLevel.has()) {
-            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(fixedLevel.get());
-            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
+        if (levelConf.fixedLevel.has()) {
+            ret.scaledValueOfFirstFixedSurface.set(levelConf.fixedLevel.get());
+            ret.scaleFactorOfFirstFixedSurface.set(0);
         }
         if (isSFC) {
-            if (levelist.isMissing()) {
+            if (mars.levelist.isUnset()) {
                 throwLevelistMissing();
             }
-            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get());
-            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
+            ret.scaledValueOfFirstFixedSurface.set(mars.levelist.get());
+            ret.scaleFactorOfFirstFixedSurface.set(0);
         }
-        alterAndValidate(ret);
+        dm::applyRecordDefaults(ret);
+        dm::validateRecord(ret);
         return ret;
     };
 
 
     auto handle2SurfacesWithoutLevel
         = [&](std::int64_t typeOfFirstFixedSurface, std::int64_t typeOfSecondFixedSurface) {
-              HorizontalKeyValueSet ret;
-              ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
-              ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(typeOfSecondFixedSurface);
-              alterAndValidate(ret);
+              dm::HorizontalGribKeys ret;
+              ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
+              ret.typeOfSecondFixedSurface.set(typeOfSecondFixedSurface);
+              dm::applyRecordDefaults(ret);
+              dm::validateRecord(ret);
               return ret;
           };
 
     auto handle1SurfaceWithoutLevel = [&](std::int64_t typeOfFirstFixedSurface) {
-        HorizontalKeyValueSet ret;
-        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
-        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
-        alterAndValidate(ret);
+        dm::HorizontalGribKeys ret;
+        ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
+        ret.typeOfSecondFixedSurface.set(255);
+        dm::applyRecordDefaults(ret);
+        dm::validateRecord(ret);
         return ret;
     };
 
     auto handle1SurfaceWithLevel
         = [&](std::int64_t typeOfFirstFixedSurface, std::optional<std::string> pressureUnits = {}) {
-              HorizontalKeyValueSet ret;
+              dm::HorizontalGribKeys ret;
 
               if (pressureUnits) {
-                  ret.set<HorizontalKeys::PressureUnits>(std::move(*pressureUnits));
+                  ret.pressureUnits.set(std::move(*pressureUnits));
               }
 
-              const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-              ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfFirstFixedSurface);
-              ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(255);
+              ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
+              ret.typeOfSecondFixedSurface.set(255);
 
-              if (fixedLevel.has()) {
-                  ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(fixedLevel.get());
+              if (levelConf.fixedLevel.has()) {
+                  ret.scaledValueOfFirstFixedSurface.set(levelConf.fixedLevel.get());
               }
               else {
-                  if (levelist.isMissing()) {
+                  if (mars.levelist.isUnset()) {
                       throwLevelistMissing();
                   }
-                  ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get());
+                  ret.scaledValueOfFirstFixedSurface.set(mars.levelist.get());
               }
-              ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
-              alterAndValidate(ret);
+              ret.scaleFactorOfFirstFixedSurface.set(0);
+              dm::applyRecordDefaults(ret);
+              dm::validateRecord(ret);
               return ret;
           };
 
     auto handle2SurfaceLayerWithlevel = [&](std::int64_t typeOfSurface) {
-        HorizontalKeyValueSet ret;
-        if (levelist.isMissing()) {
+        dm::HorizontalGribKeys ret;
+        if (mars.levelist.isUnset()) {
             throwLevelistMissing();
         }
-        ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(typeOfSurface);
-        ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(typeOfSurface);
-        ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(levelist.get() - 1);
-        ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
-        ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(levelist.get());
-        ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
-        alterAndValidate(ret);
+        ret.typeOfFirstFixedSurface.set(typeOfSurface);
+        ret.typeOfSecondFixedSurface.set(typeOfSurface);
+        ret.scaledValueOfFirstFixedSurface.set(mars.levelist.get() - 1);
+        ret.scaleFactorOfFirstFixedSurface.set(0);
+        ret.scaledValueOfSecondFixedSurface.set(mars.levelist.get());
+        ret.scaleFactorOfSecondFixedSurface.set(0);
+        dm::applyRecordDefaults(ret);
+        dm::validateRecord(ret);
         return ret;
     };
 
-    switch (tol) {
+    switch (levelConf.type) {
         // The 2m and 10m entries can be removed once the fortran encoder is removed
-        case TypeOfLevel::HeightAboveSea:
-        case TypeOfLevel::HeightAboveSeaAt10m:
+        case dm::TypeOfLevel::HeightAboveSea:
+        case dm::TypeOfLevel::HeightAboveSeaAt10m:
             return handleHeightAbove(102);
-        case TypeOfLevel::HeightAboveGroundAt2m:
-        case TypeOfLevel::HeightAboveGroundAt10m:
-        case TypeOfLevel::HeightAboveGround:
+        case dm::TypeOfLevel::HeightAboveGroundAt2m:
+        case dm::TypeOfLevel::HeightAboveGroundAt10m:
+        case dm::TypeOfLevel::HeightAboveGround:
             return handleHeightAbove(103);
-        case TypeOfLevel::EntireLake:
+        case dm::TypeOfLevel::EntireLake:
             return handle2SurfacesWithoutLevel(1, 162);
-        case TypeOfLevel::EntireAtmosphere:
+        case dm::TypeOfLevel::EntireAtmosphere:
             return handle2SurfacesWithoutLevel(1, 8);
-        case TypeOfLevel::DepthBelowSeaLayer:
+        case dm::TypeOfLevel::DepthBelowSeaLayer:
             return handle2SurfacesWithoutLevel(160, 160);
-        case TypeOfLevel::IceLayerOnWater:
+        case dm::TypeOfLevel::IceLayerOnWater:
             return handle2SurfacesWithoutLevel(174, 176);
-        case TypeOfLevel::Surface:
+        case dm::TypeOfLevel::Surface:
             return handle1SurfaceWithoutLevel(1);
-        case TypeOfLevel::IceTopOnWater:
+        case dm::TypeOfLevel::IceTopOnWater:
             return handle1SurfaceWithoutLevel(174);
-        case TypeOfLevel::CloudBase:
+        case dm::TypeOfLevel::CloudBase:
             return handle1SurfaceWithoutLevel(2);
-        case TypeOfLevel::AbstractMultipleLevels:
-        case TypeOfLevel::AbstractSingleLevel:
+        case dm::TypeOfLevel::AbstractMultipleLevels:
+        case dm::TypeOfLevel::AbstractSingleLevel:
             return handle1SurfaceWithoutLevel(191);
-        case TypeOfLevel::Isothermal:
+        case dm::TypeOfLevel::Isothermal:
             return handle1SurfaceWithoutLevel(20);
-        case TypeOfLevel::LakeBottom:
+        case dm::TypeOfLevel::LakeBottom:
             return handle1SurfaceWithoutLevel(162);
-        case TypeOfLevel::MeanSea:
+        case dm::TypeOfLevel::MeanSea:
             return handle1SurfaceWithoutLevel(101);
-        case TypeOfLevel::MixedLayerParcel:
+        case dm::TypeOfLevel::MixedLayerParcel:
             return handle1SurfaceWithoutLevel(18);
-        case TypeOfLevel::MostUnstableParcel:
+        case dm::TypeOfLevel::MostUnstableParcel:
             return handle1SurfaceWithoutLevel(17);
-        case TypeOfLevel::MixingLayer:
+        case dm::TypeOfLevel::MixingLayer:
             return handle1SurfaceWithoutLevel(166);
-        case TypeOfLevel::NominalTop:
+        case dm::TypeOfLevel::NominalTop:
             return handle1SurfaceWithoutLevel(8);
-        case TypeOfLevel::Tropopause:
+        case dm::TypeOfLevel::Tropopause:
             return handle1SurfaceWithoutLevel(7);
-        case TypeOfLevel::Hybrid:
+        case dm::TypeOfLevel::Hybrid:
             return handle1SurfaceWithLevel(105, "hPa");
-        case TypeOfLevel::PotentialVorticity:
+        case dm::TypeOfLevel::PotentialVorticity:
             return handle1SurfaceWithLevel(109);
-        case TypeOfLevel::Theta:
+        case dm::TypeOfLevel::Theta:
             return handle1SurfaceWithLevel(107);
-        case TypeOfLevel::Snow:
+        case dm::TypeOfLevel::Snow:
             return handle1SurfaceWithLevel(114);  // Might be wrong... to be checked how level are set
-        case TypeOfLevel::IsobaricInPa: {
+        case dm::TypeOfLevel::IsobaricInPa: {
             return handle1SurfaceWithLevel(100, "pa");
         }
-        case TypeOfLevel::IsobaricInhPa: {
+        case dm::TypeOfLevel::IsobaricInhPa: {
             return handle1SurfaceWithLevel(100, "hPa");
         }
-        case TypeOfLevel::HighCloudLayer: {
-            HorizontalKeyValueSet ret;
-            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(100);
-            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(8);
-            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(45000);
-            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
-            alterAndValidate(ret);
+        case dm::TypeOfLevel::HighCloudLayer: {
+            dm::HorizontalGribKeys ret;
+            ret.typeOfFirstFixedSurface.set(100);
+            ret.typeOfSecondFixedSurface.set(8);
+            ret.scaledValueOfFirstFixedSurface.set(45000);
+            ret.scaleFactorOfFirstFixedSurface.set(0);
+            dm::applyRecordDefaults(ret);
+            dm::validateRecord(ret);
             return ret;
         }
-        case TypeOfLevel::MediumCloudLayer: {
-            HorizontalKeyValueSet ret;
-            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(100);
-            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(100);
-            ret.set<HorizontalKeys::ScaledValueOfFirstFixedSurface>(80000);
-            ret.set<HorizontalKeys::ScaleFactorOfFirstFixedSurface>(0);
-            ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(45000);
-            ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
-            alterAndValidate(ret);
+        case dm::TypeOfLevel::MediumCloudLayer: {
+            dm::HorizontalGribKeys ret;
+            ret.typeOfFirstFixedSurface.set(100);
+            ret.typeOfSecondFixedSurface.set(100);
+            ret.scaledValueOfFirstFixedSurface.set(80000);
+            ret.scaleFactorOfFirstFixedSurface.set(0);
+            ret.scaledValueOfSecondFixedSurface.set(45000);
+            ret.scaleFactorOfSecondFixedSurface.set(0);
+            dm::applyRecordDefaults(ret);
+            dm::validateRecord(ret);
             return ret;
         }
-        case TypeOfLevel::LowCloudLayer: {
-            HorizontalKeyValueSet ret;
-            ret.set<HorizontalKeys::TypeOfFirstFixedSurface>(1);
-            ret.set<HorizontalKeys::TypeOfSecondFixedSurface>(100);
-            ret.set<HorizontalKeys::ScaledValueOfSecondFixedSurface>(80000);
-            ret.set<HorizontalKeys::ScaleFactorOfSecondFixedSurface>(0);
-            alterAndValidate(ret);
+        case dm::TypeOfLevel::LowCloudLayer: {
+            dm::HorizontalGribKeys ret;
+            ret.typeOfFirstFixedSurface.set(1);
+            ret.typeOfSecondFixedSurface.set(100);
+            ret.scaledValueOfSecondFixedSurface.set(80000);
+            ret.scaleFactorOfSecondFixedSurface.set(0);
+            dm::applyRecordDefaults(ret);
+            dm::validateRecord(ret);
             return ret;
         }
-        case TypeOfLevel::SeaIceLayer: {
+        case dm::TypeOfLevel::SeaIceLayer: {
             return handle2SurfaceLayerWithlevel(152);
         }
-        case TypeOfLevel::SnowLayer: {
+        case dm::TypeOfLevel::SnowLayer: {
             return handle2SurfaceLayerWithlevel(114);
         }
-        case TypeOfLevel::SoilLayer: {
+        case dm::TypeOfLevel::SoilLayer: {
             return handle2SurfaceLayerWithlevel(151);
         }
         default:
@@ -269,34 +263,28 @@ datamod::HorizontalKeyValueSet horizontalForTypeOfLevel(const LevelKeyValueSet& 
     }
 }
 
-std::optional<datamod::VerticalKeyValueSet> verticalForTypeOfLevel(const LevelKeyValueSet& levelConf,
-                                                                   const datamod::MarsKeyValueSet& mars,
-                                                                   const datamod::MiscKeyValueSet& misc) {
-    using namespace datamod;
-    auto tol = key<LevelDef::Type>(levelConf).get();
+std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurator& levelConf,
+                                                           const dm::MarsRecord& mars, const dm::MiscRecord& misc) {
+    switch (levelConf.type) {
+        case dm::TypeOfLevel::Hybrid:
+        case dm::TypeOfLevel::Snow: {
+            if (mars.levtype.has() && mars.levtype.get() == dm::LevType::ML) {
+                dm::VerticalGribKeys ret;
+                ASSERT(misc.pv.holdsReference());
 
-    const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-    switch (tol) {
-        case TypeOfLevel::Hybrid:
-        case TypeOfLevel::Snow: {
-            if (levtype.has() && levtype.get() == LevType::ML) {
-                datamod::VerticalKeyValueSet ret;
-                ASSERT(key<MiscKeys::Pv>(misc).holdsReference());
-                const auto& pv = key<MiscKeys::Pv>(misc);
-
-                if (pv.isMissing()) {
+                if (misc.pv.isUnset()) {
                     std::ostringstream oss;
-                    oss << "Missing key " << key<MiscKeys::Pv>().keyInfo()
-                        << " to set vertical information for typeOfLevel ";
-                    util::print(oss, tol);
+                    oss << "Missing key " << dm::Pv.keyInfo() << " to set vertical information for typeOfLevel ";
+                    util::print(oss, levelConf.type);
                     oss << ". Mars keys: ";
                     util::print(oss, mars);
                     throw Mars2GribException(oss.str(), Here());
                 };
 
-                key<VerticalKeys::PV>(ret).setRef(pv.get());
-                ASSERT(key<VerticalKeys::PV>(ret).holdsReference());
-                alterAndValidate(ret);
+                ret.pv.setRef(misc.pv.get());
+                ASSERT(ret.pv.holdsReference());
+                dm::applyRecordDefaults(ret);
+                dm::validateRecord(ret);
                 return ret;
             }
             return {};
@@ -316,42 +304,40 @@ DynSectionSetter::Config LevelSetter::sectionInfo() const {
     return ret;
 };
 
-void LevelSetter::allocate(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                           const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void LevelSetter::allocate(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+                           const dm::Geometry& geo) const {
     // set type of level here....
     auto vert = verticalForTypeOfLevel(conf_, mars, misc);
     if (vert) {
-        write(*vert, h);
+        dm::dumpRecord(*vert, h);
     }
 }
 
-void LevelSetter::preset(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                         const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void LevelSetter::preset(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+                         const dm::Geometry& geo) const {
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::runtime(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                          const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void LevelSetter::runtime(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+                          const dm::Geometry& geo) const {
     // TODO this should be only relevant for ML fields (because we don't cache them on level...)
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::setLevels(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                            const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
-    using namespace datamod;
-
+void LevelSetter::setLevels(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+                            const dm::Geometry& geo) const {
     auto optLevel = levelForTypeOfLevel(conf_, mars, misc);
     // TODO make the LevelDef own the typeOfLevel after migration
-    write(KeyValue<Grib2Keys::TypeOfLevel>{key<LevelDef::Type>(conf_)}, h);
+    dm::dumpEntry(dm::TypeOfLevelEntry, conf_.type, h);
     if (optLevel) {
         h.setValue("level", *optLevel);
     }
 }
 
-void LevelSetter::check(const util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                        const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void LevelSetter::check(const util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+                        const dm::Geometry& geo) const {
     auto inferedHoriz = horizontalForTypeOfLevel(conf_, mars, misc);
-    auto horiz = read(datamod::HorizontalKeySet{}, h);
+    auto horiz = dm::readRecord<dm::HorizontalGribKeys>(h);
     if (inferedHoriz != horiz) {
         std::ostringstream oss;
         oss << "LevelSetter{";
@@ -370,59 +356,52 @@ void LevelSetter::check(const util::MioGribHandle& h, const datamod::MarsKeyValu
     }
 }
 
-void LevelSetter::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const datamod::MarsKeyValueSet& mars) const {
-    using namespace datamod;
-    addKeyInfo<MarsKeys::LEVTYPE>(req);
+// void LevelSetter::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::MarsRecord& mars) const {
+//     addKeyInfo<MarsKeys::LEVTYPE>(req);
 
-    auto tol = key<LevelDef::Type>(conf_).get();
-    const auto& fixedLevel = key<LevelDef::FixedLevel>(conf_);
-    const auto& levelist = key<MarsKeys::LEVELIST>(mars);
+//     // Check if levelist is required
+//     switch (levelConf.type) {
+//         // The 2m and 10m entries can be removed once the fortran encoder is removed
+//         case dm::TypeOfLevel::HeightAboveSea:
+//         case dm::TypeOfLevel::HeightAboveSeaAt10m:
+//         case dm::TypeOfLevel::HeightAboveGroundAt2m:
+//         case dm::TypeOfLevel::HeightAboveGroundAt10m:
+//         case dm::TypeOfLevel::HeightAboveGround: {
+//             const bool isSFC = mars.levtype.has() && mars.levtype.get() == LevType::SFC;
 
-    // Check if levelist is required
-    switch (tol) {
-        // The 2m and 10m entries can be removed once the fortran encoder is removed
-        case TypeOfLevel::HeightAboveSea:
-        case TypeOfLevel::HeightAboveSeaAt10m:
-        case TypeOfLevel::HeightAboveGroundAt2m:
-        case TypeOfLevel::HeightAboveGroundAt10m:
-        case TypeOfLevel::HeightAboveGround: {
-            const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-            const bool isSFC = levtype.has() && levtype.get() == LevType::SFC;
+//             if (levelConf.fixedLevel.isMissing() && isSFC) {
+//                 addKeyInfo<MarsKeys::LEVELIST>(req);
+//             }
+//             break;
+//         }
+//         case dm::TypeOfLevel::Snow:
+//         case dm::TypeOfLevel::SnowLayer:
+//         case dm::TypeOfLevel::SoilLayer:
+//         case dm::TypeOfLevel::SeaIceLayer:
+//         case dm::TypeOfLevel::IsobaricInPa:
+//         case dm::TypeOfLevel::PotentialVorticity:
+//         case dm::TypeOfLevel::Theta:
+//         case dm::TypeOfLevel::Hybrid:
+//         case dm::TypeOfLevel::IsobaricInhPa: {
+//             addKeyInfo<MarsKeys::LEVELIST>(req);
+//             break;
+//         }
+//         default:
+//             break;
+//     }
 
-            if (fixedLevel.isMissing() && isSFC) {
-                addKeyInfo<MarsKeys::LEVELIST>(req);
-            }
-            break;
-        }
-        case TypeOfLevel::Snow:
-        case TypeOfLevel::SnowLayer:
-        case TypeOfLevel::SoilLayer:
-        case TypeOfLevel::SeaIceLayer:
-        case TypeOfLevel::IsobaricInPa:
-        case TypeOfLevel::PotentialVorticity:
-        case TypeOfLevel::Theta:
-        case TypeOfLevel::Hybrid:
-        case TypeOfLevel::IsobaricInhPa: {
-            addKeyInfo<MarsKeys::LEVELIST>(req);
-            break;
-        }
-        default:
-            break;
-    }
-
-    // Check if vertical information is required
-    switch (tol) {
-        case TypeOfLevel::Hybrid:
-        case TypeOfLevel::Snow: {
-            const auto& levtype = key<MarsKeys::LEVTYPE>(mars);
-            if (levtype.has() && levtype.get() == LevType::ML) {
-                addKeyInfo<MiscKeys::Pv>(req);
-            }
-            break;
-        }
-        default:
-            break;
-    }
-}
+//     // Check if vertical information is required
+//     switch (levelConf.type) {
+//         case dm::TypeOfLevel::Hybrid:
+//         case dm::TypeOfLevel::Snow: {
+//             if (mars.levtype.has() && mars.levtype.get() == LevType::ML) {
+//                 addKeyInfo<MiscKeys::Pv>(req);
+//             }
+//             break;
+//         }
+//         default:
+//             break;
+//     }
+// }
 
 };  // namespace multio::mars2grib::sections

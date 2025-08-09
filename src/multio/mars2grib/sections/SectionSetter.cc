@@ -19,17 +19,17 @@ namespace multio::mars2grib::sections {
 //-----------------------------------------------------------------------------
 
 
-void DynSectionSetter::prepare(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                               const datamod::Geometry&) const {}
-void DynSectionSetter::allocate(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                                const datamod::Geometry&) const {}
-void DynSectionSetter::preset(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                              const datamod::Geometry&) const {}
-void DynSectionSetter::runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                               const datamod::Geometry&) const {}
-void DynSectionSetter::check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&,
-                             const datamod::MiscKeyValueSet&, const datamod::Geometry&) const {}
-void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const datamod::MarsKeyValueSet&) const {}
+void DynSectionSetter::prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                               const dm::Geometry&) const {}
+void DynSectionSetter::allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                                const dm::Geometry&) const {}
+void DynSectionSetter::preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                              const dm::Geometry&) const {}
+void DynSectionSetter::runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                               const dm::Geometry&) const {}
+void DynSectionSetter::check(const util::MioGribHandle&, const dm::MarsRecord&,
+                             const dm::MiscRecord&, const dm::Geometry&) const {}
+// void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const dm::MarsRecord&) const {}
 
 
 void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
@@ -54,80 +54,80 @@ void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
     }
 }
 
-void SectionCollector::prepare(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                               const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void SectionCollector::prepare(util::MioGribHandle& h, const dm::MarsRecord& mars,
+                               const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : prepare_) {
         secRef.get().prepare(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::allocate(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                                const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void SectionCollector::allocate(util::MioGribHandle& h, const dm::MarsRecord& mars,
+                                const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : allocate_) {
         secRef.get().allocate(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::preset(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                              const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void SectionCollector::preset(util::MioGribHandle& h, const dm::MarsRecord& mars,
+                              const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : preset_) {
         secRef.get().preset(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::runtime(util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                               const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void SectionCollector::runtime(util::MioGribHandle& h, const dm::MarsRecord& mars,
+                               const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().runtime(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::check(const util::MioGribHandle& h, const datamod::MarsKeyValueSet& mars,
-                             const datamod::MiscKeyValueSet& misc, const datamod::Geometry& geo) const {
+void SectionCollector::check(const util::MioGribHandle& h, const dm::MarsRecord& mars,
+                             const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().check(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const datamod::MarsKeyValueSet& mars) const {
-    for (auto secRef : runtime_) {
-        secRef.get().collectKeyInfo(req, opt, mars);
-    }
-}
+// void SectionCollector::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::MarsRecord& mars) const {
+//     for (auto secRef : runtime_) {
+//         secRef.get().collectKeyInfo(req, opt, mars);
+//     }
+// }
 
 
-void SectionCollector::writeKeyInfo(std::ostream& os, const datamod::MarsKeyValueSet& mars) const {
-    KeyInfoList req;
-    KeyInfoList opt;
-    collectKeyInfo(req, opt, mars);
+// void SectionCollector::writeKeyInfo(std::ostream& os, const dm::MarsRecord& mars) const {
+//     KeyInfoList req;
+//     KeyInfoList opt;
+//     collectKeyInfo(req, opt, mars);
 
-    auto printKey = [&](const auto& dynKey) {
-        os << "  - key: " << dynKey.key() << std::endl;
-        os << "    scope: " << dynKey.initScope() << std::endl;
-        auto descr = dynKey.description();
-        if (descr) {
-            os << "    description: " << *descr << std::endl;
-        }
-        os << std::endl;
-    };
+//     auto printKey = [&](const auto& dynKey) {
+//         os << "  - key: " << dynKey.key() << std::endl;
+//         os << "    scope: " << dynKey.initScope() << std::endl;
+//         auto descr = dynKey.description();
+//         if (descr) {
+//             os << "    description: " << *descr << std::endl;
+//         }
+//         os << std::endl;
+//     };
 
-    auto printKeys = [&](const auto& l) {
-        if (l.size() == 0) {
-            os << "None";
-        }
-        else {
-            for (auto ref : l) {
-                printKey(ref.get());
-           }
-        }
-    };
+//     auto printKeys = [&](const auto& l) {
+//         if (l.size() == 0) {
+//             os << "None";
+//         }
+//         else {
+//             for (auto ref : l) {
+//                 printKey(ref.get());
+//            }
+//         }
+//     };
 
-    os << "Required keys for this mars set: " << std::endl;
-    printKeys(req);
+//     os << "Required keys for this mars set: " << std::endl;
+//     printKeys(req);
 
-    os << "Optional keys for this mars set: " << std::endl;
-    printKeys(opt);
-}
+//     os << "Optional keys for this mars set: " << std::endl;
+//     printKeys(opt);
+// }
 
 
 //-----------------------------------------------------------------------------

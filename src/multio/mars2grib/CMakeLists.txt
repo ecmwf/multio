@@ -6,6 +6,7 @@ ecbuild_add_library(
     SOURCES
         Mars2GribException.cc
         Mars2GribException.h
+        MarsCachedKeys.h
         Options.h
         EncoderCache.cc
         EncoderCache.h
@@ -16,12 +17,11 @@ ecbuild_add_library(
         multiom/MultIOMDict.h
         multiom/MultIOMRawEncoder.cc
         multiom/MultIOMRawEncoder.h
-        multiom/MultIOMRules.cc
-        multiom/MultIOMRules.h
         rules/ParamMatcher.h
         rules/Matcher.h
         rules/Setter.h
         rules/Rule.h
+        rules/Rule.cc
         sections/SectionSetter.cc
         sections/SectionSetter.h
         sections/SectionTypes.cc

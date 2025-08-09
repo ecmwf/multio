@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/util/MioGribHandle.h"
 
@@ -27,12 +26,14 @@
 
 namespace multio::mars2grib::sections {
 
-using KeyInfoList = std::vector<std::reference_wrapper<const datamod::DynKeyInfo>>;
+namespace dm = multio::datamod;
 
-template <auto id_>
-void addKeyInfo(KeyInfoList& l) {
-    l.push_back(std::cref(static_cast<const datamod::DynKeyInfo&>(datamod::key<id_>())));
-}
+// using KeyInfoList = std::vector<std::reference_wrapper<const datamod::DynKeyInfo>>;
+
+// template <auto id_>
+// void addKeyInfo(KeyInfoList& l) {
+//     l.push_back(std::cref(static_cast<const datamod::DynKeyInfo&>(datamod::key<id_>())));
+// }
 
 
 struct DynSectionSetter {
@@ -49,25 +50,25 @@ struct DynSectionSetter {
 
 
     // Default implementation is to do nothing
-    virtual void prepare(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                         const datamod::Geometry&) const;
+    virtual void prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                         const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void allocate(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                          const datamod::Geometry&) const;
+    virtual void allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                          const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void preset(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                        const datamod::Geometry&) const;
+    virtual void preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                        const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                         const datamod::Geometry&) const;
+    virtual void runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                         const dm::Geometry&) const;
 
 
     // Implement a check method that is throwing on inconsistencies
-    virtual void check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                       const datamod::Geometry&) const;
+    virtual void check(const util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                       const dm::Geometry&) const;
 
-    // Implement a check method that is adding dynamic key information to give feed back on requirements
-    virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const datamod::MarsKeyValueSet&) const;
+    // // Implement a check method that is adding dynamic key information to give feed back on requirements
+    // virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::MarsRecord&) const;
 
     virtual ~DynSectionSetter() = default;
 };
@@ -78,21 +79,21 @@ public:
     // Registers a new section
     void add(std::unique_ptr<DynSectionSetter>);
 
-    void prepare(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                 const datamod::Geometry&) const;
-    void allocate(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                  const datamod::Geometry&) const;
-    void preset(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                const datamod::Geometry&) const;
-    void runtime(util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-                 const datamod::Geometry&) const;
+    void prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                 const dm::Geometry&) const;
+    void allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                  const dm::Geometry&) const;
+    void preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                const dm::Geometry&) const;
+    void runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+                 const dm::Geometry&) const;
 
-    void check(const util::MioGribHandle&, const datamod::MarsKeyValueSet&, const datamod::MiscKeyValueSet&,
-               const datamod::Geometry&) const;
+    void check(const util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+               const dm::Geometry&) const;
 
-    void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const datamod::MarsKeyValueSet&) const;
+    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::MarsRecord&) const;
 
-    void writeKeyInfo(std::ostream&, const datamod::MarsKeyValueSet&) const;
+    // void writeKeyInfo(std::ostream&, const dm::MarsRecord&) const;
 
 private:
     // Storage of all sections

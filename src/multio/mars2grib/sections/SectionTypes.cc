@@ -15,7 +15,7 @@ namespace multio::datamod {
 
 using namespace multio::mars2grib::sections;
 
-std::string WriteSpec<TimeRangeType>::write(TimeRangeType v) {
+std::string DumpType<TimeRangeType>::dump(TimeRangeType v) {
     switch (v) {
         case TimeRangeType::FixedTimeRange:
             return "fixed-timerange";
@@ -24,12 +24,13 @@ std::string WriteSpec<TimeRangeType>::write(TimeRangeType v) {
         case TimeRangeType::SinceBeginningOfForecast:
             return "since-beginning-of-forecast";
         default:
-            throw multio::mars2grib::Mars2GribException("WriteSpec<TimeRangeType>::write: Unexpected value for TimeRangeType", Here());
+            throw multio::mars2grib::Mars2GribException(
+                "DumpType<TimeRangeType>::dump: Unexpected value for TimeRangeType", Here());
     }
 }
 
 
-TimeRangeType ReadSpec<TimeRangeType>::read(const std::string& val) {
+TimeRangeType ParseType<TimeRangeType>::parse(const std::string& val) {
     // May use a vector
     static const std::vector<std::pair<std::string, TimeRangeType>> typesOfStat{
         {"fixed-timerange", TimeRangeType::FixedTimeRange},
@@ -41,8 +42,8 @@ TimeRangeType ReadSpec<TimeRangeType>::read(const std::string& val) {
         tos != typesOfStat.end()) {
         return tos->second;
     }
-    throw multio::mars2grib::Mars2GribException(std::string("ReadSpec<TimeRangeType>::read Unknown value for TimeRangeType: ") + val,
-                             Here());
+    throw multio::mars2grib::Mars2GribException(
+        std::string("ParseType<TimeRangeType>::parse Unknown value for TimeRangeType: ") + val, Here());
 }
 
 
@@ -50,7 +51,7 @@ TimeRangeType ReadSpec<TimeRangeType>::read(const std::string& val) {
 
 namespace multio::mars2grib::sections {
 std::ostream& operator<<(std::ostream& os, const TimeRangeType& t) {
-    os << datamod::Writer<TimeRangeType>::write(t);
+    os << datamod::TypeDumper<TimeRangeType>::dump(t);
     return os;
 }
 }  // namespace multio::mars2grib::sections

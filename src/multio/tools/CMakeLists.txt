@@ -65,3 +65,36 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
                         LIBS      multio eckit )
 
 endif()
+
+
+
+if ( BUILD_MULTIOM )
+
+ecbuild_add_executable(
+
+  TARGET
+      grib1-to-grib2
+
+  CONDITION
+    HAVE_GRIB1_TO_GRIB2
+
+  SOURCES
+      grib1-to-grib2.cc
+      MultioTool.cc
+
+  NO_AS_NEEDED
+
+  LIBS
+      multio
+      multio-mars2grib
+      multio-mars2mars
+      multiom
+      atlas
+      eckit
+      fckit
+      metkit
+      eccodes
+      eccodes_f90
+)
+
+endif()

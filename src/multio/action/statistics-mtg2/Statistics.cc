@@ -30,7 +30,7 @@
 
 namespace multio::action::statistics_mtg2 {
 
-using datamod::glossary;
+namespace dm = multio::datamod;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -48,10 +48,10 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
 
     // Restart flush directly provides the folderName
     auto restartDateTime = msg.metadata().getOpt<std::string>("restartDateTime");
-    auto step = msg.metadata().getOpt<std::int64_t>(glossary().step);
-    auto timeStep = msg.metadata().getOpt<std::int64_t>(glossary().timeStep);
-    auto date = msg.metadata().getOpt<std::int64_t>(glossary().date);
-    auto time = msg.metadata().getOpt<std::int64_t>(glossary().time);
+    auto step = msg.metadata().getOpt<std::int64_t>(dm::legacy::Step);
+    auto timeStep = msg.metadata().getOpt<std::int64_t>(dm::legacy::TimeStep);
+    auto date = msg.metadata().getOpt<std::int64_t>(dm::legacy::Date);
+    auto time = msg.metadata().getOpt<std::int64_t>(dm::legacy::Time);
 
     if (restartDateTime) {
         folderName = *restartDateTime;
@@ -312,8 +312,8 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // }
     auto md = inputMetadata;
 
-    md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
-    md.set(glossary().startTime, win.epochPoint().time().hhmmss());
+    md.set(dm::legacy::StartDate, win.epochPoint().date().yyyymmdd());
+    md.set(dm::legacy::StartTime, win.epochPoint().time().hhmmss());
 
     return md;
 }
@@ -438,11 +438,10 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
 
         const std::int64_t step = ts.win().currPointInSteps();
         const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
-        md.set(glossary().step, step);
+        md.set(dm::legacy::Step, step);
 
         // TODO refactor - use KeySet instead of single keys
-        using namespace datamod;
-        write(toKeyValue(datamod::key<datamod::MarsKeys::TIMESPAN>(), timespan), md);
+        dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
 
         std::string opname = (*it)->operation();
         paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());

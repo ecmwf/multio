@@ -9,30 +9,32 @@
  */
 
 #include "multio/mars2grib/EncoderCache.h"
-#include <exception>
 #include "multio/datamod/AtlasGeo.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/core/KeyValueSet.h"
+#include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/core/EntryParser.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 #include "multio/util/MioGribHandle.h"
 
-#include "eckit/filesystem/PathName.h"
+#include "multio/util/Print.h"
 
 #include <sstream>
 
 namespace multio::mars2grib {
 
+namespace dm = multio::datamod;
+
 namespace {
 
 std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGribHandle> sample,
-                                                   const datamod::MarsKeyValueSet& marsKeys) {
+                                                   const dm::MarsRecord& marsKeys) {
 
-    switch (datamod::key<datamod::MarsKeys::REPRES>(marsKeys).get()) {
-        case datamod::Repres::SH: {
+    switch (marsKeys.repres.get()) {
+        case dm::Repres::SH: {
             sample->setValue("numberOfDataPoints", 6);
             sample->setValue("numberOfValues", 6);
             sample->setValue("bitsPerValue", 16);
@@ -48,20 +50,14 @@ std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGrib
             sample->setValue("dataRepresentationTemplateNumber", 51);
             return sample;
         }
-        case datamod::Repres::GG: {
-            sample->setValue("gridType", std::string("reduced_gg"));
+        case dm::Repres::GG: {
+            // sample->setValue("gridType", std::string("reduced_gg"));
             return sample;
         }
         default: {
             return sample;
         }
     }
-}
-
-std::unique_ptr<util::MioGribHandle> loadSample(const EncodeMtg2Conf& conf, const std::string& sample) {
-    using namespace datamod;
-    const auto& samplesPath = key<EncodeMtg2Def::SamplesPath>(conf);
-    return std::make_unique<util::MioGribHandle>(eckit::PathName{samplesPath.get() + std::string("/") + sample});
 }
 
 }  // namespace
@@ -72,23 +68,20 @@ EncoderCache::EncoderCache(const EncodeMtg2Conf& opts) : EncoderCache(opts, Mult
 EncoderCache::EncoderCache() :
     EncoderCache(([]() {
         EncodeMtg2Conf res{};
-        datamod::alterAndValidate(res);
+        dm::applyRecordDefaults(res);
+        dm::validateRecord(res);
         return res;
     })()) {}
 
 
 EncoderCache::EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options) :
-    // conf_{conf}, options_{std::move(options)}, rules_{options_, conf_}, baseSample_{loadSample(conf_, "sample.tmpl")}
-    // {}
-    conf_{conf}, options_{std::move(options)}, baseSample_{loadSample(conf_, "sample.tmpl")} {}
+    conf_{conf}, options_{std::move(options)} {}
 
 
-EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyValueSet& marsKeys,
-                                                       const MultIOMDict& mars, const MultIOMDict& par,
-                                                       const MultIOMDict& geo) {
-    using namespace multio::datamod;
+EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::MarsRecord& marsKeys, const MultIOMDict& mars,
+                                                       const MultIOMDict& misc, const MultIOMDict& geo) {
     // Select caching keys and prehash
-    PrehashedMarsKeys cacheKeySet = read(EncoderCacheMarsKeySet{}, marsKeys);
+    PrehashedMarsKeys cacheKeySet = dm::readRecord<MarsCacheRecord>(marsKeys);
 
     // Search and return if entry already exists
     if (auto search = cache_.find(cacheKeySet); search != cache_.end()) {
@@ -98,88 +91,111 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const datamod::MarsKeyVal
     // Otherwise prepare a new entry
 
     // Searching for rule...
-    // auto encoderConf = rules_.search(mars);
-    // auto exportedConf =
-    // datamod::write<eckit::LocalConfiguration>(datamod::key<EncoderInfoDef::Sections>(encoderConf).get());
 
-    EncoderSections sections = buildEncoderConf(marsKeys);
-    auto exportedConf = datamod::write<eckit::LocalConfiguration>(sections);
+    SectionsConf sections = rules::buildEncoderConf(marsKeys);
+    auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
 
     MultIOMRawEncoder encoder{options_, exportedConf};
 
-    // Load custom sample or use default sample
-    // const auto& sampleName = datamod::key<EncoderInfoDef::Sample>(encoderConf);
-    // auto sample = sampleName.has() ? loadSample(sampleName.get()) : baseSample_->duplicate();
-    auto sample = baseSample_->duplicate();
+    auto sample = util::MioGribHandle::makeDefault();
 
     // Prepare sample
     sample = prepareSample(std::move(sample), marsKeys);
-    sample = encoder.allocateAndPreset(std::move(sample), mars, par, geo);
+    sample = encoder.allocateAndPreset(std::move(sample), mars, misc, geo);
+
 
     // Move encoder and prepared sample to cache
-    // return cache_
-    //     .emplace(std::move(cacheKeySet), CacheEntry{std::move(encoderConf), std::move(encoder), std::move(sample)})
-    //     .first->second;
     return cache_
         .emplace(std::move(cacheKeySet), CacheEntry{std::move(sections), std::move(encoder), std::move(sample)})
         .first->second;
 }
 
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                             const MultIOMDict& mars, const MultIOMDict& par,
-                                                             const MultIOMDict& geo) {
-    CacheEntry& entry = makeOrGetEntry(marsKeys, mars, par, geo);
-    return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, par, geo);
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys, const MultIOMDict& mars,
+                                                             const MultIOMDict& misc, const MultIOMDict& geo) {
+    CacheEntry& entry = makeOrGetEntry(marsKeys, mars, misc, geo);
+    return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, misc, geo);
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                             const datamod::MiscKeyValueSet& miscKeys,
-                                                             const datamod::Geometry& geoKeys) {
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys,
+                                                             const dm::MiscRecord& miscKeys,
+                                                             const dm::Geometry& geoKeys) {
     try {
         MultIOMDict mars{MultIOMDictKind::MARS};
         MultIOMDict misc{MultIOMDictKind::Parametrization};
 
-        using namespace datamod;
-        write(marsKeys, mars);
-        write(miscKeys, misc);
+        dm::dumpRecord(marsKeys, mars);
+        dm::dumpRecord(miscKeys, misc);
 
         // Setup MultIOM dict
-        const auto& repres = key<MarsKeys::REPRES>(marsKeys);
         MultIOMDict geom{([&]() {
-            switch (repres.get()) {
-                case Repres::GG:
+            switch (marsKeys.repres.get()) {
+                case dm::Repres::GG:
                     return MultIOMDictKind::ReducedGG;
-                case Repres::HEALPix:
+                case dm::Repres::HEALPix:
                     return MultIOMDictKind::HEALPix;
-                case Repres::LL:
+                case dm::Repres::LL:
                     return MultIOMDictKind::RegularLL;
-                case Repres::SH:
+                case dm::Repres::SH:
                     return MultIOMDictKind::SH;
             }
             throw Mars2GribException("unkown repres", Here());
         })()};
 
-        std::visit([&](auto& specificGeoKeys) { write(specificGeoKeys, geom); }, geoKeys);
+        std::visit([&](auto& specificGeoKeys) { dm::dumpRecord(specificGeoKeys, geom); }, geoKeys);
 
-        return getHandle(marsKeys, mars, misc, geom);
+        // return getHandle(marsKeys, mars, misc, geom);
+        auto ret = getHandle(marsKeys, mars, misc, geom);
+
+        // TODO fix that needs to be expressed in GeoGG once MULTIOM is gone
+        if (marsKeys.repres.get() == dm::Repres::GG) {
+            ret->setValue("shapeOfTheEarth", 6);
+        }
+        // TODO - this is a fix that needs to be moved to the section setters
+        if (miscKeys.bitmapPresent.has()) {
+            ret->setValue("bitmapPresent", miscKeys.bitmapPresent.get());
+        }
+        if (miscKeys.missingValue.has()) {
+            ret->setValue("missingValue", miscKeys.missingValue.get());
+        }
+        return ret;
     }
     catch (...) {
         std::ostringstream oss;
-        oss << "Failure in EncoderCache::getSample" << std::endl;
-        oss << "Mars: ";
-        util::print(oss, marsKeys);
-        oss << std::endl << "Misc: ";
-        util::print(oss, miscKeys);
-        oss << std::endl << "Geo: ";
-        util::print(oss, geoKeys);
+        util::PrintStream ps(oss);
+        ps << "Failure in EncoderCache::getHandle" << std::endl;
+        {
+            util::IndentGuard gout(ps);
+
+            ps << "Mars: " << std::endl;
+            {
+                util::IndentGuard g(ps);
+                util::print(ps, marsKeys);
+            }
+            ps << std::endl;
+
+            ps << "Misc: " << std::endl;
+            {
+                util::IndentGuard g(ps);
+                util::print(ps, miscKeys);
+            }
+            ps << std::endl;
+
+            ps << "Geo: " << std::endl;
+            {
+                util::IndentGuard g(ps);
+                util::print(ps, geoKeys);
+            }
+            ps << std::endl;
+        }
+
         std::throw_with_nested(mars2grib::Mars2GribException(oss.str(), Here()));
     }
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                             const datamod::MiscKeyValueSet& miscKeys) {
-    auto geo = makeGeometry(marsKeys, true);
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys,
+                                                             const dm::MiscRecord& miscKeys) {
+    auto geo = makeUnscopedGeometry(marsKeys);
     return getHandle(marsKeys, miscKeys, geo);
 }
 

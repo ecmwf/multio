@@ -24,7 +24,6 @@ list( APPEND multio_library_srcs
 list( APPEND multio_util_srcs
     util/DateTime.cc
     util/DateTime.h
-    util/Hash.cc
     util/Hash.h
     util/Environment.cc
     util/Environment.h
@@ -147,19 +146,25 @@ list( APPEND multio_message_srcs
 )
 
 list( APPEND multio_datamod_srcs
-    datamod/ReaderWriter.h
-    datamod/DataModelling.h
-    datamod/DataModellingException.cc
-    datamod/DataModellingException.h
+    datamod/core/DataModellingException.cc
+    datamod/core/DataModellingException.h
+    datamod/core/Entry.h
+    datamod/core/EntryDef.h
+    datamod/core/Hash.h
+    datamod/core/Print.h
+    datamod/core/Compare.h
+    datamod/core/Record.h
+    datamod/core/NestedRecord.h
     datamod/ContainerInterop.h
-    datamod/Glossary.cc
-    datamod/Glossary.h
-    datamod/MarsMiscGeo.h
     datamod/MarsTypes.cc
     datamod/MarsTypes.h
-    datamod/GribTypes.cc
-    datamod/GribTypes.h
+    datamod/AtlasGeo.h
+    datamod/MarsMiscGeo.h
+    datamod/MarsMiscGeo.cc
     datamod/GribKeys.h
+    datamod/GribTypes.h
+    datamod/GribTypes.cc
+    datamod/Glossary.h
 )
 
 list( APPEND multio_server_srcs

@@ -39,11 +39,15 @@ struct Print;
 //         };
 
 
+// Forward declaration - wrapper around ostream
+class PrintStream;
+
+
 template <typename T, class = void>
 struct Printable : std::false_type {};
 
 template <typename T>
-struct Printable<T, std::void_t<decltype(Print<T>::print(std::declval<std::ostream&>(), std::declval<const T&>()))>>
+struct Printable<T, std::void_t<decltype(Print<T>::print(std::declval<PrintStream&>(), std::declval<const T&>()))>>
     : std::true_type {};
 
 template <typename T>
@@ -60,14 +64,26 @@ struct OstreamPrintable<T, std::void_t<decltype(std::declval<std::ostream&>() <<
 template <typename T>
 inline constexpr bool OstreamPrintable_v = OstreamPrintable<T>::value;
 
+//-----------------------------------------------------------------------------
 
+
+template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
+void print(PrintStream& ps, const T& v) {
+    Print<T>::print(ps, v);
+}
 // Function to call print on Print<T>
 template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
 void print(std::ostream& os, const T& v) {
-    Print<T>::print(os, v);
+    PrintStream ps(os);
+    Print<T>::print(ps, v);
 }
 
 
+// Function to call ostream<< if Print<T>::print is not defined
+template <typename T, std::enable_if_t<!Printable_v<T> && OstreamPrintable_v<T>, bool> = true>
+void print(PrintStream& ps, const T& v) {
+    ps << v;
+}
 // Function to call ostream<< if Print<T>::print is not defined
 template <typename T, std::enable_if_t<!Printable_v<T> && OstreamPrintable_v<T>, bool> = true>
 void print(std::ostream& os, const T& v) {
@@ -75,6 +91,7 @@ void print(std::ostream& os, const T& v) {
 }
 
 
+// TODO remove - is not hooking up properly in overload resolution
 // This enforces that every class that implements Print, must not implement
 // operator<<
 template <typename T, std::enable_if_t<multio::util::Printable_v<T>, bool> = true>
@@ -86,9 +103,75 @@ std::ostream& operator<<(std::ostream& os, const T& v) {
 
 //-----------------------------------------------------------------------------
 
+class PrintStream {
+public:
+    explicit PrintStream(std::ostream& os, int indentSize = 2) :
+        os_(os), indentSize_(indentSize), currentIndent_(0), atLineStart_(true) {}
+
+    void indent() { ++currentIndent_; }
+    void unindent() {
+        if (currentIndent_ > 0)
+            --currentIndent_;
+    }
+
+    int indentLevel() const { return currentIndent_; }
+    int indentSize() const { return indentSize_; }
+
+
+    template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
+    PrintStream& operator<<(const T& value) {
+        writeIndentIfNeeded();
+        util::print(*this, value);
+        return *this;
+    }
+
+    template <typename T, std::enable_if_t<!Printable_v<T> && OstreamPrintable_v<T>, bool> = true>
+    PrintStream& operator<<(const T& value) {
+        writeIndentIfNeeded();
+        os_ << value;
+        return *this;
+    }
+
+    // Special case for manipulators like std::endl
+    PrintStream& operator<<(std::ostream& (*manip)(std::ostream&)) {
+        manip(os_);
+        atLineStart_ = true;  // next item will be at start of line
+        return *this;
+    }
+
+private:
+    void writeIndentIfNeeded() {
+        if (atLineStart_) {
+            for (int i = 0; i < currentIndent_ * indentSize_; ++i) {
+                os_.put(' ');
+            }
+            atLineStart_ = false;
+        }
+    }
+
+    std::ostream& os_;
+    int indentSize_;
+    int currentIndent_;
+    bool atLineStart_;
+};
+
+
+// RAII guard for indentation
+class IndentGuard {
+public:
+    explicit IndentGuard(PrintStream& os) : os_(os) { os_.indent(); }
+    ~IndentGuard() { os_.unindent(); }
+
+private:
+    PrintStream& os_;
+};
+
+
+//-----------------------------------------------------------------------------
+
 template <typename... T>
 struct Print<std::variant<T...>> {
-    static void print(std::ostream& os, const std::variant<T...>& var) {
+    static void print(PrintStream& os, const std::variant<T...>& var) {
         std::visit([&](const auto& val) { os << val; }, var);
     }
 };

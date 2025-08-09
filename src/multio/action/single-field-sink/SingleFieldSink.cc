@@ -22,7 +22,8 @@
 
 namespace multio::action::single_field_sink {
 
-using datamod::glossary;
+namespace dm = multio::datamod;
+
 
 SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
     Action{compConf}, rootPath_{compConf.parsedConfig().getString("root_path", "")} {}
@@ -46,12 +47,12 @@ void SingleFieldSink::write(Message msg) {
     util::ScopedTiming timing{statistics_.actionTiming_};
 
     std::string paramOrId;
-    auto searchParam = msg.metadata().find(glossary().param);
+    auto searchParam = msg.metadata().find(dm::legacy::Param);
     if (searchParam != msg.metadata().end()) {
         paramOrId = searchParam->second.get<std::string>();
     }
     else {
-        auto searchParamId = msg.metadata().find(glossary().paramId);
+        auto searchParamId = msg.metadata().find(dm::legacy::ParamId);
         if (searchParamId != msg.metadata().end()) {
             paramOrId = eckit::translate<std::string>(searchParamId->second.get<std::int64_t>());
         }

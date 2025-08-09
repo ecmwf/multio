@@ -14,13 +14,15 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
+#include "multio/datamod/core/EntryDef.h"
 #include "multio/mars2grib/EncoderConf.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/generated/InferPDT.h"
+#include "multio/mars2grib/rules/Matcher.h"
 #include "multio/mars2grib/rules/Rule.h"
 
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/mars2grib/sections/Level.h"
 #include "multio/message/Metadata.h"
 
 #include "multio/util/SampleMetadataGen.h"
@@ -29,31 +31,32 @@
 
 namespace multio::test {
 
+namespace dm = multio::datamod;
+
 CASE("Test rules gen matchers") {
     using namespace multio::mars2grib::rules;
+    using namespace multio::mars2grib::matcher;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     static auto ruleSet = exclusiveRuleList(
         // Branch for grids
-        chainedRuleList(
-            rule(all(Has<MarsKeys::GRID>{}, NoneOf<MarsKeys::LEVTYPE>{{LevType::AL}})),
-            rule(OneOf<MarsKeys::PARAM>{{1, 3, 4}},
-                 setAll(setKey<PDTCatDef::TimeExtent, EncoderSectionsDef::Product, EncoderProductDef::PDTCat>(
-                            {TimeExtent::PointInTime}),  //
-                        setKey<LevelDef::Type, EncoderSectionsDef::Product, EncoderProductDef::Level>(
-                            {TypeOfLevel::HeightAboveGround})  //
-                        ))),
+        chainedRuleList(rule(all(Has{dm::GRID}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}})),
+                        rule(OneOf{dm::PARAM, {1, 3, 4}}, Setter([](SectionsConf& c) {
+                                 c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(
+                                     TimeExtent::PointInTime);
+                                 c.product.ensureInit().modify().level.ensureInit().modify().type.set(
+                                     dm::TypeOfLevel::HeightAboveGround);
+                             }))),
 
         // Branch for spherical harmonics
-        chainedRuleList(rule(all(Has<MarsKeys::TRUNCATION>{}, NoneOf<MarsKeys::LEVTYPE>{{LevType::AL}}))),
+        chainedRuleList(rule(all(Has{dm::TRUNCATION}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}}))),
 
         // Branch for abstract level
-        chainedRuleList(rule(OneOf<MarsKeys::LEVTYPE>{{LevType::AL}})));
+        chainedRuleList(rule(OneOf{dm::LEVTYPE, {dm::LevType::AL}})));
 
     {
-        auto mars = MarsKeyValueSet{};
-        EncoderSections sections;
+        dm::MarsRecord mars{};
+        SectionsConf sections;
 
         // Nothing should match the outer rule, which is allowed to not match
         EXPECT(ruleSet(mars, sections) != true);
@@ -63,22 +66,20 @@ CASE("Test rules gen matchers") {
         auto md = util::sample_gen::mkMd();
         md.set("param", 1);
 
-        auto mars = read(MarsKeySet{}, md);
-        EncoderSections sections;
+        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        SectionsConf sections;
 
         EXPECT(ruleSet(mars, sections));
-        EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::Level, LevelDef::Type>(sections).get())
-               == TypeOfLevel::HeightAboveGround);
-        EXPECT(((keyPath<EncoderSectionsDef::Product, EncoderProductDef::PDTCat, PDTCatDef::TimeExtent>(sections).get())
-                == TimeExtent::PointInTime));
+        EXPECT((sections.product.get().level.get().type.get()) == dm::TypeOfLevel::HeightAboveGround);
+        EXPECT(((sections.product.get().pdtCat.get().timeExtent.get()) == TimeExtent::PointInTime));
     }
 
     {
         auto md = util::sample_gen::mkMd();
         md.set("param", 42);  // Not included in rule
 
-        auto mars = read(MarsKeySet{}, md);
-        EncoderSections sections;
+        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        SectionsConf sections;
 
         // First rule matches because grid is given, but then no param matches - the rule is not fully determined and
         // throws
@@ -90,47 +91,56 @@ CASE("Test rules gen matchers") {
 // KeyValueSets can be comprade directly, but here
 // we want to exclude comparision of specific sections in detail until fully migrated
 // Moreover this mechanism shows more detailed errors
-template <typename KS>
-void detailedCompare(const multio::datamod::KeyValueSet<KS>& computed,
-                     const multio::datamod::KeyValueSet<KS>& expected) {
-    using namespace multio::datamod;
+template <typename Rec>
+void detailedCompare(const Rec& computed, const Rec& expected) {
     using namespace multio::mars2grib;
+    try {
 
-    util::forEach(
-        [&](const auto& kvd) {
-            constexpr auto ID = std::decay_t<decltype(kvd)>::id;
-            // Exclude comparison for specific fields
-            if constexpr (  //
-                !std::is_same_v<KeyId<ID>, KeyId<EncoderProductDef::PDTCat>>
-                && !std::is_same_v<KeyId<ID>, KeyId<LevelDef::FixedLevel>>  //
-            ) {
-                const auto& compEntry = key<ID>(computed);
-                const auto& exptEntry = key<ID>(expected);
-                if constexpr (IsKeyValueSet_v<KeyDefValueType_t<ID>>) {
-                    if (compEntry.has() && exptEntry.isMissing()) {
+        util::forEach(
+            [&](const auto& entryDef) {
+                // Exclude comparison for specific fields
+                if constexpr (std::is_same_v<dm::EntryValueType_t<decltype(entryDef)>, rules::PDTCat>) {
+                    return;
+                }
+                if constexpr (std::is_same_v<Rec, sections::LevelConfigurator>) {
+                    if (entryDef.key() == sections::FixedLevel.key()) {
+                        return;
+                    }
+                }
+
+                const auto& compEntry = entryDef.get(computed);
+                const auto& exptEntry = entryDef.get(expected);
+                if constexpr (dm::IsRecord_v<dm::EntryValueType_t<decltype(entryDef)>>) {
+                    if (compEntry.has() && exptEntry.isUnset()) {
                         std::ostringstream oss;
-                        oss << "Nested key value set " << kvd.keyInfo()
+                        oss << "Nested record " << entryDef.keyInfo()
                             << " is given but expected to be missing. Computed: ";
                         util::print(oss, compEntry);
                         oss << std::endl;
                         throw eckit::Exception(oss.str(), Here());
                     }
-                    if (compEntry.isMissing() && exptEntry.has()) {
+                    if (compEntry.isUnset() && exptEntry.has()) {
                         std::ostringstream oss;
-                        oss << "Nested key value set " << kvd.keyInfo()
+                        oss << "Nested record " << entryDef.keyInfo()
                             << " is missing but expected to be given. Expected: ";
                         util::print(oss, exptEntry);
                         oss << std::endl;
                         throw eckit::Exception(oss.str(), Here());
                     }
                     if (compEntry.has() && exptEntry.has()) {
-                        detailedCompare(compEntry.get(), exptEntry.get());
+                        try {
+                            detailedCompare(compEntry.get(), exptEntry.get());
+                        }
+                        catch (...) {
+                            std::cout << "Error comparing entry " << entryDef.keyInfo() << std::endl;
+                            throw;
+                        }
                     }
                 }
                 else {
                     if (compEntry != exptEntry) {
                         std::ostringstream oss;
-                        oss << "Entries do not compare - got: ";
+                        oss << "Entries for " << entryDef.keyInfo() << " do not compare - got: ";
                         util::print(oss, compEntry);
                         oss << " - expected: ";
                         util::print(oss, exptEntry);
@@ -138,28 +148,43 @@ void detailedCompare(const multio::datamod::KeyValueSet<KS>& computed,
                         throw eckit::Exception(oss.str(), Here());
                     }
                 }
-            }
-        },
-        KS{});
+            },
+            dm::recordEntries(computed));
+    }
+    catch (...) {
+        util::PrintStream ps{std::cout};
+        ps << "Error comparing computed: " << std::endl;
+        {
+            util::IndentGuard g{ps};
+            ps << computed << std::endl;
+        }
+        ps << "with expected: " << std::endl;
+        {
+            util::IndentGuard g{ps};
+            ps << expected << std::endl;
+        }
+        std::cout << std::flush;
+        throw;
+    }
 }
 
 CASE("Test real rules matchers with AIFS single keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
-            auto mars = read(MarsKeySet{}, md);
-            EncoderSections sections;
+            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            SectionsConf sections;
 
 
-            EXPECT(mars2grib::rules::allRules()(mars, sections));
-            EXPECT_NO_THROW(alterAndValidate(sections));
+            EXPECT(allRules()(mars, sections));
+            EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
+            EXPECT_NO_THROW(dm::validateRecord(sections));
 
-            EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
+            EXPECT((sections.product.get().templateNumber.has()));
 
-            EncoderSections expectedSections = expectedAIFSSingleEncoderSections(mars);
+            SectionsConf expectedSections = expectedAIFSSingleEncoderSections(mars);
 
             detailedCompare(sections, expectedSections);
         }
@@ -174,20 +199,20 @@ CASE("Test real rules matchers with AIFS single keys") {
 CASE("Test real rules matchers with AIFS ens keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
-            auto mars = read(MarsKeySet{}, md);
-            EncoderSections sections;
+            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            SectionsConf sections;
 
 
             EXPECT(mars2grib::rules::allRules()(mars, sections));
-            EXPECT_NO_THROW(alterAndValidate(sections));
+            EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
+            EXPECT_NO_THROW(dm::validateRecord(sections));
 
-            EXPECT((keyPath<EncoderSectionsDef::Product, EncoderProductDef::TemplateNumber>(sections).has()));
+            EXPECT((sections.product.get().templateNumber.has()));
 
-            EncoderSections expectedSections = expectedAIFSEnsEncoderSections(mars);
+            SectionsConf expectedSections = expectedAIFSEnsEncoderSections(mars);
 
             detailedCompare(sections, expectedSections);
         }
@@ -202,7 +227,6 @@ CASE("Test real rules matchers with AIFS ens keys") {
 CASE("Test real rules matchers with AIFS JSON rules") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     auto marsMessages
         = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-aifs.json"}}}
@@ -213,13 +237,14 @@ CASE("Test real rules matchers with AIFS JSON rules") {
         ++i;
         eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
         try {
-            MarsKeyValueSet mars = read(MarsKeySet{}, marsConf);
-            EncoderSections expectedSections = read(EncoderSectionsKeySet{}, subConf.getSubConfiguration("rule"));
+            auto mars = dm::readRecord<dm::MarsRecord>(marsConf);
+            SectionsConf expectedSections = dm::readRecord<SectionsConf>(subConf.getSubConfiguration("rule"));
 
-            EncoderSections computedSections;
+            SectionsConf computedSections;
 
             EXPECT(mars2grib::rules::allRules()(mars, computedSections));
-            EXPECT_NO_THROW(alterAndValidate(computedSections));
+            EXPECT_NO_THROW(dm::applyRecordDefaults(computedSections));
+            EXPECT_NO_THROW(dm::validateRecord(computedSections));
 
             detailedCompare(computedSections, expectedSections);
         }
@@ -239,7 +264,6 @@ CASE("Test real rules matchers with AIFS JSON rules") {
 CASE("Test real rules matchers with era6 5220 JSON rules") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     auto marsMessages
         = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-era6-5220.json"}}}
@@ -250,13 +274,14 @@ CASE("Test real rules matchers with era6 5220 JSON rules") {
         ++i;
         eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
         try {
-            MarsKeyValueSet mars = read(MarsKeySet{}, marsConf);
-            EncoderSections expectedSections = read(EncoderSectionsKeySet{}, subConf.getSubConfiguration("rule"));
+            auto mars = dm::readRecord<dm::MarsRecord>(marsConf);
+            SectionsConf expectedSections = dm::readRecord<SectionsConf>(subConf.getSubConfiguration("rule"));
 
-            EncoderSections computedSections;
+            SectionsConf computedSections;
 
             EXPECT(mars2grib::rules::allRules()(mars, computedSections));
-            EXPECT_NO_THROW(alterAndValidate(computedSections));
+            EXPECT_NO_THROW(dm::applyRecordDefaults(computedSections));
+            EXPECT_NO_THROW(dm::validateRecord(computedSections));
 
             detailedCompare(computedSections, expectedSections);
         }

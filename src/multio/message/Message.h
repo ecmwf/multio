@@ -30,8 +30,6 @@
 #include <optional>
 #include <string>
 
-using multio::datamod::glossary;
-
 namespace eckit {
 class Stream;
 
@@ -41,6 +39,8 @@ class Message;
 }  // namespace eckit
 
 namespace multio::message {
+
+namespace dm = multio::datamod;
 
 // TODO: we may want to hash the payload (and the header?)
 struct LogMessage;
@@ -232,8 +232,8 @@ message::Message convert_precision(message::Message&& msg) {
     eckit::Buffer buffer(N * sizeof(To));
 
     auto md = msg.metadata();
-    md.set<std::int64_t>(glossary().globalSize, buffer.size());
-    md.set(glossary().precision, std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
+    md.set<std::int64_t>(dm::legacy::GlobalSize, buffer.size());
+    md.set(dm::legacy::Precision, std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
 
     const auto* a = reinterpret_cast<const From*>(msg.payload().data());
     auto* b = reinterpret_cast<To*>(buffer.data());

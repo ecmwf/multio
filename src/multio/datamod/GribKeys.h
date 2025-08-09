@@ -10,12 +10,9 @@
 
 #pragma once
 
-#include "multio/datamod/DataModelling.h"
-#include "multio/datamod/DataModellingException.h"
 #include "multio/datamod/GribTypes.h"
-#include "multio/datamod/MarsMiscGeo.h"
-
-#include <sstream>
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Print.h"
 
 
 namespace multio::datamod {
@@ -24,159 +21,203 @@ namespace multio::datamod {
 // Grib2 eccodes keys (lowlevel keys or concepts that perform useful naming)
 //-----------------------------------------------------------------------------
 
-enum class Grib2Keys : std::uint64_t
-{
-    // Section0
-    Discipline,
+constexpr auto Discipline =               //
+    EntryDef<std::int64_t>{"discipline"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.discipline; });
 
-    // Section1
-    TablesVersion,
-    LocalTablesVersion,
-    ProductionStatusOfProcessedData,
-    TypeOfProcessedData,
+// Section1
+constexpr auto TablesVersion =               //
+    EntryDef<std::int64_t>{"tablesVersion"}  //
+        .tagOptional()                       //
+        .withAccessor([](auto&& v) { return &v.tablesVersion; });
+constexpr auto LocalTablesVersion =               //
+    EntryDef<std::int64_t>{"LocalTablesVersion"}  //
+        .tagOptional()                            //
+        .withAccessor([](auto&& v) { return &v.LocalTablesVersion; });
+constexpr auto ProductionStatusOfProcessedData =               //
+    EntryDef<std::int64_t>{"productionStatusOfProcessedData"}  //
+        .tagOptional()                                         //
+        .withAccessor([](auto&& v) { return &v.productionStatusOfProcessedData; });
+constexpr auto TypeOfProcessedData =               //
+    EntryDef<std::int64_t>{"typeOfProcessedData"}  //
+        .tagOptional()                             //
+        .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
 
 
-    // Section4
-    ProductDefinitionTemplateNumber,
+// Section3 (more to be moved here from MarsMiscGeo.h)
 
-    // Horizatontal
-    TypeOfLevel,
+constexpr auto ShapeOfTheEarth =               //
+    EntryDef<std::int64_t>{"shapeOfTheEarth"}  //
+        .withDefault(6)
+        .withAccessor([](auto&& v) { return &v.shapeOfTheEarth; });
 
-    //
-    GeneratingProcessIdentifier,
+// Section 3 - GG
 
-    // Timerange
-    TypeOfStatisticalProcessing,
+constexpr auto TruncateDegrees =               //
+    EntryDef<std::int64_t>{"truncateDegrees"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.truncateDegrees; });
 
-    //
-    ScaleFactorOfCentralWaveNumber,
-    ScaledValueOfCentralWaveNumber,
+constexpr auto NumberOfPointsAlongAMeridian =               //
+    EntryDef<std::int64_t>{"numberOfPointsAlongAMeridian"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAMeridian; });
+
+constexpr auto NumberOfParallelsBetweenAPoleAndTheEquator =               //
+    EntryDef<std::int64_t>{"numberOfParallelsBetweenAPoleAndTheEquator"}  //
+        .withAccessor([](auto&& v) { return &v.numberOfParallelsBetweenAPoleAndTheEquator; });
+
+constexpr auto LatitudeOfFirstGridPointInDegrees =         //
+    EntryDef<double>{"latitudeOfFirstGridPointInDegrees"}  //
+        .withAccessor([](auto&& v) { return &v.latitudeOfFirstGridPointInDegrees; });
+
+constexpr auto LongitudeOfFirstGridPointInDegrees =         //
+    EntryDef<double>{"longitudeOfFirstGridPointInDegrees"}  //
+        .withAccessor([](auto&& v) { return &v.longitudeOfFirstGridPointInDegrees; });
+
+constexpr auto LatitudeOfLastGridPointInDegrees =         //
+    EntryDef<double>{"latitudeOfLastGridPointInDegrees"}  //
+        .withAccessor([](auto&& v) { return &v.latitudeOfLastGridPointInDegrees; });
+
+constexpr auto LongitudeOfLastGridPointInDegrees =         //
+    EntryDef<double>{"longitudeOfLastGridPointInDegrees"}  //
+        .withAccessor([](auto&& v) { return &v.longitudeOfLastGridPointInDegrees; });
+
+constexpr auto Pl =                            //
+    EntryDef<std::vector<std::int64_t>>{"pl"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.pl; });
+
+// Section 3 - SH
+
+constexpr auto PentagonalResolutionParameterJ = EntryDef<std::int64_t>{"pentagonalResolutionParameterJ"}.withAccessor(
+    [](auto&& v) { return &v.pentagonalResolutionParameterJ; });
+constexpr auto PentagonalResolutionParameterK = EntryDef<std::int64_t>{"pentagonalResolutionParameterK"}.withAccessor(
+    [](auto&& v) { return &v.pentagonalResolutionParameterK; });
+constexpr auto PentagonalResolutionParameterM = EntryDef<std::int64_t>{"pentagonalResolutionParameterM"}.withAccessor(
+    [](auto&& v) { return &v.pentagonalResolutionParameterM; });
+
+
+// Section 3 - HEALpix
+
+constexpr auto NSide =               //
+    EntryDef<std::int64_t>{"nside"}  //
+        .withAccessor([](auto&& v) { return &v.nside; });
+
+constexpr auto OrderingConvention =              //
+    EntryDef<std::string>{"orderingConvention"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.orderingConvention; });
+
+
+
+// Section4
+constexpr auto ProductDefinitionTemplateNumber =                                     //
+    EntryDef<std::int64_t>{"productDefinitionTemplateNumber"}                        //
+        .tagOptional()                                                               //
+        .withAccessor([](auto&& v) { return &v.productDefinitionTemplateNumber; });  //
+constexpr auto GeneratingProcessIdentifier =                                         //
+    EntryDef<std::int64_t>{"generatingProcessIdentifier"}                            //
+        .tagOptional()                                                               //
+        .withAccessor([](auto&& v) { return &v.generatingProcessIdentifier; });
+constexpr auto TypeOfLevelEntry =         //
+    EntryDef<TypeOfLevel>{"typeOfLevel"}  //
+        .tagOptional()                    //
+        .withAccessor([](auto&& v) { return &v.typeOfLevel; });
+constexpr auto TypeOfStatisticalProcessingEntry =                                //
+    EntryDef<TypeOfStatisticalProcessing>{"typeOfStatisticalProcessing"}         //
+        .tagOptional()                                                           //
+        .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });  //
+constexpr auto ScaleFactorOfCentralWaveNumber =                                  //
+    EntryDef<std::int64_t>{"scaleFactorOfCentralWaveNumber"}                     //
+        .tagOptional()                                                           //
+        .withAccessor([](auto&& v) { return &v.scaleFactorOfCentralWaveNumber; });
+constexpr auto ScaledValueOfCentralWaveNumber =               //
+    EntryDef<std::int64_t>{"scaledValueOfCentralWaveNumber"}  //
+        .tagOptional()                                        //
+        .withAccessor([](auto&& v) { return &v.scaledValueOfCentralWaveNumber; });
+
+
+// Horizontal Keys
+constexpr auto PressureUnits                  //
+    = EntryDef<std::string>{"pressureUnits"}  //
+          .tagOptional()                      //
+          .withAccessor([](auto&& v) { return &v.pressureUnits; });
+constexpr auto TypeOfFirstFixedSurface                   //
+    = EntryDef<std::int64_t>{"typeOfFirstFixedSurface"}  //
+          .tagOptional()                                 //
+          .withAccessor([](auto&& v) { return &v.typeOfFirstFixedSurface; });
+constexpr auto TypeOfSecondFixedSurface                   //
+    = EntryDef<std::int64_t>{"typeOfSecondFixedSurface"}  //
+          .tagOptional()                                  //
+          .withAccessor([](auto&& v) { return &v.typeOfSecondFixedSurface; });
+constexpr auto ScaledValueOfFirstFixedSurface                   //
+    = EntryDef<std::int64_t>{"scaledValueOfFirstFixedSurface"}  //
+          .tagOptional()                                        //
+          .withAccessor([](auto&& v) { return &v.scaledValueOfFirstFixedSurface; });
+constexpr auto ScaledValueOfSecondFixedSurface                   //
+    = EntryDef<std::int64_t>{"scaledValueOfSecondFixedSurface"}  //
+          .tagOptional()                                         //
+          .withAccessor([](auto&& v) { return &v.scaledValueOfSecondFixedSurface; });
+constexpr auto ScaleFactorOfFirstFixedSurface                   //
+    = EntryDef<std::int64_t>{"scaleFactorOfFirstFixedSurface"}  //
+          .tagOptional()                                        //
+          .withAccessor([](auto&& v) { return &v.scaleFactorOfFirstFixedSurface; });
+constexpr auto ScaleFactorOfSecondFixedSurface                   //
+    = EntryDef<std::int64_t>{"scaleFactorOfSecondFixedSurface"}  //
+          .tagOptional()                                         //
+          .withAccessor([](auto&& v) { return &v.scaleFactorOfSecondFixedSurface; });
+
+
+struct HorizontalGribKeys {
+    EntryType_t<decltype(PressureUnits)> pressureUnits;
+    EntryType_t<decltype(TypeOfFirstFixedSurface)> typeOfFirstFixedSurface;
+    EntryType_t<decltype(TypeOfSecondFixedSurface)> typeOfSecondFixedSurface;
+    EntryType_t<decltype(ScaledValueOfFirstFixedSurface)> scaledValueOfFirstFixedSurface;
+    EntryType_t<decltype(ScaledValueOfSecondFixedSurface)> scaledValueOfSecondFixedSurface;
+    EntryType_t<decltype(ScaleFactorOfFirstFixedSurface)> scaleFactorOfFirstFixedSurface;
+    EntryType_t<decltype(ScaleFactorOfSecondFixedSurface)> scaleFactorOfSecondFixedSurface;
+
+
+    static constexpr std::string_view record_name_ = "horizontal";
+    static constexpr auto record_entries_ = std::make_tuple(
+        PressureUnits, TypeOfFirstFixedSurface, TypeOfSecondFixedSurface, ScaledValueOfFirstFixedSurface,
+        ScaledValueOfSecondFixedSurface, ScaleFactorOfFirstFixedSurface, ScaleFactorOfSecondFixedSurface);
 };
 
-
-// KeyDef<MiscKeys::EncodeStepZero, bool, mapper::IntToBoolMapper>{"encodeStepZero"}.tagOptional(),           //
-// KeyDef<MiscKeys::InitialStep, std::int64_t>{"initialStep"}.withDefault(0),                                 //
-// KeyDef<MiscKeys::LengthOfTimeRange, std::int64_t>{"lengthOfTimeRange"}.tagOptional(),                      //
-// KeyDef<MiscKeys::LengthOfTimeStep, std::int64_t>{"lengthOfTimeStep"}.tagOptional(),                        //
-// KeyDef<MiscKeys::LengthOfTimeRangeInSeconds, std::int64_t>{"lengthOfTimeRangeInSeconds"}.tagOptional(),    //
-// KeyDef<MiscKeys::LengthOfTimeStepInSeconds, std::int64_t>{"lengthOfTimeStepInSeconds"}.withDefault(3600),  //
-// KeyDef<MiscKeys::ValuesScaleFactor, double>{"valuesScaleFactor"}.tagOptional(),                            //
-// KeyDef<MiscKeys::Pv, std::vector<double>>{"pv"}.tagOptional(),                                             //
-// KeyDef<MiscKeys::NumberOfMissingValues, std::int64_t>{"numberOfMissingValues"}.tagOptional(),              //
-// KeyDef<MiscKeys::ValueOfMissingValues, double>{"valueOfMissingValues"}.tagOptional(),                      //
-// KeyDef<MiscKeys::TypeOfEnsembleForecast, std::int64_t>{"typeOfEnsembleForecast"}.tagOptional(),            //
-// KeyDef<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>{"numberOfForecastsInEnsemble"}.tagOptional(),  //
-// KeyDef<MiscKeys::LengthOfTimeWindow, std::int64_t>{"lengthOfTimeWindow"}.tagOptional(),                    //
-// KeyDef<MiscKeys::LengthOfTimeWindowInSeconds, std::int64_t>{"lengthOfTimeWindowInSeconds"}.tagOptional(),  //
-// KeyDef<MiscKeys::BitsPerValue, std::int64_t>{"bitsPerValue"}.tagOptional(),                                //
-// KeyDef<MiscKeys::PeriodMin, std::int64_t>{"periodMin"}.tagOptional().withDescription(
-//     "`periodMin` usually is depending on `paramId` and derived by ECCODES. in some cases it is "
-//     "passed through."),  //
-// KeyDef<MiscKeys::PeriodMax, std::int64_t>{"periodMax"}.tagOptional().withDescription(
-//     "`periodMax` usually is depending on `paramId` and derived by ECCODES. In some cases it is "
-//     "passed through."),                                                                                          //
-// KeyDef<MiscKeys::WaveDirections, std::vector<double>>{"waveDirections"}.tagOptional(),                           //
-// KeyDef<MiscKeys::WaveFrequencies, std::vector<double>>{"waveFrequencies"}.tagOptional(),                         //
-// KeyDef<MiscKeys::SatelliteSeries, std::int64_t>{"satelliteSeries"}.tagOptional(),                                //
-
-
-MULTIO_KEY_SET_DESCRIPTION(
-    Grib2Keys,  //
-    "grib2",    //
-                //
-    // Section0
-    KeyDef<Grib2Keys::Discipline, std::int64_t>{"discipline"}.withDefault(0),  //
-
-    // Section1
-    KeyDef<Grib2Keys::TablesVersion, std::int64_t>{"tablesVersion"}.tagOptional(),            //
-    KeyDef<Grib2Keys::LocalTablesVersion, std::int64_t>{"LocalTablesVersion"}.tagOptional(),  //
-    KeyDef<Grib2Keys::ProductionStatusOfProcessedData, std::int64_t>{"productionStatusOfProcessedData"}
-        .tagOptional(),                                                                         //
-    KeyDef<Grib2Keys::TypeOfProcessedData, std::int64_t>{"typeOfProcessedData"}.tagOptional(),  //
-
-    // Section4
-    KeyDef<Grib2Keys::ProductDefinitionTemplateNumber, std::int64_t>{"productDefinitionTemplateNumber"}
-        .tagOptional(),                                                                                         //
-    KeyDef<Grib2Keys::GeneratingProcessIdentifier, std::int64_t>{"generatingProcessIdentifier"}.tagOptional(),  //
-    KeyDef<Grib2Keys::TypeOfLevel, TypeOfLevel>{"typeOfLevel"}.tagOptional(),                                   //
-    KeyDef<Grib2Keys::TypeOfStatisticalProcessing, TypeOfStatisticalProcessing>{"typeOfStatisticalProcessing"}
-        .tagOptional(),                                                                                               //
-    KeyDef<Grib2Keys::ScaleFactorOfCentralWaveNumber, std::int64_t>{"scaleFactorOfCentralWaveNumber"}.tagOptional(),  //
-    KeyDef<Grib2Keys::ScaledValueOfCentralWaveNumber, std::int64_t>{"scaledValueOfCentralWaveNumber"}.tagOptional()   //
-);
-
-using Grib2KeySet = KeySet<Grib2Keys>;
-using Grib2KeyValueSet = KeyValueSet<Grib2KeySet>;
-
-
-template <>
-struct KeySetAlter<Grib2KeySet> {
-    static void alter(Grib2KeyValueSet& grib2) {}
-};
 
 //-----------------------------------------------------------------------------
 
 
-// Alternative to typeOfLevel
-enum class HorizontalKeys : std::uint64_t
-{
-    PressureUnits,
-    TypeOfFirstFixedSurface,
-    TypeOfSecondFixedSurface,
-    ScaledValueOfFirstFixedSurface,
-    ScaledValueOfSecondFixedSurface,
-    ScaleFactorOfFirstFixedSurface,
-    ScaleFactorOfSecondFixedSurface,
+constexpr auto PVPresent =       //
+    EntryDef<bool>{"PVPresent"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.pvPresent; });
+
+constexpr auto Pv =                      //
+    EntryDef<std::vector<double>>{"pv"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.pv; });
+
+struct VerticalGribKeys {
+    EntryType_t<decltype(PVPresent)> pvPresent;
+    EntryType_t<decltype(Pv)> pv;
+
+    static constexpr std::string_view record_name_ = "vertical";
+    static constexpr auto record_entries_ = std::make_tuple(PVPresent, Pv);
 };
-
-
-MULTIO_KEY_SET_DESCRIPTION(
-    HorizontalKeys,                                                                                            //
-    "horizontal",                                                                                              //
-                                                                                                               //
-    KeyDef<HorizontalKeys::PressureUnits, std::string>{"pressureUnits"}.tagOptional(),                         //
-    KeyDef<HorizontalKeys::TypeOfFirstFixedSurface, std::int64_t>{"typeOfFirstFixedSurface"}.tagOptional(),    //
-    KeyDef<HorizontalKeys::TypeOfSecondFixedSurface, std::int64_t>{"typeOfSecondFixedSurface"}.tagOptional(),  //
-    KeyDef<HorizontalKeys::ScaledValueOfFirstFixedSurface, std::int64_t>{"scaledValueOfFirstFixedSurface"}
-        .tagOptional(),  //
-    KeyDef<HorizontalKeys::ScaledValueOfSecondFixedSurface, std::int64_t>{"scaledValueOfSecondFixedSurface"}
-        .tagOptional(),  //
-    KeyDef<HorizontalKeys::ScaleFactorOfFirstFixedSurface, std::int64_t>{"scaleFactorOfFirstFixedSurface"}
-        .tagOptional(),  //
-    KeyDef<HorizontalKeys::ScaleFactorOfSecondFixedSurface, std::int64_t>{"scaleFactorOfSecondFixedSurface"}
-        .tagOptional());  //
-
-using HorizontalKeySet = KeySet<HorizontalKeys>;
-using HorizontalKeyValueSet = KeyValueSet<HorizontalKeySet>;
-
-//-----------------------------------------------------------------------------
-
-
-enum class VerticalKeys : std::uint64_t
-{
-    PVPresent,
-    PV,
-};
-
-
-MULTIO_KEY_SET_DESCRIPTION(VerticalKeys,                                                        //
-                           "vertical",                                                          //
-                                                                                                //
-                           KeyDef<VerticalKeys::PVPresent, bool>{"PVPresent"}.tagOptional(),    //
-                           KeyDef<VerticalKeys::PV, std::vector<double>>{"pv"}.tagOptional());  // TODO use misc key?
-
-
-using VerticalKeySet = KeySet<VerticalKeys>;
-using VerticalKeyValueSet = KeyValueSet<VerticalKeySet>;
 
 
 template <>
-struct KeySetAlter<VerticalKeySet> {
-    static void alter(VerticalKeyValueSet& v) {
-        auto& pvPresent = key<VerticalKeys::PVPresent>(v);
-        auto& pv = key<VerticalKeys::PV>(v);
-
-        pvPresent.set(pv.has());
+struct ApplyRecordDefaults<VerticalGribKeys> {
+    static void applyDefaults(VerticalGribKeys& v) {
+        if (v.pv.has()) {
+            v.pvPresent.set(true);
+        }
+        else {
+            v.pvPresent.unset();
+        }
     }
 };
 
@@ -184,4 +225,12 @@ struct KeySetAlter<VerticalKeySet> {
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod
+
+namespace multio::util {
+template <>
+struct Print<multio::datamod::HorizontalGribKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::VerticalGribKeys> : multio::datamod::PrintRecord {};
+
+}  // namespace multio::util
 

@@ -23,8 +23,8 @@
 #include "atlas/parallel/mpi/mpi.h"
 
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/Record.h"
 
 namespace multio::datamod {
 
@@ -42,31 +42,36 @@ GridType createGrid(const std::string& atlasNamedGrid) {
     return GridType(structuredGrid);
 }
 
-template <typename KS>
+template <typename Record>
 struct SetKeysFromAtlas {
-    void operator()(datamod::KeyValueSet<KS>& ks, const std::string& gridName) const {}
+    void operator()(Record& ks, const std::string& gridName) const {}
+};
+
+template <typename RecordType>
+struct SetKeysFromAtlas<ScopedRecord<RecordType>> {
+    void operator()(ScopedRecord<RecordType>& rec, const std::string& gridName) const {
+        SetKeysFromAtlas<RecordType>{}(static_cast<RecordType&>(rec), gridName);
+    }
 };
 
 template <>
-struct SetKeysFromAtlas<datamod::KeySet<datamod::GeoGG>> {
-    void operator()(datamod::KeyValueSet<datamod::KeySet<datamod::GeoGG>>& geoGG, const std::string& gridName) const {
-        using namespace datamod;
-
+struct SetKeysFromAtlas<GeoGGRecord> {
+    void operator()(GeoGGRecord& geoGG, const std::string& gridName) const {
         const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
-        key<GeoGG::NumberOfParallelsBetweenAPoleAndTheEquator>(geoGG).set(gaussianGrid.N());
+        geoGG.numberOfParallelsBetweenAPoleAndTheEquator.set(gaussianGrid.N());
 
         {
             auto it = gaussianGrid.lonlat().begin();
 
-            key<GeoGG::LatitudeOfFirstGridPointInDegrees>(geoGG).set((*it)[1]);
-            key<GeoGG::LongitudeOfFirstGridPointInDegrees>(geoGG).set((*it)[0]);
+            geoGG.latitudeOfFirstGridPointInDegrees.set((*it)[1]);
+            geoGG.longitudeOfFirstGridPointInDegrees.set((*it)[0]);
 
             it += gaussianGrid.size() - 1;
-            key<GeoGG::LatitudeOfLastGridPointInDegrees>(geoGG).set((*it)[1]);
+            geoGG.latitudeOfLastGridPointInDegrees.set((*it)[1]);
 
             const auto equator = gaussianGrid.N();
             const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-            key<GeoGG::LongitudeOfLastGridPointInDegrees>(geoGG).set(maxLongitude);
+            geoGG.longitudeOfLastGridPointInDegrees.set(maxLongitude);
         }
 
         {
@@ -75,32 +80,35 @@ struct SetKeysFromAtlas<datamod::KeySet<datamod::GeoGG>> {
             for (int i = 0; i < tmp.size(); ++i) {
                 pl[i] = long(tmp[i]);
             }
-            key<GeoGG::Pl>(geoGG).set(std::move(pl));
+            geoGG.pl.set(std::move(pl));
         }
-
+        
         // Explicitly validate after manual setting
-        alterAndValidate(geoGG);
+        applyRecordDefaults(geoGG);
+        validateRecord(geoGG);
     }
 };
 
-template <typename KS>
-void setKeysFromAtlas(datamod::KeyValueSet<KS>& gks, const std::string& gridName) {
-    return SetKeysFromAtlas<KS>{}(gks, gridName);
+template <typename Record>
+void setKeysFromAtlas(Record& rec, const std::string& gridName) {
+    return SetKeysFromAtlas<Record>{}(rec, gridName);
 }
 
 
-inline Geometry makeGeometry(const MarsKeyValueSet& mars, bool inferGeo = true) {
-    return std::visit(
-        [&](const auto& geoKS) -> Geometry {
-            // Create it unscoped...
-            KeyValueSet<std::decay_t<decltype(geoKS)>> ret{};
-            const auto& grid = key<MarsKeys::GRID>(mars);
-            if (inferGeo && grid.has()) {
-                setKeysFromAtlas(ret, grid.get());
+inline ScopedGeometry makeGeometry(const MarsRecord& mars) {
+    auto res = getGeometryRecord(mars);
+    std::visit(
+        [&](auto& rec) {
+            if (mars.grid.has()) {
+                setKeysFromAtlas(rec, mars.grid.get());
             }
-            return ret;
         },
-        getGeometryKeySet(mars));
+        res);
+    return res;
+}
+
+inline Geometry makeUnscopedGeometry(const MarsRecord& mars) {
+    return std::visit([](auto&& geo) -> Geometry { return unscopeRecord(std::move(geo));}, makeGeometry(mars));
 }
 
 }  // namespace multio::datamod

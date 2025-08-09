@@ -10,7 +10,6 @@
 
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/generated/InferPDTTest.h"
@@ -23,7 +22,8 @@ CASE("Test mapping pdt from metadata") {
     using namespace multio::mars2grib::rules::test;
     using namespace multio::mars2grib::rules;
     for (const PdtWithSelector& pdtWithSelector : mappedPdtAndSelectors) {
-        auto pdt = InferPdt{}.inferProductDefinitionTemplateNumber(read(PDTCatKeySet{}, pdtWithSelector.selector));
+        auto pdtRec = dm::readRecord<PDTCat>(pdtWithSelector.selector);
+        auto pdt = InferPdt{}.inferProductDefinitionTemplateNumber(pdtRec);
         EXPECT_EQUAL(pdt, pdtWithSelector.productDefinitionTemplateNumber);
     }
 };

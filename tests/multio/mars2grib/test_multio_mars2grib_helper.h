@@ -8,17 +8,15 @@
 
 namespace multio::test {
 
-mars2grib::EncoderSections expectedAIFSSingleEncoderSections(const datamod::MarsKeyValueSet& mars) {
-    using namespace datamod;
-    auto param = key<MarsKeys::PARAM>(mars);
-    auto levelist = key<MarsKeys::LEVELIST>(mars);
-    ASSERT(param.has());
+namespace dm = multio::datamod;
+
+mars2grib::SectionsConf expectedAIFSSingleEncoderSections(const dm::MarsRecord& mars) {
+    ASSERT(mars.param.has());
 
     auto toSections = [](std::string&& str) {
-        return read(datamod::KeySet<mars2grib::EncoderSectionsDef>{},
-                    eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
+        return dm::readRecord<mars2grib::SectionsConf>(eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
-    switch (param.get()) {
+    switch (mars.param.get()) {
         case 134:
         case 235:
         case 141:
@@ -48,8 +46,8 @@ mars2grib::EncoderSections expectedAIFSSingleEncoderSections(const datamod::Mars
         case 132:
         case 133:
         case 135: {
-            ASSERT(levelist.has());
-            if (levelist.get() < 100) {
+            ASSERT(mars.levelist.has());
+            if (mars.levelist.get() < 100) {
                 return toSections(
                     R"json({"indicator-section":{"template-number":0},"identification-section":{"template-number":0,"origin-configurator":{"type":"default"},"data-type-configurator":{"type":"default"},"reference-time-configurator":{"type":"default"},"tables-configurator":{"type":"default","local-tables-version":0}},"local-use-section":{"template-number":1},"grid-definition-section":{"template-number":40},"product-definition-section":{"template-number":0,"product-categories":{"timeExtent":"pointInTime","timeFormat":"None","spatialExtent":"None","processType":"None","processSubType":"None","productCategory":"None","productSubCategory":"None"},"param-configurator":{"type":"paramId"},"model-configurator":{"type":"default"},"point-in-time-configurator":{"type":"default"},"level-configurator":{"type":"isobaricInPa"}},"data-representation-section":{"template-number":42}})json");
             }
@@ -60,23 +58,19 @@ mars2grib::EncoderSections expectedAIFSSingleEncoderSections(const datamod::Mars
         }
         default:
             std::ostringstream oss;
-            oss << "aifsSingleConfForParam: no mapping for param: " << param;
+            oss << "aifsSingleConfForParam: no mapping for param: " << mars.param;
             throw mars2grib::Mars2GribException(oss.str(), Here());
     }
 }
 
 
-mars2grib::EncoderSections expectedAIFSEnsEncoderSections(const datamod::MarsKeyValueSet& mars) {
-    using namespace datamod;
-    auto param = key<MarsKeys::PARAM>(mars);
-    auto levelist = key<MarsKeys::LEVELIST>(mars);
-    ASSERT(param.has());
+mars2grib::SectionsConf expectedAIFSEnsEncoderSections(const dm::MarsRecord& mars) {
+    ASSERT(mars.param.has());
 
     auto toSections = [](std::string&& str) {
-        return read(datamod::KeySet<mars2grib::EncoderSectionsDef>{},
-                    eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
+        return dm::readRecord<mars2grib::SectionsConf>(eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
-    switch (param.get()) {
+    switch (mars.param.get()) {
         case 134:
         case 235:
         case 141:
@@ -106,8 +100,8 @@ mars2grib::EncoderSections expectedAIFSEnsEncoderSections(const datamod::MarsKey
         case 132:
         case 133:
         case 135: {
-            ASSERT(levelist.has());
-            if (levelist.get() < 100) {
+            ASSERT(mars.levelist.has());
+            if (mars.levelist.get() < 100) {
                 return toSections(
                     R"json({"indicator-section":{"template-number":0},"identification-section":{"template-number":0,"origin-configurator":{"type":"default"},"data-type-configurator":{"type":"default"},"reference-time-configurator":{"type":"default"},"tables-configurator":{"type":"default","local-tables-version":0}},"local-use-section":{"template-number":1},"grid-definition-section":{"template-number":40},"product-definition-section":{"template-number":1,"product-categories":{"timeExtent":"pointInTime","timeFormat":"None","spatialExtent":"None","processType":"None","processSubType":"ensemble","productCategory":"None","productSubCategory":"None"},"param-configurator":{"type":"paramId"},"model-configurator":{"type":"default"}, "ensemble-configurator":{"type":"default"},"point-in-time-configurator":{"type":"default"},"level-configurator":{"type":"isobaricInPa"}},"data-representation-section":{"template-number":42}})json");
             }
@@ -118,7 +112,7 @@ mars2grib::EncoderSections expectedAIFSEnsEncoderSections(const datamod::MarsKey
         }
         default:
             std::ostringstream oss;
-            oss << "aifsSingleConfForParam: no mapping for param: " << param;
+            oss << "aifsSingleConfForParam: no mapping for param: " << mars.param;
             throw mars2grib::Mars2GribException(oss.str(), Here());
     }
 }

@@ -8,14 +8,15 @@
 
 
 namespace multio::action::scale {
-using datamod::glossary;
+
+namespace dm = multio::datamod;
 
 std::string extractParam(const multio::message::Metadata& md) {
     std::string cparam{};
-    if (auto param = md.getOpt<std::string>(glossary().param); param) {
+    if (auto param = md.getOpt<std::string>(dm::legacy::Param); param) {
         cparam = *param;
     }
-    else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
+    else if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
         cparam = std::to_string(*paramId);
     }
     else {

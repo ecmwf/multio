@@ -10,267 +10,246 @@
 
 #pragma once
 
-#include "multio/datamod/DataModelling.h"
-
-#include <chrono>
-#include <string>
+#include "multio/util/PrehashedKey.h"
 
 
-namespace multio::datamod {
+namespace multio::datamod::legacy {
 
 //-----------------------------------------------------------------------------
 // To be refactored / replaced
+//
+// Should be separated in MARS MISC GRIB keys and structured properly
+//
 //-----------------------------------------------------------------------------
 
-/**
- * TODO old glossary ... will be hopefully reploced with keysets
- *
- * This class is ment to keep track of different metadata keys used within the action provided through multio.
- * Reasons to have this:
- *  - Keep track of metadata keys that are used - with a proper IDE we can jump to all places a key is used
- *  - Just using strings at multiple places is error prone (typos can happen)
- *  - In the future also type information and specialized access operations should be added
- *  - We can do proper benchmark of metadata operations with typical keys. Moreover its easy to benchmark different key
- * (fixed strings, prehashed strings in case of hashmaps) and maptypes
- */
-struct Glossary {
-    using KeyType = util::PrehashedKey<std::string>;
 
-    template <typename ValueType>
-    struct KV {
-        using KeyType = util::PrehashedKey<std::string>;
-        using This = KV<ValueType>;
+using KeyType = util::PrehashedKey<std::string_view>;
 
-        // To be removed in future when glossary is refactored
-        operator const KeyType&() const { return key_; }
-        operator const std::string&() const { return key_; }
+template <typename ValueType>
+struct KV {
+    using This = KV<ValueType>;
 
-        const KeyType& key() const { return key_; }
+    // To be removed in future when glossary is refactored
+    operator const KeyType&() const { return key_; }
+    operator std::string() const { return std::string(key_); }
 
-        // Members
-        KeyType key_;
-    };
+    const KeyType& key() const { return key_; }
 
-
-    // General keys
-    const KeyType name{"name"};
-    const KeyType paramId{"paramId"};
-    const KeyType param{"param"};
-    const KeyType globalSize{"misc-globalSize"};
-    const KeyType domain{"domain"};
-    const KeyType date{"date"};
-    const KeyType time{"time"};
-    const KeyType precision{"misc-precision"};
-
-    // Added missing 08/04/2025
-    const KeyType shortName{"shortName"};
-    const KeyType unpackedSubsetPrecision{"unpackedSubsetPrecision"};
-    const KeyType representation{"representation"};
-    const KeyType trigger{"trigger"};
-    const KeyType gridded{"gridded"};
-
-    // Nemo
-    const KeyType nemoParam{"nemoParam"};
-    const KeyType category{"category"};
-
-    // Mars keys
-    const KV<std::string> type{"type"};
-    const KV<std::string> marsType{"marsType"};
-    const KV<std::string> classKey{"class"};
-    const KV<std::string> marsClass{"marsClass"};
-    const KV<std::string> stream{"stream"};
-    const KV<std::string> marsStream{"marsStream"};
-    const KV<std::string> expver{"expver"};
-    const KV<std::string> experimentVersionNumber{"experimentVersionNumber"};
-    const KV<std::int64_t> levelist{"levelist"};
-    const KV<std::string> levtype{"levtype"};
-    const KV<std::string> levtypeWam{"levtype_wam"};
-    const KV<std::string> dataset{"dataset"};
-    const KV<std::string> resolution{"resolution"};
-    const KV<std::string> activity{"activity"};
-    const KV<std::string> experiment{"experiment"};
-    const KV<std::string> generation{"generation"};
-    const KV<std::string> model{"model"};
-    const KV<std::string> realization{"realization"};
-    const KV<std::int64_t> methodNumber{"methodNumber"};
-    const KV<std::int64_t> systemNumber{"systemNumber"};
-    const KV<std::int64_t> methodNumberKC{"method-number"};  // Kebap case
-    const KV<std::int64_t> systemNumberKC{"system-number"};  // Kebap case
-
-    // Eccodes specific
-    const KV<std::string> gribEdition{"gribEdition"};
-    const KV<std::int64_t> tablesVersion{"tablesVersion"};
-    const KV<std::int64_t> localTablesVersion{"localTablesVersion"};
-    const KV<bool> setLocalDefinition{"setLocalDefinition"};
-    const KV<std::int64_t> grib2LocalSectionNumber{"grib2LocalSectionNumber"};
-    const KV<std::int64_t> extraLocalSectionNumber{"extraLocalSectionNumber"};
-    const KV<bool> deleteExtraLocalSection{"deleteExtraLocalSection"};
-    const KV<std::int64_t> productDefinitionTemplateNumber{"productDefinitionTemplateNumber"};
-    const KV<std::int64_t> productionStatusOfProcessedData{"productionStatusOfProcessedData"};
-
-    // Eccodes concepts
-    const KV<std::string> gridName{"gridName"};
-    const KV<std::string> gridType{"gridType"};
-    const KV<std::string> typeOfLevel{"typeOfLevel"};
-    const KV<std::int64_t> localDefinitionNumber{"localDefinitionNumber"};
-
-    // Additional eccodes keys
-    const KV<std::string> setPackingType{"setPackingType"};
-    const KV<std::int64_t> complexPacking{"complexPacking"};
-    const KV<double> missingValue{"missingValue"};
-    const KV<std::int64_t> bitsPerValue{"bitsPerValue"};
-    const KV<bool> bitmapPresent{"bitmapPresent"};
-
-    // Grib general
-    const KV<std::int64_t> typeOfGeneratingProcess{"typeOfGeneratingProcess"};  // Analog to mars type
-    const KV<std::int64_t> generatingProcessIdentifier{"generatingProcessIdentifier"};
-    const KV<std::string> subCentre{"subCentre"};
-
-    const KV<std::int64_t> perturbationNumber{"perturbationNumber"};
-    const KV<std::int64_t> numberOfForecastsInEnsemble{"numberOfForecastsInEnsemble"};
-    const KV<std::int64_t> ensembleMember{"ensembleMember"};
-    const KV<std::int64_t> ensembleSize{"ensembleSize"};
-    const KV<std::int64_t> ensembleMemberKC{"ensemble-member"};  // Kebap case
-    const KV<std::int64_t> ensembleSizeKC{"ensemble-size"};      // Kebap case
-    const KV<std::int64_t> offsetToEndOf4DvarWindow{"offsetToEndOf4DvarWindow"};
-    const KV<std::int64_t> lengthOf4DvarWindow{"lengthOf4DvarWindow"};
-
-    const KV<std::int64_t> anoffset{"anoffset"};
-    const KV<std::int64_t> anlength{"anlength"};
-
-    const KV<std::int64_t> componentIndex{"componentIndex"};
-    const KV<std::int64_t> numberOfComponents{"numberOfComponents"};
-    const KV<std::int64_t> modelErrorType{"modelErrorType"};
-    const KV<std::int64_t> iterationNumber{"iterationNumber"};
-    const KV<std::int64_t> totalNumberOfIterations{"totalNumberOfIterations"};
-
-
-    // Eccodes grib reference date/time - direct setting (alternative to date & time)
-    const KV<std::int64_t> year{"year"};
-    const KV<std::int64_t> month{"month"};
-    const KV<std::int64_t> day{"day"};
-    const KV<std::int64_t> hour{"hour"};
-    const KV<std::int64_t> minute{"minute"};
-    const KV<std::int64_t> second{"second"};
-
-    const KV<std::int64_t> forecastTime{"forecastTime"};
-
-    // Eccodes analysis date/time - direct setting (alternative to dateOfAnalysis & timeOfAnalysis) -- ONLY VALID FOR A
-    // SPECIFIC localDefinitionNumber
-    const KV<std::int64_t> yearOfAnalysis{"yearOfAnalysis"};
-    const KV<std::int64_t> monthOfAnalysis{"monthOfAnalysis"};
-    const KV<std::int64_t> dayOfAnalysis{"dayOfAnalysis"};
-    const KV<std::int64_t> hourOfAnalysis{"hourOfAnalysis"};
-    const KV<std::int64_t> minuteOfAnalysis{"minuteOfAnalysis"};
-    const KV<std::int64_t> secondOfAnalysis{"secondOfAnalysis"};
-
-    // Eccodes grib2 stat
-    const KV<std::int64_t> yearOfEndOfOverallTimeInterval{"yearOfEndOfOverallTimeInterval"};
-    const KV<std::int64_t> monthOfEndOfOverallTimeInterval{"monthOfEndOfOverallTimeInterval"};
-    const KV<std::int64_t> dayOfEndOfOverallTimeInterval{"dayOfEndOfOverallTimeInterval"};
-    const KV<std::int64_t> hourOfEndOfOverallTimeInterval{"hourOfEndOfOverallTimeInterval"};
-    const KV<std::int64_t> minuteOfEndOfOverallTimeInterval{"minuteOfEndOfOverallTimeInterval"};
-    const KV<std::int64_t> secondOfEndOfOverallTimeInterval{"secondOfEndOfOverallTimeInterval"};
-    const KV<std::string> typeOfStatisticalProcessing{"typeOfStatisticalProcessing"};
-    const KV<std::int64_t> lengthOfTimeRange{"lengthOfTimeRange"};
-    const KV<std::int64_t> indicatorOfUnitForTimeIncrement{"indicatorOfUnitForTimeIncrement"};
-    const KV<std::int64_t> timeIncrement{"timeIncrement"};
-
-    // Eccodes grib2 grid
-    const KV<std::string> unstructuredGridType{"unstructuredGridType"};
-    const KV<std::string> unstructuredGridSubtype{"unstructuredGridSubtype"};
-    const KV<std::string> uuidOfHGrid{"uuidOfHGrid"};
-
-    // Eccodes grib horizontal + vertial
-    const KV<std::int64_t> level{"level"};
-    const KV<std::int64_t> scaledValueOfFirstFixedSurface{"scaledValueOfFirstFixedSurface"};
-    const KV<std::int64_t> scaledValueOfSecondFixedSurface{"scaledValueOfSecondFixedSurface"};
-    const KV<std::int64_t> scaleFactorOfFirstFixedSurface{"scaleFactorOfFirstFixedSurface"};
-    const KV<std::int64_t> scaleFactorOfSecondFixedSurface{"scaleFactorOfSecondFixedSurface"};
-    const KV<std::int64_t> typeOfFirstFixedSurface{"typeOfFirstFixedSurface"};
-    const KV<std::int64_t> typeOfSecondFixedSurface{"typeOfSecondFixedSurface"};
-
-    // Time model
-    const KV<std::int64_t> startTime{"startTime"};
-    const KV<std::int64_t> startDate{"startDate"};
-    const KV<std::int64_t> previousTime{"previousTime"};
-    const KV<std::int64_t> previousDate{"previousDate"};
-    const KV<std::int64_t> currentTime{"currentTime"};
-    const KV<std::int64_t> currentDate{"currentDate"};
-
-    const KV<std::int64_t> sampleInterval{"sampleInterval"};
-    const KV<std::int64_t> sampleIntervalInSeconds{"sampleIntervalInSeconds"};
-
-    // legacy & conversion
-    const KV<std::int64_t> timeStep{"timeStep"};
-    const KV<std::int64_t> step{"step"};
-    const KV<std::int64_t> stepUnits{"stepUnits"};
-    const KV<std::string> stepRange{"stepRange"};
-    const KV<std::int64_t> startStep{"startStep"};
-    const KV<std::int64_t> endStep{"endStep"};
-    const KV<std::int64_t> dataTime{"dataTime"};
-    const KV<std::int64_t> dataDate{"dataDate"};
-    const KV<std::int64_t> indicatorOfUnitForTimeRange{"indicatorOfUnitForTimeRange"};
-
-    const KV<std::int64_t> dateOfAnalysis{"date-of-analysis"};
-    const KV<std::int64_t> timeOfAnalysis{"time-of-analysis"};
-
-    // Statistic
-    const KV<std::string> operation{"operation"};
-    const KV<std::int64_t> restartStep{"restart-step"};
-    const KV<std::int64_t> stepFrequency{"step-frequency"};
-
-    // Healpix
-    const KV<std::int64_t> nside{"Nside"};
-    const KV<std::string> orderingConvention{"orderingConvention"};
-
-    // Spherical harmonics
-    const KeyType sphericalHarmonics{"sphericalHarmonics"};
-    const KV<std::int64_t> pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
-    const KV<std::int64_t> pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
-    const KV<std::int64_t> pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
-    const KV<std::int64_t> j{"J"};
-    const KV<std::int64_t> k{"K"};
-    const KV<std::int64_t> m{"M"};
-    const KV<std::int64_t> subSetJ{"subSetJ"};
-    const KV<std::int64_t> subSetK{"subSetK"};
-    const KV<std::int64_t> subSetM{"subSetM"};
-    const KV<std::int64_t> js{"JS"};
-    const KV<std::int64_t> ks{"KS"};
-    const KV<std::int64_t> ms{"MS"};
-
-
-    // Regular ll
-    const KV<std::int64_t> ni{"Ni"};
-    const KV<std::int64_t> nj{"Nj"};
-
-    // Regular ll - mapped
-    const KV<double> north{"north"};
-    const KV<double> west{"west"};
-    const KV<double> south{"south"};
-    const KV<double> east{"east"};
-    const KV<double> westEastIncrement{"west_east_increment"};
-    const KV<double> southNorthIncrement{"south_north_increment"};
-
-    // Regular ll - direct
-    const KV<double> latitudeOfFirstGridPointInDegrees{"latitudeOfFirstGridPointInDegrees"};
-    const KV<double> latitudeOfLastGridPointInDegrees{"latitudeOfLastGridPointInDegrees"};
-    const KV<double> longitudeOfFirstGridPointInDegrees{"longitudeOfFirstGridPointInDegrees"};
-    const KV<double> longitudeOfLastGridPointInDegrees{"longitudeOfLastGridPointInDegrees"};
-    const KV<double> jDirectionIncrementInDegrees{"jDirectionIncrementInDegrees"};
-    const KV<double> iDirectionIncrementInDegrees{"iDirectionIncrementInDegrees"};
-
-
-    static const Glossary& instance() {
-        static Glossary glossary;
-        return glossary;
-    }
+    // Members
+    KeyType key_;
 };
 
-const Glossary& glossary();
+
+// General keys
+constexpr KeyType Name{"name"};
+constexpr KeyType ParamId{"paramId"};
+constexpr KeyType Param{"param"};
+constexpr KeyType GlobalSize{"misc-globalSize"};
+constexpr KeyType Domain{"domain"};
+constexpr KeyType Date{"date"};
+constexpr KeyType Time{"time"};
+constexpr KeyType Precision{"misc-precision"};
+
+// Added missing 08/04/2025
+constexpr KeyType ShortName{"shortName"};
+constexpr KeyType UnpackedSubsetPrecision{"unpackedSubsetPrecision"};
+constexpr KeyType Representation{"representation"};
+constexpr KeyType Trigger{"trigger"};
+constexpr KeyType Gridded{"gridded"};
+
+// Nemo
+constexpr KeyType NemoParam{"nemoParam"};
+constexpr KeyType Category{"category"};
+
+// Mars keys
+constexpr auto Type = KV<std::string>{"type"};
+constexpr auto MarsType = KV<std::string>{"marsType"};
+constexpr auto ClassKey = KV<std::string>{"class"};
+constexpr auto MarsClass = KV<std::string>{"marsClass"};
+constexpr auto Stream = KV<std::string>{"stream"};
+constexpr auto MarsStream = KV<std::string>{"marsStream"};
+constexpr auto Expver = KV<std::string>{"expver"};
+constexpr auto ExperimentVersionNumber = KV<std::string>{"experimentVersionNumber"};
+constexpr auto Levelist = KV<std::int64_t>{"levelist"};
+constexpr auto Levtype = KV<std::string>{"levtype"};
+constexpr auto LevtypeWam = KV<std::string>{"levtype_wam"};
+constexpr auto Dataset = KV<std::string>{"dataset"};
+constexpr auto Resolution = KV<std::string>{"resolution"};
+constexpr auto Activity = KV<std::string>{"activity"};
+constexpr auto Experiment = KV<std::string>{"experiment"};
+constexpr auto Generation = KV<std::string>{"generation"};
+constexpr auto Model = KV<std::string>{"model"};
+constexpr auto Realization = KV<std::string>{"realization"};
+constexpr auto MethodNumber = KV<std::int64_t>{"methodNumber"};
+constexpr auto SystemNumber = KV<std::int64_t>{"systemNumber"};
+constexpr auto MethodNumberKC = KV<std::int64_t>{"method-number"};  // Kebap case
+constexpr auto SystemNumberKC = KV<std::int64_t>{"system-number"};  // Kebap case
+
+// Eccodes specific
+constexpr auto GribEdition = KV<std::string>{"gribEdition"};
+constexpr auto TablesVersion = KV<std::int64_t>{"tablesVersion"};
+constexpr auto LocalTablesVersion = KV<std::int64_t>{"localTablesVersion"};
+constexpr auto SetLocalDefinition = KV<bool>{"setLocalDefinition"};
+constexpr auto Grib2LocalSectionNumber = KV<std::int64_t>{"grib2LocalSectionNumber"};
+constexpr auto ExtraLocalSectionNumber = KV<std::int64_t>{"extraLocalSectionNumber"};
+constexpr auto DeleteExtraLocalSection = KV<bool>{"deleteExtraLocalSection"};
+constexpr auto ProductDefinitionTemplateNumber = KV<std::int64_t>{"productDefinitionTemplateNumber"};
+constexpr auto ProductionStatusOfProcessedData = KV<std::int64_t>{"productionStatusOfProcessedData"};
+
+// Eccodes concepts
+constexpr auto GridName = KV<std::string>{"gridName"};
+constexpr auto GridType = KV<std::string>{"gridType"};
+constexpr auto TypeOfLevel = KV<std::string>{"typeOfLevel"};
+constexpr auto LocalDefinitionNumber = KV<std::int64_t>{"localDefinitionNumber"};
+
+// Additional eccodes keys
+constexpr auto SetPackingType = KV<std::string>{"setPackingType"};
+constexpr auto ComplexPacking = KV<std::int64_t>{"complexPacking"};
+constexpr auto MissingValue = KV<double>{"missingValue"};
+constexpr auto BitsPerValue = KV<std::int64_t>{"bitsPerValue"};
+constexpr auto BitmapPresent = KV<bool>{"bitmapPresent"};
+
+// Grib general
+constexpr auto TypeOfGeneratingProcess = KV<std::int64_t>{"typeOfGeneratingProcess"};  // Analog to mars type
+constexpr auto GeneratingProcessIdentifier = KV<std::int64_t>{"generatingProcessIdentifier"};
+constexpr auto SubCentre = KV<std::string>{"subCentre"};
+
+constexpr auto PerturbationNumber = KV<std::int64_t>{"perturbationNumber"};
+constexpr auto NumberOfForecastsInEnsemble = KV<std::int64_t>{"numberOfForecastsInEnsemble"};
+constexpr auto EnsembleMember = KV<std::int64_t>{"ensembleMember"};
+constexpr auto EnsembleSize = KV<std::int64_t>{"ensembleSize"};
+constexpr auto EnsembleMemberKC = KV<std::int64_t>{"ensemble-member"};  // Kebap case
+constexpr auto EnsembleSizeKC = KV<std::int64_t>{"ensemble-size"};      // Kebap case
+constexpr auto OffsetToEndOf4DvarWindow = KV<std::int64_t>{"offsetToEndOf4DvarWindow"};
+constexpr auto LengthOf4DvarWindow = KV<std::int64_t>{"lengthOf4DvarWindow"};
+
+constexpr auto Anoffset = KV<std::int64_t>{"anoffset"};
+constexpr auto Anlength = KV<std::int64_t>{"anlength"};
+
+constexpr auto ComponentIndex = KV<std::int64_t>{"componentIndex"};
+constexpr auto NumberOfComponents = KV<std::int64_t>{"numberOfComponents"};
+constexpr auto ModelErrorType = KV<std::int64_t>{"modelErrorType"};
+constexpr auto IterationNumber = KV<std::int64_t>{"iterationNumber"};
+constexpr auto TotalNumberOfIterations = KV<std::int64_t>{"totalNumberOfIterations"};
+
+
+// Eccodes grib reference date/time - direct setting (alternative to date & time)
+constexpr auto Year = KV<std::int64_t>{"year"};
+constexpr auto Month = KV<std::int64_t>{"month"};
+constexpr auto Day = KV<std::int64_t>{"day"};
+constexpr auto Hour = KV<std::int64_t>{"hour"};
+constexpr auto Minute = KV<std::int64_t>{"minute"};
+constexpr auto Second = KV<std::int64_t>{"second"};
+
+constexpr auto ForecastTime = KV<std::int64_t>{"forecastTime"};
+
+// Eccodes analysis date/time - direct setting (alternative to dateOfAnalysis & timeOfAnalysis) -- ONLY VALID FOR A
+// SPECIFIC localDefinitionNumber
+constexpr auto YearOfAnalysis = KV<std::int64_t>{"yearOfAnalysis"};
+constexpr auto MonthOfAnalysis = KV<std::int64_t>{"monthOfAnalysis"};
+constexpr auto DayOfAnalysis = KV<std::int64_t>{"dayOfAnalysis"};
+constexpr auto HourOfAnalysis = KV<std::int64_t>{"hourOfAnalysis"};
+constexpr auto MinuteOfAnalysis = KV<std::int64_t>{"minuteOfAnalysis"};
+constexpr auto SecondOfAnalysis = KV<std::int64_t>{"secondOfAnalysis"};
+
+// Eccodes grib2 stat
+constexpr auto YearOfEndOfOverallTimeInterval = KV<std::int64_t>{"yearOfEndOfOverallTimeInterval"};
+constexpr auto MonthOfEndOfOverallTimeInterval = KV<std::int64_t>{"monthOfEndOfOverallTimeInterval"};
+constexpr auto DayOfEndOfOverallTimeInterval = KV<std::int64_t>{"dayOfEndOfOverallTimeInterval"};
+constexpr auto HourOfEndOfOverallTimeInterval = KV<std::int64_t>{"hourOfEndOfOverallTimeInterval"};
+constexpr auto MinuteOfEndOfOverallTimeInterval = KV<std::int64_t>{"minuteOfEndOfOverallTimeInterval"};
+constexpr auto SecondOfEndOfOverallTimeInterval = KV<std::int64_t>{"secondOfEndOfOverallTimeInterval"};
+constexpr auto TypeOfStatisticalProcessing = KV<std::string>{"typeOfStatisticalProcessing"};
+constexpr auto LengthOfTimeRange = KV<std::int64_t>{"lengthOfTimeRange"};
+constexpr auto IndicatorOfUnitForTimeIncrement = KV<std::int64_t>{"indicatorOfUnitForTimeIncrement"};
+constexpr auto TimeIncrement = KV<std::int64_t>{"timeIncrement"};
+
+// Eccodes grib2 grid
+constexpr auto UnstructuredGridType = KV<std::string>{"unstructuredGridType"};
+constexpr auto UnstructuredGridSubtype = KV<std::string>{"unstructuredGridSubtype"};
+constexpr auto UuidOfHGrid = KV<std::string>{"uuidOfHGrid"};
+
+// Eccodes grib horizontal + vertial
+constexpr auto Level = KV<std::int64_t>{"level"};
+constexpr auto ScaledValueOfFirstFixedSurface = KV<std::int64_t>{"scaledValueOfFirstFixedSurface"};
+constexpr auto ScaledValueOfSecondFixedSurface = KV<std::int64_t>{"scaledValueOfSecondFixedSurface"};
+constexpr auto ScaleFactorOfFirstFixedSurface = KV<std::int64_t>{"scaleFactorOfFirstFixedSurface"};
+constexpr auto ScaleFactorOfSecondFixedSurface = KV<std::int64_t>{"scaleFactorOfSecondFixedSurface"};
+constexpr auto TypeOfFirstFixedSurface = KV<std::int64_t>{"typeOfFirstFixedSurface"};
+constexpr auto TypeOfSecondFixedSurface = KV<std::int64_t>{"typeOfSecondFixedSurface"};
+
+// Time model
+constexpr auto StartTime = KV<std::int64_t>{"startTime"};
+constexpr auto StartDate = KV<std::int64_t>{"startDate"};
+constexpr auto PreviousTime = KV<std::int64_t>{"previousTime"};
+constexpr auto PreviousDate = KV<std::int64_t>{"previousDate"};
+constexpr auto CurrentTime = KV<std::int64_t>{"currentTime"};
+constexpr auto CurrentDate = KV<std::int64_t>{"currentDate"};
+
+constexpr auto SampleInterval = KV<std::int64_t>{"sampleInterval"};
+constexpr auto SampleIntervalInSeconds = KV<std::int64_t>{"sampleIntervalInSeconds"};
+
+// legacy & conversion
+constexpr auto TimeStep = KV<std::int64_t>{"timeStep"};
+constexpr auto Step = KV<std::int64_t>{"step"};
+constexpr auto StepUnits = KV<std::int64_t>{"stepUnits"};
+constexpr auto StepRange = KV<std::string>{"stepRange"};
+constexpr auto StartStep = KV<std::int64_t>{"startStep"};
+constexpr auto EndStep = KV<std::int64_t>{"endStep"};
+constexpr auto DataTime = KV<std::int64_t>{"dataTime"};
+constexpr auto DataDate = KV<std::int64_t>{"dataDate"};
+constexpr auto IndicatorOfUnitForTimeRange = KV<std::int64_t>{"indicatorOfUnitForTimeRange"};
+
+constexpr auto DateOfAnalysis = KV<std::int64_t>{"date-of-analysis"};
+constexpr auto TimeOfAnalysis = KV<std::int64_t>{"time-of-analysis"};
+
+// Statistic
+constexpr auto Operation = KV<std::string>{"operation"};
+constexpr auto RestartStep = KV<std::int64_t>{"restart-step"};
+constexpr auto StepFrequency = KV<std::int64_t>{"step-frequency"};
+
+// Healpix
+constexpr auto Nside = KV<std::int64_t>{"Nside"};
+constexpr auto OrderingConvention = KV<std::string>{"orderingConvention"};
+
+// Spherical harmonics
+constexpr KeyType SphericalHarmonics{"sphericalHarmonics"};
+constexpr auto PentagonalResolutionParameterJ = KV<std::int64_t>{"pentagonalResolutionParameterJ"};
+constexpr auto PentagonalResolutionParameterK = KV<std::int64_t>{"pentagonalResolutionParameterK"};
+constexpr auto PentagonalResolutionParameterM = KV<std::int64_t>{"pentagonalResolutionParameterM"};
+constexpr auto J{" = KV<std::int64_t>J"};
+constexpr auto K{" = KV<std::int64_t>K"};
+constexpr auto M{" = KV<std::int64_t>M"};
+constexpr auto SubSetJ = KV<std::int64_t>{"subSetJ"};
+constexpr auto SubSetK = KV<std::int64_t>{"subSetK"};
+constexpr auto SubSetM = KV<std::int64_t>{"subSetM"};
+constexpr auto Js = KV<std::int64_t>{"JS"};
+constexpr auto Ks = KV<std::int64_t>{"KS"};
+constexpr auto Ms = KV<std::int64_t>{"MS"};
+
+
+// Regular ll
+constexpr auto Ni = KV<std::int64_t>{"Ni"};
+constexpr auto Nj = KV<std::int64_t>{"Nj"};
+
+// Regular ll - mapped
+constexpr auto North = KV<double>{"north"};
+constexpr auto West = KV<double>{"west"};
+constexpr auto South = KV<double>{"south"};
+constexpr auto East = KV<double>{"east"};
+constexpr auto WestEastIncrement = KV<double>{"west_east_increment"};
+constexpr auto SouthNorthIncrement = KV<double>{"south_north_increment"};
+
+// Regular ll - direct
+constexpr auto LatitudeOfFirstGridPointInDegrees = KV<double>{"latitudeOfFirstGridPointInDegrees"};
+constexpr auto LatitudeOfLastGridPointInDegrees = KV<double>{"latitudeOfLastGridPointInDegrees"};
+constexpr auto LongitudeOfFirstGridPointInDegrees = KV<double>{"longitudeOfFirstGridPointInDegrees"};
+constexpr auto LongitudeOfLastGridPointInDegrees = KV<double>{"longitudeOfLastGridPointInDegrees"};
+constexpr auto JDirectionIncrementInDegrees = KV<double>{"jDirectionIncrementInDegrees"};
+constexpr auto IDirectionIncrementInDegrees = KV<double>{"iDirectionIncrementInDegrees"};
 
 
 //-----------------------------------------------------------------------------
 
-}  // namespace multio::datamod
+}  // namespace multio::datamod::legacy
 

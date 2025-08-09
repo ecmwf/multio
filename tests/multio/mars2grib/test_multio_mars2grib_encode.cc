@@ -10,10 +10,11 @@
 
 #include "eckit/testing/Test.h"
 
+#include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/core/KeyValueSet.h"
+#include "multio/datamod/core/EntryParser.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/EncoderCache.h"
 
 #include "multio/datamod/AtlasGeo.h"
@@ -26,21 +27,21 @@
 
 namespace multio::test {
 
+namespace dm = multio::datamod;
+
 CASE("Test cache.getHandle with AIFS single keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     EncoderCache cache{};
-    MiscKeyValueSet misc;
-    alterAndValidate(misc);
+    dm::MiscRecord misc;
+    dm::applyRecordDefaults(misc);
+    dm::validateRecord(misc);
 
     for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
-            auto mars = read(MarsKeySet{}, md);
-
-            auto geo = makeGeometry(mars, true);
-
+            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto geo = dm::makeUnscopedGeometry(mars);
             auto handle = cache.getHandle(mars, misc, geo);
         }
         catch (...) {
@@ -53,18 +54,18 @@ CASE("Test cache.getHandle with AIFS single keys") {
 CASE("Test cache.getHandle with AIFS ens keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
 
     EncoderCache cache{};
-    MiscKeyValueSet misc;
-    key<MiscKeys::TypeOfEnsembleForecast>(misc).set(1);
-    key<MiscKeys::NumberOfForecastsInEnsemble>(misc).set(50);
-    alterAndValidate(misc);
+    dm::MiscRecord misc;
+    misc.typeOfEnsembleForecast.set(1);
+    misc.numberOfForecastsInEnsemble.set(50);
+    dm::applyRecordDefaults(misc);
+    dm::validateRecord(misc);
 
     for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
-            auto mars = read(MarsKeySet{}, md);
-            auto geo = makeGeometry(mars, true);
+            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto geo = dm::makeUnscopedGeometry(mars);
             auto handle = cache.getHandle(mars, misc, geo);
         }
         catch (...) {

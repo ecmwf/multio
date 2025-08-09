@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include "multio/mars2grib/EncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
-#include "multio/mars2grib/rules/Matcher.h"
 #include "multio/mars2grib/rules/Setter.h"
+
+#include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/util/Print.h"
 
@@ -23,45 +25,58 @@
 
 namespace multio::mars2grib::rules {
 
-// Rule with dynamic dispatch to be stored in containers massively
-template <typename MatchKeySet_>
-struct DynRule {
-    using MatchKeySet = MatchKeySet_;
+namespace dm = multio::datamod;
 
+// Rule with dynamic dispatch to be stored in containers massively
+struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual bool apply(const datamod::KeyValueSet<MatchKeySet_>& keys, EncoderSections&) const = 0;
-    virtual void print(std::ostream&) const = 0;
+    virtual bool apply(const dm::MarsRecord& rec, SectionsConf&) const = 0;
+    virtual void print(util::PrintStream&) const = 0;
 
     virtual ~DynRule() = default;
 };
+}  // namespace multio::mars2grib::rules
 
+namespace multio::util {
 
-template <typename MatchKeySet_, typename Derived>
-struct DerivedRule : DynRule<MatchKeySet_> {
-    using MatchKeySet = MatchKeySet_;
-    bool apply(const datamod::KeyValueSet<MatchKeySet_>& keys, EncoderSections& conf) const override {
-        return static_cast<const Derived&>(*this)(keys, conf);
+template <>
+struct Print<mars2grib::rules::DynRule> {
+    static void print(util::PrintStream& ps, const mars2grib::rules::DynRule& r) { r.print(ps); }
+};
+}  // namespace multio::util
+
+namespace multio::mars2grib::rules {
+
+template <typename Derived>
+struct DerivedRule : DynRule {
+    bool apply(const dm::MarsRecord& rec, SectionsConf& conf) const override {
+        return static_cast<const Derived&>(*this)(rec, conf);
     }
 
-    void print(std::ostream& os) const override { util::print(os, static_cast<const Derived&>(*this)); }
+    void print(util::PrintStream& ps) const override { util::print(ps, static_cast<const Derived&>(*this)); }
 };
+
+}  // namespace multio::mars2grib::rules
+
+namespace multio::util {}
+
+namespace multio::mars2grib::rules {
 
 
 // A Rule combining matcher and a setter
 // Hence its operator() takes a keyset for matching, a encoder configuration to set keys, and it returns the result of
 // the match. Nothing is set if the match fails.
-template <typename Matcher, typename Setter>
-struct Rule : DerivedRule<typename Matcher::KeySet, Rule<Matcher, Setter>> {
-    using MatchKeySet = typename Matcher::KeySet;
-
+template <typename Matcher>
+struct Rule : DerivedRule<Rule<Matcher>> {
+    Rule(Matcher&& m, Setter&& s) : matcher{std::move(m)}, setter{std::move(s)} {}
     Matcher matcher;
     Setter setter;
 
     // Match and set
-    bool operator()(const datamod::KeyValueSet<MatchKeySet>& kvs, EncoderSections& conf) const {
-        if (matcher(kvs)) {
-            setter.set(conf);
+    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const {
+        if (matcher(rec)) {
+            setter(conf);
             return true;
         }
         return false;
@@ -69,22 +84,15 @@ struct Rule : DerivedRule<typename Matcher::KeySet, Rule<Matcher, Setter>> {
 };
 
 // Rule maker
-template <typename Matcher_, typename Setter_>
-auto rule(Matcher_&& matcher, Setter_&& setter) {
-    Rule<std::decay_t<Matcher_>, std::decay_t<Setter_>> res;
-    res.matcher = std::forward<Matcher_>(matcher);
-    res.setter = std::forward<Setter_>(setter);
-    return res;
+template <typename Matcher_>
+auto rule(Matcher_&& matcher, Setter&& setter) {
+    return Rule<std::decay_t<Matcher_>>{std::forward<Matcher_>(matcher), std::move(setter)};
 }
 
 // Rule maker with a NoOp (to just match)
 template <typename Matcher_>
 auto rule(Matcher_&& matcher) {
-    Rule<std::decay_t<Matcher_>, NoOp> res;
-    res.matcher = std::forward<Matcher_>(matcher);
-    res.setter = NoOp{};
-    return res;
-    // return Rule<std::decay_t<Matcher_>, NoOp>(std::forward<Matcher_>(matcher), NoOp{});
+    return Rule<std::decay_t<Matcher_>>{std::forward<Matcher_>(matcher), Setter([](SectionsConf&) {})};
 }
 
 // Rule with a matcher and mustiple setters (which get combined with `setAll`)
@@ -93,63 +101,66 @@ auto rule(Matcher_&& matcher, Setters_&&... setters) {
     return rule(std::forward<Matcher_>(matcher), setAll(std::forward<Setters_>(setters)...));
 }
 
+}  // namespace multio::mars2grib::rules
+
+namespace multio::util {
+template <typename Matcher>
+struct Print<mars2grib::rules::Rule<Matcher>> {
+    static void print(util::PrintStream& ps, const mars2grib::rules::Rule<Matcher>& r) {
+        ps << "rule(" << std::endl;
+        ps << "  ";
+        {
+            IndentGuard g(ps);
+            ps << r.matcher << std::endl;
+        }
+        ps << ")";
+    }
+};
+
+}  // namespace multio::util
+
+namespace multio::mars2grib::rules {
+
 
 // An ExclusiveRuleList contains a list of rules from which only one is expected to match and be applied
 // This concept is important to express combinations of orthogonal rules
-template <typename MatchKeySet_>
-struct ExclusiveRuleList : DerivedRule<MatchKeySet_, ExclusiveRuleList<MatchKeySet_>> {
-    using MatchKeySet = MatchKeySet_;
-    std::vector<std::unique_ptr<DynRule<MatchKeySet>>> rules;
+struct ExclusiveRuleList : DerivedRule<ExclusiveRuleList> {
+    std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const datamod::KeyValueSet<MatchKeySet>& kvs, EncoderSections& conf) const {
-        DynRule<MatchKeySet>* appliedRule = nullptr;
-        for (const auto& rule : rules) {
-            if (rule->apply(kvs, conf)) {
-                if (appliedRule != nullptr) {
-                    std::ostringstream oss;
-                    oss << "ExclusizeRuleList: Multiple rules apply although they should be exclusive.";
-                    oss << " first match: ";
-                    util::print(oss, *appliedRule);
-                    oss << std::endl;
-                    oss << " second match: ";
-                    util::print(oss, *rule.get());
-                    oss << std::endl;
-                    oss << " Keys: ";
-                    util::print(oss, kvs);
-                    throw Mars2GribException(oss.str(), Here());
-                }
-                appliedRule = rule.get();
-            }
-        }
-        return (appliedRule != nullptr);
-    }
+    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const;
 };
 
 
 template <typename Rule_, typename... Rules_>
-ExclusiveRuleList<typename Rule_::MatchKeySet> exclusiveRuleList(Rule_&& rule, Rules_&&... rules) {
-    using MatchKS = typename Rule_::MatchKeySet;
-    ExclusiveRuleList<MatchKS> res;
+ExclusiveRuleList exclusiveRuleList(Rule_&& rule, Rules_&&... rules) {
+    ExclusiveRuleList res;
     res.rules.emplace_back(std::make_unique<std::decay_t<Rule_>>(std::forward<Rule_>(rule)));
     (res.rules.emplace_back(std::make_unique<std::decay_t<Rules_>>(std::forward<Rules_>(rules))), ...);
     return res;
 }
 
 
-template <typename MatchKeySet_>
-ExclusiveRuleList<MatchKeySet_> mergeRuleList(ExclusiveRuleList<MatchKeySet_>&& res) {
-    return std::move(res);
-}
+ExclusiveRuleList mergeRuleList(ExclusiveRuleList&& res);
 
-template <typename MatchKeySet_, typename... More>
-ExclusiveRuleList<MatchKeySet_> mergeRuleList(ExclusiveRuleList<MatchKeySet_>&& res,
-                                              ExclusiveRuleList<MatchKeySet_>&& next, More&&... more) {
+template <typename... More>
+ExclusiveRuleList mergeRuleList(ExclusiveRuleList&& res, ExclusiveRuleList&& next, More&&... more) {
     res.rules.insert(res.rules.end(), std::make_move_iterator(next.rules.begin()),
                      std::make_move_iterator(next.rules.end()));
 
     return mergeRuleList(std::move(res), std::forward<More>(more)...);
 }
+
+}  // namespace multio::mars2grib::rules
+
+namespace multio::util {
+template <>
+struct Print<mars2grib::rules::ExclusiveRuleList> {
+    static void print(util::PrintStream& ps, const mars2grib::rules::ExclusiveRuleList& r);
+};
+}  // namespace multio::util
+
+namespace multio::mars2grib::rules {
 
 
 // Chains multiple rules on a struct matter.
@@ -157,59 +168,17 @@ ExclusiveRuleList<MatchKeySet_> mergeRuleList(ExclusiveRuleList<MatchKeySet_>&& 
 // key set is not definitely mapped. If the first rule does not apply, false is returned (and indicates that no
 // modification happened) This is expected to be compbined with multiple ExclusiveRuleList to eventually form a
 // combination of all partial rules.
-template <typename MatchKeySet_>
-struct ChainedRuleList : DerivedRule<MatchKeySet_, ChainedRuleList<MatchKeySet_>> {
-    using MatchKeySet = MatchKeySet_;
-    std::vector<std::unique_ptr<DynRule<MatchKeySet>>> rules;
+struct ChainedRuleList : DerivedRule<ChainedRuleList> {
+    std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const datamod::KeyValueSet<MatchKeySet>& kvs, EncoderSections& conf) const {
-        bool first = true;
-        for (const auto& rule : rules) {
-            bool matched = rule->apply(kvs, conf);
-            if (first) {
-                // First failed - nothing has been applied yet
-                if (!matched) {
-                    return false;
-                }
-                first = false;
-                continue;
-            }
-
-            if (!matched) {
-                std::ostringstream oss;
-                oss << "ChainedRuleList: KeySet is not definitely matched. Some previous rules matched but an "
-                       "intermediate rule failed: ";
-
-                int i = 0;
-                for (const auto& r : rules) {
-                    if (&r == &rule) {
-                        oss << " #" << i << " failed: ";
-                        util::print(oss, *r.get());
-                        oss << std::endl;
-                        break;
-                    }
-                    else {
-                        oss << " #" << i << " matched: ";
-                        util::print(oss, *r.get());
-                        oss << std::endl;
-                    }
-                }
-                oss << " Keys: ";
-                util::print(oss, kvs);
-                throw Mars2GribException(oss.str(), Here());
-            }
-        }
-
-        return true;
-    }
+    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const;
 };
 
 
 template <typename Rule_, typename... Rules_>
-ChainedRuleList<typename Rule_::MatchKeySet> chainedRuleList(Rule_&& rule, Rules_&&... rules) {
-    using MatchKS = typename Rule_::MatchKeySet;
-    ChainedRuleList<MatchKS> res;
+ChainedRuleList chainedRuleList(Rule_&& rule, Rules_&&... rules) {
+    ChainedRuleList res;
     res.rules.emplace_back(std::make_unique<std::decay_t<Rule_>>(std::forward<Rule_>(rule)));
     (res.rules.emplace_back(std::make_unique<std::decay_t<Rules_>>(std::forward<Rules_>(rules))), ...);
     return res;
@@ -220,54 +189,10 @@ ChainedRuleList<typename Rule_::MatchKeySet> chainedRuleList(Rule_&& rule, Rules
 
 namespace multio::util {
 
-template <typename MatchKeySet>
-struct Print<mars2grib::rules::ExclusiveRuleList<MatchKeySet>> {
-    static void print(std::ostream& os, const mars2grib::rules::ExclusiveRuleList<MatchKeySet>& r) {
-        os << "exclusiveRuleList(";
-        bool first = true;
-        for (const auto& ri : r.rules) {
-            if (first) {
-                first = false;
-            }
-            else {
-                os << ", ";
-            }
-            util::print(os, *ri.get());
-        }
-    }
-};
 
-template <typename Matcher, typename Setter>
-struct Print<mars2grib::rules::Rule<Matcher, Setter>> {
-    static void print(std::ostream& os, const mars2grib::rules::Rule<Matcher, Setter>& r) {
-        os << "rule(" << r.matcher << ", ";
-        r.setter.print(os);
-        os << ")";
-    }
-};
-
-
-template <typename MatchKeySet>
-struct Print<mars2grib::rules::DynRule<MatchKeySet>> {
-    static void print(std::ostream& os, const mars2grib::rules::DynRule<MatchKeySet>& r) { r.print(os); }
-};
-
-
-template <typename MatchKeySet>
-struct Print<mars2grib::rules::ChainedRuleList<MatchKeySet>> {
-    static void print(std::ostream& os, const mars2grib::rules::ChainedRuleList<MatchKeySet>& r) {
-        os << "exclusiveRuleList(";
-        bool first = true;
-        for (const auto& ri : r.rules) {
-            if (first) {
-                first = false;
-            }
-            else {
-                os << ", ";
-            }
-            util::print(os, *ri.get());
-        }
-    }
+template <>
+struct Print<mars2grib::rules::ChainedRuleList> {
+    static void print(util::PrintStream& ps, const mars2grib::rules::ChainedRuleList& r);
 };
 
 

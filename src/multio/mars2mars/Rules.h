@@ -16,10 +16,25 @@
 
 namespace multio::mars2mars {
 using namespace rules;
-using namespace datamod;
+
+namespace dm = multio::datamod;
+
+// Specific mappings
+
+const RuleList& wmoUnitMapping();
+const RuleList& fixIFSOutput();
+const RuleList& mapDeprecatedGrib1ToGrib2();
+const RuleList& waveBitsPerValue();
+
+// Groups
+
+const RuleList& mapBitsPerValue();
+const RuleList& allRulesNoWMOMapping();
+
+// All
 
 const RuleList& allRules();
 
-std::optional<MappingResult> applyMappings(datamod::MarsKeyValueSet&, datamod::MiscKeyValueSet&);
+std::optional<MappingResult> applyMappings(const RuleList&, dm::MarsRecord&, dm::MiscRecord&);
 
 }  // namespace multio::mars2mars

@@ -10,7 +10,6 @@
 
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/mars2grib/EncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Rules.h"
@@ -32,17 +31,18 @@
 
 namespace multio::test {
 
+namespace dm = multio::datamod;
+
 CASE("Test level setter") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
-    using namespace multio::datamod;
     using namespace multio::mars2grib::sections;
 
-    std::vector<std::pair<std::string, TypeOfLevel>> tols{
-        {"ml", TypeOfLevel::Hybrid},
-        {"ml", TypeOfLevel::Snow},
-        {"sfc", TypeOfLevel::HeightAboveGround},
-        {"sfc", TypeOfLevel::HeightAboveGroundAt10m},
+    std::vector<std::pair<std::string, dm::TypeOfLevel>> tols{
+        {"ml", dm::TypeOfLevel::Hybrid},
+        {"ml", dm::TypeOfLevel::Snow},
+        {"sfc", dm::TypeOfLevel::HeightAboveGround},
+        {"sfc", dm::TypeOfLevel::HeightAboveGroundAt10m},
     };
 
     for (const auto& p : tols) {
@@ -50,23 +50,25 @@ CASE("Test level setter") {
         auto levtypeStr = p.first;
         auto tol = p.second;
 
-        LevelKeyValueSet conf;
-        key<LevelDef::Type>(conf).set(tol);
+        LevelConfigurator conf;
+        conf.type.set(tol);
         col.add(std::make_unique<LevelSetter>(conf));
 
         auto md = util::sample_gen::mkMd();
         md.set("levtype", levtypeStr);
         md.set("misc-pv", std::vector<double>{{0.1, 0.2, 0.3}});
 
-        auto mars = read(MarsKeySet{}, md);
-        auto misc = read(MiscKeySet{}.makeScoped(), md);
+        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        auto scopedMisc = dm::scopeRecord(dm::MiscRecord{});
+        dm::readRecord(scopedMisc, md);
+        auto misc = dm::unscopeRecord(std::move(scopedMisc));
 
         // auto geo = read(getGeometryKeySet(mars), md);
         // Ignore geo for now.. may cause other problems
-        Geometry geo{};  // UNCHECKED
+        dm::Geometry geo{};  // UNCHECKED
 
-        std::cout << "Example for required level keys: " << std::endl;
-        col.writeKeyInfo(std::cout, mars);
+        // std::cout << "Example for required level keys: " << std::endl;
+        // col.writeKeyInfo(std::cout, mars);
 
         // TBD
         // auto sample = util::MioGribHandle::makeDefault();

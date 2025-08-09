@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "multio/datamod/ReaderWriter.h"
+#include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/util/Hash.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/TypeToString.h"
@@ -50,15 +50,15 @@ struct TypeToString<mars2grib::sections::TimeRangeType> {
 namespace multio::datamod {
 
 template <>
-struct WriteSpec<mars2grib::sections::TimeRangeType> {
-    static std::string write(mars2grib::sections::TimeRangeType);
+struct DumpType<mars2grib::sections::TimeRangeType> {
+    static std::string dump(mars2grib::sections::TimeRangeType);
 };
 
 
 template <>
-struct ReadSpec<mars2grib::sections::TimeRangeType> {
-    static inline mars2grib::sections::TimeRangeType read(mars2grib::sections::TimeRangeType v) noexcept { return v; };
-    static mars2grib::sections::TimeRangeType read(const std::string& s);
+struct ParseType<mars2grib::sections::TimeRangeType> {
+    static inline mars2grib::sections::TimeRangeType parse(mars2grib::sections::TimeRangeType v) noexcept { return v; };
+    static mars2grib::sections::TimeRangeType parse(const std::string& s);
 };
 
 

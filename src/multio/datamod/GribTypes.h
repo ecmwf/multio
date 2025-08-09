@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "multio/datamod/ReaderWriter.h"
+#include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/util/Hash.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/Print.h"
@@ -154,11 +154,11 @@ namespace multio::util {
 
 template <>
 struct Print<datamod::TypeOfLevel> {
-    static void print(std::ostream&, const datamod::TypeOfLevel&);
+    static void print(PrintStream&, const datamod::TypeOfLevel&);
 };
 template <>
 struct Print<datamod::TypeOfStatisticalProcessing> {
-    static void print(std::ostream&, const datamod::TypeOfStatisticalProcessing&);
+    static void print(PrintStream&, const datamod::TypeOfStatisticalProcessing&);
 };
 
 template <>
@@ -175,33 +175,33 @@ namespace multio::datamod {
 
 
 template <>
-struct WriteSpec<TypeOfLevel> {
-    static std::string write(TypeOfLevel);
+struct DumpType<TypeOfLevel> {
+    static std::string dump(TypeOfLevel);
 };
 
 template <>
-struct ReadSpec<TypeOfLevel> {
-    static inline TypeOfLevel read(TypeOfLevel v) noexcept { return v; };
-    static TypeOfLevel read(const std::string& s);
+struct ParseType<TypeOfLevel> {
+    static inline TypeOfLevel parse(TypeOfLevel v) noexcept { return v; };
+    static TypeOfLevel parse(const std::string& s);
 };
 
 
 template <>
-struct WriteSpec<TypeOfStatisticalProcessing> {
-    static std::string write(TypeOfStatisticalProcessing);
+struct DumpType<TypeOfStatisticalProcessing> {
+    static std::string dump(TypeOfStatisticalProcessing);
 };
 
-// TBD - add write spec for writing to grib (write as int)
+// TBD - add dump spec for writing to grib (dump as int)
 // template <>
-// struct WriteSpec<TypeOfStatisticalProcessing, util::MioGribHandle> {
-//     static std::int64_t write(TypeOfStatisticalProcessing);
+// struct DumpType<TypeOfStatisticalProcessing, util::MioGribHandle> {
+//     static std::int64_t dump(TypeOfStatisticalProcessing);
 // };
 
 template <>
-struct ReadSpec<TypeOfStatisticalProcessing> {
-    static inline TypeOfStatisticalProcessing read(TypeOfStatisticalProcessing v) noexcept { return v; };
-    static TypeOfStatisticalProcessing read(const std::string& s);
-    static TypeOfStatisticalProcessing read(std::int64_t i);
+struct ParseType<TypeOfStatisticalProcessing> {
+    static inline TypeOfStatisticalProcessing parse(TypeOfStatisticalProcessing v) noexcept { return v; };
+    static TypeOfStatisticalProcessing parse(const std::string& s);
+    static TypeOfStatisticalProcessing parse(std::int64_t i);
 };
 
 

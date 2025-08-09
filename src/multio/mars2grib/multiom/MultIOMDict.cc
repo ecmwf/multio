@@ -12,10 +12,14 @@
 
 #include "eckit/log/Log.h"
 
+#include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/core/EntryParser.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multiom/api/c/api.h"
 
 namespace multio::mars2grib {
+
+namespace dm = multio::datamod;
 
 std::string multIOMDictKindString(MultIOMDictKind kind) {
     switch (kind) {
@@ -133,20 +137,23 @@ std::string MultIOMDict::toJSON() const {
     return std::string(d);
 }
 
+struct OptsToPass {
+    dm::EntryType_t<decltype(SamplesPath)> samplesPath;
+    dm::EntryType_t<decltype(EncodingRules)> encodingRules;
+    dm::EntryType_t<decltype(MappingRules)> mappingRules;
+
+    static constexpr std::string_view record_name_ = "multiom-opts";
+    static constexpr auto record_entries_ = std::make_tuple(SamplesPath, EncodingRules, MappingRules);
+};
 
 MultIOMDict MultIOMDict::makeOptions(const EncodeMtg2Conf& opts) {
     MultIOMDict optDict(MultIOMDictKind::Options);
 
-    using namespace datamod;
-
     // Select a subset of the options (excluding knowledge-root) and set them to the opt dict
-    write(read(keySet<EncodeMtg2Def::SamplesPath, EncodeMtg2Def::MappingRules, EncodeMtg2Def::EncodingRules>(), opts),
-          optDict);
+    dm::dumpRecord(dm::readRecord<OptsToPass>(opts), optDict);
 
-    // TODO -- this hack will just be removed through
-    const auto& knowledgeRoot = key<EncodeMtg2Def::KnowledgeRoot>(opts);
-    if (!knowledgeRoot.isMissing()) {
-        setenv("IFS_INSTALL_DIR", std::string(knowledgeRoot.get()).c_str(), 0);
+    if (opts.knowledgeRoot.has()) {
+        setenv("IFS_INSTALL_DIR", std::string(opts.knowledgeRoot.get()).c_str(), 0);
     }
 
     return optDict;

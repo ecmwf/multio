@@ -10,39 +10,59 @@
 
 
 #include "multio/mars2mars/rules/Rule.h"
+#include "eckit/utils/Overloaded.h"
 
 
 namespace multio::mars2mars::rules {
 
-std::optional<MappingResult> RuleList::operator()(datamod::MarsKeyValueSet& marsVals,
-                                                  datamod::MiscKeyValueSet& miscVals) const {
-    DynRule* appliedRule = nullptr;
+const DynRule* getRulePtr(const RuleList::RuleEntry& re) {
+    return std::visit(
+        eckit::Overloaded{[&](const std::unique_ptr<DynRule>& rule) { return static_cast<const DynRule*>(rule.get()); },
+                          [&](std::reference_wrapper<const RuleList> ruleList) {
+                              return static_cast<const DynRule*>(&ruleList.get());
+                          }},
+        re);
+}
+
+std::optional<MappingResult> RuleList::operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const {
+    const DynRule* appliedRule = nullptr;
     std::optional<MappingResult> res;
-    for (const auto& rule : rules) {
+    for (const auto& ruleEntry : rules) {
+        const DynRule* rule = getRulePtr(ruleEntry);
         if (auto res2 = rule->apply(marsVals, miscVals)) {
             if (appliedRule != nullptr) {
                 std::ostringstream oss;
-                oss << "RuleList: Multiple rules apply";
+                util::PrintStream ps(oss);
+                ps << "RuleList: Multiple rules apply";
 
                 int i = 0;
                 for (const auto& r : rules) {
-                    if (&r == &rule) {
-                        oss << " #" << i << " second match: ";
-                        util::print(oss, *r.get());
-                        oss << std::endl;
+                    if (&r == &ruleEntry) {
+                        ps << " #" << i << " second match: ";
+                        {
+                            util::IndentGuard g(ps);
+                            ps << *getRulePtr(r);
+                        }
+                        ps << std::endl;
                         break;
                     }
-                    else if (appliedRule == r.get()) {
-                        oss << " #" << i << " first match: ";
-                        util::print(oss, *r.get());
-                        oss << std::endl;
+                    else if (appliedRule == getRulePtr(r)) {
+                        ps << " #" << i << " first match: ";
+                        {
+                            util::IndentGuard g(ps);
+                            ps << *getRulePtr(r);
+                        }
+                        ps << std::endl;
                     }
                 }
-                oss << " Keys: ";
-                util::print(oss, marsVals);
+                ps << " Keys: ";
+                {
+                    util::IndentGuard g(ps);
+                    ps << marsVals;
+                }
                 throw Mars2MarsException(oss.str(), Here());
             }
-            appliedRule = rule.get();
+            appliedRule = rule;
             res = res2;
         }
     }
@@ -55,22 +75,26 @@ std::optional<MappingResult> RuleList::operator()(datamod::MarsKeyValueSet& mars
 
 namespace multio::util {
 
-void Print<mars2mars::rules::DynRule>::print(std::ostream& os, const mars2mars::rules::DynRule& r) {
-    r.print(os);
+void Print<mars2mars::rules::DynRule>::print(PrintStream& ps, const mars2mars::rules::DynRule& r) {
+    r.print(ps);
 }
 
 
-void Print<mars2mars::rules::RuleList>::print(std::ostream& os, const mars2mars::rules::RuleList& r) {
-    os << "ruleList(";
+void Print<mars2mars::rules::RuleList>::print(PrintStream& ps, const mars2mars::rules::RuleList& r) {
+    ps << "ruleList(";
     bool first = true;
     for (const auto& ri : r.rules) {
         if (first) {
             first = false;
+            ps << "  ";
         }
         else {
-            os << ", ";
+            ps << ", ";
         }
-        util::print(os, *ri.get());
+        {
+            IndentGuard g(ps);
+            getRulePtr(ri)->print(ps);
+        }
     }
 }
 

@@ -15,31 +15,30 @@
 
 #include <vector>
 
-namespace multio::mars2grib::rules {
+namespace multio::mars2grib::matcher {
 
 //-----------------------------------------------------------------------------
 // Param matchers
 //-----------------------------------------------------------------------------
 
-Range<datamod::MarsKeys::PARAM> paramRange(datamod::KeyDefValueType_t<datamod::MarsKeys::PARAM> start,
-                                           datamod::KeyDefValueType_t<datamod::MarsKeys::PARAM> end) {
-    return Range<datamod::MarsKeys::PARAM>{start, end};
+auto paramRange(dm::EntryValueType_t<decltype(dm::PARAM)> start,
+                dm::EntryValueType_t<decltype(dm::PARAM)> end) {
+    return Range{dm::PARAM, start, end};
 }
 
-using ParamMatcher = Any<OneOf<datamod::MarsKeys::PARAM>, Ranges<datamod::MarsKeys::PARAM>>;
+using ParamMatcher = Any<OneOf<std::decay_t<decltype(dm::PARAM)>>, Ranges<std::decay_t<decltype(dm::PARAM)>>>;
 
-ParamMatcher matchParams(std::vector<datamod::KeyDefValueType_t<datamod::MarsKeys::PARAM>> params) {
+ParamMatcher matchParams(std::vector<dm::EntryValueType_t<decltype(dm::PARAM)>> params) {
     return ParamMatcher{
-        std::make_tuple(OneOf<datamod::MarsKeys::PARAM>{std::move(params)}, Ranges<datamod::MarsKeys::PARAM>{{}})};
+        std::make_tuple(OneOf{dm::PARAM, std::move(params)}, Ranges<std::decay_t<decltype(dm::PARAM)>>{{}})};
 }
 
-ParamMatcher matchParams(datamod::KeyDefValueType_t<datamod::MarsKeys::PARAM> param) {
+ParamMatcher matchParams(dm::EntryValueType_t<decltype(dm::PARAM)> param) {
     return matchParams(std::vector{param});
 }
 
-ParamMatcher matchParams(Range<datamod::MarsKeys::PARAM> range) {
-    return ParamMatcher{
-        std::make_tuple(OneOf<datamod::MarsKeys::PARAM>{{}}, Ranges<datamod::MarsKeys::PARAM>{{range}})};
+ParamMatcher matchParams(Range<std::decay_t<decltype(dm::PARAM)>> range) {
+    return ParamMatcher{std::make_tuple(OneOf{dm::PARAM, {}}, Ranges<std::decay_t<decltype(dm::PARAM)>>{{range}})};
 }
 
 ParamMatcher matchParams(ParamMatcher m) {
@@ -68,5 +67,5 @@ ParamMatcher matchParams(Arg&& arg, Arg2&& arg2, More&&... more) {
 }
 
 
-}  // namespace multio::mars2grib::rules
+}  // namespace multio::mars2grib::matcher
 

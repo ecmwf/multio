@@ -19,16 +19,19 @@
 #include "multio/action/encode-mtg2/AtlasGeoSetter.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/config/PathConfiguration.h"
-#include "multio/datamod/Glossary.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/EncoderCache.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
+#include "multio/util/Print.h"
 
 namespace multio::action {
+
+namespace dm = multio::datamod;
 
 using message::Message;
 using message::Peer;
@@ -36,7 +39,7 @@ using message::Peer;
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
-    conf_{datamod::readByValue(mars2grib::EncodeMtg2KeySet{}, compConf.parsedConfig())},
+    conf_{dm::readRecordByValue<mars2grib::EncodeMtg2Conf>(compConf.parsedConfig())},
     cache_{conf_} {}
 
 
@@ -49,50 +52,43 @@ void EncodeMtg2::executeImpl(Message msg) {
     auto& md = msg.metadata();
 
     {
-        using namespace datamod;
         // Read and set unscoped mars keys
-        auto marsKeys = read(keySet<MarsKeys>().unscoped(), md);
+        auto marsRec = dm::readRecord<dm::MarsRecord>(md);
 
         // Read scoped misc keys
-        auto miscKeys = read(keySet<MiscKeys>().scoped(), md);
+        auto scopedMiscRec = dm::scopeRecord(dm::MiscRecord{});
+        dm::readRecord(scopedMiscRec, md);
         // Write unscoped misc keys
-        miscKeys.keySet.unscoped();
-        
+        auto miscRec = dm::unscopeRecord(std::move(scopedMiscRec));
 
-        auto geoKeySets = getGeometryKeySet(marsKeys);
+        auto scopedGeo = dm::getGeometryRecord(marsRec);
 
         // If grid.. check if atlas is given.
-        const auto& grid = key<MarsKeys::GRID>(marsKeys);
-        if (!grid.isMissing()) {
-            auto optScope = std::visit([](const auto& k) { return k.getScope(); }, geoKeySets);
-            if (optScope) {
-                std::string scope{*optScope};
-                const auto& global = message::Parametrization::instance().get();
-                const auto& geoFromAtlas = key<EncodeMtg2Def::GeoFromAtlas>(conf_);
-                // Fetch atlas and store in global parametrization (by scoping keys...)
-                // Scoping here may be refactored
-                if (geoFromAtlas.get() && (global.find(scope) == global.end())) {
-                    extract::AtlasGeoSetter::handleGrid(scope, grid.get());
-                }
+        if (marsRec.grid.has()) {
+            std::string scope{std::visit([](const auto& k) { return dm::getRecordScope(k); }, scopedGeo)};
+            const auto& global = message::Parametrization::instance().get();
+            // Fetch atlas and store in global parametrization (by scoping keys...)
+            // Scoping here may be refactored
+            if (conf_.geoFromAtlas.get() && (global.find(scope) == global.end())) {
+                extract::AtlasGeoSetter::handleGrid(scope, marsRec.grid.get());
             }
         }
 
         // Read & unscope geo keys from metadata
-        auto geoKeys = std::visit(
-            [&](auto& geoKeySet) -> Geometry {
-                auto geoKeys = read(geoKeySet, md);
-                geoKeys.keySet.unscoped();
-                return geoKeys;
+        auto geo = std::visit(
+            [&](auto&& geoRec) -> dm::Geometry {
+                dm::readRecord(geoRec, md);
+                return unscopeRecord(std::move(geoRec));
             },
-            geoKeySets);
-            
+            std::move(scopedGeo));
+
 
         // Apply mappings
-        auto mappingResult = mars2mars::applyMappings(marsKeys, miscKeys);
-       
+        auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
+
 
         // TODO use upcoming C++ interface
-        std::unique_ptr<util::MioGribHandle> sample = cache_.getHandle(marsKeys, miscKeys, geoKeys);
+        std::unique_ptr<util::MioGribHandle> sample = cache_.getHandle(marsRec, miscRec, geo);
 
         if (msg.payload().size() == 0) {
             throw EncodeMtg2Exception("Message has empty payload - no values to encode", Here());
@@ -120,12 +116,14 @@ void EncodeMtg2::executeImpl(Message msg) {
                 sample->setDataValues(values, size);
             }
 
-            eckit::Buffer buf{sample->length()};
+            // The +32 is related to bug 
+            // TODO report this bug
+            eckit::Buffer buf{sample->length() + 32};
             sample->write(buf);
 
             // TODO write mapped metadata
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source()}, Peer{msg.destination()},
-                                           write<message::Metadata>(marsKeys)},
+                                           dm::dumpRecord<message::Metadata>(marsRec)},
                            std::move(buf)};
         }));
     }

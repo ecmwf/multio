@@ -17,12 +17,10 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/Glossary.h"
 #include "multio/sink/DataSink.h"
 
 namespace multio::action::debug_sink {
 
-using datamod::glossary;
 
 DebugSink::DebugSink(const ComponentConfiguration& compConf) :
     Action{compConf}, debugSink_{compConf.multioConfig().debugSink()} {}

@@ -30,6 +30,8 @@
 
 namespace multio::action::encode {
 
+namespace dm = multio::datamod;
+
 using CodesScalarValue = std::variant<std::int64_t, double, std::string>;
 using CodesOverwrites = std::vector<std::pair<std::string, CodesScalarValue>>;
 using multio::util::MioGribHandle;
@@ -103,11 +105,10 @@ private:
 };
 
 inline bool isOcean(const message::Metadata& metadata) {
-    using datamod::glossary;
 
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
-    std::optional<std::string> category = metadata.getOpt<std::string>(glossary().category);
-    const bool hasNemoParam = metadata.find(glossary().nemoParam) != metadata.end();
+    std::optional<std::string> category = metadata.getOpt<std::string>(dm::legacy::Category);
+    const bool hasNemoParam = metadata.find(dm::legacy::NemoParam) != metadata.end();
     const bool hasCatOcean = category && (category->rfind("ocean") == 0);
     return hasNemoParam || hasCatOcean;
 };

@@ -13,42 +13,38 @@
 #include <tuple>
 #include <type_traits>
 
-#include "multio/datamod/core/KeyValue.h"
-#include "multio/datamod/core/KeyValueSet.h"
+#include "multio/datamod/core/Entry.h"
+#include "multio/datamod/core/Record.h"
 
 #include "multio/util/Hash.h"
 
 
 //-----------------------------------------------------------------------------
-// Hashing of KeyValueSets
+// Hashing of Records
 //-----------------------------------------------------------------------------
 
 template <>
-struct std::hash<multio::datamod::MissingValue> {
-    std::size_t operator()(const multio::datamod::MissingValue&) const noexcept { return 0; }
+struct std::hash<multio::datamod::UnsetType> {
+    std::size_t operator()(const multio::datamod::UnsetType&) const noexcept { return 0; }
 };
 
-template <auto id>
-struct std::hash<multio::datamod::KeyValue<id>> {
-    std::size_t operator()(const multio::datamod::KeyValue<id>& kv) const
-        noexcept(noexcept(multio::util::hash(std::declval<typename multio::datamod::KeyValue<id>::ValueType>()))) {
-        return kv.visit([&](const auto& v) -> std::size_t { return multio::util::hash(v); });
+template <typename Val, typename Mapper>
+struct std::hash<multio::datamod::Entry<Val, Mapper>> {
+    std::size_t operator()(const multio::datamod::Entry<Val, Mapper>& entry) const
+        noexcept(noexcept(multio::util::hash(std::declval<Val>()))) {
+        return entry.visit([&](const auto& v) -> std::size_t { return multio::util::hash(v); });
     }
 };
 
-template <auto id, typename... KVS>
-struct std::hash<std::tuple<multio::datamod::KeyValue<id>, KVS...>> {
-    std::size_t operator()(const std::tuple<multio::datamod::KeyValue<id>, KVS...>& t) const
-        noexcept(noexcept(multio::util::hashCombine(std::declval<multio::datamod::KeyValue<id>>(),
-                                                    std::declval<KVS>()...))) {
-        return std::apply([](const auto&... args) { return multio::util::hashCombine(args...); }, t);
+namespace multio::datamod {
+
+// Functor to hash a record - std::hash has to be customized per record and can derive std::hash from this functor
+struct HashRecord {
+    template <typename RecordType, std::enable_if_t<IsRecord_v<RecordType>, bool> = true>
+    std::size_t operator()(const RecordType& rec) const {
+        return std::apply([&](const auto&... entryDef) { return multio::util::hashCombine(entryDef.get(rec)...); },
+                          recordEntries(rec));
     }
 };
 
-template <typename KeySet>
-struct std::hash<multio::datamod::KeyValueSet<KeySet>> {
-    std::size_t operator()(const multio::datamod::KeyValueSet<KeySet>& kvs) const
-        noexcept(noexcept(multio::util::hash(std::declval<multio::datamod::KeyValueSet<KeySet>>().values))) {
-        return multio::util::hash(kvs.values);
-    }
-};
+}  // namespace multio::datamod

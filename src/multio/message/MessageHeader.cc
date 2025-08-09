@@ -10,7 +10,6 @@
 
 #include "Message.h"
 
-#include "multio/datamod/Glossary.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/serialisation/Stream.h"
 
@@ -76,38 +75,38 @@ void Message::Header::acquireMetadata() {
 
 
 std::string Message::Header::name() const {
-    if (auto optVal = metadata_.read().getOpt<std::string>(glossary().name); optVal) {
+    if (auto optVal = metadata_.read().getOpt<std::string>(dm::legacy::Name); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException(glossary().name, Here());
+    throw MetadataMissingKeyException(dm::legacy::Name, Here());
 }
 
 std::string Message::Header::category() const {
-    if (auto optVal = metadata_.read().getOpt<std::string>(glossary().category); optVal) {
+    if (auto optVal = metadata_.read().getOpt<std::string>(dm::legacy::Category); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException(glossary().category, Here());
+    throw MetadataMissingKeyException(dm::legacy::Category, Here());
 }
 
 std::int64_t Message::Header::globalSize() const {
-    if (auto optVal = metadata_.read().getOpt<std::int64_t>(glossary().globalSize); optVal) {
+    if (auto optVal = metadata_.read().getOpt<std::int64_t>(dm::legacy::GlobalSize); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException(glossary().globalSize, Here());
+    throw MetadataMissingKeyException(dm::legacy::GlobalSize, Here());
 }
 
 std::string Message::Header::domain() const {
-    if (auto optVal = metadata_.read().getOpt<std::string>(glossary().domain); optVal) {
+    if (auto optVal = metadata_.read().getOpt<std::string>(dm::legacy::Domain); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException(glossary().domain, Here());
+    throw MetadataMissingKeyException(dm::legacy::Domain, Here());
 }
 
 util::PrecisionTag Message::Header::precision() const {
-    if (auto optVal = metadata_.read().getOpt<std::string>(glossary().precision); optVal) {
+    if (auto optVal = metadata_.read().getOpt<std::string>(dm::legacy::Precision); optVal) {
         return util::decodePrecisionTag(*optVal);
     }
-    throw MetadataMissingKeyException(glossary().precision, Here());
+    throw MetadataMissingKeyException(dm::legacy::Precision, Here());
 }
 
 const std::string& Message::Header::fieldId() const {

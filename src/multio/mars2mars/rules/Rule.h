@@ -24,25 +24,24 @@
 
 namespace multio::mars2mars::rules {
 
+namespace dm = multio::datamod;
+
 // Rule with dynamic dispatch to be stored in containers massively
 struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual std::optional<MappingResult> apply(datamod::MarsKeyValueSet&, datamod::MiscKeyValueSet&) const = 0;
-    virtual void print(std::ostream&) const = 0;
-
-    virtual ~DynRule() = default;
+    virtual std::optional<MappingResult> apply(dm::MarsRecord&, dm::MiscRecord&) const = 0;
+    virtual void print(util::PrintStream&) const = 0;
 };
 
 
 template <typename Derived>
 struct DerivedRule : DynRule {
-    std::optional<MappingResult> apply(datamod::MarsKeyValueSet& marsVals,
-                                       datamod::MiscKeyValueSet& miscVals) const override {
+    std::optional<MappingResult> apply(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const override {
         return static_cast<const Derived&>(*this)(marsVals, miscVals);
     }
 
-    void print(std::ostream& os) const override { util::print(os, static_cast<const Derived&>(*this)); }
+    void print(util::PrintStream& ps) const override { util::print(ps, static_cast<const Derived&>(*this)); }
 };
 
 
@@ -51,12 +50,12 @@ struct DerivedRule : DynRule {
 // the match. Nothing is set if the match fails.
 template <typename Matcher, typename Setter>
 struct Rule : DerivedRule<Rule<Matcher, Setter>> {
+    Rule(Matcher m, Setter s) : matcher{std::move(m)}, setter{std::move(s)} {}
     Matcher matcher;
     Setter setter;
 
     // Match and set
-    std::optional<MappingResult> operator()(datamod::MarsKeyValueSet& marsVals,
-                                            datamod::MiscKeyValueSet& miscVals) const {
+    std::optional<MappingResult> operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const {
         if (matcher(marsVals)) {
             MappingResult res;
             setter.set(marsVals, miscVals, res);
@@ -69,10 +68,8 @@ struct Rule : DerivedRule<Rule<Matcher, Setter>> {
 // Rule maker
 template <typename Matcher_, typename Setter_>
 auto rule(Matcher_&& matcher, Setter_&& setter) {
-    Rule<std::decay_t<Matcher_>, std::decay_t<Setter_>> res;
-    res.matcher = std::forward<Matcher_>(matcher);
-    res.setter = std::forward<Setter_>(setter);
-    return res;
+    return Rule<std::decay_t<Matcher_>, std::decay_t<Setter_>>{std::forward<Matcher_>(matcher),
+                                                               std::forward<Setter_>(setter)};
 }
 
 
@@ -84,21 +81,35 @@ auto rule(Matcher_&& matcher, Setters_&&... setters) {
 
 
 struct RuleList : DerivedRule<RuleList> {
-    std::vector<std::unique_ptr<DynRule>> rules;
+    using RuleEntry = std::variant<std::unique_ptr<DynRule>, std::reference_wrapper<const RuleList>>;
+    std::vector<RuleEntry> rules;
 
     // Match and set
-    std::optional<MappingResult> operator()(datamod::MarsKeyValueSet& marsVals,
-                                            datamod::MiscKeyValueSet& miscVals) const;
+    std::optional<MappingResult> operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const;
+
+
+    // Construction helper
+    void addEntry(const RuleList& ruleList) { rules.emplace_back(std::cref(ruleList)); }
+    void addEntry(RuleList&& ruleList) {
+        for (auto&& rule : std::move(ruleList.rules)) {
+            rules.emplace_back(std::move(rule));
+        }
+    }
+    template <typename Rule_, std::enable_if_t<!std::is_same_v<std::decay_t<Rule_>, RuleList>, bool> = true>
+    void addEntry(Rule_&& rule) {
+        rules.emplace_back(std::make_unique<std::decay_t<Rule_>>(std::forward<Rule_>(rule)));
+    }
 };
 
 
 template <typename Rule_, typename... Rules_>
 RuleList ruleList(Rule_&& rule, Rules_&&... rules) {
     RuleList res;
-    res.rules.emplace_back(std::make_unique<std::decay_t<Rule_>>(std::forward<Rule_>(rule)));
-    (res.rules.emplace_back(std::make_unique<std::decay_t<Rules_>>(std::forward<Rules_>(rules))), ...);
+    res.addEntry(std::forward<Rule_>(rule));
+    (res.addEntry(std::forward<Rules_>(rules)), ...);
     return res;
 }
+
 
 }  // namespace multio::mars2mars::rules
 
@@ -107,23 +118,27 @@ namespace multio::util {
 
 template <typename Matcher, typename Setter>
 struct Print<mars2mars::rules::Rule<Matcher, Setter>> {
-    static void print(std::ostream& os, const mars2mars::rules::Rule<Matcher, Setter>& r) {
-        os << "rule(" << r.matcher << ", ";
-        r.setter.print(os);
-        os << ")";
+    static void print(PrintStream& ps, const mars2mars::rules::Rule<Matcher, Setter>& r) {
+        ps << "rule(" << std::endl;
+        {
+            IndentGuard g(ps);
+            ps << "  " << r.matcher << std::endl;
+            ps << ", " << r.setter << std::endl;
+        }
+        ps << ")";
     }
 };
 
 
 template <>
 struct Print<mars2mars::rules::DynRule> {
-    static void print(std::ostream& os, const mars2mars::rules::DynRule& r);
+    static void print(PrintStream& os, const mars2mars::rules::DynRule& r);
 };
 
 
 template <>
 struct Print<mars2mars::rules::RuleList> {
-    static void print(std::ostream& os, const mars2mars::rules::RuleList& r);
+    static void print(PrintStream& os, const mars2mars::rules::RuleList& r);
 };
 
 

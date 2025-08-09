@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -13,12 +13,16 @@
 #include <type_traits>
 #include "eckit/config/LocalConfiguration.h"
 #include "metkit/codes/CodesDecoder.h"
-#include "multio/datamod/DataModelling.h"
-#include "multio/datamod/DataModellingException.h"
-#include "multio/datamod/core/KeyValue.h"
+
+#include "multio/datamod/core/DataModellingException.h"
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/core/EntryParser.h"
+
 #include "multio/message/BaseMetadata.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
+
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
@@ -30,9 +34,8 @@ namespace multio::datamod {
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseMetadata> {
-    using Base = BaseKeyValueReader<message::BaseMetadata>;
-    using Base::getByRef;
+struct EntryParser<message::BaseMetadata> : BaseEntryParser<message::BaseMetadata> {
+    using Base = BaseEntryParser<message::BaseMetadata>;
     using Base::getByValue;
 
     static void throwRequiredKeyIsNull(const std::string& keyInfo, const message::BaseMetadata& md) {
@@ -53,109 +56,112 @@ struct KeyValueReader<message::BaseMetadata> : BaseKeyValueReader<message::BaseM
     }
 
 
-    template <bool byRef = true, typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
-    static decltype(auto) makeVisitor(const KVD& kvd, const message::BaseMetadata& md) noexcept {
-        using RW = typename KVD::ReadWrite;
-        using Ret = KeyValueFromKey_t<KVD>;
+    template <bool byRef = true, typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    static decltype(auto) makeVisitor(const EntryDef_& entryDef, const message::BaseMetadata& md) noexcept {
+        using TP = typename EntryDef_::ParserDumper;
+        using Ret = EntryType_t<EntryDef_>;
+
         return [&](auto&& v) -> Ret {
             if constexpr (std::is_same_v<message::Null, std::decay_t<decltype(v)>>) {
-                if constexpr (KVD::tag == KVTag::Required) {
-                    throwRequiredKeyIsNull(kvd.keyInfo(), md);
+                if constexpr (EntryDef_::tag == EntryTag::Required) {
+                    throwRequiredKeyIsNull(entryDef.keyInfo(), md);
                 }
                 return {};
             }
-            else if constexpr (RW::template CanCreateFromValue_v<decltype(v)>) {
+            else if constexpr (TP::template CanCreateFromValue_v<decltype(v)>) {
                 if constexpr (byRef) {
-                    return toKeyValueRef(kvd, std::forward<decltype(v)>(v));
+                    return entryDef.makeEntryRef(std::forward<decltype(v)>(v));
                 }
                 else {
-                    return toKeyValue(kvd, std::forward<decltype(v)>(v));
+                    return entryDef.makeEntry(std::forward<decltype(v)>(v));
                 }
             }
             else {
-                throwUnsupportedType(util::typeToString<std::decay_t<decltype(v)>>(), kvd.keyInfo(), md);
+                throwUnsupportedType(util::typeToString<std::decay_t<decltype(v)>>(), entryDef.keyInfo(), md);
             }
             return {};  // unreachable
         };
     }
 
 
-    template <typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
-    static KeyValueFromKey_t<KVD> defaultOrThrow(const KVD& kvd, const message::BaseMetadata& md) {
-        if constexpr (KVD::tag == KVTag::Required) {
-            throwMissingRequiredKey(kvd.keyInfo(), md);
+    template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    static EntryType_t<EntryDef_> defaultOrThrow(const EntryDef_& entryDef, const message::BaseMetadata& md) {
+        if constexpr (EntryDef_::tag == EntryTag::Required) {
+            throwMissingRequiredKey(entryDef.keyInfo(), md);
         }
         return {};
     }
 
 
-    template <
-        typename KVD, typename MD,
-        std::enable_if_t<(IsDynamicKey_v<KVD> && std::is_base_of_v<message::BaseMetadata, std::decay_t<MD>>), bool>
-        = true>
-    static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, MD&& md) {
-        if (auto search = std::forward<MD>(md).localFind(kvd.key()); search != md.end()) {
+    template <typename EntryDef_, typename MD,
+              std::enable_if_t<
+                  (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::BaseMetadata, std::decay_t<MD>>), bool>
+              = true>
+    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, MD&& md) {
+        if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
-                return search->second.visit(makeVisitor(kvd, md));
+                return search->second.visit(makeVisitor(entryDef, md));
             }
             else {
-                return std::move(search->second).visit(makeVisitor(kvd, md));
+                return std::move(search->second).visit(makeVisitor(entryDef, md));
             }
         }
-        return defaultOrThrow(kvd, md);
+        return defaultOrThrow(entryDef, md);
     }
 };
 
 // The implementation for Metadata explicitly allows reading from the
 // global parametrization. Global values may be just referenced (i.e. arrays like PV array)
 template <>
-struct KeyValueReader<message::Metadata> : BaseKeyValueReader<message::Metadata> {
-    using Base = BaseKeyValueReader<message::Metadata>;
-    using Base::getByRef;
+struct EntryParser<message::Metadata> : BaseEntryParser<message::Metadata> {
+    using Base = BaseEntryParser<message::Metadata>;
     using Base::getByValue;
 
-    using BaseReader = KeyValueReader<message::BaseMetadata>;
+    using BaseReader = EntryParser<message::BaseMetadata>;
 
-    template <typename KVD, typename MD,
-              std::enable_if_t<(IsDynamicKey_v<KVD> && std::is_base_of_v<message::Metadata, std::decay_t<MD>>), bool>
+    template <typename EntryDef_, typename MD,
+              std::enable_if_t<
+                  (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::Metadata, std::decay_t<MD>>), bool>
               = true>
-    static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, MD&& md) {
-        if (auto search = std::forward<MD>(md).localFind(kvd.key()); search != md.end()) {
+    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, MD&& md) {
+        if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
-                return search->second.visit(BaseReader::makeVisitor(kvd, md));
+                return search->second.visit(BaseReader::makeVisitor(entryDef, md));
             }
             else {
-                return std::move(search->second).visit(BaseReader::makeVisitor(kvd, md));
+                return std::move(search->second).visit(BaseReader::makeVisitor(entryDef, md));
             }
         }
         // Then do manual search on parametrization
         const auto& global = message::Parametrization::instance().get();
-        if (auto search = global.localFind(kvd.key()); search != global.end()) {
-            return search->second.visit(BaseReader::makeVisitor(kvd, md));
+        if (auto search = global.localFind(entryDef.key()); search != global.end()) {
+            return search->second.visit(BaseReader::makeVisitor(entryDef, md));
         }
-        return BaseReader::defaultOrThrow(kvd, md);
+        return BaseReader::defaultOrThrow(entryDef, md);
     }
 
     // The intention is to always store values from global parametrization as reference.
     // Values from metadata are copied while values from global metadata are referenced
-    template <typename KVD, typename MD,
-              std::enable_if_t<(IsDynamicKey_v<KVD> && std::is_base_of_v<message::Metadata, std::decay_t<MD>>), bool>
+    template <typename EntryDef_, typename MD,
+              std::enable_if_t<
+                  (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::Metadata, std::decay_t<MD>>), bool>
               = true>
-    static KeyValueFromKey_t<KVD> getByValue(const KVD& kvd, MD&& md) {
-        if (auto search = std::forward<MD>(md).localFind(kvd.key()); search != md.end()) {
+    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, MD&& md) {
+        if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
-                return search->second.visit(BaseReader::makeVisitor<false>(kvd, md));
+                return search->second.visit(BaseReader::makeVisitor<false>(entryDef, md));
             }
             else {
-                return std::move(search->second).visit(BaseReader::makeVisitor<false>(kvd, md));
+                return std::move(search->second).visit(BaseReader::makeVisitor<false>(entryDef, md));
             }
         }
+
         // Then do manual search on parametrization
         const auto& global = message::Parametrization::instance().get();
-        if (auto search = global.localFind(kvd.key()); search != global.end()) {
-            return search->second.visit(BaseReader::makeVisitor<true>(kvd, md));
+        if (auto search = global.localFind(entryDef.key()); search != global.end()) {
+            return search->second.visit(BaseReader::makeVisitor<true>(entryDef, md));
         }
-        return BaseReader::defaultOrThrow(kvd, md);
+        return BaseReader::defaultOrThrow(entryDef, md);
     }
 };
 
@@ -165,30 +171,27 @@ struct KeyValueReader<message::Metadata> : BaseKeyValueReader<message::Metadata>
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueWriter<message::BaseMetadata> : BaseKeyValueWriter<message::BaseMetadata> {
-    using Base = BaseKeyValueWriter<message::BaseMetadata>;
-    using Base::set;
-
-    template <typename KVD, typename KV_,
-              std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV_>>), bool> = true>
-    static void set(const KVD& kvd, KV_&& kv, message::BaseMetadata& md) {
-        using RW = typename KVD::ReadWrite;
+struct EntryDumper<message::BaseMetadata>: BaseEntryDumper<message::BaseMetadata> {
+    template <typename EntryDef_, typename Entry_,
+              std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>), bool> = true>
+    static void set(const EntryDef_& entryDef, Entry_&& entry, message::BaseMetadata& md) {
+        using TP = typename EntryDef_::ParserDumper;
         // TODO think about handling missing value by setting Null ?
-        std::forward<KV_>(kv).visit(  //
-            eckit::Overloaded{[&](MissingValue v) {},
+        std::forward<Entry_>(entry).visit(  //
+            eckit::Overloaded{[&](UnsetType v) {},
                               [&](auto&& v) {
                                   // The contained value might be or mapped to a variant, that's
                                   // why we visit
-                                  RW::template writeAndVisit<message::BaseMetadata>(
+                                  TP::template dumpToAndVisit<message::BaseMetadata>(
                                       std::forward<decltype(v)>(v),
-                                      [&](auto&& vi) { md.set(kvd.key(), std::forward<decltype(vi)>(vi)); });
+                                      [&](auto&& vi) { md.set(entryDef.key(), std::forward<decltype(vi)>(vi)); });
                               }});
     }
 };
 
 template <>
-struct KeyValueWriter<message::Metadata> : KeyValueWriter<message::BaseMetadata> {
-    using Base = KeyValueWriter<message::BaseMetadata>;
+struct EntryDumper<message::Metadata> : EntryDumper<message::BaseMetadata> {
+    using Base = EntryDumper<message::BaseMetadata>;
     using Base::set;
 };
 
@@ -198,9 +201,8 @@ struct KeyValueWriter<message::Metadata> : KeyValueWriter<message::BaseMetadata>
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configuration> {
-    using Base = BaseKeyValueReader<eckit::Configuration>;
-    using Base::getByRef;
+struct EntryParser<eckit::Configuration> : BaseEntryParser<eckit::Configuration> {
+    using Base = BaseEntryParser<eckit::Configuration>;
     using Base::getByValue;
 
 
@@ -275,37 +277,39 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
     }
 
 
-    template <typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
-    static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, const eckit::Configuration& conf) {
-        using RW = typename KVD::ReadWrite;
-        if (!conf.has(kvd.key())) {
-            if constexpr (KVD::tag == KVTag::Required) {
-                throwHasNoKey(kvd.keyInfo(), conf);
+    template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const eckit::Configuration& conf) {
+        using TP = typename EntryDef_::ParserDumper;
+        using Ret = EntryType_t<EntryDef_>;
+        std::string key{entryDef.key()};
+        if (!conf.has(key)) {
+            if constexpr (EntryDef_::tag == EntryTag::Required) {
+                throwHasNoKey(entryDef.keyInfo(), conf);
             }
             return {};
         }
 
-        if (conf.isNull(kvd.key())) {
-            if constexpr (KVD::tag == KVTag::Required) {
-                throwIsNull(kvd.keyInfo(), conf);
+        if (conf.isNull(key)) {
+            if constexpr (EntryDef_::tag == EntryTag::Required) {
+                throwIsNull(entryDef.keyInfo(), conf);
             }
             return {};
         }
 
 
         return visitNonNullValue(
-            kvd.key(), conf,
-            eckit::Overloaded{[&]() -> KeyValueFromKey_t<KVD> {
-                                  throwUnsupportedValue(kvd.keyInfo(), conf);
+            key, conf,
+            eckit::Overloaded{[&]() -> Ret {
+                                  throwUnsupportedValue(entryDef.keyInfo(), conf);
                                   return {};  // unreachable
                               },
-                              [&](auto tt) -> KeyValueFromKey_t<KVD> {
+                              [&](auto tt) -> Ret {
                                   using Type = typename std::decay_t<decltype(tt)>::type;
-                                  if constexpr (RW::template CanCreateFromValue_v<Type>) {
-                                      return toKeyValue(kvd, getValueByType<Type>(conf, kvd.key()));
+                                  if constexpr (TP::template CanCreateFromValue_v<Type>) {
+                                      return entryDef.makeEntry(getValueByType<Type>(conf, key));
                                   }
                                   else {
-                                      throwUnsupportedType(util::typeToString<Type>(), kvd.keyInfo(), conf);
+                                      throwUnsupportedType(util::typeToString<Type>(), entryDef.keyInfo(), conf);
                                   }
                                   return {};  // unreachable
                               }});
@@ -314,8 +318,8 @@ struct KeyValueReader<eckit::Configuration> : BaseKeyValueReader<eckit::Configur
 
 
 template <>
-struct KeyValueReader<eckit::LocalConfiguration> : KeyValueReader<eckit::Configuration> {
-    using Base = KeyValueReader<eckit::Configuration>;
+struct EntryParser<eckit::LocalConfiguration> : EntryParser<eckit::Configuration> {
+    using Base = EntryParser<eckit::Configuration>;
     using Base::getByRef;
     using Base::getByValue;
 };
@@ -326,20 +330,18 @@ struct KeyValueReader<eckit::LocalConfiguration> : KeyValueReader<eckit::Configu
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueWriter<eckit::LocalConfiguration> : BaseKeyValueWriter<eckit::LocalConfiguration> {
-    using Base = BaseKeyValueWriter<eckit::LocalConfiguration>;
-    using Base::set;
-
-    template <typename KVD, typename KV_,
-              std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV_>>), bool> = true>
-    static void set(const KVD& kvd, KV_&& kv, eckit::LocalConfiguration& conf) {
-        std::forward<KV_>(kv).visit(eckit::Overloaded{
-            [&](MissingValue v) {},
+struct EntryDumper<eckit::LocalConfiguration>: BaseEntryDumper<eckit::LocalConfiguration> {
+    template <typename EntryDef_, typename Entry_,
+              std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
+              = true>
+    static void set(const EntryDef_& entryDef, Entry_&& entry, eckit::LocalConfiguration& conf) {
+        std::forward<Entry_>(entry).visit(eckit::Overloaded{
+            [&](UnsetType v) {},
             [&](auto&& v) {
                 // The contained value might be or mapped to a variant, that's why we visit
-                KVD::ReadWrite::template writeAndVisit<eckit::LocalConfiguration>(
+                EntryDef_::ParserDumper::template dumpToAndVisit<eckit::LocalConfiguration>(
                     std::forward<decltype(v)>(v),
-                    [&](auto&& vi) { conf.set(std::string(kvd.key()), std::forward<decltype(vi)>(vi)); });
+                    [&](auto&& vi) { conf.set(std::string(entryDef.key()), std::forward<decltype(vi)>(vi)); });
             }});
     }
 };
@@ -353,9 +355,8 @@ struct KeyValueWriter<eckit::LocalConfiguration> : BaseKeyValueWriter<eckit::Loc
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHandle> {
-    using Base = BaseKeyValueReader<util::MioGribHandle>;
-    using Base::getByRef;
+struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
+    using Base = BaseEntryParser<util::MioGribHandle>;
     using Base::getByValue;
 
     static void throwRequiredKeyDefinedButMissing(const std::string& keyInfo) {
@@ -375,22 +376,26 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
         oss << "Can not create key " << keyInfo << " from " << typeStr;
         throw DataModellingException(oss.str(), Here());
     }
+    
 
-    template <typename KVD, std::enable_if_t<(IsDynamicKey_v<KVD>), bool> = true>
-    static KeyValueFromKey_t<KVD> getByRef(const KVD& kvd, const util::MioGribHandle& handle) {
-        using RW = typename KVD::ReadWrite;
-        using ValueType = typename KeyValueFromKey_t<KVD>::ValueType;
+    template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const util::MioGribHandle& handle) {
+        using TP = typename EntryDef_::ParserDumper;
+        using ValueType = typename EntryDef_::ValueType;
+
+        // TODO use const char* in EntryDef for better IO
+        std::string key{entryDef.key()};
 
         // For codes we always copy - no value by ref
-        if (!handle.isDefined(kvd.key())) {
-            if constexpr (KVD::tag == KVTag::Required) {
-                throwRequiredKeyNotDefined(kvd.keyInfo());
+        if (!handle.isDefined(key)) {
+            if constexpr (EntryDef_::tag == EntryTag::Required) {
+                throwRequiredKeyNotDefined(entryDef.keyInfo());
             }
             return {};
         }
-        if (handle.isMissing(kvd.key())) {
-            if constexpr (KVD::tag == KVTag::Required) {
-                throwRequiredKeyDefinedButMissing(kvd.keyInfo());
+        if (handle.isMissing(key)) {
+            if constexpr (EntryDef_::tag == EntryTag::Required) {
+                throwRequiredKeyDefinedButMissing(entryDef.keyInfo());
             }
             return {};
         }
@@ -399,62 +404,62 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
         // handle, for now we just decode as string. To check if an array is contained, we ideally need to check the
         // size...
         int keyType = 0;
-        ASSERT(codes_get_native_type(handle.raw(), kvd.key().value().c_str(), &keyType) == 0);
+        ASSERT(codes_get_native_type(handle.raw(), key.c_str(), &keyType) == 0);
         switch (keyType) {
             case GRIB_TYPE_LONG: {
-                if constexpr (util::IsVector_v<KeyValueFromKey_t<KVD>>) {
-                    if constexpr (RW::template CanCreateFromValue_v<std::vector<long>>) {
-                        return toKeyValue(kvd, handle.getLongArray(kvd.key()));
+                if constexpr (util::IsVector_v<ValueType>) {
+                    if constexpr (TP::template CanCreateFromValue_v<std::vector<long>>) {
+                        return entryDef.makeEntry(handle.getLongArray(key));
                     }
                     else {
-                        throwWrongType(kvd.keyInfo(), util::typeToString<std::vector<long>>());
+                        throwWrongType(entryDef.keyInfo(), util::typeToString<std::vector<long>>());
                     }
                 }
                 else {
-                    if constexpr (RW::template CanCreateFromValue_v<long>) {
-                        return toKeyValue(kvd, handle.getLong(kvd.key()));
+                    if constexpr (TP::template CanCreateFromValue_v<long>) {
+                        return entryDef.makeEntry(handle.getLong(key));
                     }
                     else {
-                        throwWrongType(kvd.keyInfo(), util::typeToString<long>());
+                        throwWrongType(entryDef.keyInfo(), util::typeToString<long>());
                     }
                 }
             }
             case GRIB_TYPE_DOUBLE: {
-                if constexpr (util::IsVector_v<KeyValueFromKey_t<KVD>>) {
-                    if constexpr (RW::template CanCreateFromValue_v<std::vector<double>>) {
-                        return toKeyValue(kvd, handle.getDoubleArray(kvd.key()));
+                if constexpr (util::IsVector_v<ValueType>) {
+                    if constexpr (TP::template CanCreateFromValue_v<std::vector<double>>) {
+                        return entryDef.makeEntry(handle.getDoubleArray(key));
                     }
                     else {
-                        throwWrongType(kvd.keyInfo(), util::typeToString<std::vector<double>>());
+                        throwWrongType(entryDef.keyInfo(), util::typeToString<std::vector<double>>());
                     }
                 }
                 else {
-                    if constexpr (RW::template CanCreateFromValue_v<double>) {
-                        return toKeyValue(kvd, handle.getDouble(kvd.key()));
+                    if constexpr (TP::template CanCreateFromValue_v<double>) {
+                        return entryDef.makeEntry(handle.getDouble(key));
                     }
                     else {
-                        throwWrongType(kvd.keyInfo(), util::typeToString<double>());
+                        throwWrongType(entryDef.keyInfo(), util::typeToString<double>());
                     }
                 }
             }
             case GRIB_TYPE_BYTES:
             case GRIB_TYPE_STRING: {
                 // TODO add support for string vectors?
-                if constexpr (RW::template CanCreateFromValue_v<std::string>) {
-                    return toKeyValue(kvd, handle.getString(kvd.key()));
+                if constexpr (TP::template CanCreateFromValue_v<std::string>) {
+                    return entryDef.makeEntry(handle.getString(key));
                 }
-                else if constexpr (std::is_integral_v<ValueType> && RW::template CanCreateFromValue_v<long>) {
-                    return toKeyValue(kvd, handle.getLong(kvd.key()));
+                else if constexpr (std::is_integral_v<ValueType> && TP::template CanCreateFromValue_v<long>) {
+                    return entryDef.makeEntry(handle.getLong(key));
                 }
-                else if constexpr (std::is_floating_point_v<ValueType> && RW::template CanCreateFromValue_v<double>) {
-                    return toKeyValue(kvd, handle.getDouble(kvd.key()));
+                else if constexpr (std::is_floating_point_v<ValueType> && TP::template CanCreateFromValue_v<double>) {
+                    return entryDef.makeEntry(handle.getDouble(key));
                 }
                 else {
-                    throwWrongType(kvd.keyInfo(), util::typeToString<std::string>());
+                    throwWrongType(entryDef.keyInfo(), util::typeToString<std::string>());
                 }
             }
             default: {
-                throwWrongType(kvd.keyInfo(), std::to_string(keyType));
+                throwWrongType(entryDef.keyInfo(), std::to_string(keyType));
             }
         }
         return {};
@@ -467,28 +472,26 @@ struct KeyValueReader<util::MioGribHandle> : BaseKeyValueReader<util::MioGribHan
 //-----------------------------------------------------------------------------
 
 template <>
-struct KeyValueWriter<util::MioGribHandle> : BaseKeyValueWriter<util::MioGribHandle> {
-    using Base = BaseKeyValueWriter<util::MioGribHandle>;
-    using Base::set;
-
-    template <typename KVD, typename KV_, typename GH,
-              std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV_>>
+struct EntryDumper<util::MioGribHandle> : BaseEntryDumper<util::MioGribHandle> {
+    template <typename EntryDef_, typename Entry_, typename GH,
+              std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>
                                 && std::is_base_of_v<util::MioGribHandle, std::decay_t<GH>>),
                                bool>
               = true>
-    static void set(const KVD& kvd, KV_&& kv, GH& handle) {
-        using RW = typename KVD::ReadWrite;
-        std::forward<KV_>(kv).visit(eckit::Overloaded{
-            [&](MissingValue v) {},
+    static void set(const EntryDef_& entryDef, Entry_&& entry, GH& handle) {
+        using TP = typename EntryDef_::ParserDumper;
+        std::string key{entryDef.key()};
+        std::forward<Entry_>(entry).visit(eckit::Overloaded{
+            [&](UnsetType v) {},
             [&](auto&& v) {
-                if (!handle.isDefined(kvd.key())) {
+                if (!handle.isDefined(key)) {
                     std::ostringstream oss;
-                    oss << "Key " << kvd.keyInfo() << " should be written but is not defined on  eccodes handle.";
+                    oss << "Key " << entryDef.keyInfo() << " should be written but is not defined on  eccodes handle.";
                     throw DataModellingException(oss.str(), Here());
                 }
                 // The contained value might be or mapped to a variant, that's why we visit
-                RW::template writeAndVisit<util::MioGribHandle>(std::forward<decltype(v)>(v), [&](auto&& vi) {
-                    handle.setValue(kvd.key(), std::forward<decltype(vi)>(vi));
+                TP::template dumpToAndVisit<util::MioGribHandle>(std::forward<decltype(v)>(v), [&](auto&& vi) {
+                    handle.setValue(key, std::forward<decltype(vi)>(vi));
                 });
             }});
     }

@@ -11,8 +11,8 @@
 #pragma once
 
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/Print.h"
 #include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 
@@ -22,133 +22,147 @@
 #include <vector>
 
 
-namespace multio::mars2grib::rules {
+namespace multio::mars2grib::matcher {
+
+namespace dm = multio::datamod;
 
 // Matchers are defined on a key that serves as accessor and transports type information ... this saves defining a lot
 // functions.
 // Alternatively they could be defined for a given value type.
 
 // Range of values to match
-template <auto Id_>
+template <typename EntryDef_>
 struct Range {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
-    using ValueType = datamod::KeyDefValueType_t<Id_>;
+    std::reference_wrapper<const EntryDef_> entryDef;
+    dm::EntryValueType_t<EntryDef_> first;
+    dm::EntryValueType_t<EntryDef_> last;
 
-    ValueType first;
-    ValueType last;
+    bool operator()(const dm::MarsRecord& rec) const {
+        const auto& entry = entryDef.get().get(rec);
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-
-        return (kv.has() && ((kv.get() >= first) && (kv.get() <= last)));
+        return (entry.has() && ((entry.get() >= first) && (entry.get() <= last)));
     }
 };
 
+template <typename EntryDef_, typename... Args>
+Range(const EntryDef_&, Args&&...) -> Range<EntryDef_>;
+
 
 // List of ranges
-template <auto Id_>
+template <typename EntryDef_>
 struct Ranges {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
-    using ValueType = datamod::KeyDefValueType_t<Id_>;
+    std::vector<Range<EntryDef_>> ranges;
 
-    std::vector<Range<Id_>> ranges;
-
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-
+    bool operator()(const dm::MarsRecord& rec) const {
         for (const auto& range : ranges) {
-            if (range(keys)) {
+            if (range(rec)) {
                 return true;
             }
         }
         return false;
     }
 };
+template <typename EntryDef_, typename... Args>
+Ranges(const EntryDef_&, Args&&...) -> Ranges<EntryDef_>;
 
 
 // Check if the value of a field matches any of the set of values given
 // Returns false if the field is not given
-template <auto Id_>
+template <typename EntryDef_>
 struct OneOf {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
-    using ValueType = datamod::KeyDefValueType_t<Id_>;
-
     // Using a vector because the only operation we perform is search, mostly on a few elements.
     // Having contiguous memory access is helpful here
-    std::vector<ValueType> values;
+    std::reference_wrapper<const EntryDef_> entryDef;
+    std::vector<dm::EntryValueType_t<EntryDef_>> values;
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
+    bool operator()(const dm::MarsRecord& rec) const {
+        const auto& entry = entryDef.get().get(rec);
 
-        return (kv.has() && (std::find(values.begin(), values.end(), kv.get()) != values.end()));
+        return (entry.has() && (std::find(values.begin(), values.end(), entry.get()) != values.end()));
     }
 };
+
+template <typename EntryDef_>
+OneOf(const EntryDef_&, std::vector<dm::EntryValueType_t<EntryDef_>>) -> OneOf<EntryDef_>;
 
 
 // Check if the value of a field is not in a given exclusion list
 // Returns false if the field is not given
-template <auto Id_>
+template <typename EntryDef_>
 struct NoneOf {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
-    using ValueType = datamod::KeyDefValueType_t<Id_>;
+    std::reference_wrapper<const EntryDef_> entryDef;
+    std::vector<dm::EntryValueType_t<EntryDef_>> values;
 
-    std::vector<ValueType> values;
+    bool operator()(const dm::MarsRecord& rec) const {
+        const auto& entry = entryDef.get().get(rec);
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-
-        return (kv.has() && (std::find(values.begin(), values.end(), kv.get()) == values.end()));
+        return (entry.has() && (std::find(values.begin(), values.end(), entry.get()) == values.end()));
     }
 };
+template <typename EntryDef_>
+NoneOf(const EntryDef_&, std::vector<dm::EntryValueType_t<EntryDef_>>) -> NoneOf<EntryDef_>;
 
 
 // Checks if a field is given
-template <auto Id_>
+template <typename EntryDef_>
 struct Has {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
+    std::reference_wrapper<const EntryDef_> entryDef;
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-        return kv.has();
-    }
+    bool operator()(const dm::MarsRecord& rec) const { return entryDef.get().get(rec).has(); }
 };
+template <typename EntryDef_>
+Has(const EntryDef_&) -> Has<EntryDef_>;
 
 
 // Checks if a field is missing
-template <auto Id_>
+template <typename EntryDef_>
 struct Missing {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
+    std::reference_wrapper<const EntryDef_> entryDef;
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-        return kv.isMissing();
-    }
+    bool operator()(const dm::MarsRecord& rec) const { return entryDef.get().get(rec).isUnset(); }
 };
+template <typename EntryDef_>
+Missing(const EntryDef_&) -> Missing<EntryDef_>;
 
 
 // Match a binary operation like >, >=, <, <=
-template <auto Id_, typename OpFunctor>
+template <typename EntryDef_, typename OpFunctor>
 struct MatchOp {
-    using KeySet = datamod::KeySet<decltype(Id_)>;
-    using ValueType = datamod::KeyDefValueType_t<Id_>;
+    std::reference_wrapper<const EntryDef_> entryDef;
+    dm::EntryValueType_t<EntryDef_> value;
 
-    ValueType value;
-
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        const auto& kv = datamod::key<Id_>(keys);
-
-        return (kv.has() && (OpFunctor{}(kv.get(), value)));
+    bool operator()(const dm::MarsRecord& rec) const {
+        const auto& entry = entryDef.get().get(rec);
+        return (entry.has() && (OpFunctor{}(entry.get(), value)));
     }
 };
+template <typename EntryDef_, typename OpFunctor>
+MatchOp(const EntryDef_&, OpFunctor&&) -> MatchOp<EntryDef_, std::decay_t<OpFunctor>>;
 
-template <auto Id_>
-using GreaterThan = MatchOp<Id_, std::greater<>>;
-template <auto Id_>
-using GreaterEqual = MatchOp<Id_, std::greater_equal<>>;
-template <auto Id_>
-using LessThan = MatchOp<Id_, std::less<>>;
-template <auto Id_>
-using LessEqual = MatchOp<Id_, std::less_equal<>>;
+template <typename EntryDef_>
+using GreaterThan = MatchOp<EntryDef_, std::greater<>>;
+template <typename EntryDef_>
+auto greaterThan(const EntryDef_& e, dm::EntryValueType_t<EntryDef_> v) {
+    return GreaterThan<EntryDef_>{e, v};
+}
+template <typename EntryDef_>
+using GreaterEqual = MatchOp<EntryDef_, std::greater_equal<>>;
+template <typename EntryDef_>
+auto greaterEqual(const EntryDef_& e, dm::EntryValueType_t<EntryDef_> v) {
+    return GreaterEqual<EntryDef_>{e, v};
+}
+template <typename EntryDef_>
+using LessThan = MatchOp<EntryDef_, std::less<>>;
+template <typename EntryDef_>
+auto lessThan(const EntryDef_& e, dm::EntryValueType_t<EntryDef_> v) {
+    return LessThan<EntryDef_>{e, v};
+}
+template <typename EntryDef_>
+using LessEqual = MatchOp<EntryDef_, std::less_equal<>>;
+template <typename EntryDef_>
+auto lessEqual(const EntryDef_& e, dm::EntryValueType_t<EntryDef_> v) {
+    return LessEqual<EntryDef_>{e, v};
+}
 
 
 //-----------------------------------------------------------------------------
@@ -160,11 +174,10 @@ using LessEqual = MatchOp<Id_, std::less_equal<>>;
 // Compose a set of matchers with a fold AND expression
 template <typename Matcher, typename... Matchers>
 struct All {
-    using KeySet = typename Matcher::KeySet;
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        return std::apply([&](const auto&... mx) { return (mx(keys) && ... && true); }, matchers);
+    bool operator()(const dm::MarsRecord& rec) const {
+        return std::apply([&](const auto&... mx) { return (mx(rec) && ... && true); }, matchers);
     }
 };
 
@@ -178,11 +191,10 @@ auto all(Matcher&& matcher, Matchers&&... matchers) {
 // Compose a set of matchers with a fold OR expression
 template <typename Matcher, typename... Matchers>
 struct Any {
-    using KeySet = typename Matcher::KeySet;
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const datamod::KeyValueSet<KeySet>& keys) const {
-        return std::apply([&](const auto&... mx) { return (mx(keys) || ... || false); }, matchers);
+    bool operator()(const dm::MarsRecord& rec) const {
+        return std::apply([&](const auto&... mx) { return (mx(rec) || ... || false); }, matchers);
     }
 };
 
@@ -193,134 +205,169 @@ auto any(Matcher&& matcher, Matchers&&... matchers) {
 }
 
 
-}  // namespace multio::mars2grib::rules
+}  // namespace multio::mars2grib::matcher
 
 
 namespace multio::util {
-template <auto id_>
-struct Print<mars2grib::rules::Range<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::Range<id_>& r) {
-        os << "Range<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << r.first << ", " << r.last << ")";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::Range<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::Range<EntryDef_>& r) {
+        ps << "Range<" << r.entryDef.get().key() << ">(" << r.first << ", " << r.last << ")";
     }
 };
 
 
-template <auto id_>
-struct Print<mars2grib::rules::Ranges<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::Ranges<id_>& r) {
-        os << "Ranges<" << util::typeToString<datamod::KeyId<id_>>() << ">(";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::Ranges<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::Ranges<EntryDef_>& r) {
+        ps << "Ranges<" << util::typeToString<datamod::EntryValueType_t<EntryDef_>>() << ">(";
         bool first = true;
         for (const auto& ri : r.ranges) {
             if (first) {
                 first = false;
+                ps << "  ";
             }
             else {
-                os << ", ";
+                ps << ", ";
             }
-            util::print(os, ri);
+            {
+                IndentGuard g(ps);
+                ps << ri;
+            }
+            ps << std::endl;
         }
-        os << ")";
+        ps << ")";
     }
 };
 
-template <auto id_>
-struct Print<mars2grib::rules::OneOf<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::OneOf<id_>& r) {
-        os << "OneOf<" << util::typeToString<datamod::KeyId<id_>>() << ">(";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::OneOf<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::OneOf<EntryDef_>& r) {
+        ps << "OneOf<" << r.entryDef.get().key() << ">(";
         bool first = true;
         for (const auto& ri : r.values) {
             if (first) {
                 first = false;
             }
             else {
-                os << ", ";
+                ps << ", ";
             }
-            util::print(os, ri);
+            ps << ri;
         }
-        os << ")";
+        ps << ")";
     }
 };
 
 
-template <auto id_>
-struct Print<mars2grib::rules::NoneOf<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::NoneOf<id_>& r) {
-        os << "NoneOf<" << util::typeToString<datamod::KeyId<id_>>() << ">(";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::NoneOf<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::NoneOf<EntryDef_>& r) {
+        ps << "NoneOf<" << r.entryDef.get().key() << ">(";
         bool first = true;
         for (const auto& ri : r.values) {
             if (first) {
                 first = false;
             }
             else {
-                os << ", ";
+                ps << ", ";
             }
-            util::print(os, ri);
+            ps << ri;
         }
-        os << ")";
+        ps << ")";
     }
 };
 
 
-template <auto id_>
-struct Print<mars2grib::rules::Has<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::Has<id_>& r) {
-        os << "Has<" << util::typeToString<datamod::KeyId<id_>>() << ">()";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::Has<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::Has<EntryDef_>& r) {
+        ps << "Has<" << r.entryDef.get().key() << ">()";
     }
 };
 
-template <auto id_>
-struct Print<mars2grib::rules::Missing<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::Missing<id_>& r) {
-        os << "Missing<" << util::typeToString<datamod::KeyId<id_>>() << ">()";
-    }
-};
-
-
-template <auto id_>
-struct Print<mars2grib::rules::GreaterThan<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::GreaterThan<id_>& m) {
-        os << "GreaterThan<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << m.value << ")";
-    }
-};
-
-template <auto id_>
-struct Print<mars2grib::rules::GreaterEqual<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::GreaterEqual<id_>& m) {
-        os << "GreaterEqual<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << m.value << ")";
-    }
-};
-
-template <auto id_>
-struct Print<mars2grib::rules::LessThan<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::LessThan<id_>& m) {
-        os << "LessThan<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << m.value << ")";
-    }
-};
-
-template <auto id_>
-struct Print<mars2grib::rules::LessEqual<id_>> {
-    static void print(std::ostream& os, const mars2grib::rules::LessEqual<id_>& m) {
-        os << "LessEqual<" << util::typeToString<datamod::KeyId<id_>>() << ">(" << m.value << ")";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::Missing<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::Missing<EntryDef_>& r) {
+        ps << "Missing<" << r.entryDef.get().key() << ">()";
     }
 };
 
 
-template <typename... Matchers>
-struct Print<mars2grib::rules::All<Matchers...>> {
-    static void print(std::ostream& os, const mars2grib::rules::All<Matchers...>& a) {
-        os << "all(";
-        std::apply([&](const auto&... matchers) { ((os << matchers << ", "), ...); }, a.matchers);
-        os << ")";
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::GreaterThan<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::GreaterThan<EntryDef_>& m) {
+        ps << "GreaterThan<" << m.entryDef.get().key() << ">(" << m.value << ")";
+    }
+};
+
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::GreaterEqual<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::GreaterEqual<EntryDef_>& m) {
+        ps << "GreaterEqual<" << m.entryDef.get().key() << ">(" << m.value << ")";
+    }
+};
+
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::LessThan<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::LessThan<EntryDef_>& m) {
+        ps << "LessThan<" << m.entryDef.get().key() << ">(" << m.value << ")";
+    }
+};
+
+template <typename EntryDef_>
+struct Print<mars2grib::matcher::LessEqual<EntryDef_>> {
+    static void print(PrintStream& ps, const mars2grib::matcher::LessEqual<EntryDef_>& m) {
+        ps << "LessEqual<" << m.entryDef.get().key() << ">(" << m.value << ")";
     }
 };
 
 
 template <typename... Matchers>
-struct Print<mars2grib::rules::Any<Matchers...>> {
-    static void print(std::ostream& os, const mars2grib::rules::Any<Matchers...>& a) {
-        os << "any(";
-        std::apply([&](const auto&... matchers) { ((os << matchers << ", "), ...); }, a.matchers);
-        os << ")";
+struct Print<mars2grib::matcher::All<Matchers...>> {
+    template <typename M>
+    static void printMatcher(bool& first, PrintStream& ps, const M& m) {
+        if (first) {
+            first = false;
+            ps << "  ";
+        }
+        else {
+            ps << ", ";
+        }
+        {
+            IndentGuard g(ps);
+            ps << m << std::endl;;
+        }
+    }
+    static void print(PrintStream& ps, const mars2grib::matcher::All<Matchers...>& a) {
+        ps << "all(" << std::endl;
+        bool first = true;
+        std::apply([&](const auto&... matchers) { (printMatcher(first, ps, matchers), ...); }, a.matchers);
+        ps << ")";
+    }
+};
+
+
+template <typename... Matchers>
+struct Print<mars2grib::matcher::Any<Matchers...>> {
+    template <typename M>
+    static void printMatcher(bool& first, PrintStream& ps, const M& m) {
+        if (first) {
+            first = false;
+            ps << "  ";
+        }
+        else {
+            ps << ", ";
+        }
+        {
+            IndentGuard g(ps);
+            ps << m << std::endl;;
+        }
+    }
+    static void print(PrintStream& ps, const mars2grib::matcher::Any<Matchers...>& a) {
+        ps << "any(" << std::endl;
+        bool first = true;
+        std::apply([&](const auto&... matchers) { (printMatcher(first, ps, matchers), ...); }, a.matchers);
+        ps << ")";
     }
 };
 

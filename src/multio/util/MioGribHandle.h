@@ -53,6 +53,7 @@ public:
     std::size_t getSize(const char* key) const;
     std::vector<double> getDoubleArray(const std::string& key) const;
     std::vector<double> getDoubleArray(const char* key) const;
+    std::vector<long> getLongArray(const std::string& key) const;
     std::vector<long> getLongArray(const char* key) const;
     
     // getStringArray is missing...

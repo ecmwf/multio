@@ -26,6 +26,9 @@
 
 namespace multio::test::encode_mtg2 {
 
+
+namespace dm = multio::datamod;
+
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::test::MultioTestEnvironment;
@@ -56,7 +59,7 @@ CASE("Test encode-mtg2 with AIFS single ") {
 
         for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
             try {
-                md.set(glossary().precision, "double");
+                md.set(dm::legacy::Precision, "double");
 
                 EXPECT_EQUAL(env.debugSink().size(), 0);
                 eckit::Buffer payload{payloadData.data(), sizeof(double) * payloadData.size()};
@@ -104,7 +107,7 @@ CASE("Test encode-mtg2 with AIFS ens") {
 
         for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
             try {
-                md.set(glossary().precision, "double");
+                md.set(dm::legacy::Precision, "double");
 
                 EXPECT_EQUAL(env.debugSink().size(), 0);
                 eckit::Buffer payload{payloadData.data(), sizeof(double) * payloadData.size()};

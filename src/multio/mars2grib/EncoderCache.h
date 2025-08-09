@@ -11,19 +11,21 @@
 #pragma once
 
 
-#include "multio/action/encode/GribEncoder.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/MarsCachedKeys.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 #include "multio/mars2grib/multiom/MultIOMRawEncoder.h"
-#include "multio/mars2grib/multiom/MultIOMRules.h"
 #include "multio/util/PrehashedKey.h"
 
 
 namespace multio::mars2grib {
 
-using PrehashedMarsKeys = util::PrehashedKey<datamod::EncoderCacheMarsKeyValueSet>;
+namespace dm = multio::datamod;
+
+using PrehashedMarsKeys = util::PrehashedKey<MarsCacheRecord>;
 
 class EncoderCache {
 public:
@@ -32,33 +34,28 @@ public:
     EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options);
 
     // Try to infer geometry and then prepare a grib handle
-    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                   const datamod::MiscKeyValueSet& miscKeys);
+    std::unique_ptr<util::MioGribHandle> getHandle(const dm::MarsRecord& marsKeys, const dm::MiscRecord& miscKeys);
     // Perpare a grib handle
-    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                   const datamod::MiscKeyValueSet& miscKeys,
-                                                   const datamod::Geometry& geoKeys);
+    std::unique_ptr<util::MioGribHandle> getHandle(const dm::MarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
+                                                   const dm::Geometry& geoKeys);
 
 protected:
     // Prepare a grib handle with already mapped MultIOM dicts
-    std::unique_ptr<util::MioGribHandle> getHandle(const datamod::MarsKeyValueSet& marsKeys,
-                                                   const MultIOMDict& marsDict, const MultIOMDict& parDict,
-                                                   const MultIOMDict& geoDict);
+    std::unique_ptr<util::MioGribHandle> getHandle(const dm::MarsRecord& marsKeys, const MultIOMDict& marsDict,
+                                                   const MultIOMDict& parDict, const MultIOMDict& geoDict);
 
 private:
     struct CacheEntry {
-        EncoderSections sections;
+        SectionsConf sections;
         MultIOMRawEncoder encoder;
         std::unique_ptr<util::MioGribHandle> preparedSample;
     };
 
-    CacheEntry& makeOrGetEntry(const datamod::MarsKeyValueSet& marsKeys, const MultIOMDict& marsDict,
-                               const MultIOMDict& parDict, const MultIOMDict& geoDict);
+    CacheEntry& makeOrGetEntry(const dm::MarsRecord& marsKeys, const MultIOMDict& marsDict, const MultIOMDict& parDict,
+                               const MultIOMDict& geoDict);
 
     std::reference_wrapper<const EncodeMtg2Conf> conf_;
     MultIOMDict options_;
-    // MultIOMRules rules_;
-    std::unique_ptr<util::MioGribHandle> baseSample_;
     std::unordered_map<PrehashedMarsKeys, CacheEntry> cache_{};
 };
 

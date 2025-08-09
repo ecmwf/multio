@@ -9,12 +9,12 @@
  */
 
 #include "multio/datamod/GribTypes.h"
-#include "multio/datamod/DataModellingException.h"
+#include "multio/datamod/core/DataModellingException.h"
 
 
 namespace multio::datamod {
 
-std::string WriteSpec<TypeOfLevel>::write(TypeOfLevel v) {
+std::string DumpType<TypeOfLevel>::dump(TypeOfLevel v) {
     switch (v) {
         case TypeOfLevel::Surface:
             return "surface";
@@ -210,11 +210,11 @@ std::string WriteSpec<TypeOfLevel>::write(TypeOfLevel v) {
         case TypeOfLevel::HeightAboveSeaAt10m:
             return "heightAboveSeaAt10m";
         default:
-            throw DataModellingException("WriteSpec<TypeOfLevel>::write: Unexpected value for TypeOfLevel", Here());
+            throw DataModellingException("DumpType<TypeOfLevel>::dump: Unexpected value for TypeOfLevel", Here());
     }
 }
 
-TypeOfLevel ReadSpec<TypeOfLevel>::read(const std::string& val) {
+TypeOfLevel ParseType<TypeOfLevel>::parse(const std::string& val) {
     // May use a vector
     static const std::vector<std::pair<std::string, TypeOfLevel>> typeOfLevels{
         {"surface", TypeOfLevel::Surface},
@@ -321,11 +321,11 @@ TypeOfLevel ReadSpec<TypeOfLevel>::read(const std::string& val) {
         tol != typeOfLevels.end()) {
         return tol->second;
     }
-    throw DataModellingException(std::string("ReadSpec<TypeOfLevel>::read Unknown value for TypeOfLevel: ") + val,
+    throw DataModellingException(std::string("ParseType<TypeOfLevel>::parse Unknown value for TypeOfLevel: ") + val,
                                  Here());
 }
 
-std::string WriteSpec<TypeOfStatisticalProcessing>::write(TypeOfStatisticalProcessing v) {
+std::string DumpType<TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing v) {
     switch (v) {
         case TypeOfStatisticalProcessing::Average:
             return "average";
@@ -363,13 +363,13 @@ std::string WriteSpec<TypeOfStatisticalProcessing>::write(TypeOfStatisticalProce
             return "index-processing";
         default:
             throw DataModellingException(
-                "WriteSpec<TypeOfStatisticalProcessing>::write: Unexpected value for TypeOfStatisticalProcessing",
+                "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing",
                 Here());
     }
 }
 
 
-TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(const std::string& val) {
+TypeOfStatisticalProcessing ParseType<TypeOfStatisticalProcessing>::parse(const std::string& val) {
     // May use a vector
     static const std::vector<std::pair<std::string, TypeOfStatisticalProcessing>> typesOfStat{
         {"average", TypeOfStatisticalProcessing::Average},
@@ -397,13 +397,13 @@ TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(const st
         return tos->second;
     }
     throw DataModellingException(
-        std::string("ReadSpec<TypeOfStatisticalProcessing>::read Unknown value for TypeOfStatisticalProcessing: ")
+        std::string("ParseType<TypeOfStatisticalProcessing>::parse Unknown value for TypeOfStatisticalProcessing: ")
             + val,
         Here());
 }
 
 
-TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(std::int64_t i) {
+TypeOfStatisticalProcessing ParseType<TypeOfStatisticalProcessing>::parse(std::int64_t i) {
     switch (i) {
         case static_cast<std::int64_t>(TypeOfStatisticalProcessing::Average):
             return TypeOfStatisticalProcessing::Average;
@@ -442,7 +442,7 @@ TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(std::int
         default:
             throw DataModellingException(
                 std::string(
-                    "ReadSpec<TypeOfStatisticalProcessing>::read Unknown value for TypeOfStatisticalProcessing: ")
+                    "ParseType<TypeOfStatisticalProcessing>::parse Unknown value for TypeOfStatisticalProcessing: ")
                     + std::to_string(i),
                 Here());
     };
@@ -453,12 +453,13 @@ TypeOfStatisticalProcessing ReadSpec<TypeOfStatisticalProcessing>::read(std::int
 
 namespace multio {
 
-void util::Print<datamod::TypeOfLevel>::print(std::ostream& os, const datamod::TypeOfLevel& t) {
-    util::print(os, datamod::Writer<datamod::TypeOfLevel>::write(t));
+void util::Print<datamod::TypeOfLevel>::print(PrintStream& ps, const datamod::TypeOfLevel& t) {
+    util::print(ps, datamod::TypeDumper<datamod::TypeOfLevel>::dump(t));
 }
 
-void util::Print<datamod::TypeOfStatisticalProcessing>::print(std::ostream& os, const datamod::TypeOfStatisticalProcessing& t) {
-    util::print(os, datamod::Writer<datamod::TypeOfStatisticalProcessing>::write(t));
+void util::Print<datamod::TypeOfStatisticalProcessing>::print(PrintStream& ps,
+                                                              const datamod::TypeOfStatisticalProcessing& t) {
+    util::print(ps, datamod::TypeDumper<datamod::TypeOfStatisticalProcessing>::dump(t));
 }
 
 }  // namespace multio

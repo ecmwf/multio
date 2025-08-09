@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-#include "multio/datamod/DataModelling.h"
+#include "multio/datamod/core/EntryDumper.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/util/VariantHelpers.h"
 #include "multiom/api/c/api.h"
@@ -113,27 +113,26 @@ struct MultIOMDict {
 }  // namespace multio::mars2grib
 
 
-namespace multio {
+namespace multio::datamod {
 
 template <>
-struct datamod::KeyValueWriter<mars2grib::MultIOMDict> : BaseKeyValueWriter<mars2grib::MultIOMDict> {
-    using Base = BaseKeyValueWriter<mars2grib::MultIOMDict>;
-    using Base::set;
-
-    template <typename KVD, typename KV_,
-              std::enable_if_t<(IsDynamicKey_v<std::decay_t<KVD>> && IsBaseKeyValue_v<std::decay_t<KV_>>), bool> = true>
-    static void set(const KVD& kvd, KV_&& kv, mars2grib::MultIOMDict& md) {
-        using KV = std::decay_t<KV_>;
-        using RW = typename KVD::ReadWrite;
-        std::forward<KV_>(kv).visit(  //
-            eckit::Overloaded{[&](MissingValue v) {},
+struct EntryDumper<mars2grib::MultIOMDict>: BaseEntryDumper<mars2grib::MultIOMDict> {
+    template <
+        typename EntryDef_, typename Entry_,
+        std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
+        = true>
+    static void set(const EntryDef_& entryDef, Entry_&& entry, mars2grib::MultIOMDict& md) {
+        using TP = typename EntryDef_::ParserDumper;
+        std::forward<Entry_>(entry).visit(  //
+            eckit::Overloaded{[&](UnsetType v) {}, // Set nothing...
                               [&](auto&& v) {
-                                  RW::template writeAndVisit<mars2grib::MultIOMDict>(
-                                      std::forward<decltype(v)>(v),
-                                      [&](auto&& vi) { md.set(kvd.key(), std::forward<decltype(vi)>(vi)); });
+                                  TP::template dumpToAndVisit<mars2grib::MultIOMDict>(
+                                      std::forward<decltype(v)>(v), [&](auto&& vi) {
+                                          md.set(std::string(entryDef.key()), std::forward<decltype(vi)>(vi));
+                                      });
                               }});
     }
 };
 
-}  // namespace multio
+}  // namespace multio::datamod
 

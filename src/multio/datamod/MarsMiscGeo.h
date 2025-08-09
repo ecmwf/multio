@@ -10,139 +10,102 @@
 
 #pragma once
 
-#include "multio/datamod/DataModelling.h"
-#include "multio/datamod/DataModellingException.h"
+#include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/GribKeys.h"
 #include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/core/Compare.h"
+#include "multio/datamod/core/DataModellingException.h"
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Hash.h"
+#include "multio/datamod/core/Print.h"
+#include "multio/datamod/core/Record.h"
 
 #include "multio/util/Print.h"
-#include "multio/util/TypeTraits.h"
+
 
 #include <sstream>
+#include <variant>
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
-// Mars Keys
-//-----------------------------------------------------------------------------
+struct MarsRecord {
+    EntryType_t<decltype(ORIGIN)> origin;
+    EntryType_t<decltype(CLASS)> klass;
+    EntryType_t<decltype(STREAM)> stream;
+    EntryType_t<decltype(TYPE)> type;
+    EntryType_t<decltype(EXPVER)> expver;
+    EntryType_t<decltype(PARAM)> param;
+    EntryType_t<decltype(DATE)> date;
+    EntryType_t<decltype(TIME)> time;
+    EntryType_t<decltype(STEP)> step;
+    EntryType_t<decltype(LEVTYPE)> levtype;
+    EntryType_t<decltype(LEVELIST)> levelist;
+    EntryType_t<decltype(MODEL)> model;
+    EntryType_t<decltype(RESOLUTION)> resolution;
+    EntryType_t<decltype(ACTIVITY)> activity;
+    EntryType_t<decltype(EXPERIMENT)> experiment;
+    EntryType_t<decltype(GENERATION)> generation;
+    EntryType_t<decltype(REALIZATION)> realization;
+    EntryType_t<decltype(TIMESPAN)> timespan;
+    EntryType_t<decltype(ANOFFSET)> anoffset;
+    EntryType_t<decltype(PACKING)> packing;
+    EntryType_t<decltype(NUMBER)> number;
+    EntryType_t<decltype(IDENT)> ident;
+    EntryType_t<decltype(INSTRUMENT)> instrument;
+    EntryType_t<decltype(CHANNEL)> channel;
+    EntryType_t<decltype(CHEM)> chem;
+    EntryType_t<decltype(WAVELENGTH)> wavelength;
+    EntryType_t<decltype(DIRECTION)> direction;
+    EntryType_t<decltype(FREQUENCY)> frequency;
+    EntryType_t<decltype(HDATE)> hdate;
+    EntryType_t<decltype(DATASET)> dataset;
+    EntryType_t<decltype(METHOD)> method;
+    EntryType_t<decltype(SYSTEM)> system;
+    EntryType_t<decltype(GRID)> grid;
+    EntryType_t<decltype(TRUNCATION)> truncation;
+    EntryType_t<decltype(REPRES)> repres;
 
-enum class MarsKeys : std::uint64_t
-{
-    EXPVER,
-    STREAM,
-    TYPE,
-    CLASS,
-    PARAM,
-    ORIGIN,
-    ANOFFSET,
-    PACKING,
-    NUMBER,
-    IDENT,
-    INSTRUMENT,
-    CHANNEL,
-    CHEM,
-    WAVELENGTH,
-    MODEL,
-    LEVTYPE,
-    LEVELIST,
-    DIRECTION,
-    FREQUENCY,
-    DATE,
-    TIME,
-    STEP,
-    TIMESPAN,
-    HDATE,
-    DATASET,
-    RESOLUTION,
-    ACTIVITY,
-    EXPERIMENT,
-    GENERATION,
-    REALIZATION,
-    METHOD,
-    SYSTEM,
-    GRID,
-    TRUNCATION,
-    REPRES
+    static constexpr std::string_view record_name_ = "mars";
+    static constexpr auto record_entries_ = std::make_tuple(
+        ORIGIN, CLASS, STREAM, TYPE, EXPVER, PARAM, DATE, TIME, STEP, LEVTYPE, LEVELIST, MODEL, RESOLUTION, ACTIVITY,
+        EXPERIMENT, GENERATION, REALIZATION, TIMESPAN, ANOFFSET, PACKING, NUMBER, IDENT, INSTRUMENT, CHANNEL, CHEM,
+        WAVELENGTH, DIRECTION, FREQUENCY, HDATE, DATASET, METHOD, SYSTEM, GRID, TRUNCATION, REPRES);
 };
 
-
-MULTIO_KEY_SET_DESCRIPTION(
-    MarsKeys,                                                                  //
-    "mars",                                                                    //
-                                                                               //
-    KeyDef<MarsKeys::ORIGIN, IntOrString>{"origin"}.withDefault("ecmf"),       //
-    KeyDef<MarsKeys::CLASS, std::string>{"class"},                             //
-    KeyDef<MarsKeys::STREAM, std::string>{"stream"},                           //
-    KeyDef<MarsKeys::TYPE, std::string>{"type"},                               //
-    KeyDef<MarsKeys::EXPVER, IntOrString>{"expver"},                           //
-    KeyDef<MarsKeys::PARAM, std::int64_t, mapper::ParamMapper>{"param"},       //
-    KeyDef<MarsKeys::DATE, std::int64_t>{"date"},                              //
-    KeyDef<MarsKeys::TIME, std::int64_t>{"time"},                              //
-    KeyDef<MarsKeys::STEP, TimeDuration>{"step"}.tagOptional(),                //
-    KeyDef<MarsKeys::LEVTYPE, LevType>{"levtype"}.tagOptional(),               //
-    KeyDef<MarsKeys::LEVELIST, std::int64_t>{"levelist"}.tagOptional(),        //
-    KeyDef<MarsKeys::MODEL, std::string>{"model"}.tagOptional(),               //
-    KeyDef<MarsKeys::RESOLUTION, std::string>{"resolution"}.tagOptional(),     //
-    KeyDef<MarsKeys::ACTIVITY, std::string>{"activity"}.tagOptional(),         //
-    KeyDef<MarsKeys::EXPERIMENT, std::string>{"experiment"}.tagOptional(),     //
-    KeyDef<MarsKeys::GENERATION, std::int64_t>{"generation"}.tagOptional(),    //
-    KeyDef<MarsKeys::REALIZATION, std::int64_t>{"realization"}.tagOptional(),  //
-    KeyDef<MarsKeys::TIMESPAN, TimeDuration>{"timespan"}.tagOptional(),        //
-    KeyDef<MarsKeys::ANOFFSET, std::int64_t>{"anoffset"}.tagOptional(),        //
-    KeyDef<MarsKeys::PACKING, std::string>{"packing"}.tagOptional(),           //
-    KeyDef<MarsKeys::NUMBER, std::int64_t>{"number"}.tagOptional(),            //
-    KeyDef<MarsKeys::IDENT, std::int64_t>{"ident"}.tagOptional(),              //
-    KeyDef<MarsKeys::INSTRUMENT, std::int64_t>{"instrument"}.tagOptional(),    //
-    KeyDef<MarsKeys::CHANNEL, std::int64_t>{"channel"}.tagOptional(),          //
-    KeyDef<MarsKeys::CHEM, std::int64_t>{"chem"}.tagOptional(),                //
-    KeyDef<MarsKeys::WAVELENGTH, std::int64_t>{"wavelength"}.tagOptional(),    //
-    KeyDef<MarsKeys::DIRECTION, std::int64_t>{"direction"}.tagOptional(),      //
-    KeyDef<MarsKeys::FREQUENCY, std::int64_t>{"frequency"}.tagOptional(),      //
-    KeyDef<MarsKeys::HDATE, std::int64_t>{"hdate"}.tagOptional(),              //
-    KeyDef<MarsKeys::DATASET, std::string>{"dataset"}.tagOptional(),           //
-    KeyDef<MarsKeys::METHOD, std::int64_t>{"method"}.tagOptional(),            //
-    KeyDef<MarsKeys::SYSTEM, std::int64_t>{"system"}.tagOptional(),            //
-    KeyDef<MarsKeys::GRID, std::string>{"grid"}.tagOptional(),                 //
-    KeyDef<MarsKeys::TRUNCATION, std::int64_t>{"truncation"}.tagOptional(),    //
-    // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as
-    // official mars key
-    KeyDef<MarsKeys::REPRES, Repres>{"repres"}.tagDefaulted().withDescription(
-        "DEPRECATED - internal key that got expanded to support HEALpix and differs from usual values "
-        "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical harmonics) "
-        "without defining resolution. It can be derived from `grid` and `truncation`. If passed its value is compared "
-        "against the derived value."));
-
-using MarsKeySet = KeySet<MarsKeys>;
-using MarsKeyValueSet = KeyValueSet<MarsKeySet>;
-
+}  // namespace multio::datamod
 
 template <>
-struct KeySetAlter<MarsKeySet> {
-    static void alter(MarsKeyValueSet& mars) {
-        // TODO setting conditional defaults and perform validation
-        const auto& grid = key<MarsKeys::GRID>(mars);
-        const auto& trunc = key<MarsKeys::TRUNCATION>(mars);
-        auto& repres = key<MarsKeys::REPRES>(mars);
+struct multio::util::Print<multio::datamod::MarsRecord> : multio::datamod::PrintRecord {};
 
-        if (grid.isMissing() && trunc.isMissing()) {
+namespace multio::datamod {
+
+template <>
+struct ApplyRecordDefaults<MarsRecord> {
+    static void applyDefaults(MarsRecord& mars) {
+        // TODO setting conditional defaults and perform validation
+        const auto& grid = mars.grid;
+        const auto& trunc = mars.truncation;
+        auto& repres = mars.repres;
+
+        if (grid.isUnset() && trunc.isUnset()) {
             std::ostringstream oss;
             oss << "Either mars key 'grid' (x)or 'truncation' need to be given to describe geometry - both are "
                    "missing: ";
-            // << mars;
+            util::print(oss, mars);
             throw DataModellingException(oss.str(), Here());
         }
-        if (!grid.isMissing() && !trunc.isMissing()) {
+        if (!grid.isUnset() && !trunc.isUnset()) {
             std::ostringstream oss;
             oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both are "
                    "given: ";
-            // << mars;
-            // TODO print properly
+            util::print(oss, mars);
             throw DataModellingException(oss.str(), Here());
         }
 
-        if (!grid.isMissing()) {
+        if (!grid.isUnset()) {
             auto detRepres = represFromGrid(grid.get());
-            if (!repres.isMissing() && (detRepres != repres.get())) {
+            if (!repres.isUnset() && (detRepres != repres.get())) {
                 std::ostringstream oss;
                 oss << "Passed value for repres is ";
                 util::print(oss, repres.get());
@@ -153,9 +116,9 @@ struct KeySetAlter<MarsKeySet> {
             }
             repres.set(detRepres);
         }
-        else if (!trunc.isMissing()) {
+        else if (!trunc.isUnset()) {
             auto detRepres = Repres::SH;
-            if (!repres.isMissing() && (detRepres != repres.get())) {
+            if (!repres.isUnset() && (detRepres != repres.get())) {
                 std::ostringstream oss;
                 oss << "Passed value for repres is ";
                 util::print(oss, repres.get());
@@ -169,255 +132,221 @@ struct KeySetAlter<MarsKeySet> {
     }
 };
 
+}  // namespace multio::datamod
 
-//-----------------------------------------------------------------------------
-// MARS encoder hash keys
-//-----------------------------------------------------------------------------
 
-// TODO implement some utilites to exclude types from a list
-using EncoderCacheMarsKeySet = CustomKeySet<MarsKeys::EXPVER, MarsKeys::STREAM, MarsKeys::TYPE, MarsKeys::CLASS,
-                                            MarsKeys::PARAM, MarsKeys::ORIGIN, MarsKeys::ANOFFSET, MarsKeys::PACKING,
-                                            MarsKeys::NUMBER, MarsKeys::IDENT, MarsKeys::INSTRUMENT, MarsKeys::CHANNEL,
-                                            MarsKeys::CHEM, MarsKeys::MODEL, MarsKeys::LEVTYPE, MarsKeys::LEVELIST,
-                                            // MarsKeys::DIRECTION,
-                                            // MarsKeys::FREQUENCY,
-                                            MarsKeys::DATE, MarsKeys::TIME, MarsKeys::STEP, MarsKeys::TIMESPAN,
-                                            MarsKeys::HDATE, MarsKeys::GRID, MarsKeys::TRUNCATION>;
-
-using EncoderCacheMarsKeyValueSet = KeyValueSet<EncoderCacheMarsKeySet>;
-
-template <>
-struct KeySetAlter<EncoderCacheMarsKeySet> {
-    static void alter(EncoderCacheMarsKeyValueSet& cacheKeys) {
-
-        const auto& levtype = key<MarsKeys::LEVTYPE>(cacheKeys);
-
-        if (!levtype.isMissing() && levtype.get() == LevType::ML) {
-            key<MarsKeys::LEVELIST>(cacheKeys).setMissing();
-        }
-
-        // Explicitly acquire because all the whole data structure is ment to be stored in a container
-        acquire(cacheKeys);
-    }
-};
+namespace multio::datamod {
 
 
 //-----------------------------------------------------------------------------
 // Parametrization keys
 //-----------------------------------------------------------------------------
 
-
 // Userfacing keys
 
-enum class MiscKeys : std::uint64_t
-{
-    TablesVersion,
-    GeneratingProcessIdentifier,
-    TypeOfProcessedData,
-    InitialStep,
-    TimeIncrementInSeconds,
-    LengthOfTimeWindow,
-    LengthOfTimeWindowInSeconds,
-    BitmapPresent,
-    MissingValue,
-    TypeOfEnsembleForecast,
-    NumberOfForecastsInEnsemble,
-    SatelliteSeries,
-    ScaleFactorOfCentralWavenumber,
-    ScaledValueOfCentralWavenumber,
-    Pv,
-    WaveDirections,
-    WaveFrequencies,
-    BitsPerValue,
+// TablesVersion defined in GribKeys
+
+// GeneratingProcessIdentifier defined in GribKeys
+
+// TypeOfProcessedData defined in GribKeys
+
+constexpr auto InitialStep =               //
+    EntryDef<std::int64_t>{"initialStep"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.initialStep; });
+
+constexpr auto TimeIncrementInSeconds =               //
+    EntryDef<std::int64_t>{"timeIncrementInSeconds"}  //
+        .withDefault(3600)
+        .withAccessor([](auto&& v) { return &v.timeIncrementInSeconds; });
+
+constexpr auto LengthOfTimeWindow =               //
+    EntryDef<std::int64_t>{"lengthOfTimeWindow"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.lengthOfTimeWindow; });
+
+constexpr auto LengthOfTimeWindowInSeconds =               //
+    EntryDef<std::int64_t>{"lengthOfTimeWindowInSeconds"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
+
+constexpr auto BitmapPresent =                                //
+    EntryDef<bool, mapper::IntToBoolMapper>{"bitmapPresent"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.bitmapPresent; });
+
+constexpr auto MissingValue =         //
+    EntryDef<double>{"missingValue"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.missingValue; });
+
+constexpr auto TypeOfEnsembleForecast =               //
+    EntryDef<std::int64_t>{"typeOfEnsembleForecast"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.typeOfEnsembleForecast; });
+
+constexpr auto NumberOfForecastsInEnsemble =               //
+    EntryDef<std::int64_t>{"numberOfForecastsInEnsemble"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfForecastsInEnsemble; });
+
+constexpr auto SatelliteSeries =               //
+    EntryDef<std::int64_t>{"satelliteSeries"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.satelliteSeries; });
+
+constexpr auto ScaleFactorOfCentralWavenumber =               //
+    EntryDef<std::int64_t>{"scaleFactorOfCentralWavenumber"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.scaleFactorOfCentralWavenumber; });
+
+constexpr auto ScaledValueOfCentralWavenumber =               //
+    EntryDef<std::int64_t>{"scaledValueOfCentralWavenumber"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.scaledValueOfCentralWavenumber; });
+
+// Pv defined in GribKeys
+
+constexpr auto WaveDirections =                      //
+    EntryDef<std::vector<double>>{"waveDirections"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.waveDirections; });
+
+constexpr auto WaveFrequencies =                      //
+    EntryDef<std::vector<double>>{"waveFrequencies"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.waveFrequencies; });
+
+constexpr auto BitsPerValue =               //
+    EntryDef<std::int64_t>{"bitsPerValue"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.bitsPerValue; });
+
+constexpr auto LaplacianOperator =               //
+    EntryDef<std::int64_t>{"laplacianOperator"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.laplacianOperator; });
+
+struct MiscRecord {
+    EntryType_t<decltype(TablesVersion)> tablesVersion;
+    EntryType_t<decltype(GeneratingProcessIdentifier)> generatingProcessIdentifier;
+    EntryType_t<decltype(TypeOfProcessedData)> typeOfProcessedData;
+    EntryType_t<decltype(InitialStep)> initialStep;
+    EntryType_t<decltype(TimeIncrementInSeconds)> timeIncrementInSeconds;
+    EntryType_t<decltype(LengthOfTimeWindow)> lengthOfTimeWindow;
+    EntryType_t<decltype(LengthOfTimeWindowInSeconds)> lengthOfTimeWindowInSeconds;
+    EntryType_t<decltype(BitmapPresent)> bitmapPresent;
+    EntryType_t<decltype(MissingValue)> missingValue;
+    EntryType_t<decltype(TypeOfEnsembleForecast)> typeOfEnsembleForecast;
+    EntryType_t<decltype(NumberOfForecastsInEnsemble)> numberOfForecastsInEnsemble;
+    EntryType_t<decltype(SatelliteSeries)> satelliteSeries;
+    EntryType_t<decltype(ScaleFactorOfCentralWavenumber)> scaleFactorOfCentralWavenumber;
+    EntryType_t<decltype(ScaledValueOfCentralWavenumber)> scaledValueOfCentralWavenumber;
+    EntryType_t<decltype(Pv)> pv;
+    EntryType_t<decltype(WaveDirections)> waveDirections;
+    EntryType_t<decltype(WaveFrequencies)> waveFrequencies;
+    EntryType_t<decltype(BitsPerValue)> bitsPerValue;
+    EntryType_t<decltype(LaplacianOperator)> laplacianOperator;
+
+
+    static constexpr std::string_view record_name_ = "misc";
+    static constexpr auto record_entries_ = std::make_tuple(
+        TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedData, InitialStep, TimeIncrementInSeconds,
+        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
+        NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWavenumber, ScaledValueOfCentralWavenumber,
+        Pv, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator);
 };
 
-
-MULTIO_KEY_SET_DESCRIPTION(
-    MiscKeys,                                                                                                  //
-    "misc",                                                                                                    //
-    KeyDef<MiscKeys::TablesVersion, std::int64_t>{"tablesVersion"}.tagOptional(),                              //
-    KeyDef<MiscKeys::GeneratingProcessIdentifier, std::int64_t>{"generatingProcessIdentifier"}.tagOptional(),  //
-    KeyDef<MiscKeys::TypeOfProcessedData, std::int64_t>{"typeOfProcessedData"}.tagOptional(),                  //
-    KeyDef<MiscKeys::InitialStep, std::int64_t>{"initialStep"}.withDefault(0),                                 //
-    KeyDef<MiscKeys::TimeIncrementInSeconds, std::int64_t>{"timeIncrementInSeconds"}.withDefault(3600),        //
-    KeyDef<MiscKeys::LengthOfTimeWindow, std::int64_t>{"lengthOfTimeWindow"}.tagOptional(),                    //
-    KeyDef<MiscKeys::LengthOfTimeWindowInSeconds, std::int64_t>{"lengthOfTimeWindowInSeconds"}.tagOptional(),  //
-
-    KeyDef<MiscKeys::BitmapPresent, bool, mapper::IntToBoolMapper>{"bitmapPresent"}.tagOptional(),  //
-    KeyDef<MiscKeys::MissingValue, double>{"missingValue"}.tagOptional(),                           //
-
-    KeyDef<MiscKeys::TypeOfEnsembleForecast, std::int64_t>{"typeOfEnsembleForecast"}.tagOptional(),            //
-    KeyDef<MiscKeys::NumberOfForecastsInEnsemble, std::int64_t>{"numberOfForecastsInEnsemble"}.tagOptional(),  //
-
-    KeyDef<MiscKeys::SatelliteSeries, std::int64_t>{"satelliteSeries"}.tagOptional(),                                //
-    KeyDef<MiscKeys::ScaleFactorOfCentralWavenumber, std::int64_t>{"scaleFactorOfCentralWavenumber"}.tagOptional(),  //
-    KeyDef<MiscKeys::ScaledValueOfCentralWavenumber, std::int64_t>{"scaledValueOfCentralWavenumber"}.tagOptional(),  //
-
-    KeyDef<MiscKeys::Pv, std::vector<double>>{"pv"}.tagOptional(),                            //
-    KeyDef<MiscKeys::WaveDirections, std::vector<double>>{"waveDirections"}.tagOptional(),    //
-    KeyDef<MiscKeys::WaveFrequencies, std::vector<double>>{"waveFrequencies"}.tagOptional(),  //
-
-    KeyDef<MiscKeys::BitsPerValue, std::int64_t>{"bitsPerValue"}.tagOptional())  //
-
-
-using MiscKeySet = KeySet<MiscKeys>;
-using MiscKeyValueSet = KeyValueSet<MiscKeySet>;
 
 //-----------------------------------------------------------------------------
 // Geometry keys - gg
 //-----------------------------------------------------------------------------
 
-enum class GeoGG : std::uint64_t
-{
-    TruncateDegrees,
-    NumberOfPointsAlongAMeridian,
-    NumberOfParallelsBetweenAPoleAndTheEquator,
-    LatitudeOfFirstGridPointInDegrees,
-    LongitudeOfFirstGridPointInDegrees,
-    LatitudeOfLastGridPointInDegrees,
-    LongitudeOfLastGridPointInDegrees,
-    Pl
+struct GeoGGRecord {
+    EntryType_t<decltype(TruncateDegrees)> truncateDegrees;
+    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
+    EntryType_t<decltype(NumberOfParallelsBetweenAPoleAndTheEquator)> numberOfParallelsBetweenAPoleAndTheEquator;
+    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
+    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
+    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
+    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
+    EntryType_t<decltype(Pl)> pl;
+
+
+    static constexpr std::string_view record_name_ = "geo-gg";
+    static constexpr auto record_entries_
+        = std::make_tuple(TruncateDegrees, NumberOfPointsAlongAMeridian, NumberOfParallelsBetweenAPoleAndTheEquator,
+                          LatitudeOfFirstGridPointInDegrees, LongitudeOfFirstGridPointInDegrees,
+                          LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees, Pl);
 };
 
-MULTIO_KEY_SET_DESCRIPTION(
-    GeoGG,                                                                                                    //
-    "geo-gg",                                                                                                 //
-                                                                                                              //
-    KeyDef<GeoGG::TruncateDegrees, std::int64_t>{"truncateDegrees"}.tagOptional(),                            //
-    KeyDef<GeoGG::NumberOfPointsAlongAMeridian, std::int64_t>{"numberOfPointsAlongAMeridian"}.tagOptional(),  //
-    KeyDef<GeoGG::NumberOfParallelsBetweenAPoleAndTheEquator, std::int64_t>{
-        "numberOfParallelsBetweenAPoleAndTheEquator"},                                                //
-    KeyDef<GeoGG::LatitudeOfFirstGridPointInDegrees, double>{"latitudeOfFirstGridPointInDegrees"},    //
-    KeyDef<GeoGG::LongitudeOfFirstGridPointInDegrees, double>{"longitudeOfFirstGridPointInDegrees"},  //
-    KeyDef<GeoGG::LatitudeOfLastGridPointInDegrees, double>{"latitudeOfLastGridPointInDegrees"},      //
-    KeyDef<GeoGG::LongitudeOfLastGridPointInDegrees, double>{"longitudeOfLastGridPointInDegrees"},    //
-    KeyDef<GeoGG::Pl, std::vector<std::int64_t>>{"pl"}.tagOptional());                                //
-
+//
 //-----------------------------------------------------------------------------
 // Geometry keys - sh
 //-----------------------------------------------------------------------------
 
-enum class GeoSH : std::uint64_t
-{
-    PentagonalResolutionParameterJ,
-    PentagonalResolutionParameterK,
-    PentagonalResolutionParameterM
+
+struct GeoSHRecord {
+    EntryType_t<decltype(PentagonalResolutionParameterJ)> pentagonalResolutionParameterJ;
+    EntryType_t<decltype(PentagonalResolutionParameterK)> pentagonalResolutionParameterK;
+    EntryType_t<decltype(PentagonalResolutionParameterM)> pentagonalResolutionParameterM;
+
+    static constexpr std::string_view record_name_ = "geo-sh";
+    static constexpr auto record_entries_ = std::make_tuple(
+        PentagonalResolutionParameterJ, PentagonalResolutionParameterK, PentagonalResolutionParameterM);
 };
 
-MULTIO_KEY_SET_DESCRIPTION(
-    GeoSH,                                                                                           //
-    "geo-sh",                                                                                        //
-                                                                                                     //
-    KeyDef<GeoSH::PentagonalResolutionParameterJ, std::int64_t>{"pentagonalResolutionParameterJ"},   //
-    KeyDef<GeoSH::PentagonalResolutionParameterK, std::int64_t>{"pentagonalResolutionParameterK"},   //
-    KeyDef<GeoSH::PentagonalResolutionParameterM, std::int64_t>{"pentagonalResolutionParameterM"});  //
 
 //-----------------------------------------------------------------------------
 // Geometry keys - ll
 //-----------------------------------------------------------------------------
 
-// enum class GeoLL : std::uint64_t
-// {
-// };
+// TBD
 
-// MULTIO_KEY_SET_DESCRIPTION(GeoLL,     //
-//                            "geo-ll",  //
-//                                       //
+struct GeoLLRecord {
+    static constexpr std::string_view record_name_ = "geo-ll";
+    static constexpr auto record_entries_ = std::make_tuple();
+};
 
 //-----------------------------------------------------------------------------
 // Geometry keys - HEALPix
 //-----------------------------------------------------------------------------
 
-enum class GeoHEALPix : std::uint64_t
-{
-    NSide,
-    OrderingConvention,
-    LongitudeOfFirstGridPointInDegrees,
-};
+struct GeoHEALPixRecord {
+    EntryType_t<decltype(NSide)> nside;
+    EntryType_t<decltype(OrderingConvention)> orderingConvention;
+    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
 
-MULTIO_KEY_SET_DESCRIPTION(
-    GeoHEALPix,  //
-    "geo-sh",    //
-                 //
-    KeyDef<GeoHEALPix::NSide, std::int64_t>{"nside"},
-    KeyDef<GeoHEALPix::OrderingConvention, std::string>{"orderingConvention"}.tagOptional(),
-    KeyDef<GeoHEALPix::LongitudeOfFirstGridPointInDegrees, double>{"longitudeOfFirstGridPointInDegrees"}.tagOptional());
+    static constexpr std::string_view record_name_ = "geo-healpix";
+    static constexpr auto record_entries_
+        = std::make_tuple(NSide, OrderingConvention, LongitudeOfFirstGridPointInDegrees.tagOptional());
+};
 
 
 //-----------------------------------------------------------------------------
 // Evaluate geometry from mars
 //-----------------------------------------------------------------------------
 
-using GeometryEnums = util::TypeList<GeoGG, GeoSH, GeoHEALPix>;
-using GeometryKeySets = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeySet, GeometryEnums>>;
-using Geometry
-    = util::ApplyTypeList_t<std::variant, util::MapTypeList_t<KeyValueSet, util::MapTypeList_t<KeySet, GeometryEnums>>>;
+using Geometry = std::variant<GeoGGRecord, GeoLLRecord, GeoSHRecord, GeoHEALPixRecord>;
+using ScopedGeometry = std::variant<ScopedRecord<GeoGGRecord>, ScopedRecord<GeoLLRecord>, ScopedRecord<GeoSHRecord>,
+                                    ScopedRecord<GeoHEALPixRecord>>;
 
-template <typename KVS, std::enable_if_t<std::is_same_v<std::decay_t<KVS>, MarsKeyValueSet>, bool> = true>
-GeometryKeySets getGeometryKeySet(const KVS& mars) {
-    const auto& grid = key<MarsKeys::GRID>(mars);
-    const auto& trunc = key<MarsKeys::TRUNCATION>(mars);
-    const auto& repres = key<MarsKeys::REPRES>(mars);
-
-    switch (repres.get()) {
-        case Repres::GG: {
-            std::string scope = std::string("geo-") + grid.get();
-            return keySet<GeoGG>().scoped(scope);
-        }
-        case Repres::HEALPix: {
-            std::string scope = std::string("geo-") + grid.get();
-            return keySet<GeoHEALPix>().scoped(scope);
-        }
-        case Repres::SH: {
-            std::string scope = std::string("geo-TCO") + std::to_string(trunc.get());
-            return keySet<GeoSH>().scoped(scope);
-        }
-        // TODO uncomment once there are keys specified...
-        // case Repres::GG: {
-        //     std::string scope = std::string("geo-") + grid.get();
-        //     std::forward<Func>(func)(Repres::GG, scope, keySet<GeoGG>().scoped(scope));
-        //     return;
-        // }
-        default:
-            throw DataModellingException(
-                std::string("getGeometryKeySet: Unhandled repres ") + Writer<Repres>::write(repres.get()), Here());
-    }
-}
-
-template <typename Func>
-decltype(auto) withScopedGeometryKeySet(const MarsKeyValueSet& mars, Func&& func) {
-    const auto& grid = key<MarsKeys::GRID>(mars);
-    const auto& trunc = key<MarsKeys::TRUNCATION>(mars);
-    const auto& repres = key<MarsKeys::REPRES>(mars);
-
-    switch (repres.get()) {
-        case Repres::GG: {
-            std::string scope = std::string("geo-") + grid.get();
-            return std::forward<Func>(func)(Repres::GG, scope, keySet<GeoGG>().scoped(scope));
-        }
-        case Repres::HEALPix: {
-            std::string scope = std::string("geo-") + grid.get();
-            return std::forward<Func>(func)(Repres::HEALPix, scope, keySet<GeoHEALPix>().scoped(scope));
-        }
-        case Repres::SH: {
-            std::string scope = std::string("geo-TCO") + std::to_string(trunc.get());
-            return std::forward<Func>(func)(Repres::SH, scope, keySet<GeoSH>().scoped(scope));
-        }
-        // TODO uncomment once there are keys specified...
-        // case Repres::GG: {
-        //     std::string scope = std::string("geo-") + grid.get();
-        //     std::forward<Func>(func)(Repres::GG, scope, keySet<GeoGG>().scoped(scope));
-        //     return;
-        // }
-        default:
-            throw DataModellingException(
-                std::string("withScopedGeometryKeySet: Unhandled repres ") + Writer<Repres>::write(repres.get()),
-                Here());
-    }
-}
+ScopedGeometry getGeometryRecord(const MarsRecord& mars);
 
 
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod
 
+namespace multio::util {
+template <>
+struct Print<multio::datamod::MiscRecord> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::GeoGGRecord> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::GeoLLRecord> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::GeoSHRecord> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::GeoHEALPixRecord> : multio::datamod::PrintRecord {};
+};  // namespace multio::util

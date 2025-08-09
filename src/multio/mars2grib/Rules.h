@@ -17,10 +17,9 @@
 
 namespace multio::mars2grib::rules {
 using namespace rules;
-using namespace datamod;
 
-const ExclusiveRuleList<MarsKeySet>& allRules();
+const ExclusiveRuleList& allRules();
 
-EncoderSections buildEncoderConf(const MarsKeyValueSet&);
+SectionsConf buildEncoderConf(const dm::MarsRecord&);
 
 }  // namespace multio::mars2grib::rules

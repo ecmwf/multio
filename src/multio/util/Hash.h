@@ -26,7 +26,7 @@ namespace multio::util {
 
 
 template <typename T>
-auto hash(const T& t) noexcept(noexcept(std::hash<T>{}(t))) {
+constexpr auto hash(const T& t) noexcept(noexcept(std::hash<T>{}(t))) {
     return std::hash<T>{}(t);
 }
 
@@ -53,17 +53,21 @@ constexpr IntType hashAppend(IntType lhs, IntType rhs) noexcept {
 }
 
 
-std::size_t hashCombineArgs(std::size_t lhs) noexcept;
+constexpr std::size_t hashCombineArgs(std::size_t lhs) noexcept {
+    return lhs;
+}
 
 template <typename T, typename... More>
-std::size_t hashCombineArgs(std::size_t lhs, const T& t,
-                            const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
+constexpr std::size_t hashCombineArgs(std::size_t lhs, const T& t,
+                                      const More&... more) noexcept((noexcept(hash(more)) && ...
+                                                                     && noexcept(hash(t)))) {
     return hashCombineArgs(hashAppend(lhs, hash(t)), more...);
 }
 
 
 template <typename T, typename... More>
-std::size_t hashCombine(const T& t, const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
+constexpr std::size_t hashCombine(const T& t,
+                                  const More&... more) noexcept((noexcept(hash(more)) && ... && noexcept(hash(t)))) {
     return hashCombineArgs(hash(t), more...);
 }
 
@@ -81,6 +85,17 @@ constexpr std::uint32_t fib_hash(std::uint32_t h) noexcept {
     return (h * 0x9e3779b9U) >> (64 - bitWidthOfInterest);
 }
 
+//-----------------------------------------------------------------------------
+
+// FNV-1a 32bit hash
+constexpr std::uint32_t hashFNV1A32(char const* s, std::size_t size) {
+    return (((size > 0) ? hashFNV1A32(s, size - 1) : 2166136261u) ^ s[size]) * 16777619u;
+}
+
+// FNV-1a 64bit hash
+constexpr std::uint64_t hashFNV1A64(char const* s, std::size_t size) {
+    return (((size > 0) ? hashFNV1A64(s, size - 1) : 14695981039346656037u) ^ s[size]) * 1099511628211u;
+}
 
 //-----------------------------------------------------------------------------
 

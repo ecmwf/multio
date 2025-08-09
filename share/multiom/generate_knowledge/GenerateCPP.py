@@ -45,23 +45,23 @@ enum class {enumName}: std::uint64_t
 namespace multio::datamod {{
 
 template <>
-struct WriteSpec<{namespace}::{enumName}> {{
-    static std::string write({namespace}::{enumName} v) {{
+struct DumpType<{namespace}::{enumName}> {{
+    static std::string dump({namespace}::{enumName} v) {{
         using namespace {namespace};
         switch (v) {{
             {writeCaseStr}
             default:
-                throw multio::mars2grib::Mars2GribException("WriteSpec<{enumName}>::write: Unexpected value for {enumName}", Here());
+                throw multio::mars2grib::Mars2GribException("DumpType<{enumName}>::dump: Unexpected value for {enumName}", Here());
         }}
     }}
 }};
 
 template <>
-struct ReadSpec<{namespace}::{enumName}> {{
-    static {namespace}::{enumName} read(const std::string& s) {{
+struct ParseType<{namespace}::{enumName}> {{
+    static {namespace}::{enumName} parse(const std::string& s) {{
         using namespace {namespace};
         {readIfElseStr}
-        throw multio::mars2grib::Mars2GribException{{std::string("ReadSpec<{enumName}>::read(\"") + s + std::string("\"): {errReadEnumStr}"), Here()}};
+        throw multio::mars2grib::Mars2GribException{{std::string("ParseType<{enumName}>::parse(\"") + s + std::string("\"): {errReadEnumStr}"), Here()}};
     }}
 }};
 
@@ -72,8 +72,8 @@ namespace multio::util {{
 
 template<>
 struct Print<{namespace}::{enumName}> {{
-    static void print(std::ostream& os, const {namespace}::{enumName}& t) {{
-      util::print(os, multio::datamod::Writer<{namespace}::{enumName}>::write(t));
+    static void print(PrintStream& ps, const {namespace}::{enumName}& t) {{
+      util::print(ps, multio::datamod::TypeDumper<{namespace}::{enumName}>::dump(t));
     }}
 }};
 
@@ -88,7 +88,7 @@ struct TypeToString<{namespace}::{enumName}> {{
 """
 
 
-def generateCPPPDTCatKeySet(categories, categoriesWithAllPossibleValues, categoryHandleOrder, namespace, pdtCatEnumName):
+def generateCPPPDTCatRecord(categories, categoriesWithAllPossibleValues, categoryHandleOrder,pdtCatName, namespace):
     """
     Produce string with valid CPP code defining a enum with all categories and a KeySet
     """
@@ -102,39 +102,66 @@ def generateCPPPDTCatKeySet(categories, categoriesWithAllPossibleValues, categor
     catEnumValuesStr="\n".join(catEnumValues)
     
     
-    keyDefs=[]
+    entryDefs=[]
     for index, c in enumerate(categoryHandleOrder, start=1):
         default = None if (None in categoriesWithAllPossibleValues[c]) or (c not in categories.name()) else defaultCategoryValue(categories[c])
         defaultVal = default if default is None else camelToPascalCase(default)
-        kdStr = f"""KeyDef<{pdtCatEnumName}::{camelToPascalCase(c)}, {camelToPascalCase(c)}>{{"{c}"}}.withDefault({camelToPascalCase(c)}::{defaultVal})"""
-        if index < len(categoryHandleOrder):
-            kdStr+=", //"
-        else:
-            kdStr+=") //"
-        keyDefs.append(kdStr)
-        
+        kdStr = f"""constexpr auto {camelToPascalCase(c)}Entry = dm::EntryDef<{camelToPascalCase(c)}>{{"{c}"}}.withDefault({camelToPascalCase(c)}::{defaultVal}).withAccessor([](auto&& v){{ return &v.{c}; }});"""
+        entryDefs.append(kdStr)
    
-    keyDefsStr="\n".join(keyDefs)
+    entryDefStr="\n".join(entryDefs)
+
+
+    entries=[]
+    for index, c in enumerate(categoryHandleOrder, start=1):
+        entries.append(f"""    dm::EntryType_t<decltype({camelToPascalCase(c)}Entry)> {c};""")
+   
+    entriesStr="\n".join(entries)
+
+    entriesList=[]
+    for index, c in enumerate(categoryHandleOrder, start=1):
+        entriesList.append(f"{camelToPascalCase(c)}Entry")
+   
+    entriesListStr=", ".join(entriesList)
    
     return f"""
 namespace {namespace} {{
 
-enum class {pdtCatEnumName}: std::uint64_t
-{{
-{catEnumValuesStr}
+namespace dm = multio::datamod;
+
+{entryDefStr}
+
+struct {pdtCatName} {{
+{entriesStr}
+
+    static constexpr std::string_view record_name_ = "{pdtCatStringValue}";
+    static constexpr auto record_entries_
+        = std::make_tuple({entriesListStr});
 }};
 
+}};  // namespace {namespace}
+
+namespace std {{
+
+template<>
+struct equal_to<{namespace}::{pdtCatName}>: multio::datamod::EqualToRecord {{}};
+template<>
+struct not_equal_to<{namespace}::{pdtCatName}>: multio::datamod::NotEqualToRecord {{}};
+
+
+template<>
+struct hash<{namespace}::{pdtCatName}>: multio::datamod::HashRecord {{}};
 }}
 
-namespace multio::datamod {{
-using namespace {namespace};
+namespace multio::util {{
+template<>
+struct Print<{namespace}::{pdtCatName}>: multio::datamod::PrintRecord {{}};
 
-MULTIO_KEY_SET_DESCRIPTION({pdtCatEnumName},       //
-                           "{pdtCatStringValue}",  //
-                                                   //
-                           {keyDefsStr}
-}};  // namespace datamod
-
+template <>
+struct TypeToString<{namespace}::{pdtCatName}> {{
+    std::string operator()() const {{ return "{namespace}::{pdtCatName}"; }};
+}};
+}}
 """
 
 
@@ -150,9 +177,8 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
     categoryHandleOrder = listAllCategoriesInOrder(categories)
     
     pdtCatName="PDTCat"
-    pdtCatEnumName=pdtCatName+"Def"
     
-    pdtKeySetStr = generateCPPPDTCatKeySet(categories, categoriesWithAllPossibleValues, categoryHandleOrder, namespace=namespace, pdtCatEnumName=pdtCatEnumName);
+    pdtRecord = generateCPPPDTCatRecord(categories, categoriesWithAllPossibleValues, categoryHandleOrder, pdtCatName=pdtCatName, namespace=namespace);
 
     decisionMapTypeString = f"using DecisionMap = std::unordered_map<{pdtCatName}, std::int64_t>; "
 
@@ -190,15 +216,19 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
                 # Recursion on a proper selection
                 selectorsForVal = [s for s in mappedSelectorList if filterSelector(s[0])]
+
                 
+                default = None if (None in categoriesWithAllPossibleValues[cat]) or (cat not in categories.name()) else defaultCategoryValue(categories[cat])
+                defaultVal = default if default is None else camelToPascalCase(default)
+        
                 enumVal= val if val is None else camelToPascalCase(val)
-                kvStr = f"set<{pdtCatEnumName}::{enumName}>({enumName}::{enumVal})"
+                kvStr = f"{enumName}::{enumVal}"
 
                 for (subEnums, pdtVal) in buildDecisionMapString(subCatList[1:], {cat: val, **selector}, selectorsForVal):
                     # Remove this if cond when None/default should be explicitly in the list
                     if val is None:
                         # Basically just forward
-                        cases.append((subEnums, pdtVal))
+                        cases.append(([f"{enumName}::{defaultVal}", *subEnums], pdtVal))
                     else:
                         cases.append(([kvStr, *subEnums], pdtVal))
 
@@ -206,7 +236,7 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
     decisionMapCases=buildDecisionMapString(categoryHandleOrder, {}, categorySelectorsWithMappedPdt)
     
-    decisionMapCasesStr=",\n".join([f"""{{make({pdtCatName}{{}}.{".".join(subEnums)}), {pdtVal} }}""" for (subEnums, pdtVal) in decisionMapCases])
+    decisionMapCasesStr=",\n".join([f"""{{{pdtCatName}{{ {", ".join(subEnums)} }}, {pdtVal} }}""" for (subEnums, pdtVal) in decisionMapCases])
     decisionMap=f"""{{{decisionMapCasesStr}}}""" # Wrapped in initializer list
     return f"""
 #pragma once
@@ -254,29 +284,23 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 #include "multio/util/TypeToString.h"
 #include "multio/util/Print.h"
 
-#include "multio/datamod/DataModelling.h"
-#include "multio/datamod/ReaderWriter.h"
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/TypeParserDumper.h"
+#include "multio/datamod/core/Hash.h"
+#include "multio/datamod/core/Print.h"
+#include "multio/datamod/core/Compare.h"
 #include "multio/mars2grib/Mars2GribException.h"
 
 {enums}
 
-{pdtKeySetStr}
+{pdtRecord}
 
 namespace {namespace} {{
-
-using {pdtCatName}KeySet = multio::datamod::KeySet<{pdtCatEnumName}>;
-using {pdtCatName} = multio::datamod::KeyValueSet<{pdtCatName}KeySet>;
 
 template<typename DummyArg = void>
 struct InferPdt {{
 
 {decisionMapTypeString}
-
-static {pdtCatName} make({pdtCatName} pdt) {{
-    using namespace multio::datamod;
-    alterAndValidate(pdt);
-    return pdt;
-}}
 
 
 std::int64_t inferProductDefinitionTemplateNumber(const {pdtCatName}& pdtCat) const {{

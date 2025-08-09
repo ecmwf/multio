@@ -19,25 +19,27 @@
 #include <regex>
 #include <string>
 
-#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/AtlasGeo.h"
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
 namespace multio::action::extract {
 
+namespace dm = multio::datamod;
+
 struct AtlasGeoSetter {
     using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
 
     static void handleGG(const std::string& scope, const std::string& gridName) {
-        using namespace datamod;
         message::Metadata md{{scope, true}};
 
-        auto geoGG = reify(keySet<GeoGG>().scoped(scope));
+        auto geoGG = datamod::scopeRecord(dm::GeoGGRecord{}, scope);
 
-        datamod::setKeysFromAtlas(geoGG, gridName);
+        dm::setKeysFromAtlas(geoGG, gridName);
 
-        write(geoGG, md);
+        dm::dumpRecord(geoGG, md);
 
         message::Parametrization::instance().update(md);
     }

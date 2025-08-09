@@ -10,7 +10,7 @@
 
 namespace multio::action::statistics {
 
-using datamod::glossary;
+namespace dm = multio::datamod;
 
 RemapParamID::RemapParamID(const config::ComponentConfiguration& compConf) : hasMapping_{false}, paramIDMap_{} {
     const auto mappings = compConf.parsedConfig().has("mapping-param")
@@ -37,10 +37,10 @@ void RemapParamID::ApplyRemap(message::Metadata& md, const std::string& opname, 
     if (hasMapping_) {
         std::ostringstream key;
         std::string cparam{"xxx"};
-        if (auto param = md.getOpt<std::string>(glossary().param); param) {
+        if (auto param = md.getOpt<std::string>(dm::legacy::Param); param) {
             cparam = *param;
         }
-        if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
+        if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
             cparam = std::to_string(*paramId);
         }
         else {
@@ -49,8 +49,8 @@ void RemapParamID::ApplyRemap(message::Metadata& md, const std::string& opname, 
         key << cparam << "_" << opname << "_" << outputFrequency << std::endl;
         auto it = paramIDMap_.find(key.str());
         if (it != paramIDMap_.end()) {
-            md.set(glossary().paramId, std::int64_t(::atol(it->second.c_str())));
-            md.set(glossary().param, it->second.c_str());
+            md.set(dm::legacy::ParamId, std::int64_t(::atol(it->second.c_str())));
+            md.set(dm::legacy::Param, it->second.c_str());
         }
     }
 }

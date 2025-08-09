@@ -28,7 +28,7 @@
 
 namespace multio::action::statistics {
 
-using datamod::glossary;
+namespace dm = multio::datamod;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -46,10 +46,10 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
 
     // Restart flush directly provides the folderName
     auto restartDateTime = msg.metadata().getOpt<std::string>("restartDateTime");
-    auto step = msg.metadata().getOpt<std::int64_t>(glossary().step);
-    auto timeStep = msg.metadata().getOpt<std::int64_t>(glossary().timeStep);
-    auto date = msg.metadata().getOpt<std::int64_t>(glossary().date);
-    auto time = msg.metadata().getOpt<std::int64_t>(glossary().time);
+    auto step = msg.metadata().getOpt<std::int64_t>(dm::legacy::Step);
+    auto timeStep = msg.metadata().getOpt<std::int64_t>(dm::legacy::TimeStep);
+    auto date = msg.metadata().getOpt<std::int64_t>(dm::legacy::Date);
+    auto time = msg.metadata().getOpt<std::int64_t>(dm::legacy::Time);
 
     if (restartDateTime) {
         folderName = *restartDateTime;
@@ -251,16 +251,16 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
     // md.set("sampleInterval", lastPointsDiff.diff);
 
-    md.set(glossary().sampleIntervalInSeconds, win.lastPointsDiffInSeconds());
+    md.set(dm::legacy::SampleIntervalInSeconds, win.lastPointsDiffInSeconds());
 
-    md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
-    md.set(glossary().startTime, win.epochPoint().time().hhmmss());
-    md.set(glossary().stepFrequency, win.timeSpanInSteps());
+    md.set(dm::legacy::StartDate, win.epochPoint().date().yyyymmdd());
+    md.set(dm::legacy::StartTime, win.epochPoint().time().hhmmss());
+    md.set(dm::legacy::StepFrequency, win.timeSpanInSteps());
 
-    md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
-    md.set(glossary().previousTime, win.creationPoint().time().hhmmss());
-    md.set(glossary().currentDate, win.endPoint().date().yyyymmdd());
-    md.set(glossary().currentTime, win.endPoint().time().hhmmss());
+    md.set(dm::legacy::PreviousDate, win.creationPoint().date().yyyymmdd());
+    md.set(dm::legacy::PreviousTime, win.creationPoint().time().hhmmss());
+    md.set(dm::legacy::CurrentDate, win.endPoint().date().yyyymmdd());
+    md.set(dm::legacy::CurrentTime, win.endPoint().time().hhmmss());
 
     md.set("startStepInHours", win.creationPointInHours());
     md.set("endStepInHours", win.endPointInHours());

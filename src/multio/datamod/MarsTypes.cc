@@ -13,27 +13,24 @@
 #include "eckit/utils/Overloaded.h"
 #include "metkit/mars/Param.h"
 
-#include "multio/datamod/DataModellingException.h"
+#include "multio/datamod/core/DataModellingException.h"
 
 #include <regex>
 
 
 namespace multio::datamod {
 
-
-IntOrString WriteSpec<TimeDuration>::write(const TimeDuration& td) {
+IntOrString DumpType<TimeDuration>::dump(const TimeDuration& td) {
     using Ret = std::variant<std::int64_t, std::string>;
-    return std::visit(eckit::Overloaded{[&](const std::chrono::hours& h) -> Ret { return h.count(); },
-                                        [&](const std::chrono::seconds& s) -> Ret {
-                                            return std::to_string(s.count()) + std::string("s");
-                                        }},
-                      td);
+    return td.visit(eckit::Overloaded{
+        [&](const std::chrono::hours& h) -> Ret { return h.count(); },
+        [&](const std::chrono::seconds& s) -> Ret { return std::to_string(s.count()) + std::string("s"); }});
 }
 
-TimeDuration ReadSpec<TimeDuration>::read(std::int64_t hours) noexcept {
+TimeDuration ParseType<TimeDuration>::parse(std::int64_t hours) noexcept {
     return std::chrono::hours{hours};
 }
-TimeDuration ReadSpec<TimeDuration>::read(const std::string& val) {
+TimeDuration ParseType<TimeDuration>::parse(const std::string& val) {
     // TODO align these units with util/DateTime.h ??
     static const std::regex timeRegex(R"((\d+)([hs]?))");  // number + optional 'h' or 's'
 
@@ -61,7 +58,7 @@ TimeDuration ReadSpec<TimeDuration>::read(const std::string& val) {
 }
 
 
-std::string WriteSpec<Repres>::write(Repres v) {
+std::string DumpType<Repres>::dump(Repres v) {
     switch (v) {
         case Repres::GG:
             return "gg";
@@ -72,7 +69,7 @@ std::string WriteSpec<Repres>::write(Repres v) {
         case Repres::SH:
             return "sh";
         default:
-            throw DataModellingException("WriteSpec<Repres>::write: Unexpected value for Repres", Here());
+            throw DataModellingException("DumpType<Repres>::dump: Unexpected value for Repres", Here());
     }
 }
 
@@ -99,7 +96,7 @@ Repres represFromGrid(const std::string& grid) {
     }
 }
 
-Repres ReadSpec<Repres>::read(const std::string& val) {
+Repres ParseType<Repres>::parse(const std::string& val) {
     if (val == "gg") {
         return Repres::GG;
     }
@@ -109,11 +106,11 @@ Repres ReadSpec<Repres>::read(const std::string& val) {
     if (val == "sh") {
         return Repres::SH;
     }
-    throw DataModellingException(std::string("ReadSpec<Repres>::read Unknown value for Repres: ") + val, Here());
+    throw DataModellingException(std::string("ParseType<Repres>::parse Unknown value for Repres: ") + val, Here());
 }
 
 
-std::string WriteSpec<LevType>::write(LevType v) {
+std::string DumpType<LevType>::dump(LevType v) {
     switch (v) {
         case LevType::ML:
             return "ml";
@@ -141,12 +138,12 @@ std::string WriteSpec<LevType>::write(LevType v) {
             return "al";
         default:
             throw DataModellingException(
-                "WriteSpec<LevType>::write: Unexpected enum value for LevType " + std::to_string(std::int64_t(v)),
+                "DumpType<LevType>::dump: Unexpected enum value for LevType " + std::to_string(std::int64_t(v)),
                 Here());
     }
 }
 
-LevType ReadSpec<LevType>::read(const std::string& val) {
+LevType ParseType<LevType>::parse(const std::string& val) {
     if (val == "ml") {
         return LevType::ML;
     }
@@ -183,7 +180,7 @@ LevType ReadSpec<LevType>::read(const std::string& val) {
     if (val == "al") {
         return LevType::AL;
     }
-    throw DataModellingException(std::string("ReadSpec<LevType>::read Unknown value for LevType: ") + val, Here());
+    throw DataModellingException(std::string("ParseType<LevType>::parse Unknown value for LevType: ") + val, Here());
 }
 
 const std::vector<LevType>& allLevTypes() {
@@ -197,13 +194,13 @@ const std::vector<LevType>& allLevTypes() {
 
 namespace mapper {
 
-std::int64_t ParamMapper::read(std::int64_t v) noexcept {
+std::int64_t ParamMapper::parse(std::int64_t v) noexcept {
     return v;
 }
-std::int64_t ParamMapper::write(std::int64_t v) noexcept {
+std::int64_t ParamMapper::dump(std::int64_t v) noexcept {
     return v;
 }
-std::int64_t ParamMapper::read(const std::string& str) {
+std::int64_t ParamMapper::parse(const std::string& str) {
     return metkit::Param(str).paramId();
 }
 
@@ -214,16 +211,16 @@ std::int64_t ParamMapper::read(const std::string& str) {
 
 namespace multio::util {
 
-void Print<datamod::Repres>::print(std::ostream& os, const datamod::Repres& t) {
-    util::print(os, datamod::Writer<datamod::Repres>::write(t));
+void Print<datamod::Repres>::print(PrintStream& ps, const datamod::Repres& t) {
+    util::print(ps, datamod::TypeDumper<datamod::Repres>::dump(t));
 }
 
-void util::Print<datamod::LevType>::print(std::ostream& os, const datamod::LevType& t) {
-    util::print(os, datamod::Writer<datamod::LevType>::write(t));
+void util::Print<datamod::LevType>::print(PrintStream& ps, const datamod::LevType& t) {
+    util::print(ps, datamod::TypeDumper<datamod::LevType>::dump(t));
 }
 
-void util::Print<datamod::TimeDuration>::print(std::ostream& os, const datamod::TimeDuration& t) {
-    util::print(os, datamod::Writer<datamod::TimeDuration>::write(t));
+void util::Print<datamod::TimeDuration>::print(PrintStream& ps, const datamod::TimeDuration& t) {
+    util::print(ps, datamod::TypeDumper<datamod::TimeDuration>::dump(t));
 }
 
 

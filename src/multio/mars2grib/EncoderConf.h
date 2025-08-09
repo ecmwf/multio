@@ -11,10 +11,13 @@
 #pragma once
 
 #include "eckit/config/LocalConfiguration.h"
-#include "multio/datamod/DataModelling.h"
 #include "multio/datamod/GribKeys.h"
 #include "multio/datamod/GribTypes.h"
-#include "multio/datamod/ReaderWriter.h"
+#include "multio/datamod/core/Compare.h"
+#include "multio/datamod/core/Entry.h"
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/NestedRecord.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/sections/Level.h"
@@ -38,25 +41,28 @@ namespace multio {
 //       to set keys on it
 //-----------------------------------------------------------------------------
 
+namespace dm = multio::datamod;
+
 //-----------------------------------------------------------------------------
 // Section0
 //-----------------------------------------------------------------------------
 
+
 namespace mars2grib {
-enum class EncoderIndicatorDef : std::uint64_t
-{
-    TemplateNumber,
+
+constexpr auto IndicatorTemplateNumber =           //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+struct IndicatorSection {
+    dm::EntryType_t<decltype(IndicatorTemplateNumber)> templateNumber;
+
+    static constexpr std::string_view record_name_ = "indicator-section";
+    static constexpr auto record_entries_ = std::make_tuple(IndicatorTemplateNumber);
 };
-}
 
-namespace datamod {
-using mars2grib::EncoderIndicatorDef;
-
-MULTIO_KEY_SET_DESCRIPTION(EncoderIndicatorDef,  //
-                           "indicator-section",  //
-                                                 //
-                           KeyDef<EncoderIndicatorDef::TemplateNumber, std::int64_t>{"template-number"}.withDefault(0))
-};  // namespace datamod
+}  // namespace mars2grib
 
 //-----------------------------------------------------------------------------
 // Section1
@@ -64,124 +70,144 @@ MULTIO_KEY_SET_DESCRIPTION(EncoderIndicatorDef,  //
 
 // Origin configurator
 namespace mars2grib {
-enum class EncoderOriginDef : std::uint64_t
-{
-    Type,
-    SubCentre,
+
+constexpr auto OriginType =            //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
+
+constexpr auto OriginSubCentre =              //
+    dm::EntryDef<std::int64_t>{"sub-centre"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.subCentre; });
+
+struct OriginConfigurator {
+    dm::EntryType_t<decltype(OriginType)> type;
+    dm::EntryType_t<decltype(OriginSubCentre)> subCentre;
+
+    static constexpr std::string_view record_name_ = "origin-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(OriginType, OriginSubCentre);
 };
-}
 
-namespace datamod {
-using mars2grib::EncoderOriginDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderOriginDef,                                                                //
-                           "origin-configurator",                                                           //
-                                                                                                            //
-                           KeyDef<EncoderOriginDef::Type, std::string>{"type"}.withDefault("default"),      //
-                           KeyDef<EncoderOriginDef::SubCentre, std::int64_t>{"sub-centre"}.withDefault(0))  //
-};  // namespace datamod
+}  // namespace mars2grib
 
 
-// DataType configurator
 namespace mars2grib {
-enum class EncoderDataTypeDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto DataType =              //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderDataTypeDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderDataTypeDef,                                                            //
-                           "data-type-configurator",                                                      //
-                                                                                                          //
-                           KeyDef<EncoderDataTypeDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct DataTypeConfigurator {
+    dm::EntryType_t<decltype(DataType)> type;
+
+    static constexpr std::string_view record_name_ = "data-type-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(DataType);
+};
+}  // namespace mars2grib
 
 
 // ReferenceTime configurator
 namespace mars2grib {
-enum class EncoderReferenceTimeDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto ReferenceTimeType =     //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderReferenceTimeDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderReferenceTimeDef,                                                            //
-                           "reference-time-configurator",                                                      //
-                                                                                                               //
-                           KeyDef<EncoderReferenceTimeDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct ReferenceTimeConfigurator {
+    dm::EntryType_t<decltype(ReferenceTimeType)> type;
+
+    static constexpr std::string_view record_name_ = "reference-time-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(ReferenceTimeType);
+};
+}  // namespace mars2grib
 
 
 // Tables configurator
 namespace mars2grib {
-enum class EncoderTablesDef : std::uint64_t
-{
-    Type,
-    TablesVersion,
-    LocalTablesVersion
-};
-}
+constexpr auto TablesType =            //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
+constexpr auto TablesVersion =                    //
+    dm::EntryDef<std::int64_t>{"tables-version"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.tablesVersion; });
+constexpr auto LocalTablesVersion =                     //
+    dm::EntryDef<std::int64_t>{"local-tables-version"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.localTablesVersion; });
 
-namespace datamod {
-using mars2grib::EncoderTablesDef;
-MULTIO_KEY_SET_DESCRIPTION(
-    EncoderTablesDef,                                                                                   //
-    "tables-configurator",                                                                              //
-                                                                                                        //
-    KeyDef<EncoderTablesDef::Type, std::string>{"type"}.withDefault("default"),                         //
-    KeyDef<EncoderTablesDef::TablesVersion, std::int64_t>{"tables-version"}.tagOptional(),              //
-    KeyDef<EncoderTablesDef::LocalTablesVersion, std::int64_t>{"local-tables-version"}.withDefault(0))  //
-};  // namespace datamod
+struct TablesConfigurator {
+    dm::EntryType_t<decltype(TablesType)> type;
+    dm::EntryType_t<decltype(TablesVersion)> tablesVersion;
+    dm::EntryType_t<decltype(LocalTablesVersion)> localTablesVersion;
+
+    static constexpr std::string_view record_name_ = "tables-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(TablesType, TablesVersion, LocalTablesVersion);
+};
+}  // namespace mars2grib
+
 
 // Whole identification section
 namespace mars2grib {
-enum class EncoderIdentificationDef : std::uint64_t
-{
-    TemplateNumber,
-    Origin,
-    DataType,
-    ReferenceTime,
-    Tables
+
+constexpr auto IdentificationTemplateNumber =      //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+
+constexpr auto NestedTablesConfigurator =   //
+    dm::nestedRecord<TablesConfigurator>()  //
+        .withAccessor([](auto&& v) { return &v.tables; });
+
+constexpr auto NestedOriginConfigurator =   //
+    dm::nestedRecord<OriginConfigurator>()  //
+        .withAccessor([](auto&& v) { return &v.origin; });
+
+constexpr auto NestedDataTypeConfigurator =   //
+    dm::nestedRecord<DataTypeConfigurator>()  //
+        .withAccessor([](auto&& v) { return &v.dataType; });
+
+constexpr auto NestedReferenceTimeConfigurator =   //
+    dm::nestedRecord<ReferenceTimeConfigurator>()  //
+        .withAccessor([](auto&& v) { return &v.referenceTime; });
+
+
+struct IdentificationSection {
+    dm::EntryType_t<decltype(IdentificationTemplateNumber)> templateNumber;
+    dm::EntryType_t<decltype(NestedOriginConfigurator)> origin;
+    dm::EntryType_t<decltype(NestedDataTypeConfigurator)> dataType;
+    dm::EntryType_t<decltype(NestedReferenceTimeConfigurator)> referenceTime;
+    dm::EntryType_t<decltype(NestedTablesConfigurator)> tables;
+
+    static constexpr std::string_view record_name_ = "identification-section";
+    static constexpr auto record_entries_
+        = std::make_tuple(IdentificationTemplateNumber, NestedOriginConfigurator, NestedDataTypeConfigurator,
+                          NestedReferenceTimeConfigurator, NestedTablesConfigurator);
 };
-}
-
-
-namespace datamod {
-using mars2grib::EncoderIdentificationDef;
-MULTIO_KEY_SET_DESCRIPTION(
-    EncoderIdentificationDef,                                                                          //
-    "identification-section",                                                                          //
-                                                                                                       //
-    KeyDef<EncoderIdentificationDef::TemplateNumber, std::int64_t>{"template-number"}.withDefault(0),  //
-    nestedKeyDef<EncoderIdentificationDef::Origin, EncoderOriginDef>(),                                //
-    nestedKeyDef<EncoderIdentificationDef::DataType, EncoderDataTypeDef>(),                            //
-    nestedKeyDef<EncoderIdentificationDef::ReferenceTime, EncoderReferenceTimeDef>(),                  //
-    nestedKeyDef<EncoderIdentificationDef::Tables, EncoderTablesDef>())
-};  // namespace datamod
+}  // namespace mars2grib
 
 //-----------------------------------------------------------------------------
 // Section2 Local use
 //-----------------------------------------------------------------------------
 
 namespace mars2grib {
-enum class EncoderLocalUseDef : std::uint64_t
-{
-    TemplateNumber,
+
+constexpr auto LocalUseTemplateNumber =            //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+struct LocalUseSection {
+    dm::EntryType_t<decltype(LocalUseTemplateNumber)> templateNumber;
+
+    static constexpr std::string_view record_name_ = "local-use-section";
+    static constexpr auto record_entries_ = std::make_tuple(LocalUseTemplateNumber);
 };
-}
 
-
-namespace datamod {
-using mars2grib::EncoderLocalUseDef;
-MULTIO_KEY_SET_DESCRIPTION(
-    EncoderLocalUseDef,                                                                          //
-    "local-use-section",                                                                         //
-                                                                                                 //
-    KeyDef<EncoderLocalUseDef::TemplateNumber, std::int64_t>{"template-number"}.withDefault(0))  //
-};  // namespace datamod
+}  // namespace mars2grib
 
 
 //-----------------------------------------------------------------------------
@@ -189,402 +215,544 @@ MULTIO_KEY_SET_DESCRIPTION(
 //-----------------------------------------------------------------------------
 
 namespace mars2grib {
-enum class EncoderGridDef : std::uint64_t
-{
-    TemplateNumber,
+
+constexpr auto GridTemplateNumber =                //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+struct GridSection {
+    dm::EntryType_t<decltype(GridTemplateNumber)> templateNumber;
+
+    static constexpr std::string_view record_name_ = "grid-definition-section";
+    static constexpr auto record_entries_ = std::make_tuple(GridTemplateNumber);
 };
-}
 
-
-namespace datamod {
-using mars2grib::EncoderGridDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderGridDef,                                                                          //
-                           "grid-definition-section",                                                               //
-                                                                                                                    //
-                           KeyDef<EncoderGridDef::TemplateNumber, std::int64_t>{"template-number"}.withDefault(0))  //
-};  // namespace datamod
+}  // namespace mars2grib
 
 
 //-----------------------------------------------------------------------------
 // Section4 Product definition
 //-----------------------------------------------------------------------------
 
-// Param config
+// Param
 namespace mars2grib {
-enum class EncoderParamDef : std::uint64_t
-{
-    Type,
-    DatasetForLocal,
-};
-}
+constexpr auto ParamType =             //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("paramId")
+        .withAccessor([](auto&& v) { return &v.type; });
+constexpr auto DatasetForLocal =                    //
+    dm::EntryDef<std::string>{"dataset-for-local"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.datasetForLocal; });
 
-namespace datamod {
-using mars2grib::EncoderParamDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderParamDef,                                                                           //
-                           "param-configurator",                                                                      //
-                                                                                                                      //
-                           KeyDef<EncoderParamDef::Type, std::string>{"type"}.withDefault("paramId"),                 //
-                           KeyDef<EncoderParamDef::DatasetForLocal, std::string>{"dataset-for-local"}.tagOptional())  //
-};  // namespace datamod
+struct ParamConfigurator {
+    dm::EntryType_t<decltype(ParamType)> type;
+    dm::EntryType_t<decltype(DatasetForLocal)> datasetForLocal;
+
+    static constexpr std::string_view record_name_ = "param-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(ParamType, DatasetForLocal);
+};
+
+}  // namespace mars2grib
 
 
 // PointInTime config
 namespace mars2grib {
-enum class EncoderPointInTimeDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto PointInTimeType =       //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderPointInTimeDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderPointInTimeDef,                                                            //
-                           "point-in-time-configurator",                                                     //
-                                                                                                             //
-                           KeyDef<EncoderPointInTimeDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct PointInTimeConfigurator {
+    dm::EntryType_t<decltype(PointInTimeType)> type;
+
+    static constexpr std::string_view record_name_ = "point-in-time-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(PointInTimeType);
+};
+
+}  // namespace mars2grib
 
 
 // TimeRange config
 namespace mars2grib {
-enum class EncoderTimeRangeDef : std::uint64_t
-{
-    Type,
-    TypeOfStatisticalProcessing,
-    OverallLengthOfTimeRange,
-    // EncodeStepZero, // has been removed
-};
-}
+constexpr auto TimeRangeTypeEntry =                //
+    dm::EntryDef<sections::TimeRangeType>{"type"}  //
+        .withAccessor([](auto&& v) { return &v.type; });
+constexpr auto TypeOfStatisticalProcessing =                                         //
+    dm::EntryDef<dm::TypeOfStatisticalProcessing>{"type-of-statistical-processing"}  //
+        .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });
+constexpr auto OverallLengthOfTimeRange =                     //
+    dm::EntryDef<std::string>{"overall-length-of-timerange"}  //
+        .tagOptional()                                        //
+        .withAccessor([](auto&& v) { return &v.overallLengthOfTimeRange; });
 
-namespace datamod {
-using mars2grib::EncoderTimeRangeDef;
-using mars2grib::sections::TimeRangeType;
-MULTIO_KEY_SET_DESCRIPTION(
-    EncoderTimeRangeDef,                                       //
-    "time-statistics-configurator",                            //
-                                                               //
-    KeyDef<EncoderTimeRangeDef::Type, TimeRangeType>{"type"},  //
-    KeyDef<EncoderTimeRangeDef::TypeOfStatisticalProcessing, TypeOfStatisticalProcessing>{
-        "type-of-statistical-processing"},                                                                            //
-    KeyDef<EncoderTimeRangeDef::OverallLengthOfTimeRange, std::string>{"overall-length-of-timerange"}.tagOptional())  //
-};  // namespace datamod
+struct TimeRangeConfigurator {
+    dm::EntryType_t<decltype(TimeRangeTypeEntry)> type;
+    dm::EntryType_t<decltype(TypeOfStatisticalProcessing)> typeOfStatisticalProcessing;
+    dm::EntryType_t<decltype(OverallLengthOfTimeRange)> overallLengthOfTimeRange;
+
+    static constexpr std::string_view record_name_ = "time-statistics-configurator";
+    static constexpr auto record_entries_
+        = std::make_tuple(TimeRangeTypeEntry, TypeOfStatisticalProcessing, OverallLengthOfTimeRange);
+};
+
+}  // namespace mars2grib
 
 
 // Process config
 namespace mars2grib {
-enum class EncoderProcessDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto ProcessType =           //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderProcessDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderProcessDef,                                                            //
-                           "ensemble-configurator",                                                      //
-                                                                                                         //
-                           KeyDef<EncoderProcessDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct ProcessConfigurator {
+    dm::EntryType_t<decltype(ProcessType)> type;
+
+    static constexpr std::string_view record_name_ = "ensemble-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(ProcessType);
+};
+
+}  // namespace mars2grib
 
 
 // Model config
 namespace mars2grib {
-enum class EncoderModelDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto ModelType =             //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderModelDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderModelDef,                                                            //
-                           "model-configurator",                                                       //
-                                                                                                       //
-                           KeyDef<EncoderModelDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct ModelConfigurator {
+    dm::EntryType_t<decltype(ModelType)> type;
+
+    static constexpr std::string_view record_name_ = "model-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(ModelType);
+};
+}  // namespace mars2grib
+
 
 // Random patterns config
 namespace mars2grib {
-enum class EncoderRandomPatternsDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto RandomPatternsType =    //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderRandomPatternsDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderRandomPatternsDef,                                                            //
-                           "random-patterns-configurator",                                                      //
-                                                                                                                //
-                           KeyDef<EncoderRandomPatternsDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct RandomPatternsConfigurator {
+    dm::EntryType_t<decltype(RandomPatternsType)> type;
+
+    static constexpr std::string_view record_name_ = "random-patterns-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(RandomPatternsType);
+};
+}  // namespace mars2grib
 
 
 // Chem config
 namespace mars2grib {
-enum class EncoderChemDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto ChemType =              //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("chemical")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderChemDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderChemDef,                                                            //
-                           "chemistry-configurator",                                                  //
-                                                                                                      //
-                           KeyDef<EncoderChemDef::Type, std::string>{"type"}.withDefault("chemical"))  //
-};  // namespace datamod
+struct ChemConfigurator {
+    dm::EntryType_t<decltype(ChemType)> type;
+
+    static constexpr std::string_view record_name_ = "chemistry-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(ChemType);
+};
+}  // namespace mars2grib
 
 
 // Directions frequencies config
 namespace mars2grib {
-enum class EncoderDirFreqDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto DirFreqType =           //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderDirFreqDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderDirFreqDef,                                                            //
-                           "directions-frequencies-configurator",                                        //
-                                                                                                         //
-                           KeyDef<EncoderDirFreqDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct DirFreqConfigurator {
+    dm::EntryType_t<decltype(DirFreqType)> type;
+
+    static constexpr std::string_view record_name_ = "directions-frequencies-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(DirFreqType);
+};
+}  // namespace mars2grib
 
 
 // Satellite frequencies config
 namespace mars2grib {
-enum class EncoderSatelliteDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto SatelliteType =         //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderSatelliteDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderSatelliteDef,                                                            //
-                           "satellite-configurator",                                                       //
-                                                                                                           //
-                           KeyDef<EncoderSatelliteDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct SatelliteConfigurator {
+    dm::EntryType_t<decltype(SatelliteType)> type;
+
+    static constexpr std::string_view record_name_ = "satellite-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(SatelliteType);
+};
+}  // namespace mars2grib
 
 
 // Period frequencies config
 namespace mars2grib {
-enum class EncoderPeriodDef : std::uint64_t
-{
-    Type,
-};
-}
+constexpr auto PeriodType =            //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("default")
+        .withAccessor([](auto&& v) { return &v.type; });
 
-namespace datamod {
-using mars2grib::EncoderPeriodDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderPeriodDef,                                                            //
-                           "period-configurator",                                                       //
-                                                                                                        //
-                           KeyDef<EncoderPeriodDef::Type, std::string>{"type"}.withDefault("default"))  //
-};  // namespace datamod
+struct PeriodConfigurator {
+    dm::EntryType_t<decltype(PeriodType)> type;
+
+    static constexpr std::string_view record_name_ = "period-configurator";
+    static constexpr auto record_entries_ = std::make_tuple(PeriodType);
+};
+}  // namespace mars2grib
 
 
 namespace mars2grib {
-enum class EncoderProductDef : std::uint64_t
-{
-    TemplateNumber,
-    PDTCat,  // Added optional to generate template number
-    Param,
-    PointInTime,
-    TimeRange,
-    Model,
-    Process,
-    Level,
-    RandomPatterns,
-    Chemical,
-    DirFreq,
-    PeriodRange,
-    Satellite,
+
+constexpr auto ProductTemplateNumber =             //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+
+constexpr auto NestedPDTCat =              //
+    dm::nestedOptRecord<rules::PDTCat>().  //
+    withAccessor([](auto&& v) { return &v.pdtCat; });
+
+// Param and Model are the only required configurators
+// All others are optional/product dependent
+constexpr auto NestedParam =                //
+    dm::nestedRecord<ParamConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.param; });
+constexpr auto NestedModel =                //
+    dm::nestedRecord<ModelConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.model; });
+
+constexpr auto NestedPointInTime =                   //
+    dm::nestedOptRecord<PointInTimeConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.pointInTime; });
+constexpr auto NestedTimeRange =                   //
+    dm::nestedOptRecord<TimeRangeConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.timeRange; });
+
+using multio::mars2grib::sections::LevelConfigurator;
+
+constexpr auto NestedLevel =                   //
+    dm::nestedOptRecord<LevelConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.level; });
+
+constexpr auto NestedProcess =                   //
+    dm::nestedOptRecord<ProcessConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.process; });
+constexpr auto NestedRandomPatterns =                   //
+    dm::nestedOptRecord<RandomPatternsConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.randomPatterns; });
+constexpr auto NestedChemical =               //
+    dm::nestedOptRecord<ChemConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.chemical; });
+constexpr auto NestedDirFreq =                   //
+    dm::nestedOptRecord<DirFreqConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.dirFreq; });
+constexpr auto NestedPeriodRange =              //
+    dm::nestedOptRecord<PeriodConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.periodRange; });
+constexpr auto NestedSatellite =                   //
+    dm::nestedOptRecord<SatelliteConfigurator>().  //
+    withAccessor([](auto&& v) { return &v.satellite; });
+
+
+struct ProductSection {
+    dm::EntryType_t<decltype(ProductTemplateNumber)> templateNumber;
+
+    dm::EntryType_t<decltype(NestedPDTCat)> pdtCat;
+    dm::EntryType_t<decltype(NestedParam)> param;
+    dm::EntryType_t<decltype(NestedModel)> model;
+    dm::EntryType_t<decltype(NestedPointInTime)> pointInTime;
+    dm::EntryType_t<decltype(NestedTimeRange)> timeRange;
+    dm::EntryType_t<decltype(NestedLevel)> level;
+    dm::EntryType_t<decltype(NestedProcess)> process;
+    dm::EntryType_t<decltype(NestedRandomPatterns)> randomPatterns;
+    dm::EntryType_t<decltype(NestedChemical)> chemical;
+    dm::EntryType_t<decltype(NestedDirFreq)> dirFreq;
+    dm::EntryType_t<decltype(NestedPeriodRange)> periodRange;
+    dm::EntryType_t<decltype(NestedSatellite)> satellite;
+
+    static constexpr std::string_view record_name_ = "product-definition-section";
+    static constexpr auto record_entries_
+        = std::make_tuple(ProductTemplateNumber, NestedPDTCat, NestedParam, NestedModel, NestedPointInTime,
+                          NestedTimeRange, NestedLevel, NestedProcess, NestedLevel, NestedRandomPatterns,
+                          NestedChemical, NestedDirFreq, NestedPeriodRange, NestedSatellite);
 };
-}
+}  // namespace mars2grib
 
 
 namespace datamod {
-using mars2grib::EncoderProductDef;
-using mars2grib::rules::PDTCatDef;
-using multio::mars2grib::sections::LevelDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderProductDef,             //
-                           "product-definition-section",  //
-                                                          //
-                           KeyDef<EncoderProductDef::TemplateNumber, std::int64_t>{"template-number"}
-                               .tagDefaulted(),  // Required but can be infered form PDTCat
-                           nestedOptKeyDef<EncoderProductDef::PDTCat, PDTCatDef>(),                         //
-                           nestedKeyDef<EncoderProductDef::Param, EncoderParamDef>(),                       //
-                           nestedKeyDef<EncoderProductDef::Model, EncoderModelDef>(),                       //
-                           nestedOptKeyDef<EncoderProductDef::PointInTime, EncoderPointInTimeDef>(),        //
-                           nestedOptKeyDef<EncoderProductDef::TimeRange, EncoderTimeRangeDef>(),            //
-                           nestedOptKeyDef<EncoderProductDef::Process, EncoderProcessDef>(),                //
-                           nestedOptKeyDef<EncoderProductDef::Level, LevelDef>(),                           //
-                           nestedOptKeyDef<EncoderProductDef::RandomPatterns, EncoderRandomPatternsDef>(),  //
-                           nestedOptKeyDef<EncoderProductDef::Chemical, EncoderChemDef>(),                  //
-                           nestedOptKeyDef<EncoderProductDef::DirFreq, EncoderDirFreqDef>(),                //
-                           nestedOptKeyDef<EncoderProductDef::PeriodRange, EncoderPeriodDef>(),             //
-                           nestedOptKeyDef<EncoderProductDef::Satellite, EncoderSatelliteDef>())            //
-
-
 template <>
-struct KeySetAlter<KeySet<EncoderProductDef>> {
-    static void alter(KeyValueSet<KeySet<EncoderProductDef>>& product) {
-        using namespace datamod;
+struct ApplyRecordDefaults<mars2grib::ProductSection> {
+    static void applyDefaults(mars2grib::ProductSection& product) {
         using namespace mars2grib;
         using namespace mars2grib::rules;
 
         // Checking PDT
         {
-            const auto& pdtCat = key<EncoderProductDef::PDTCat>(product);
-            auto& templateNumber = key<EncoderProductDef::TemplateNumber>(product);
+            if (product.pdtCat.has()) {
+                auto pdtNum = InferPdt<>{}.inferProductDefinitionTemplateNumber(product.pdtCat.get());
 
-            if (templateNumber.isMissing() && pdtCat.isMissing()) {
-                std::ostringstream oss;
-                oss << "EncoderProduct has no template number and no PDT categories  specified.";
-                throw Mars2GribException(oss.str(), Here());
-            }
-
-            if (pdtCat.has()) {
-                auto pdtNum = InferPdt<>{}.inferProductDefinitionTemplateNumber(pdtCat.get());
-
-                if (templateNumber.has() && templateNumber.get() != pdtNum) {
+                if (product.templateNumber.has() && product.templateNumber.get() != pdtNum) {
                     std::ostringstream oss;
-                    oss << "EncoderProduct has a template number and PDT categories specified, but the generated PDT "
-                        << pdtNum << " is different from the passed " << templateNumber.get();
+                    oss << "ProductSection configuration has a template number and PDT categories specified, but the "
+                           "generated PDT "
+                        << pdtNum << " is different from the passed " << product.templateNumber.get();
                     throw Mars2GribException(oss.str(), Here());
                 }
-                templateNumber.set(pdtNum);
+                product.templateNumber.set(pdtNum);
+            }
+        }
+    }
+};
+
+template <>
+struct ValidateRecord<mars2grib::ProductSection> {
+    static void validate(mars2grib::ProductSection& product) {
+        using namespace mars2grib;
+        using namespace mars2grib::rules;
+
+        // Checking PDT
+        {
+            if (product.templateNumber.isUnset() && product.pdtCat.isUnset()) {
+                std::ostringstream oss;
+                oss << "ProductSection configuration has no template number and no PDT categories  specified.";
+                throw Mars2GribException(oss.str(), Here());
             }
         }
 
-
         // Checking Time
         {
-            const auto& timeRange = key<EncoderProductDef::TimeRange>(product);
-            const auto& pointInTime = key<EncoderProductDef::PointInTime>(product);
-
-            if (timeRange.has() && pointInTime.has()) {
+            if (product.timeRange.has() && product.pointInTime.has()) {
                 std::ostringstream oss;
-                oss << "EncoderProduct has a PointInTime and a TimeStatistics section." << std::endl;
+                oss << "ProductSection configuration has a PointInTime and a TimeStatistics section." << std::endl;
                 throw Mars2GribException(oss.str(), Here());
             }
-            if (timeRange.isMissing() && pointInTime.isMissing()) {
+            if (product.timeRange.isUnset() && product.pointInTime.isUnset()) {
                 std::ostringstream oss;
-                oss << "EncoderProduct has no time definition." << std::endl;
+                oss << "ProductSection configuration has no time definition." << std::endl;
                 throw Mars2GribException(oss.str(), Here());
             }
         }
     }
 };
-};  // namespace datamod
-
+}  // namespace datamod
 
 //-----------------------------------------------------------------------------
 // Section5 Data representation
 //-----------------------------------------------------------------------------
 
 namespace mars2grib {
-enum class EncoderDataRepresDef : std::uint64_t
-{
-    TemplateNumber,
+
+constexpr auto DataRepresTemplateNumber =          //
+    dm::EntryDef<std::int64_t>{"template-number"}  //
+        .withDefault(0)
+        .withAccessor([](auto&& v) { return &v.templateNumber; });
+
+struct DataRepresSection {
+    dm::EntryType_t<decltype(DataRepresTemplateNumber)> templateNumber;
+
+    static constexpr std::string_view record_name_ = "data-representation-section";
+    static constexpr auto record_entries_ = std::make_tuple(DataRepresTemplateNumber);
 };
-}
 
-
-namespace datamod {
-using mars2grib::EncoderDataRepresDef;
-MULTIO_KEY_SET_DESCRIPTION(
-    EncoderDataRepresDef,                                                                          //
-    "data-representation-section",                                                                 //
-                                                                                                   //
-    KeyDef<EncoderDataRepresDef::TemplateNumber, std::int64_t>{"template-number"}.withDefault(0))  //
-};  // namespace datamod
+}  // namespace mars2grib
 
 
 //-----------------------------------------------------------------------------
 // All sections
 //-----------------------------------------------------------------------------
 
-
 namespace mars2grib {
-enum class EncoderSectionsDef : std::uint64_t
-{
-    Type,
-    Indicator,
-    Identification,
-    LocalUse,
-    Grid,
-    Product,
-    DataRepres,
+constexpr auto SectionsConfType =      //
+    dm::EntryDef<std::string>{"type"}  //
+        .withDefault("grib2")
+        .withAccessor([](auto&& v) { return &v.type; });
+
+
+constexpr auto NestedIndicator =          //
+    dm::nestedRecord<IndicatorSection>()  //
+        .withAccessor([](auto&& v) { return &v.indicator; });
+constexpr auto NestedIdentification =          //
+    dm::nestedRecord<IdentificationSection>()  //
+        .withAccessor([](auto&& v) { return &v.identification; });
+constexpr auto NestedLocalUse =          //
+    dm::nestedRecord<LocalUseSection>()  //
+        .withAccessor([](auto&& v) { return &v.localUse; });
+constexpr auto NestedGrid =          //
+    dm::nestedRecord<GridSection>()  //
+        .withAccessor([](auto&& v) { return &v.grid; });
+constexpr auto NestedProduct =          //
+    dm::nestedRecord<ProductSection>()  //
+        .withAccessor([](auto&& v) { return &v.product; });
+constexpr auto NestedDataRepres =          //
+    dm::nestedRecord<DataRepresSection>()  //
+        .withAccessor([](auto&& v) { return &v.dataRepres; });
+
+struct SectionsConf {
+    dm::EntryType_t<decltype(SectionsConfType)> type;
+
+    dm::EntryType_t<decltype(NestedIndicator)> indicator;
+    dm::EntryType_t<decltype(NestedIdentification)> identification;
+    dm::EntryType_t<decltype(NestedLocalUse)> localUse;
+    dm::EntryType_t<decltype(NestedGrid)> grid;
+    dm::EntryType_t<decltype(NestedProduct)> product;
+    dm::EntryType_t<decltype(NestedDataRepres)> dataRepres;
+
+    static constexpr std::string_view record_name_ = "encoder";
+    static constexpr auto record_entries_
+        = std::make_tuple(SectionsConfType, NestedIndicator, NestedIdentification, NestedLocalUse, NestedGrid,
+                          NestedProduct, NestedDataRepres);
 };
-}
-
-
-namespace datamod {
-using mars2grib::EncoderSectionsDef;
-MULTIO_KEY_SET_DESCRIPTION(EncoderSectionsDef,                                                            //
-                           "encoder",                                                                     //
-                                                                                                          //
-                           KeyDef<EncoderSectionsDef::Type, std::string>{"type"}.withDefault("grib2"),    //
-                           nestedKeyDef<EncoderSectionsDef::Indicator, EncoderIndicatorDef>(),            //
-                           nestedKeyDef<EncoderSectionsDef::Identification, EncoderIdentificationDef>(),  //
-                           nestedKeyDef<EncoderSectionsDef::LocalUse, EncoderLocalUseDef>(),              //
-                           nestedKeyDef<EncoderSectionsDef::Grid, EncoderGridDef>(),                      //
-                           nestedKeyDef<EncoderSectionsDef::Product, EncoderProductDef>(),                //
-                           nestedKeyDef<EncoderSectionsDef::DataRepres, EncoderDataRepresDef>())
-};  // namespace datamod
-
-namespace mars2grib {
-
-using EncoderSectionsKeySet = datamod::KeySet<EncoderSectionsDef>;
-using EncoderSectionsKeyValueSet = datamod::KeyValueSet<EncoderSectionsKeySet>;
-using EncoderSections = EncoderSectionsKeyValueSet;
 }  // namespace mars2grib
 
 
-//-----------------------------------------------------------------------------
-// Outer wrapper of current configuration files... used as interface
-// for migration
-//-----------------------------------------------------------------------------
+// //---------------------------------------------------------------------------------------------------------------------
 
-namespace mars2grib {
-enum class EncoderInfoDef : std::uint64_t
-{
-    Name,
-    Tag,
-    Sections,  // Parsed Conf
-    Sample,
+// }  // namespace mars2grib
+
+namespace util {
+
+template <>
+struct Print<multio::mars2grib::IndicatorSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::OriginConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::DataTypeConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ReferenceTimeConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::TablesConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::IdentificationSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::LocalUseSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::GridSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ParamConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::PointInTimeConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::TimeRangeConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ProcessConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ModelConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::RandomPatternsConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::SatelliteConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ChemConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::DirFreqConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::PeriodConfigurator> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::ProductSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::DataRepresSection> : datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::SectionsConf> : datamod::PrintRecord {};
+
+
+template <>
+struct TypeToString<multio::mars2grib::IndicatorSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::IndicatorSection"); };
 };
-}
+template <>
+struct TypeToString<multio::mars2grib::OriginConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::OriginConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::DataTypeConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::DataTypeConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ReferenceTimeConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::ReferenceTimeConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::TablesConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::TablesConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::IdentificationSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::IdentificationSection"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::LocalUseSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::LocalUseSection"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::GridSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::GridSection"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ParamConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::ParamConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::PointInTimeConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::PointInTimeConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::TimeRangeConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::TimeRangeConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ProcessConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::ProcessConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ModelConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::ModelConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::RandomPatternsConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::RandomPatternsConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::SatelliteConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::SatelliteConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ChemConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::ChemConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::DirFreqConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::DirFreqConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::PeriodConfigurator> {
+    std::string operator()() const { return std::string("mars2grib::sections::PeriodConfigurator"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::ProductSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::ProductSection"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::DataRepresSection> {
+    std::string operator()() const { return std::string("mars2grib::sections::DataRepresSection"); };
+};
+template <>
+struct TypeToString<multio::mars2grib::SectionsConf> {
+    std::string operator()() const { return std::string("mars2grib::sections::SectionsConf"); };
+};
 
-namespace datamod {
-using mars2grib::EncoderInfoDef;
-using mars2grib::EncoderSections;
-MULTIO_KEY_SET_DESCRIPTION(EncoderInfoDef,                                                //
-                           "encoder-configuration",                                       //
-                                                                                          //
-                           KeyDef<EncoderInfoDef::Name, std::string>{"name"},             //
-                           KeyDef<EncoderInfoDef::Tag, std::string>{"tag"},               //
-                           nestedKeyDef<EncoderInfoDef::Sections, EncoderSectionsDef>(),  //
-                           KeyDef<EncoderInfoDef::Sample, std::string>{"sample"}.tagOptional())
+}  // namespace util
 
-
-};  // namespace datamod
-
-
-namespace mars2grib {
-
-using EncoderInfoKeySet = datamod::KeySet<EncoderInfoDef>;
-using EncoderInfoKeyValueSet = datamod::KeyValueSet<EncoderInfoKeySet>;
-using EncoderInfo = EncoderInfoKeyValueSet;
-
-//---------------------------------------------------------------------------------------------------------------------
-
-}  // namespace mars2grib
 }  // namespace multio
 

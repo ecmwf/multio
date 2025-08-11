@@ -6,7 +6,7 @@ tag: 'fixed-range min 2m temperature'
 filter:
   type: 'param'
   operation: 'match'
-  values: [ 121, 228027, 202 ]
+  values: [ 122, 228027, 202 ]
 
 assignment:
   type: 'composed'

@@ -5,10 +5,88 @@
 #include "eckit/value/Value.h"  // Remove once config visitor is implemented
 
 #include <sstream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <regex>
 
 using eckit::LocalConfiguration;
 
 namespace multio::message::match {
+
+namespace {
+
+
+bool isIntegerRange(const std::string& str) {
+    static const std::regex pattern(
+        R"(^\s*(?:FROM/)?([0-9]+)/TO/([0-9]+)(?:/BY/([0-9]+))?\s*$)",
+        std::regex_constants::icase
+    );
+    std::smatch match;
+    if (!std::regex_match(str, match, pattern))
+        return false;
+
+    long from = std::stol(match[1]);
+    long to   = std::stol(match[2]);
+    long step = match[3].matched ? std::stol(match[3]) : 1;
+    long range = to - from;
+
+    return from >= 0 && to >= 0 && step > 0 && from < to && (range >= step) && (range % step == 0);
+}
+
+bool isPromotableToIntegerArray(const std::vector<std::string>& v) {
+    for (const auto& s : v) {
+        if (!isIntegerRange(s)) {
+            try {
+                std::stol(s);  // Check if it can be converted to a long
+            }
+            catch ( ... ) {
+                return false;  // Not a valid integer
+            }
+        }
+    }
+    return true;
+}
+
+bool containsRange(const std::vector<std::string>& v) {
+    for (const auto& s : v) {
+        if (isIntegerRange(s)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<long> parseIntegerRange(const std::string& str) {
+    static const std::regex pattern(
+        R"(^\s*(?:FROM/)?([0-9]+)/TO/([0-9]+)(?:/BY/([0-9]+))?\s*$)",
+        std::regex_constants::icase
+    );
+    std::smatch match;
+    if (!std::regex_match(str, match, pattern))
+        throw MetadataException("Invalid integer range format");
+
+    long from = std::stol(match[1]);
+    long to   = std::stol(match[2]);
+    long step = match[3].matched ? std::stol(match[3]) : 1;
+    long range = to - from;
+
+    if (from < 0 || to < 0 || step <= 0 || from >= to || range < step || (range % step) != 0)
+        throw MetadataException("Invalid range values");
+
+    std::vector<long> result;
+    for (long i = from; i <= to; i += step)
+        result.push_back(i);
+
+    return result;
+}
+
+bool is_strict_integer(const std::string& s) {
+    static const std::regex pattern(R"(^[0-9]+$)");
+    return std::regex_match(s, pattern);
+}
+
+}
 
 //--------------------------------------------------------------------------------------------------
 
@@ -19,8 +97,29 @@ MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p, bool enforceSam
     for (const auto& k : cfg.keys()) {
         if (cfg.isIntegralList(k)) {
             std::unordered_set<MetadataValue> s;
-            for (auto&& vi : cfg.getLongVector(k)) {
-                s.emplace(vi);
+            if ( containsRange(cfg.getStringVector(k)) ) {
+                // If the list contains ranges, parse them
+                for (const auto& vi : cfg.getStringVector(k)) {
+                    if ( isIntegerRange(vi) ) {
+                        for (const auto& i : parseIntegerRange(vi)) {
+                            s.emplace(i);
+                        }
+                    } else {
+                        // If not a range, just insert the string as is
+                        if ( is_strict_integer(vi) ) {
+                            s.emplace(std::stol(vi));
+                        } else {
+                            std::ostringstream oss;
+                            oss << "Matcher for key \"" << k << "\" contains invalid integer: " << vi << " on configureation: " << cfg;
+                            throw MetadataException(oss.str());
+                        }
+                    }
+                }
+            }
+            else {
+                for (auto&& vi : cfg.getLongVector(k)) {
+                    s.emplace(vi);
+                }
             }
             matcher.emplace(k, std::move(s));
         }
@@ -33,8 +132,23 @@ MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p, bool enforceSam
         }
         else if (cfg.isStringList(k)) {
             std::unordered_set<MetadataValue> s;
-            for (auto&& vi : cfg.getStringVector(k)) {
-                s.emplace(std::move(vi));
+            if ( isPromotableToIntegerArray(cfg.getStringVector(k)) ) {
+                // If the list can be promoted to an integer array, parse it
+                for (const auto& vi : cfg.getStringVector(k)) {
+                    if ( isIntegerRange(vi)) {
+                        for (const auto& i : parseIntegerRange(vi)) {
+                            s.emplace(i);
+                        }
+                    } else {
+                        // If not a range, just insert the string as is
+                        s.emplace(std::stol(vi));
+                    }
+                }
+            } else {
+                // Otherwise, just insert the strings as is
+                for (auto&& vi : cfg.getStringVector(k)) {
+                    s.emplace(std::move(vi));
+                }
             }
             matcher.emplace(k, std::move(s));
         }
@@ -44,6 +158,13 @@ MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p, bool enforceSam
                 << " seems to be a list of mixed or non scalar types - can only handle list of int, float or string: "
                 << cfg;
             throw MetadataException(oss.str());
+        }
+        else if ( cfg.isString(k) && isIntegerRange(cfg.getString(k)) ) {
+            std::unordered_set<MetadataValue> s;
+            for (const auto& i : parseIntegerRange(cfg.getString(k))) {
+                s.emplace(i);
+            }
+            matcher.emplace(k, std::move(s));
         }
         else {
             auto optMetadataValue = tryToMetadataValue(cfg, k);

@@ -25,6 +25,8 @@ filter:
       operation: match
       values:
         - 129172
+        - 228241
+        - 228249
     - type: packing
       operation: match
       value: simple

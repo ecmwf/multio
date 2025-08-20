@@ -205,8 +205,8 @@ Message MpiTransport::receive() {
      * Return single messages until msgPack_ is empty and start over
      */
 
-    do {
-        while (not msgPack_.empty()) {
+    while(true) {
+        if (not msgPack_.empty()) {
             util::ScopedTiming retTiming{statistics_.returnTiming_};
             //! TODO For switch to MPMC queue: combine front() and pop()
             auto msg = std::move(msgPack_.front());
@@ -226,7 +226,7 @@ Message MpiTransport::receive() {
             streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
 
-    } while (true);
+    }
 }
 
 void MpiTransport::abort(std::exception_ptr ptr) {
@@ -254,7 +254,7 @@ void MpiTransport::send(const Message& msg) {
 
     // eckit::Log::info() << " *** MpiTransport::send from " << local_.group() << " " << local_.id
     // << std::endl;
-    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer, sz, dest, msg_tag);
+    comm().send<void>(buffer, sz, dest, msg_tag);
 
     ++statistics_.sendCount_;
     statistics_.sendSize_ += sz;

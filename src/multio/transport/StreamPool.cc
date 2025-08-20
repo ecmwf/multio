@@ -60,12 +60,12 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
         return strm;
     }
 
-    sendBuffer(dest, static_cast<int>(msg.tag()));
+    sendBuffer(dest);
 
     return createNewStream(dest);
 }
 
-void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
+void StreamPool::sendBuffer(const message::Peer& dest) {
     auto& strm = streams_.at(dest);
 
     auto sz = static_cast<size_t>(strm.bytesWritten());
@@ -82,7 +82,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
 
     util::ScopedTiming(statistics_.isendTiming_);
 
-    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, 0);
     strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
     streams_.erase(dest);
 

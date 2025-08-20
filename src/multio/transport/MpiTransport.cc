@@ -174,7 +174,7 @@ void MpiTransport::closeConnections() {
     for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         bufferedSend(msg);
-        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+        pool_.sendBuffer(msg.destination());
     }
     pool_.waitAll();
 }
@@ -187,7 +187,7 @@ void MpiTransport::synchronize() {
         for (auto& server : serverPeers()) {
             Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
             bufferedSend(msg);
-            pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+            pool_.sendBuffer(msg.destination());
         }
         pool_.waitAll();
     }

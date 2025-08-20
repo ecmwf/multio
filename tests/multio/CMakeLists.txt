@@ -320,6 +320,7 @@ ecbuild_add_test( TARGET          test_multio_synchronize_fail_no_sync
                   COMMAND         ${CMAKE_CURRENT_SOURCE_DIR}/expect-timeout.sh
                   ARGS            2 ${MPIEXEC_EXECUTABLE} -n 3 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize : -n 1 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize --skip-sync : -n 4 ${CMAKE_BINARY_DIR}/bin/multio-probe --test
                   ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
+                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
                   TEST_PROPERTIES RESOURCE_LOCK mpi
 )
 
@@ -327,6 +328,7 @@ ecbuild_add_test( TARGET          test_multio_synchronize_client_only
                   COMMAND         ${MPIEXEC_EXECUTABLE}
                   ARGS            -n 1 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize
                   ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
+                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
                   TEST_PROPERTIES RESOURCE_LOCK mpi
                                   TIMEOUT       5
 )
@@ -335,6 +337,7 @@ ecbuild_add_test( TARGET          test_multio_synchronize_2_clients
                   COMMAND         ${MPIEXEC_EXECUTABLE}
                   ARGS            -n 2 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize
                   ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
+                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
                   TEST_PROPERTIES RESOURCE_LOCK mpi
                                   TIMEOUT       5
 )
@@ -345,6 +348,7 @@ ecbuild_add_test( TARGET          test_multio_synchronize_${N_CLIENTS}_clients_$
                   COMMAND         ${MPIEXEC_EXECUTABLE}
                   ARGS            -n ${N_CLIENTS} ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize : -n ${N_SERVERS} ${CMAKE_BINARY_DIR}/bin/multio-probe --test
                   ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
+                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
                   TEST_PROPERTIES RESOURCE_LOCK mpi
                                   TIMEOUT       5
 )

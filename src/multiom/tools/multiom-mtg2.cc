@@ -689,7 +689,7 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
 
     handleMissingValue(h, parDict);
 
-    getAndSet(h, parDict, "laplacianScalingFactor");
+    getAndSet(h, parDict, "laplacianOperator");
     getAndSet(h, parDict, "systemNumber");
     getAndSet(h, parDict, "methodNumber");
 

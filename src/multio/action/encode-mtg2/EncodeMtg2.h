@@ -12,11 +12,34 @@
 
 
 #include "multio/action/ChainedAction.h"
-#include "multio/mars2grib/EncoderCache.h"
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Print.h"
 #include "multio/mars2grib/Options.h"
+#include "multio/mars2grib/api/RawAPI.h"
 
 
 namespace multio::action {
+
+namespace dm = multio::datamod;
+
+//-----------------------------------------------------------------------------
+
+constexpr auto Cached
+    = dm::EntryDef<bool>{"cached"}.withDefault(false).withAccessor([](auto&& v) { return &v.cached; });
+    
+constexpr auto GeoFromAtlas
+    = dm::EntryDef<bool>{"geo-from-atlas"}.withDefault(false).withAccessor([](auto&& v) { return &v.geoFromAtlas; });
+
+
+struct EncodeMtg2Options {
+    dm::EntryType_t<decltype(Cached)> cached;
+    dm::EntryType_t<decltype(GeoFromAtlas)> geoFromAtlas;
+
+    static constexpr std::string_view record_name_ = "encode-mtg2";
+    static constexpr auto record_entries_ = std::make_tuple(Cached, GeoFromAtlas);
+};
+
+//-----------------------------------------------------------------------------
 
 class EncodeMtg2 : public ChainedAction {
 public:
@@ -32,8 +55,8 @@ private:
     void print(std::ostream& os) const override;
 
     // TODO this option will be renamed and the action should get it own struct with parsing capabilities again
-    mars2grib::EncodeMtg2Conf conf_;
-    mars2grib::EncoderCache cache_;
+    EncodeMtg2Options opts_;
+    mars2grib::Mars2GribRaw mars2grib_;
 };
 
 
@@ -41,3 +64,12 @@ private:
 
 
 }  // namespace multio::action
+
+//-----------------------------------------------------------------------------
+
+namespace multio::util {
+template <>
+struct Print<multio::action::EncodeMtg2Options> : datamod::PrintRecord {};
+}  // namespace multio::util
+
+//-----------------------------------------------------------------------------

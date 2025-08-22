@@ -9,7 +9,7 @@ namespace dm = multio::datamod;
 
 RawOptions convertOptions(Options opts) {
     RawOptions ret;
-    ret.enableCache = opts.enableCache;
+    ret.cached = opts.cached;
     return ret;
 };
 

@@ -171,7 +171,7 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
 
 constexpr auto BitmapPresent =                                //
-    EntryDef<bool, mapper::IntToBoolMapper>{"bitmapPresent"}  //
+    EntryDef<bool, mapper::BoolMapper>{"bitmapPresent"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.bitmapPresent; });
 

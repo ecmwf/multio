@@ -24,6 +24,10 @@ ScopedGeometry getGeometryRecord(const MarsRecord& mars) {
             std::string scope = std::string("geo-") + grid.get();
             return scopeRecord(GeoGGRecord{}, scope);
         }
+        case Repres::LL: {
+            std::string scope = std::string("geo-") + grid.get();
+            return scopeRecord(GeoLLRecord{}, scope);
+        }
         case Repres::HEALPix: {
             std::string scope = std::string("geo-") + grid.get();
             return scopeRecord(GeoHEALPixRecord{}, scope);

@@ -179,6 +179,12 @@ struct ParseType<LevType> {
 
 namespace mapper {
 
+struct StringToIntMapper {
+    static inline std::int64_t dump(std::int64_t v) noexcept { return v; };
+    static inline std::int64_t parse(std::int64_t v) noexcept { return v; };
+    static std::int64_t parse(const std::string& v); 
+};
+
 // TODO Discuss ith Param should get it's own type ParamId (wrapping an int..)
 // Currently `metkit::Param` is used to create a paramId from string
 // There is also the existing type `metkit::ParamID` which (unfortunately) can not be constructed from an eisting int.
@@ -188,10 +194,11 @@ struct ParamMapper {
     static std::int64_t parse(const std::string&);
 };
 
-struct IntToBoolMapper {
+struct BoolMapper {
     static inline bool dump(bool v) noexcept { return v; };
     static inline bool parse(bool v) noexcept { return v; };
     static inline bool parse(std::int64_t v) { return v > 0; };
+    static bool parse(const std::string& v);
 };
 
 }  // namespace mapper

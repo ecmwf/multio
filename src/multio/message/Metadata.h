@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date Sept 2023
 
 #pragma once
 
@@ -22,6 +19,9 @@
 
 namespace multio::message {
 
+// Metadata class with lookups on global Parametrization instance
+// TODO - think about avoiding the global parametrization in favor of a `ContextedMetadata` that refs to a
+// parametrization object in the multio configuration
 class Metadata : public BaseMetadata {
 public:
     using Base = BaseMetadata;
@@ -62,12 +62,12 @@ public:
     //            it is reasonable to explicitly const-cast the object to select the const lookup version.
     Iterator find(const KeyType& k) override;
     ConstIterator find(const KeyType& k) const override;
-    
-    using Base::localFind;
+
     using Base::begin;
     using Base::cbegin;
     using Base::cend;
     using Base::end;
+    using Base::localFind;
 
     using Base::erase;
 

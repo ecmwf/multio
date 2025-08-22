@@ -121,26 +121,40 @@ struct Entry {
 
     void unset() noexcept { value = UnsetType{}; }
 
+
+    // Check if a value can be sot for template type V
+    template <typename V>
+    inline static constexpr bool CanSetValue_v
+        = std::is_same_v<std::decay_t<V>, ValueType> || std::is_same_v<std::decay_t<V>, UnsetType>
+       || std::is_same_v<std::decay_t<V>, RefType> || std::is_same_v<std::decay_t<V>, Container>
+       || std::is_same_v<std::decay_t<V>, This> || util::IsOptional_v<std::decay_t<V>>
+       || ParserDumper::template CanCreateFromValue_v<V>;
+
     // Explicitly setting value as reference
     template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, ValueType>), bool> = true>
     void setRef(const V& v) {
         value = std::cref(v);
     }
 
+    // Set by moving rvalue ref
     template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, ValueType>), bool> = true>
     void set(V&& v) {
         value = std::forward<V>(v);
     }
+
+    // Try to set everything that is not UnsetType, RefType, ValueType, ContainerType or an Entry (This)
     template <
         typename V,
         std::enable_if_t<(!std::is_same_v<std::decay_t<V>, UnsetType> && !std::is_same_v<std::decay_t<V>, RefType>
                           && !std::is_same_v<std::decay_t<V>, ValueType> && !std::is_same_v<std::decay_t<V>, Container>
-                          && !std::is_same_v<std::decay_t<V>, This>),
+                          && !std::is_same_v<std::decay_t<V>, This> && ParserDumper::template CanCreateFromValue_v<V>),
                          bool>
         = true>
     void set(V&& v) {
         value = ParserDumper::parse(std::forward<V>(v));
     }
+
+    // Set everything UnsetType, RefType or ContainerType
     template <typename V,
               std::enable_if_t<(std::is_same_v<std::decay_t<V>, UnsetType> || std::is_same_v<std::decay_t<V>, RefType>
                                 || std::is_same_v<std::decay_t<V>, Container>),
@@ -149,11 +163,14 @@ struct Entry {
     void set(V&& v) {
         value = std::forward<V>(v);
     }
+
+    // Set from another Entry
     template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, This>), bool> = true>
     void set(V&& v) {
         *this = std::forward<V>(v);
     }
 
+    // Set from an optional - converting std::nullopt to UnsetType
     template <typename V, std::enable_if_t<(util::IsOptional_v<std::decay_t<V>>), bool> = true>
     void set(V&& v) {
         if (v) {

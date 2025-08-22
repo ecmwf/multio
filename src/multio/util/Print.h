@@ -23,6 +23,9 @@ namespace multio::util {
 // templated types where the nested type also needs to be passed to `operator<<`.
 // While CLang is doing this all fine, gcc can complain that it does not find a proper overlead.
 // With explicit template instantiation this problem is avoided.
+// Moreover it supports indendation.
+// 
+// Possible further option: short or multiline mode (such that implementations can vary)
 
 template <typename T>
 struct Print;
@@ -71,13 +74,6 @@ template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
 void print(PrintStream& ps, const T& v) {
     Print<T>::print(ps, v);
 }
-// Function to call print on Print<T>
-template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
-void print(std::ostream& os, const T& v) {
-    PrintStream ps(os);
-    Print<T>::print(ps, v);
-}
-
 
 // Function to call ostream<< if Print<T>::print is not defined
 template <typename T, std::enable_if_t<!Printable_v<T> && OstreamPrintable_v<T>, bool> = true>
@@ -168,6 +164,14 @@ private:
 
 
 //-----------------------------------------------------------------------------
+
+// Function to call print on Print<T>
+template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
+void print(std::ostream& os, const T& v) {
+    PrintStream ps(os);
+    Print<T>::print(ps, v);
+}
+
 
 template <typename... T>
 struct Print<std::variant<T...>> {

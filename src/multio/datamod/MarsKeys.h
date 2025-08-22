@@ -16,9 +16,13 @@
 
 namespace multio::datamod {
 
+using mapper::StringToIntMapper;
+
 //-----------------------------------------------------------------------------
 // Mars Keys
 //-----------------------------------------------------------------------------
+
+// All MARS keys must support string initialization
 
 constexpr auto ORIGIN =              //
     EntryDef<IntOrString>{"origin"}  //
@@ -45,12 +49,12 @@ constexpr auto PARAM =                                    //
     EntryDef<std::int64_t, mapper::ParamMapper>{"param"}  //
         .withAccessor([](auto&& v) { return &v.param; });
 
-constexpr auto DATE =               //
-    EntryDef<std::int64_t>{"date"}  //
+constexpr auto DATE =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"date"}  //
         .withAccessor([](auto&& v) { return &v.date; });
 
-constexpr auto TIME =               //
-    EntryDef<std::int64_t>{"time"}  //
+constexpr auto TIME =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"time"}  //
         .withAccessor([](auto&& v) { return &v.time; });
 
 constexpr auto STEP =               //
@@ -63,8 +67,8 @@ constexpr auto LEVTYPE =          //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.levtype; });
 
-constexpr auto LEVELIST =               //
-    EntryDef<std::int64_t>{"levelist"}  //
+constexpr auto LEVELIST =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"levelist"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.levelist; });
 
@@ -88,13 +92,13 @@ constexpr auto EXPERIMENT =              //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.experiment; });
 
-constexpr auto GENERATION =               //
-    EntryDef<std::int64_t>{"generation"}  //
+constexpr auto GENERATION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"generation"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.generation; });
 
-constexpr auto REALIZATION =               //
-    EntryDef<std::int64_t>{"realization"}  //
+constexpr auto REALIZATION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"realization"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.realization; });
 
@@ -103,8 +107,8 @@ constexpr auto TIMESPAN =               //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.timespan; });
 
-constexpr auto ANOFFSET =               //
-    EntryDef<std::int64_t>{"anoffset"}  //
+constexpr auto ANOFFSET =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.anoffset; });
 
@@ -113,48 +117,48 @@ constexpr auto PACKING =              //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.packing; });
 
-constexpr auto NUMBER =               //
-    EntryDef<std::int64_t>{"number"}  //
+constexpr auto NUMBER =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"number"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.number; });
 
-constexpr auto IDENT =               //
-    EntryDef<std::int64_t>{"ident"}  //
+constexpr auto IDENT =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"ident"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.ident; });
 
-constexpr auto INSTRUMENT =               //
-    EntryDef<std::int64_t>{"instrument"}  //
+constexpr auto INSTRUMENT =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"instrument"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.instrument; });
 
-constexpr auto CHANNEL =               //
-    EntryDef<std::int64_t>{"channel"}  //
+constexpr auto CHANNEL =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"channel"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.channel; });
 
-constexpr auto CHEM =               //
-    EntryDef<std::int64_t>{"chem"}  //
+constexpr auto CHEM =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"chem"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.chem; });
 
-constexpr auto WAVELENGTH =               //
-    EntryDef<std::int64_t>{"wavelength"}  //
+constexpr auto WAVELENGTH =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"wavelength"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.wavelength; });
 
-constexpr auto DIRECTION =               //
-    EntryDef<std::int64_t>{"direction"}  //
+constexpr auto DIRECTION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"direction"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.direction; });
 
-constexpr auto FREQUENCY =               //
-    EntryDef<std::int64_t>{"frequency"}  //
+constexpr auto FREQUENCY =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"frequency"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.frequency; });
 
-constexpr auto HDATE =               //
-    EntryDef<std::int64_t>{"hdate"}  //
+constexpr auto HDATE =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"hdate"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.hdate; });
 
@@ -163,13 +167,13 @@ constexpr auto DATASET =              //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.dataset; });
 
-constexpr auto METHOD =               //
-    EntryDef<std::int64_t>{"method"}  //
+constexpr auto METHOD =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"method"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.method; });
 
-constexpr auto SYSTEM =               //
-    EntryDef<std::int64_t>{"system"}  //
+constexpr auto SYSTEM =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"system"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.system; });
 
@@ -178,10 +182,11 @@ constexpr auto GRID =              //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.grid; });
 
-constexpr auto TRUNCATION =               //
-    EntryDef<std::int64_t>{"truncation"}  //
+constexpr auto TRUNCATION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"truncation"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.truncation; });
+
 
 // TODO this key has been modified and is used internally (with the encoder rules...) should not be handled as
 // official mars key

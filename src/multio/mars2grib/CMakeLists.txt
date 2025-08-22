@@ -13,6 +13,10 @@ ecbuild_add_library(
         EncoderConf.h
         Rules.cc
         Rules.h
+        api/RawAPI.cc
+        api/RawAPI.h
+        api/StableAPI.cc
+        api/StableAPI.h
         multiom/MultIOMDict.cc
         multiom/MultIOMDict.h
         multiom/MultIOMRawEncoder.cc

@@ -10,6 +10,8 @@
 
 #include "multio/datamod/MarsTypes.h"
 
+#include <charconv>
+
 #include "eckit/utils/Overloaded.h"
 #include "metkit/mars/Param.h"
 
@@ -32,6 +34,7 @@ TimeDuration ParseType<TimeDuration>::parse(std::int64_t hours) noexcept {
 }
 TimeDuration ParseType<TimeDuration>::parse(const std::string& val) {
     // TODO align these units with util/DateTime.h ??
+    // Maybe use faster implementation than std::regex for this simple case
     static const std::regex timeRegex(R"((\d+)([hs]?))");  // number + optional 'h' or 's'
 
     std::smatch match;
@@ -105,6 +108,9 @@ Repres ParseType<Repres>::parse(const std::string& val) {
     }
     if (val == "sh") {
         return Repres::SH;
+    }
+    if (val == "HEALPix") {
+        return Repres::HEALPix;
     }
     throw DataModellingException(std::string("ParseType<Repres>::parse Unknown value for Repres: ") + val, Here());
 }
@@ -202,6 +208,24 @@ std::int64_t ParamMapper::dump(std::int64_t v) noexcept {
 }
 std::int64_t ParamMapper::parse(const std::string& str) {
     return metkit::Param(str).paramId();
+}
+
+
+std::int64_t toIntStrict(const std::string& s) {
+    std::int64_t value;
+    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
+    if (ec != std::errc() || ptr != s.data() + s.size()) {
+        throw DataModellingException("toIntStrict: Invalid characters in input: " + s, Here());
+    }
+    return value;
+}
+
+std::int64_t StringToIntMapper::parse(const std::string& v) {
+    return toIntStrict(v);
+}
+
+bool BoolMapper::parse(const std::string& v) {
+    return toIntStrict(v) > 0;
 }
 
 }  // namespace mapper

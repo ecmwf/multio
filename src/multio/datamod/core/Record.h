@@ -189,9 +189,11 @@ std::string_view getRecordScope(SRecordType&& rec) {
 // Then calls the passed function with the entry definition `func(entryDef)`.
 template <typename Rec, typename Func, std::enable_if_t<IsRecord_v<std::decay_t<Rec>>, bool> = true>
 void dispatchEntry(std::string_view key, const Rec& rec, Func&& func) {
-    std::apply(
-        [&](const auto&... entryDef) {
-            (((entryDef.key() == key) ? (0, std::forward<Func>(func)(entryDef)) : 0), ...);
+    util::forEach(
+        [&](const auto& entryDef) {
+            if (entryDef.key() == key) {
+                std::forward<Func>(func)(entryDef);
+            }
         },
         recordEntries(rec));
 }

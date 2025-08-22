@@ -43,7 +43,7 @@
 
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/EncoderCache.h"
+#include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2grib/Options.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/MioGribHandle.h"
@@ -100,11 +100,13 @@ dm::Geometry handleReducedGGAtlas(util::MioGribHandle& h, dm::MarsRecord& mars, 
 }
 
 dm::Geometry handleSH(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+    // TODO implement with details
     mars.repres.set(dm::Repres::SH);
     return dm::readRecord<dm::GeoSHRecord>(h);
 }
 
 dm::Geometry handleLL(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+    // TODO implement with details
     mars.repres.set(dm::Repres::LL);
     return dm::readRecord<dm::GeoLLRecord>(h);
 }
@@ -927,9 +929,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     // optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
     // optDict.set("print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0));
 
-    // mars2grib::EncoderConf conf{};
-
-    mars2grib::EncoderCache encoder{};
+    mars2grib::Mars2GribRaw mars2grib{};
 
     eckit::message::Message msg;
     while ((msg = reader.next())) {
@@ -1053,7 +1053,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             datamod::validateRecord(misc);
 
             // TODO use upcoming C++ interface
-            std::unique_ptr<util::MioGribHandle> preparedHandle = encoder.getHandle(mars, misc, geo);
+            std::unique_ptr<util::MioGribHandle> preparedHandle = mars2grib.getHandle(mars, misc, geo);
             preparedHandle->setDataValues(values);
 
 

@@ -19,10 +19,11 @@
 #include "multio/action/encode-mtg2/AtlasGeoSetter.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/config/PathConfiguration.h"
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/mars2grib/EncoderCache.h"
 #include "multio/mars2grib/Options.h"
+#include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/MioGribHandle.h"
@@ -36,11 +37,17 @@ namespace dm = multio::datamod;
 using message::Message;
 using message::Peer;
 
+mars2grib::RawOptions mapOpts(EncodeMtg2Options opts) {
+    mars2grib::RawOptions ret;
+    ret.cached = opts.cached.get();
+    return ret;
+};
+
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
-    conf_{dm::readRecordByValue<mars2grib::EncodeMtg2Conf>(compConf.parsedConfig())},
-    cache_{conf_} {}
+    opts_{dm::readRecordByValue<EncodeMtg2Options>(compConf.parsedConfig())},
+    mars2grib_{mapOpts(opts_)} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {
@@ -69,7 +76,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             const auto& global = message::Parametrization::instance().get();
             // Fetch atlas and store in global parametrization (by scoping keys...)
             // Scoping here may be refactored
-            if (conf_.geoFromAtlas.get() && (global.find(scope) == global.end())) {
+            if (opts_.geoFromAtlas.get() && (global.find(scope) == global.end())) {
                 extract::AtlasGeoSetter::handleGrid(scope, marsRec.grid.get());
             }
         }
@@ -88,7 +95,7 @@ void EncodeMtg2::executeImpl(Message msg) {
 
 
         // TODO use upcoming C++ interface
-        std::unique_ptr<util::MioGribHandle> sample = cache_.getHandle(marsRec, miscRec, geo);
+        std::unique_ptr<util::MioGribHandle> sample = mars2grib_.getHandle(marsRec, miscRec, geo);
 
         if (msg.payload().size() == 0) {
             throw EncodeMtg2Exception("Message has empty payload - no values to encode", Here());
@@ -116,7 +123,7 @@ void EncodeMtg2::executeImpl(Message msg) {
                 sample->setDataValues(values, size);
             }
 
-            // The +32 is related to bug 
+            // The +32 is related to bug
             // TODO report this bug
             eckit::Buffer buf{sample->length() + 32};
             sample->write(buf);
@@ -130,12 +137,14 @@ void EncodeMtg2::executeImpl(Message msg) {
 }
 
 void EncodeMtg2::print(std::ostream& os) const {
-    os << "EncodeMtg2(";
-    os << "options=";
-    util::print(os, conf_);
-    os << ")";
+    util::PrintStream ps(os);
+    ps << dm::RecordName_v<EncodeMtg2Options> << std::endl;
+    {
+        util::IndentGuard g{ps};
+        ps << opts_;
+    }
 }
 
-static ActionBuilder<EncodeMtg2> EncodeMtg2Builder("encode-mtg2");
+static ActionBuilder<EncodeMtg2> EncodeMtg2Builder(std::string(dm::RecordName_v<EncodeMtg2Options>));
 
 }  // namespace multio::action

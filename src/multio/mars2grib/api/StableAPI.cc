@@ -68,11 +68,11 @@ void AdditionalValues::setNumberOfForecastsInEnsemble(std::int64_t value) {
 void AdditionalValues::setSatelliteSeries(std::int64_t value) {
     dm::SatelliteSeries.get(values_).set(value);
 }
-void AdditionalValues::setScaleFactorOfCentralWavenumber(std::int64_t value) {
-    dm::ScaleFactorOfCentralWavenumber.get(values_).set(value);
+void AdditionalValues::setScaleFactorOfCentralWaveNumber(std::int64_t value) {
+    dm::ScaleFactorOfCentralWaveNumber.get(values_).set(value);
 }
-void AdditionalValues::setScaledValueOfCentralWavenumber(std::int64_t value) {
-    dm::ScaledValueOfCentralWavenumber.get(values_).set(value);
+void AdditionalValues::setScaledValueOfCentralWaveNumber(std::int64_t value) {
+    dm::ScaledValueOfCentralWaveNumber.get(values_).set(value);
 }
 void AdditionalValues::setPV(std::reference_wrapper<const std::vector<double>> value) {
     dm::Pv.get(values_).set(value);

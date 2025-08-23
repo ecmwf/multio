@@ -1,7 +1,7 @@
 #include "multio/mars2grib/sections/Level.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/GribKeys.h"
-#include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/types/LevType.h"
 #include "multio/datamod/core/Compare.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/sections/SectionSetter.h"

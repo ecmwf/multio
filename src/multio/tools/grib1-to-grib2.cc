@@ -409,8 +409,8 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
     }
 
     misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries, h);
-    misc.scaleFactorOfCentralWavenumber = dm::parseEntry(dm::ScaleFactorOfCentralWavenumber, h);
-    misc.scaledValueOfCentralWavenumber = dm::parseEntry(dm::ScaledValueOfCentralWavenumber, h);
+    misc.scaleFactorOfCentralWaveNumber = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber, h);
+    misc.scaledValueOfCentralWaveNumber = dm::parseEntry(dm::ScaledValueOfCentralWaveNumber, h);
 
     if (h.hasKey("setPackingType")) {
         std::string setPackingType = h.getString("setPackingType");

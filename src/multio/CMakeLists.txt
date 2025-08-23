@@ -155,15 +155,23 @@ list( APPEND multio_datamod_srcs
     datamod/core/Compare.h
     datamod/core/Record.h
     datamod/core/NestedRecord.h
+    datamod/types/Repres.cc
+    datamod/types/Repres.h
+    datamod/types/TimeDuration.cc
+    datamod/types/TimeDuration.h
+    datamod/types/LevType.cc
+    datamod/types/LevType.h
+    datamod/types/TypeOfLevel.cc
+    datamod/types/TypeOfLevel.h
+    datamod/types/TypeOfStatisticalProcessing.cc
+    datamod/types/TypeOfStatisticalProcessing.h
     datamod/ContainerInterop.h
-    datamod/MarsTypes.cc
-    datamod/MarsTypes.h
+    datamod/Mapper.cc
+    datamod/Mapper.h
     datamod/AtlasGeo.h
     datamod/MarsMiscGeo.h
     datamod/MarsMiscGeo.cc
     datamod/GribKeys.h
-    datamod/GribTypes.h
-    datamod/GribTypes.cc
     datamod/Glossary.h
 )
 

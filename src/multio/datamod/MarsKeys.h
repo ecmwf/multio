@@ -10,8 +10,11 @@
 
 #pragma once
 
-#include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/Mapper.h"
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/types/LevType.h"
+#include "multio/datamod/types/Repres.h"
+#include "multio/datamod/types/TimeDuration.h"
 
 
 namespace multio::datamod {
@@ -23,6 +26,8 @@ using mapper::StringToIntMapper;
 //-----------------------------------------------------------------------------
 
 // All MARS keys must support string initialization
+
+// Global ID keys
 
 constexpr auto ORIGIN =              //
     EntryDef<IntOrString>{"origin"}  //
@@ -45,9 +50,31 @@ constexpr auto EXPVER =              //
     EntryDef<IntOrString>{"expver"}  //
         .withAccessor([](auto&& v) { return &v.expver; });
 
+constexpr auto MODEL =              //
+    EntryDef<std::string>{"model"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.model; });
+
+
+// Field id
+
 constexpr auto PARAM =                                    //
     EntryDef<std::int64_t, mapper::ParamMapper>{"param"}  //
         .withAccessor([](auto&& v) { return &v.param; });
+
+// Horizontal & vertial
+
+constexpr auto LEVTYPE =          //
+    EntryDef<LevType>{"levtype"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.levtype; });
+
+constexpr auto LEVELIST =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"levelist"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.levelist; });
+
+// Time
 
 constexpr auto DATE =                                  //
     EntryDef<std::int64_t, StringToIntMapper>{"date"}  //
@@ -62,20 +89,122 @@ constexpr auto STEP =               //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.step; });
 
-constexpr auto LEVTYPE =          //
-    EntryDef<LevType>{"levtype"}  //
+constexpr auto TIMESPAN =               //
+    EntryDef<TimeDuration>{"timespan"}  //
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.levtype; });
+        .withAccessor([](auto&& v) { return &v.timespan; });
 
-constexpr auto LEVELIST =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"levelist"}  //
+constexpr auto ANOFFSET =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}  //
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.levelist; });
+        .withAccessor([](auto&& v) { return &v.anoffset; });
 
-constexpr auto MODEL =              //
-    EntryDef<std::string>{"model"}  //
+constexpr auto HDATE =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"hdate"}  //
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.model; });
+        .withAccessor([](auto&& v) { return &v.hdate; });
+
+constexpr auto REFDATE =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"refdate"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.refdate; });
+
+constexpr auto FCMONTH =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"fcmonth"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.fcmonth; });
+
+constexpr auto FCPERIOD =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"fcperiod"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.fcperiod; });
+
+
+// Ensemble
+
+constexpr auto NUMBER =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"number"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.number; });
+
+// Satellite
+
+constexpr auto IDENT =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"ident"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.ident; });
+
+constexpr auto INSTRUMENT =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"instrument"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.instrument; });
+
+constexpr auto CHANNEL =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"channel"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.channel; });
+
+
+// Chemical
+
+constexpr auto CHEM =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"chem"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.chem; });
+
+// Aerosol
+
+constexpr auto WAVELENGTH =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"wavelength"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.wavelength; });
+
+
+// Wave Spectra
+
+constexpr auto DIRECTION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"direction"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.direction; });
+
+constexpr auto FREQUENCY =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"frequency"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.frequency; });
+
+
+// Seasonal
+
+constexpr auto METHOD =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"method"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.method; });
+
+constexpr auto SYSTEM =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"system"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.system; });
+
+
+// Sensitivity forecast
+
+constexpr auto ITERATION =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"iteration"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.iteration; });
+
+constexpr auto DIAGNOSTIC =                                  //
+    EntryDef<std::int64_t, StringToIntMapper>{"diagnostic"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.diagnostic; });
+
+
+// DestinE
+
+constexpr auto DATASET =              //
+    EntryDef<std::string>{"dataset"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.dataset; });
 
 constexpr auto RESOLUTION =              //
     EntryDef<std::string>{"resolution"}  //
@@ -102,80 +231,16 @@ constexpr auto REALIZATION =                                  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.realization; });
 
-constexpr auto TIMESPAN =               //
-    EntryDef<TimeDuration>{"timespan"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.timespan; });
 
-constexpr auto ANOFFSET =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.anoffset; });
+// Postproc - output specifiec
 
 constexpr auto PACKING =              //
     EntryDef<std::string>{"packing"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.packing; });
 
-constexpr auto NUMBER =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"number"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.number; });
 
-constexpr auto IDENT =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"ident"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.ident; });
-
-constexpr auto INSTRUMENT =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"instrument"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.instrument; });
-
-constexpr auto CHANNEL =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"channel"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.channel; });
-
-constexpr auto CHEM =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"chem"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.chem; });
-
-constexpr auto WAVELENGTH =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"wavelength"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.wavelength; });
-
-constexpr auto DIRECTION =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"direction"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.direction; });
-
-constexpr auto FREQUENCY =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"frequency"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.frequency; });
-
-constexpr auto HDATE =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"hdate"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.hdate; });
-
-constexpr auto DATASET =              //
-    EntryDef<std::string>{"dataset"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.dataset; });
-
-constexpr auto METHOD =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"method"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.method; });
-
-constexpr auto SYSTEM =                                  //
-    EntryDef<std::int64_t, StringToIntMapper>{"system"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.system; });
+// Grid
 
 constexpr auto GRID =              //
     EntryDef<std::string>{"grid"}  //

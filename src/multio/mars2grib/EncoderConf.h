@@ -12,7 +12,6 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "multio/datamod/GribKeys.h"
-#include "multio/datamod/GribTypes.h"
 #include "multio/datamod/core/Compare.h"
 #include "multio/datamod/core/Entry.h"
 #include "multio/datamod/core/EntryDef.h"

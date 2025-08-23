@@ -78,8 +78,8 @@ struct AdditionalValues {
     // to be removed once DGOV updates MARS language
     void setSatelliteSeries(std::int64_t);
     // to be checked if these are possibly derived from MARS keys
-    void setScaleFactorOfCentralWavenumber(std::int64_t);
-    void setScaledValueOfCentralWavenumber(std::int64_t);
+    void setScaleFactorOfCentralWaveNumber(std::int64_t);
+    void setScaledValueOfCentralWaveNumber(std::int64_t);
 
     // Will be inferred in the future given the numberOfLevels
     // For now the full array has to be provided

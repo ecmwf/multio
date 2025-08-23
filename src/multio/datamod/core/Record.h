@@ -13,7 +13,9 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include "multio/datamod/core/DataModellingException.h"
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/util/TypeTraits.h"
 
 
 namespace multio::datamod {
@@ -32,6 +34,7 @@ struct RecordName {
 };
 
 
+// NOTE: Likely to be removed - introduced and used because of metadata ... but this seems to be an mistake 
 template <typename RecordType>
 struct ScopedRecord;
 
@@ -74,14 +77,14 @@ inline constexpr bool HasScopedRecordEntriesMember_v = HasScopedRecordEntriesMem
 //
 
 template <typename RecordType, std::enable_if_t<HasRecordEntriesMember_v<RecordType>, bool> = true>
-const auto& recordEntries() {
+constexpr const auto& recordEntries() {
     return RecordType::record_entries_;
 };
 
 template <typename RecordType,
           std::enable_if_t<HasRecordEntriesMember_v<RecordType> && !HasScopedRecordEntriesMember_v<RecordType>, bool>
           = true>
-const auto& recordEntries(const RecordType&) {
+constexpr const auto& recordEntries(const RecordType&) {
     return RecordType::record_entries_;
 };
 
@@ -194,9 +197,53 @@ void dispatchEntry(std::string_view key, const Rec& rec, Func&& func) {
             if (entryDef.key() == key) {
                 std::forward<Func>(func)(entryDef);
             }
+            else {
+                std::ostringstream oss;
+                oss << "Can not dispatch key " << key << " on record " << RecordName_v<std::decay_t<Rec>>;
+                throw DataModellingException(oss.str(), Here());
+            }
         },
         recordEntries(rec));
 }
+
+//-----------------------------------------------------------------------------
+
+template <typename... Records>
+struct ComposedRecord : Records... {
+    static constexpr auto record_entries_ = std::tuple_cat(recordEntries<Records>()...);
+
+    static constexpr auto composing_records_ = std::make_tuple(util::TypeTag<Records>{}...);
+};
+
+template <typename RecordType, class = void>
+struct HasComposingRecords : std::false_type {};
+
+template <typename RecordType>
+struct HasComposingRecords<RecordType, std::void_t<decltype(RecordType::composing_records_)>> : std::true_type {};
+
+template <typename RecordType>
+inline constexpr bool HasComposingRecords_v = HasComposingRecords<RecordType>::value;
+
+
+template <typename RecordType, std::enable_if_t<HasComposingRecords_v<RecordType>, bool> = true>
+constexpr const auto& composingRecords() {
+    return RecordType::composing_records_;
+};
+
+template <typename RecordType, std::enable_if_t<HasComposingRecords_v<RecordType>, bool> = true>
+constexpr const auto& composingRecords(const RecordType&) {
+    return RecordType::composing_records_;
+};
+
+template <typename RecordType, std::enable_if_t<!HasComposingRecords_v<RecordType>, bool> = true>
+constexpr auto composingRecords() {
+    return std::tuple<>{};
+};
+
+template <typename RecordType, std::enable_if_t<!HasComposingRecords_v<RecordType>, bool> = true>
+constexpr auto composingRecords(const RecordType&) {
+    return std::tuple<>{};
+};
 
 //-----------------------------------------------------------------------------
 
@@ -243,6 +290,9 @@ template <typename RecordType, std::enable_if_t<IsRecord_v<RecordType>, bool> = 
 void applyRecordDefaults(RecordType& rec) {
     // Iterate entries and set defaults
     std::apply([&](const auto&... entryDef) { (entryDef.applyDefaults(entryDef.get(rec)), ...); }, recordEntries(rec));
+
+    std::apply([&](const auto&... tt) { (ApplyDefaultsFunctor{}(static_cast<util::Type_t<decltype(tt)>&>(rec)), ...); },
+               composingRecords(rec));
 
     // Apply defaults on record
     ApplyDefaultsFunctor{}(rec);
@@ -294,6 +344,10 @@ template <typename RecordType, std::enable_if_t<IsRecord_v<RecordType>, bool> = 
 void validateRecord(const RecordType& rec) {
     // Iterate entries and set defaults
     std::apply([&](const auto&... entryDef) { (entryDef.validate(entryDef.get(rec)), ...); }, recordEntries(rec));
+
+    std::apply(
+        [&](const auto&... tt) { (ValidateRecordFunctor{}(static_cast<const util::Type_t<decltype(tt)>&>(rec)), ...); },
+        composingRecords(rec));
 
     // Apply defaults on record
     ValidateRecordFunctor{}(rec);

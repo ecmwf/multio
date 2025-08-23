@@ -11,8 +11,6 @@
 #pragma once
 
 #include "multio/datamod/core/TypeParserDumper.h"
-#include "multio/util/Hash.h"
-#include "multio/util/MioGribHandle.h"
 #include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 
@@ -124,29 +122,6 @@ enum class TypeOfLevel : std::size_t
     HeightAboveSeaAt10m
 };
 
-
-// TOL defined with official integer representation
-enum class TypeOfStatisticalProcessing : std::size_t
-{
-    Average = 0,
-    Accumulation = 1,
-    Maximum = 2,
-    Minimum = 3,
-    Difference = 4,
-    RootMeanSquare = 5,
-    StandardDeviation = 6,
-    Covariance = 7,
-    InverseDifference = 8,
-    Ratio = 9,
-    StandardizedAnomaly = 10,
-    Summation = 11,
-    ReturnPeriod = 12,
-    Median = 13,
-    Severity = 100,
-    Mode = 101,
-    IndexProcessing = 102,
-};
-
 }  // namespace multio::datamod
 
 
@@ -156,18 +131,10 @@ template <>
 struct Print<datamod::TypeOfLevel> {
     static void print(PrintStream&, const datamod::TypeOfLevel&);
 };
-template <>
-struct Print<datamod::TypeOfStatisticalProcessing> {
-    static void print(PrintStream&, const datamod::TypeOfStatisticalProcessing&);
-};
 
 template <>
 struct TypeToString<datamod::TypeOfLevel> {
     std::string operator()() const { return "datamod::TypeOfLevel"; };
-};
-template <>
-struct TypeToString<datamod::TypeOfStatisticalProcessing> {
-    std::string operator()() const { return "datamod::TypeOfStatisticalProcessing"; };
 };
 }  // namespace multio::util
 
@@ -183,25 +150,6 @@ template <>
 struct ParseType<TypeOfLevel> {
     static inline TypeOfLevel parse(TypeOfLevel v) noexcept { return v; };
     static TypeOfLevel parse(const std::string& s);
-};
-
-
-template <>
-struct DumpType<TypeOfStatisticalProcessing> {
-    static std::string dump(TypeOfStatisticalProcessing);
-};
-
-// TBD - add dump spec for writing to grib (dump as int)
-// template <>
-// struct DumpType<TypeOfStatisticalProcessing, util::MioGribHandle> {
-//     static std::int64_t dump(TypeOfStatisticalProcessing);
-// };
-
-template <>
-struct ParseType<TypeOfStatisticalProcessing> {
-    static inline TypeOfStatisticalProcessing parse(TypeOfStatisticalProcessing v) noexcept { return v; };
-    static TypeOfStatisticalProcessing parse(const std::string& s);
-    static TypeOfStatisticalProcessing parse(std::int64_t i);
 };
 
 

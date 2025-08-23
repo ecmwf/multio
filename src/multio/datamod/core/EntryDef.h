@@ -396,6 +396,8 @@ using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
 //-----------------------------------------------------------------------------
 
+// NOTE: This may be removed once the metadata is cleaned up again. We probably will use nested metadata instead of having prefixes (too cumbersome)
+//
 // ScopedEntryDef ... written on a cumbersome way to reuse the BaseEntryDef to reduced code generation.
 // The accessor is not copyable - hence we reference it to the const version - moreover it should never carry state.
 // The base key_ string_view is tried to kept update on a rather complex way.

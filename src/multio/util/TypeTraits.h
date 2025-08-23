@@ -40,6 +40,9 @@ struct TypeTag {
     using type = T;
 };
 
+template <typename T>
+using Type_t = typename std::decay_t<T>::type;
+
 
 //-----------------------------------------------------------------------------
 

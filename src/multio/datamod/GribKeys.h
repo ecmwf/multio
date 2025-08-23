@@ -10,9 +10,11 @@
 
 #pragma once
 
-#include "multio/datamod/GribTypes.h"
+#include "multio/datamod/Mapper.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
+#include "multio/datamod/types/TypeOfLevel.h"
+#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 
 
 namespace multio::datamod {
@@ -111,7 +113,6 @@ constexpr auto OrderingConvention =              //
         .withAccessor([](auto&& v) { return &v.orderingConvention; });
 
 
-
 // Section4
 constexpr auto ProductDefinitionTemplateNumber =                                     //
     EntryDef<std::int64_t>{"productDefinitionTemplateNumber"}                        //
@@ -137,6 +138,28 @@ constexpr auto ScaledValueOfCentralWaveNumber =               //
     EntryDef<std::int64_t>{"scaledValueOfCentralWaveNumber"}  //
         .tagOptional()                                        //
         .withAccessor([](auto&& v) { return &v.scaledValueOfCentralWaveNumber; });
+
+
+
+// Ensemble
+
+constexpr auto TypeOfEnsembleForecast =               //
+    EntryDef<std::int64_t>{"typeOfEnsembleForecast"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.typeOfEnsembleForecast; });
+
+constexpr auto NumberOfForecastsInEnsemble =               //
+    EntryDef<std::int64_t>{"numberOfForecastsInEnsemble"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfForecastsInEnsemble; });
+
+// Satellite 
+
+constexpr auto SatelliteSeries =               //
+    EntryDef<std::int64_t>{"satelliteSeries"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.satelliteSeries; });
+
 
 
 // Horizontal Keys
@@ -185,6 +208,31 @@ struct HorizontalGribKeys {
         PressureUnits, TypeOfFirstFixedSurface, TypeOfSecondFixedSurface, ScaledValueOfFirstFixedSurface,
         ScaledValueOfSecondFixedSurface, ScaleFactorOfFirstFixedSurface, ScaleFactorOfSecondFixedSurface);
 };
+
+//-----------------------------------------------------------------------------
+
+
+// Data Repres
+
+constexpr auto BitmapPresent =                           //
+    EntryDef<bool, mapper::BoolMapper>{"bitmapPresent"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.bitmapPresent; });
+
+constexpr auto MissingValue =         //
+    EntryDef<double>{"missingValue"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.missingValue; });
+        
+constexpr auto BitsPerValue =               //
+    EntryDef<std::int64_t>{"bitsPerValue"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.bitsPerValue; });
+
+constexpr auto LaplacianOperator =               //
+    EntryDef<std::int64_t>{"laplacianOperator"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.laplacianOperator; });
 
 
 //-----------------------------------------------------------------------------

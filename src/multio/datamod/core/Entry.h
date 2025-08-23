@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <functional>
 #include <type_traits>
 #include <variant>
 #include "eckit/utils/Overloaded.h"
@@ -28,6 +29,7 @@ namespace multio::datamod {
 
 struct UnsetType {};
 
+
 // Operators for missing value ... use SFINAE to let this code remain header only
 // Also implement operator for other types to simplify comparison implementation for Entry
 template <typename MV1, typename MV2,
@@ -43,25 +45,46 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 }
 
 
-// BaseEntry stores type and mapping information without `id` specialization.
-// A BaseEntry can hold:
+// An Entry is a container that stores one value of a given type. It allows the value to be missing or be referenced.
+// A Entry can hold the low level types:
 //  * UnsetType
 //  * ValueType
 //  * reference_wrapper<ValueType>
 //
-// Keys that are strictly required will go throug a validation step and throw if they are not present.
-// Reference are implemented to efficiently pass around arrays - or to use the mechanism to just create
-// a view on a data container.
+// In addition to the `ValueType` a `Mapper` can be specified. This allows customized parsing through the
+// `TypeParserDumper` mechanism, either through the `Mapper` inself or specialization of `ParseType<ValueType>`.
 //
-// Directy access to the value is given with `get()` or `modify()`.
-// A `modify()` call will always make sure that a `ValueType` is contained - if a ref is conatined, a copy is involved
-// if necesessary.
+// This Type is ment to be described through an `EntryDef` and is ment to be used used in a "Record".
+// Multiple Entries will form a record.
 //
-// Setting values is performed via `set(...)` - it will use the `TypeParserDumper` to perform all allowed and necessary
-// convertions.
+// Accessors:
+//   * `get()`: returns a const ref to the contained value
+//   * `modify()`: returns a ref to the contained value. Will always make sure that a `ValueType` is contained - if a
+//   ref is conatined, a copy is involved if necesessary.
+//   * `raw()`: returns the contained variant container
+//   * `visit(Func&&)`: Allows visiting the value with an overload set: `UnseTtype`, `ValueType&`, `const ValueType&`,
+//   `ValueType&&`.
+//                      A reference_wrapper is forwarded as `const ValueType&`
 //
-// `acquire(...)` can be called to make sure no reference is contained and values are copied if necessary.
-template <typename ValueType_, typename Mapper_>
+// Setters:
+//   * `unset()`: clear the entry
+//   * `set(UnsetType{})`: clear the entry
+//   * `set(reference_wrapper<ValueType>)`: sets a reference
+//   * `setRef(const ValueType&)`: sets a reference
+//   * `set(Value)`: Set with arbitraty value - will convert or use `TypeParserDumper<ValueType, Mapper>::parse` if the
+//   value can be parsed.
+//
+// Query functions:
+//   * `isUnset()`: Check if no value is contained (same as `!has()`)
+//   * `has()`: Check if no value is contained (same as `!isUnset()`)
+//   * `holdsReference()`: Check if a reference is contained
+//
+// Modifiers:
+//   * `acquire(...)`: Make sure no reference is contained. Values are copied if necessary.
+//   * `ensureInit()`: Will default initialize to `ValueType{}` if no value is set
+//   * `ensureInit(Val)`: Will default initialize to the passed value if no value is set
+//   * `ensureInit(Func&&)`: Will default initialize to the result of the function if no value is set
+template <typename ValueType_, typename Mapper_ = DefaultMapper>
 struct Entry {
     using ValueType = ValueType_;
     using Mapper = Mapper_;
@@ -255,16 +278,41 @@ struct Entry {
     }
 };
 
+}  // namespace multio::datamod
+
+
+namespace std {
 
 template <typename ValueType, typename Mapper>
-bool operator==(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) noexcept {
-    return lhs.visit(
-        [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal == rhsVal; }); });
+struct equal_to<multio::datamod::Entry<ValueType, Mapper>> {
+    bool operator()(const multio::datamod::Entry<ValueType, Mapper>& lhs,
+                    const multio::datamod::Entry<ValueType, Mapper>& rhs) const {
+        return lhs.visit(
+            [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal == rhsVal; }); });
+    }
+};
+
+template <typename ValueType, typename Mapper>
+struct not_equal_to<multio::datamod::Entry<ValueType, Mapper>> {
+    bool operator()(const multio::datamod::Entry<ValueType, Mapper>& lhs,
+                    const multio::datamod::Entry<ValueType, Mapper>& rhs) const {
+        return lhs.visit(
+            [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal != rhsVal; }); });
+    }
+};
+
+
+}  // namespace std
+
+namespace multio::datamod {
+
+template <typename ValueType, typename Mapper>
+bool operator==(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) {
+    return std::equal_to<Entry<ValueType, Mapper>>{}(lhs, rhs);
 }
 template <typename ValueType, typename Mapper>
-bool operator!=(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) noexcept {
-    return lhs.visit(
-        [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal != rhsVal; }); });
+bool operator!=(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) {
+    return std::not_equal_to<Entry<ValueType, Mapper>>{}(lhs, rhs);
 }
 
 

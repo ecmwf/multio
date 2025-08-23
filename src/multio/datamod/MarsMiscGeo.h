@@ -10,9 +10,8 @@
 
 #pragma once
 
-#include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/GribKeys.h"
-#include "multio/datamod/MarsTypes.h"
+#include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/core/Compare.h"
 #include "multio/datamod/core/DataModellingException.h"
 #include "multio/datamod/core/EntryDef.h"
@@ -29,49 +28,169 @@
 
 namespace multio::datamod {
 
-struct MarsRecord {
+
+//-----------------------------------------------------------------------------
+// Rough categorization on keys that stay mostly constant for a model run
+//-----------------------------------------------------------------------------
+
+struct MarsGeneral {
     EntryType_t<decltype(ORIGIN)> origin;
     EntryType_t<decltype(CLASS)> klass;
     EntryType_t<decltype(STREAM)> stream;
     EntryType_t<decltype(TYPE)> type;
     EntryType_t<decltype(EXPVER)> expver;
-    EntryType_t<decltype(PARAM)> param;
-    EntryType_t<decltype(DATE)> date;
-    EntryType_t<decltype(TIME)> time;
-    EntryType_t<decltype(STEP)> step;
-    EntryType_t<decltype(LEVTYPE)> levtype;
-    EntryType_t<decltype(LEVELIST)> levelist;
     EntryType_t<decltype(MODEL)> model;
+
+    static constexpr std::string_view record_name_ = "mars-general";
+    static constexpr auto record_entries_ = std::make_tuple(ORIGIN, CLASS, STREAM, TYPE, EXPVER, MODEL);
+};
+
+struct MarsSeasonal {
+    EntryType_t<decltype(METHOD)> method;
+    EntryType_t<decltype(SYSTEM)> system;
+
+    static constexpr std::string_view record_name_ = "mars-seasonal";
+    static constexpr auto record_entries_ = std::make_tuple(METHOD, SYSTEM);
+};
+
+
+struct MarsDestine {
+    EntryType_t<decltype(DATASET)> dataset;
     EntryType_t<decltype(RESOLUTION)> resolution;
     EntryType_t<decltype(ACTIVITY)> activity;
     EntryType_t<decltype(EXPERIMENT)> experiment;
     EntryType_t<decltype(GENERATION)> generation;
     EntryType_t<decltype(REALIZATION)> realization;
+
+
+    static constexpr std::string_view record_name_ = "mars-destine";
+    static constexpr auto record_entries_
+        = std::make_tuple(DATASET, RESOLUTION, ACTIVITY, EXPERIMENT, GENERATION, REALIZATION);
+};
+
+
+// Composed id object
+
+struct MarsId : ComposedRecord<MarsGeneral, MarsSeasonal, MarsDestine> {
+    static constexpr std::string_view record_name_ = "mars-id";
+};
+
+
+//-----------------------------------------------------------------------------
+// Time axes
+//-----------------------------------------------------------------------------
+
+struct MarsTime {
+    EntryType_t<decltype(DATE)> date;
+    EntryType_t<decltype(TIME)> time;
+    EntryType_t<decltype(STEP)> step;
     EntryType_t<decltype(TIMESPAN)> timespan;
+
+    // Analysis
     EntryType_t<decltype(ANOFFSET)> anoffset;
-    EntryType_t<decltype(PACKING)> packing;
+
+    // Hindcast/reforecast dates...
+    EntryType_t<decltype(HDATE)> hdate;
+    EntryType_t<decltype(REFDATE)> refdate;
+
+    EntryType_t<decltype(FCMONTH)> fcmonth;
+    EntryType_t<decltype(FCPERIOD)> fcperiod;
+
+
+    static constexpr std::string_view record_name_ = "mars-time";
+    static constexpr auto record_entries_
+        = std::make_tuple(DATE, TIME, STEP, TIMESPAN, ANOFFSET, HDATE, REFDATE, FCMONTH, FCPERIOD);
+};
+
+
+//-----------------------------------------------------------------------------
+// Field identification and details
+//-----------------------------------------------------------------------------
+
+// Mars field details
+
+struct MarsFieldId {
+    // Param
+    EntryType_t<decltype(PARAM)> param;
+
+    // Horizontal & Vertical
+    EntryType_t<decltype(LEVTYPE)> levtype;
+
+    static constexpr std::string_view record_name_ = "mars-field-id";
+    static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE);
+};
+
+
+// Misc Details
+struct MarsFieldDetails {
+    // More product information
+    EntryType_t<decltype(LEVELIST)> levelist;
+
+    // Ensemble
     EntryType_t<decltype(NUMBER)> number;
+
+    // Chemical
+    EntryType_t<decltype(CHEM)> chem;
+
+    // Aerosol
+    EntryType_t<decltype(WAVELENGTH)> wavelength;
+
+    // Wave
+    EntryType_t<decltype(DIRECTION)> direction;
+    EntryType_t<decltype(FREQUENCY)> frequency;
+
+    // Sensitivity forecast
+    EntryType_t<decltype(ITERATION)> iteration;
+    EntryType_t<decltype(DIAGNOSTIC)> diagnostic;
+
+    static constexpr std::string_view record_name_ = "mars-field-details";
+    static constexpr auto record_entries_
+        = std::make_tuple(LEVELIST, NUMBER, CHEM, WAVELENGTH, DIRECTION, FREQUENCY, ITERATION, DIAGNOSTIC);
+};
+
+
+struct MarsSatellite {
     EntryType_t<decltype(IDENT)> ident;
     EntryType_t<decltype(INSTRUMENT)> instrument;
     EntryType_t<decltype(CHANNEL)> channel;
-    EntryType_t<decltype(CHEM)> chem;
-    EntryType_t<decltype(WAVELENGTH)> wavelength;
-    EntryType_t<decltype(DIRECTION)> direction;
-    EntryType_t<decltype(FREQUENCY)> frequency;
-    EntryType_t<decltype(HDATE)> hdate;
-    EntryType_t<decltype(DATASET)> dataset;
-    EntryType_t<decltype(METHOD)> method;
-    EntryType_t<decltype(SYSTEM)> system;
+
+
+    static constexpr std::string_view record_name_ = "mars-satellite";
+    static constexpr auto record_entries_ = std::make_tuple(IDENT, INSTRUMENT, CHANNEL);
+};
+
+
+struct MarsField : ComposedRecord<MarsFieldId, MarsFieldDetails, MarsSatellite> {
+    static constexpr std::string_view record_name_ = "mars-field";
+};
+
+
+//-----------------------------------------------------------------------------
+// Additional information on data representationi and compression
+//-----------------------------------------------------------------------------
+
+struct MarsEncodingDetails {
     EntryType_t<decltype(GRID)> grid;
     EntryType_t<decltype(TRUNCATION)> truncation;
     EntryType_t<decltype(REPRES)> repres;
 
-    static constexpr std::string_view record_name_ = "mars";
-    static constexpr auto record_entries_ = std::make_tuple(
-        ORIGIN, CLASS, STREAM, TYPE, EXPVER, PARAM, DATE, TIME, STEP, LEVTYPE, LEVELIST, MODEL, RESOLUTION, ACTIVITY,
-        EXPERIMENT, GENERATION, REALIZATION, TIMESPAN, ANOFFSET, PACKING, NUMBER, IDENT, INSTRUMENT, CHANNEL, CHEM,
-        WAVELENGTH, DIRECTION, FREQUENCY, HDATE, DATASET, METHOD, SYSTEM, GRID, TRUNCATION, REPRES);
+    EntryType_t<decltype(PACKING)> packing;
+
+
+    static constexpr std::string_view record_name_ = "mars-encoding";
+    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, REPRES, PACKING);
 };
+
+
+//-----------------------------------------------------------------------------
+// The final big composed record containing all MARS keys we use so far encoding
+//-----------------------------------------------------------------------------
+
+struct MarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
+    static constexpr std::string_view record_name_ = "mars";
+};
+
+//-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod
 
@@ -170,40 +289,19 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
 
-constexpr auto BitmapPresent =                                //
-    EntryDef<bool, mapper::BoolMapper>{"bitmapPresent"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.bitmapPresent; });
+// BitmapPresent defined in GribKeys
 
-constexpr auto MissingValue =         //
-    EntryDef<double>{"missingValue"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.missingValue; });
+// MissingValue defined in GribKeys
 
-constexpr auto TypeOfEnsembleForecast =               //
-    EntryDef<std::int64_t>{"typeOfEnsembleForecast"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.typeOfEnsembleForecast; });
+// TypeOfEnsembleForecast defined in GribKeys
 
-constexpr auto NumberOfForecastsInEnsemble =               //
-    EntryDef<std::int64_t>{"numberOfForecastsInEnsemble"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.numberOfForecastsInEnsemble; });
+// NumberOfForecastsInEnsemble defined in GribKeys
 
-constexpr auto SatelliteSeries =               //
-    EntryDef<std::int64_t>{"satelliteSeries"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.satelliteSeries; });
+// SatelliteSeries defined in GribKeys
 
-constexpr auto ScaleFactorOfCentralWavenumber =               //
-    EntryDef<std::int64_t>{"scaleFactorOfCentralWavenumber"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.scaleFactorOfCentralWavenumber; });
+// ScaleFactorOfCentralWavenumber defined in GribKeys
 
-constexpr auto ScaledValueOfCentralWavenumber =               //
-    EntryDef<std::int64_t>{"scaledValueOfCentralWavenumber"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.scaledValueOfCentralWavenumber; });
+// ScaledValueOfCentralWavenumber defined in GribKeys
 
 // Pv defined in GribKeys
 
@@ -217,15 +315,9 @@ constexpr auto WaveFrequencies =                      //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.waveFrequencies; });
 
-constexpr auto BitsPerValue =               //
-    EntryDef<std::int64_t>{"bitsPerValue"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.bitsPerValue; });
+// BitsPerValue defined in GribKeys
 
-constexpr auto LaplacianOperator =               //
-    EntryDef<std::int64_t>{"laplacianOperator"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.laplacianOperator; });
+// LaplacianOperator defined in GribKeys
 
 struct MiscRecord {
     EntryType_t<decltype(TablesVersion)> tablesVersion;
@@ -240,8 +332,8 @@ struct MiscRecord {
     EntryType_t<decltype(TypeOfEnsembleForecast)> typeOfEnsembleForecast;
     EntryType_t<decltype(NumberOfForecastsInEnsemble)> numberOfForecastsInEnsemble;
     EntryType_t<decltype(SatelliteSeries)> satelliteSeries;
-    EntryType_t<decltype(ScaleFactorOfCentralWavenumber)> scaleFactorOfCentralWavenumber;
-    EntryType_t<decltype(ScaledValueOfCentralWavenumber)> scaledValueOfCentralWavenumber;
+    EntryType_t<decltype(ScaleFactorOfCentralWaveNumber)> scaleFactorOfCentralWaveNumber;
+    EntryType_t<decltype(ScaledValueOfCentralWaveNumber)> scaledValueOfCentralWaveNumber;
     EntryType_t<decltype(Pv)> pv;
     EntryType_t<decltype(WaveDirections)> waveDirections;
     EntryType_t<decltype(WaveFrequencies)> waveFrequencies;
@@ -253,7 +345,7 @@ struct MiscRecord {
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedData, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
-        NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWavenumber, ScaledValueOfCentralWavenumber,
+        NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
         Pv, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator);
 };
 

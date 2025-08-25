@@ -507,7 +507,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 dm::dumpEntry(dm::STATTYPE, stattype, md);
             }
             else {
-                stattype.set(dm::StatType{stattype.get().firstLevel(), currentStatType});
+                stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
                 dm::dumpEntry(dm::STATTYPE, stattype, md);
             }
         }

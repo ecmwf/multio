@@ -150,6 +150,7 @@ StatType ParseType<StatType>::parse(std::string_view val) {
                             ParseType<SingleStatType>::parse(val.substr(5, 4))};
         default:
             throwUnknownValue();
+            return StatType{SingleStatType{}}; // unreachable
     }
 }
 

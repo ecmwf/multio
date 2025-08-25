@@ -49,15 +49,20 @@ struct SingleStatType {
 };
 
 
-struct StatType {
+class StatType {
+public:
     // Only constructor - will validate requirements on StatType
     StatType(SingleStatType first, std::optional<SingleStatType> second = {});
 
-    SingleStatType firstLevel;
-    std::optional<SingleStatType> secondLevel{};
+    SingleStatType firstLevel() const;
+    std::optional<SingleStatType> secondLevel() const;
 
     // Returns the number of levels (1 or 2)
     std::size_t levels() const;
+
+private:
+    SingleStatType firstLevel_;
+    std::optional<SingleStatType> secondLevel_{};
 };
 
 

@@ -20,8 +20,9 @@
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/Glossary.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
 
@@ -426,6 +427,45 @@ void Statistics::emitAllStatistics(message::Peer source, message::Peer destinati
     }
 }
 
+namespace {
+
+dm::StatTypeDuration outputFreqencyToStatTypeDuration(std::string_view outputFreq) {
+    if (outputFreq == "1d") {
+        return dm::StatTypeDuration::Day;
+    }
+    if (outputFreq == "1m") {
+        return dm::StatTypeDuration::Month;
+    }
+
+    std::ostringstream os;
+    os << "Mapping to stattype for outputFrequency=" << outputFreq << " is undefined!" << std::endl;
+    throw eckit::SeriousBug(os.str(), Here());
+}
+
+
+dm::StatTypeOperation operationNameToStatTypeOperation(std::string_view opName) {
+    if (opName == "average") {
+        return dm::StatTypeOperation::Average;
+    }
+    if (opName == "maximum") {
+        return dm::StatTypeOperation::Max;
+    }
+    if (opName == "minimum") {
+        return dm::StatTypeOperation::Min;
+    }
+    if (opName == "stddev") {
+        return dm::StatTypeOperation::StandardDeviation;
+    }
+
+    std::ostringstream os;
+    os << "Mapping to stattype for operation=" << opName << " is undefined!" << std::endl;
+    throw eckit::SeriousBug(os.str(), Here());
+}
+
+
+const std::map<const std::string, const std::string> opname_to_stattype{
+    {"average", "av"}, {"maximum", "mx"}, {"minimum", "mn"}, {"stddev", "st"}};
+}  // namespace
 
 void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
     for (auto it = ts.begin(); it != ts.end(); ++it) {
@@ -436,15 +476,42 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto md = ts.metadata();
         auto cfg = StatisticsConfiguration(md, source, opt_);
 
+        auto timespan = dm::parseEntry(dm::TIMESPAN, md);
+        auto stattype = dm::parseEntry(dm::STATTYPE, md);
+
+        if (stattype.isSet() && (stattype.get().levels() > 1)) {
+            std::ostringstream os;
+            util::PrintStream ps(os);
+            ps << "StatType already has two levels: " << stattype << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+
+        ASSERT(timespan.isSet() || !stattype.isSet());  // Cannot have stattype without timespan set!
+        int currentLoop = 1 + (timespan.isSet() ? 1 : 0) + (stattype.isSet() ? 1 : 0);
+
         const std::int64_t step = ts.win().currPointInSteps();
-        const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
         md.set(dm::legacy::Step, step);
 
-        // TODO refactor - use KeySet instead of single keys
-        dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+        auto opname = (*it)->operation();
+        if (currentLoop == 1) {
+            const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
+            dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+            paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
+        }
+        else {
+            auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
+                                                      operationNameToStatTypeOperation(opname)};
 
-        std::string opname = (*it)->operation();
-        paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
+            if (currentLoop == 2) {
+                stattype.set(dm::StatType{currentStatType});
+                dm::dumpEntry(dm::STATTYPE, stattype, md);
+            }
+            else {
+                stattype.set(dm::StatType{stattype.get().firstLevel(), currentStatType});
+                dm::dumpEntry(dm::STATTYPE, stattype, md);
+            }
+        }
+
         for (const auto& kv : opt_.setMetadata()) {
             md.set(kv.first, kv.second);
         }

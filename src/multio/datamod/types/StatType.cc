@@ -16,17 +16,24 @@
 namespace multio::datamod {
 
 StatType::StatType(SingleStatType first, std::optional<SingleStatType> second) :
-    firstLevel(first), secondLevel(second) {
+    firstLevel_(first), secondLevel_(second) {
     // For multiple levels, the first level must be larger (i.e. moav_damn -> first is month, second is day)
-    if (secondLevel && !(firstLevel.duration > secondLevel->duration)) {
+    if (secondLevel_ && !(firstLevel_.duration > secondLevel_->duration)) {
         throw DataModellingException(
             std::string("StatType: Invalid level combination: ") + std::string(DumpType<StatType>::dump(*this)),
             Here());
     }
 }
 
+SingleStatType StatType::firstLevel() const {
+    return firstLevel_;
+};
+std::optional<SingleStatType> StatType::secondLevel() const {
+    return secondLevel_;
+}
+
 std::size_t StatType::levels() const {
-    return (secondLevel ? 2 : 1);
+    return (secondLevel_ ? 2 : 1);
 }
 
 
@@ -120,18 +127,17 @@ SingleStatType ParseType<SingleStatType>::parse(std::string_view val) {
 
 
 std::string DumpType<StatType>::dump(StatType v) {
-    if (v.secondLevel) {
-        return DumpType<SingleStatType>::dump(v.firstLevel) + std::string("_")
-             + DumpType<SingleStatType>::dump(*v.secondLevel);
+    if (v.secondLevel()) {
+        return DumpType<SingleStatType>::dump(v.firstLevel()) + std::string("_")
+             + DumpType<SingleStatType>::dump(*v.secondLevel());
     }
-    return DumpType<SingleStatType>::dump(v.firstLevel);
+    return DumpType<SingleStatType>::dump(v.firstLevel());
 }
 
 StatType ParseType<StatType>::parse(std::string_view val) {
     auto throwUnknownValue = [&]() {
         throw DataModellingException(
-            std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val),
-            Here());
+            std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val), Here());
     };
     switch (val.size()) {
         case 4:

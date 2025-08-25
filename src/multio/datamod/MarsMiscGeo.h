@@ -123,7 +123,7 @@ struct MarsFieldId {
     EntryType_t<decltype(LEVTYPE)> levtype;
     
     // Additional statistical properties
-    EntryType_t<decltype(STATTYPE)> statType;
+    EntryType_t<decltype(STATTYPE)> stattype;
 
 
     static constexpr std::string_view record_name_ = "mars-field-id";

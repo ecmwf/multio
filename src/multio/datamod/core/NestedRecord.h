@@ -15,6 +15,23 @@
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
 
+/// Records can be nested - this is useful to express
+/// nested metadata or YAML configuration. This is curretly used
+/// to represent the MULTIOM encoder configuration - which has a lot of sub configurations.
+/// Example:
+///
+/// ```
+/// { "key1": "value1",
+/// , "nested-rec": 
+///     { "nested-key1": "value"
+///     , "nested-key2": "value"
+///     }
+/// }
+/// ```
+///
+/// In this case "nested-rec" is derived from `RecordName_v<MyNestedRecord>`, where `MyNestedRecord`
+/// contains 2 entries with "nested-key1" and "nested-key2".
+///   
 
 namespace multio::datamod {
 
@@ -23,7 +40,7 @@ struct RecordMapper {
     // Parse record from other record or implemented container
     template <
         typename OtherRec,
-        std::enable_if_t<IsRecord_v<std::decay_t<OtherRec>> || EntryParser<std::decay_t<OtherRec>>::isSpecialized, bool>
+        std::enable_if_t<IsRecord_v<std::decay_t<OtherRec>> || EntryParserIsSpecialized_v<std::decay_t<OtherRec>>, bool>
         = true>
     static RecordType parse(OtherRec&& rec) {
         return readRecordByValue<RecordType>(std::forward<OtherRec>(rec));
@@ -32,7 +49,7 @@ struct RecordMapper {
     // Dump to other record
     template <
         typename Container, typename Val,
-        std::enable_if_t<EntryDumper<Container>::isSpecialized && std::is_same_v<std::decay_t<Val>, RecordType>, bool>
+        std::enable_if_t<EntryDumperIsSpecialized_v<Container> && std::is_same_v<std::decay_t<Val>, RecordType>, bool>
         = true>
     static Container dumpTo(Val&& v) {
         return dumpRecord<Container>(std::forward<Val>(v));

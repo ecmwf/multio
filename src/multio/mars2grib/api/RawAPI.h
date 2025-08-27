@@ -36,7 +36,7 @@ public:
 
     ~Mars2GribRaw() = default;
 
-    std::unique_ptr<util::MioGribHandle> getHandle(const dm::MarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
+    std::unique_ptr<util::MioGribHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
                                                    const dm::Geometry& geoKeys);
 
 private:

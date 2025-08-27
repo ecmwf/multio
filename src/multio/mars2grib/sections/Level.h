@@ -28,12 +28,12 @@ struct LevelConfigurator {
 
 
 // Determines the level and whether a level has to be set for a typeOfLevel
-std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator&, const dm::MarsRecord&, const dm::MiscRecord&);
+std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&, const dm::MiscRecord&);
 
 // Determines the level and whether a level has to be set for a typeOfLevel
-dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator&, const dm::MarsRecord&, const dm::MiscRecord&);
+dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&, const dm::MiscRecord&);
 
-std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurator&, const dm::MarsRecord&,
+std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&,
                                                            const dm::MiscRecord&);
 
 class LevelSetter : public DynSectionSetter {
@@ -41,21 +41,21 @@ public:
     DynSectionSetter::Config sectionInfo() const override;
 
     // Allocate is setting vertical
-    void allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                   const dm::Geometry&) const override;
     // Calls set level
-    void preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const override;
+    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const override;
 
     // Calls set level
-    void runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const override;
 
-    void setLevels(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const;
+    void setLevels(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const;
 
-    void check(const util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                const dm::Geometry&) const override;
 
-    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::MarsRecord&) const override;
+    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const override;
 
 
     LevelSetter(const LevelConfigurator& conf) : conf_{conf} {}

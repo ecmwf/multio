@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -11,7 +11,6 @@
 #pragma once
 
 #include "eckit/config/LocalConfiguration.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/util/MioGribHandle.h"
@@ -54,7 +53,7 @@ namespace multio::mars2grib {
 
 // New encoder for caching
 struct MultIOMRawEncoder {
-    MultIOMRawEncoder(const MultIOMDict& options, const eckit::LocalConfiguration& conf);
+    MultIOMRawEncoder(const eckit::LocalConfiguration& conf);
     ~MultIOMRawEncoder() = default;
 
     MultIOMRawEncoder(MultIOMRawEncoder&&) noexcept = default;

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -19,8 +19,9 @@ namespace multio::datamod {
 
 //-----------------------------------------------------------------------------
 
-// TypeOfStatisticalProcessing defined with official integer representation in GRIB code table
-enum class TypeOfStatisticalProcessing : std::size_t
+// TypeOfStatisticalProcessing defined with official integer representation in GRIB 4.10 code table
+// https://codes.ecmwf.int/grib/format/grib2/ctables/4/10/
+enum class TypeOfStatisticalProcessing : std::int64_t
 {
     Average = 0,
     Accumulation = 1,

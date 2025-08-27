@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -28,7 +28,7 @@ struct Print<datamod::Entry<ValueType, Mapper>> {
     static void print(PrintStream& ps, const datamod::Entry<ValueType, Mapper>& entry) {
         using ParserDumper = typename datamod::Entry<ValueType, Mapper>::ParserDumper;
 
-        if (entry.isUnset()) {
+        if (!entry.isSet()) {
             ps << "<UNSET>";
         }
         else {
@@ -54,7 +54,7 @@ struct PrintRecord {
     static constexpr bool DETAILED = false;
     template <typename Entry_>
     static void printEntry(util::PrintStream& ps, bool& isFirst, std::string_view key, const Entry_& entry) {
-        if (!DETAILED && entry.isUnset())
+        if (!DETAILED && !entry.isSet())
             return;
 
         if (isFirst) {

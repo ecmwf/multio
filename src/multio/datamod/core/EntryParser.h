@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -32,24 +32,24 @@ namespace multio::datamod {
 // the string as accessor to containers
 template <typename Container>
 struct EntryParser {
-    static constexpr bool isSpecialized = false;
+    using UNSPECIALIZED_TAG = void;
 };
 
-template <typename Container>
-struct BaseEntryParser {
-    static constexpr bool isSpecialized = true;
 
-    template <typename EntryDef_, typename Cont_,
-              std::enable_if_t<
-                  (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<Container, std::decay_t<Cont_>>), bool>
-              = true>
-    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, Cont_&& c) {
-        using Ret = EntryType_t<EntryDef_>;
-        Ret ret{EntryParser<Container>::getByRef(entryDef, std::forward<Cont_>(c))};
-        ret.acquire();
-        return ret;
-    }
-};
+
+
+// Default implementation for getByValue. Should be redefined by every implementation
+template <
+    typename Container,
+    typename EntryDef_, typename Cont_,
+    std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<Container, std::decay_t<Cont_>>), bool>
+    = true>
+EntryType_t<EntryDef_> getByValueThroughRef(const EntryDef_& entryDef, Cont_&& c) {
+    using Ret = EntryType_t<EntryDef_>;
+    Ret ret{EntryParser<Container>::getByRef(entryDef, std::forward<Cont_>(c))};
+    ret.acquire();
+    return ret;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -70,6 +70,15 @@ struct BaseEntryParser {
 //     }
 // };
 
+template <typename Container, class = void>
+struct EntryParserIsSpecialized : std::true_type {};
+
+template <typename Container>
+struct EntryParserIsSpecialized<Container, std::void_t<typename EntryParser<Container>::UNSPECIALIZED_TAG>>
+    : std::false_type {};
+
+template <typename Container>
+inline constexpr bool EntryParserIsSpecialized_v = EntryParserIsSpecialized<Container>::value;
 
 //-----------------------------------------------------------------------------
 // Parsing record
@@ -77,7 +86,7 @@ struct BaseEntryParser {
 
 template <typename EntryDef_, typename FromContainer,
           std::enable_if_t<(IsEntryDefinition_v<std::decay_t<EntryDef_>> && !IsRecord_v<std::decay_t<FromContainer>>
-                            && EntryParser<std::decay_t<FromContainer>>::isSpecialized),
+                            && EntryParserIsSpecialized_v<std::decay_t<FromContainer>>),
                            bool>
           = true>
 EntryType_t<EntryDef_> parseEntry(const EntryDef_& entryDef, FromContainer&& cont) {
@@ -87,7 +96,7 @@ EntryType_t<EntryDef_> parseEntry(const EntryDef_& entryDef, FromContainer&& con
 
 template <typename EntryDef_, typename FromContainer,
           std::enable_if_t<(IsEntryDefinition_v<std::decay_t<EntryDef_>> && !IsRecord_v<std::decay_t<FromContainer>>
-                            && EntryParser<std::decay_t<FromContainer>>::isSpecialized),
+                            && EntryParserIsSpecialized_v<std::decay_t<FromContainer>>),
                            bool>
           = true>
 EntryType_t<EntryDef_> parseEntryByValue(const EntryDef_& entryDef, FromContainer&& cont) {
@@ -119,7 +128,7 @@ EntryType_t<EntryDef_> parseEntryByValue(const EntryDef_& entryDef, FromContaine
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 void parseRecord(RecordType& rec, FromContainer&& cont) {
     std::apply(
@@ -131,7 +140,7 @@ void parseRecord(RecordType& rec, FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 void parseRecordByValue(RecordType& rec, FromContainer&& cont) {
     std::apply(
@@ -143,7 +152,7 @@ void parseRecordByValue(RecordType& rec, FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 RecordType parseRecord(FromContainer&& cont) {
     RecordType rec;
@@ -153,7 +162,7 @@ RecordType parseRecord(FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 RecordType parseRecordByValue(FromContainer&& cont) {
     RecordType rec;
@@ -168,7 +177,7 @@ RecordType parseRecordByValue(FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 void readRecord(RecordType& rec, FromContainer&& cont) {
     parseRecord(rec, std::forward<FromContainer>(cont));
@@ -178,7 +187,7 @@ void readRecord(RecordType& rec, FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 RecordType readRecord(FromContainer&& cont) {
     RecordType rec;
@@ -188,7 +197,7 @@ RecordType readRecord(FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 void readRecordByValue(RecordType& rec, FromContainer&& cont) {
     parseRecordByValue(rec, std::forward<FromContainer>(cont));
@@ -198,7 +207,7 @@ void readRecordByValue(RecordType& rec, FromContainer&& cont) {
 
 template <typename RecordType, typename FromContainer,
           std::enable_if_t<
-              IsRecord_v<std::decay_t<FromContainer>> || EntryParser<std::decay_t<FromContainer>>::isSpecialized, bool>
+              IsRecord_v<std::decay_t<FromContainer>> || EntryParserIsSpecialized_v<std::decay_t<FromContainer>>, bool>
           = true>
 RecordType readRecordByValue(FromContainer&& cont) {
     RecordType rec;

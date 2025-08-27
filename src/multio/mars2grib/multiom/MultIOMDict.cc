@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -12,8 +12,6 @@
 
 #include "eckit/log/Log.h"
 
-#include "multio/datamod/core/EntryDumper.h"
-#include "multio/datamod/core/EntryParser.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multiom/api/c/api.h"
 
@@ -137,26 +135,5 @@ std::string MultIOMDict::toJSON() const {
     return std::string(d);
 }
 
-struct OptsToPass {
-    dm::EntryType_t<decltype(SamplesPath)> samplesPath;
-    dm::EntryType_t<decltype(EncodingRules)> encodingRules;
-    dm::EntryType_t<decltype(MappingRules)> mappingRules;
-
-    static constexpr std::string_view record_name_ = "multiom-opts";
-    static constexpr auto record_entries_ = std::make_tuple(SamplesPath, EncodingRules, MappingRules);
-};
-
-MultIOMDict MultIOMDict::makeOptions(const EncodeMtg2Conf& opts) {
-    MultIOMDict optDict(MultIOMDictKind::Options);
-
-    // Select a subset of the options (excluding knowledge-root) and set them to the opt dict
-    dm::dumpRecord(dm::readRecord<OptsToPass>(opts), optDict);
-
-    if (opts.knowledgeRoot.has()) {
-        setenv("IFS_INSTALL_DIR", std::string(opts.knowledgeRoot.get()).c_str(), 0);
-    }
-
-    return optDict;
-}
 
 }  // namespace multio::mars2grib

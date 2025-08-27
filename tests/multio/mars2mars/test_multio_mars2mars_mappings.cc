@@ -21,7 +21,7 @@ CASE("Test fixParam35ToSol1") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(35);
@@ -31,7 +31,7 @@ CASE("Test fixParam35ToSol1") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 262024);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -42,7 +42,7 @@ CASE("Test fixParam36ToSol2") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(36);
@@ -52,7 +52,7 @@ CASE("Test fixParam36ToSol2") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 262024);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -63,7 +63,7 @@ CASE("Test fixParam37ToSol3") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(37);
@@ -73,7 +73,7 @@ CASE("Test fixParam37ToSol3") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 262024);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -83,7 +83,7 @@ CASE("Test fixParam38ToSol4") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(38);
@@ -93,7 +93,7 @@ CASE("Test fixParam38ToSol4") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 262024);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -104,7 +104,7 @@ CASE("Test fixParam39ToSol1") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(39);
@@ -114,7 +114,7 @@ CASE("Test fixParam39ToSol1") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260199);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -125,7 +125,7 @@ CASE("Test fixParam40ToSol2") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(40);
@@ -135,7 +135,7 @@ CASE("Test fixParam40ToSol2") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260199);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -145,7 +145,7 @@ CASE("Test fixParam41ToSol3") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(41);
@@ -155,7 +155,7 @@ CASE("Test fixParam41ToSol3") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260199);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -165,7 +165,7 @@ CASE("Test fixParam42ToSol4") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(42);
@@ -175,7 +175,7 @@ CASE("Test fixParam42ToSol4") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260199);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -186,7 +186,7 @@ CASE("Test fixParam139ToSol1") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(139);
@@ -196,7 +196,7 @@ CASE("Test fixParam139ToSol1") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260360);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -206,7 +206,7 @@ CASE("Test fixParam170ToSol2") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(170);
@@ -216,7 +216,7 @@ CASE("Test fixParam170ToSol2") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260360);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -226,7 +226,7 @@ CASE("Test fixParam183ToSol3") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(183);
@@ -236,7 +236,7 @@ CASE("Test fixParam183ToSol3") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260360);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -247,7 +247,7 @@ CASE("Test fixParam263ToSol4") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(236);
@@ -257,7 +257,7 @@ CASE("Test fixParam263ToSol4") {
 
     EXPECT(res);
     EXPECT(mars.param.get() == 260360);
-    EXPECT(mars.levelist.has());
+    EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
 };
@@ -272,7 +272,7 @@ CASE("Test fixTableVersion") {
         {228080, 228081, 228082, 228083, 228084, 228085, 233032, 233033, 233034, 233035, 235062, 235063, 235064}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -280,7 +280,7 @@ CASE("Test fixTableVersion") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(misc.tablesVersion.has());
+        EXPECT(misc.tablesVersion.isSet());
         EXPECT(misc.tablesVersion.get() == 30);
     }
 };
@@ -291,7 +291,7 @@ CASE("Test fixCloudParam164") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(164);
@@ -309,7 +309,7 @@ CASE("Test fixCloudParam186") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(186);
@@ -327,7 +327,7 @@ CASE("Test fixCloudParam187") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(187);
@@ -345,7 +345,7 @@ CASE("Test fixCloudParam188") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(188);
@@ -363,7 +363,7 @@ CASE("Test fixConvectivePrecip143") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(143);
@@ -381,7 +381,7 @@ CASE("Test fixTotalPrecip228") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228);
@@ -403,7 +403,7 @@ CASE("Test heightAboveGround2m") {
     std::vector<std::int64_t> paramIds{{167, 168, 174096, 228037}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -425,7 +425,7 @@ CASE("Test heightAboveGround10m") {
     std::vector<std::int64_t> paramIds{{228029, 228131, 228132, 165, 166, 207}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -447,7 +447,7 @@ CASE("Test heightAboveSea") {
     std::vector<std::int64_t> paramIds{{140233, 140245, 140249}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -456,7 +456,7 @@ CASE("Test heightAboveSea") {
 
         EXPECT(res);
         EXPECT(mars.levelist.get() == 10);
-        EXPECT(misc.bitsPerValue.has());
+        EXPECT(misc.bitsPerValue.isSet());
         EXPECT(misc.bitsPerValue.get() == 24);
     }
 };
@@ -470,7 +470,7 @@ CASE("Test mapToSol") {
     std::vector<std::int64_t> paramIds{{33, 238, 228038, 228141, 260360, 262000, 262024, 260199}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -491,7 +491,7 @@ CASE("Test fixRunOffWaterParam205") {
     using namespace multio::datamod;
 
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(205);
@@ -509,7 +509,7 @@ CASE("Test fixSnowfallWaterEquivParam") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(144);
@@ -531,7 +531,7 @@ CASE("Test fixTimespanMax2T") {
     std::vector<std::int64_t> paramIds{{121, 228026, 201}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -549,7 +549,7 @@ CASE("Test fixTimespanMaxCape") {
     using namespace multio::datamod;
 
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228035);
@@ -565,7 +565,7 @@ CASE("Test fixTimespanMaxMuCapes") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228036);
@@ -584,7 +584,7 @@ CASE("Test fixTimespanMaxPrecipRate") {
     std::vector<std::int64_t> paramIds{{228222, 228224, 228226}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -604,7 +604,7 @@ CASE("Test fixTimespanMaxWindGust") {
     std::vector<std::int64_t> paramIds{{123, 228028, 49}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -625,7 +625,7 @@ CASE("Test fixTimespanMeanFlashDensity") {
     std::vector<std::int64_t> paramIds{{228051, 228057, 228058}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -646,7 +646,7 @@ CASE("Test fixTimespanMin2T") {
     std::vector<std::int64_t> paramIds{{122, 228027, 202}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -667,7 +667,7 @@ CASE("Test fixTimespanMinPrecipRate") {
     std::vector<std::int64_t> paramIds{{228223, 228225, 228227}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -688,7 +688,7 @@ CASE("Test fixTimespanModePrecip") {
     std::vector<std::int64_t> paramIds{{260320, 260321, 260339}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -709,7 +709,7 @@ CASE("Test fixTimespanSeverityPrecip") {
     std::vector<std::int64_t> paramIds{{260318, 260319, 260338}};
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -727,7 +727,7 @@ CASE("Test fixWindspeedU100m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228246);
@@ -746,7 +746,7 @@ CASE("Test fixWindspeedU200m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228239);
@@ -765,7 +765,7 @@ CASE("Test fixWindspeedV100m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228247);
@@ -785,7 +785,7 @@ CASE("Test fixWindspeedV200m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228240);
@@ -805,7 +805,7 @@ CASE("Test fixWindspeed100m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228249);
@@ -825,7 +825,7 @@ CASE("Test fixWindspeed200m") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(228241);
@@ -845,7 +845,7 @@ CASE("Test ruleWaveBitsPerValueS1") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    MarsRecord mars;
+    FullMarsRecord mars;
     MiscRecord misc;
 
     mars.param.set(22824);
@@ -854,7 +854,7 @@ CASE("Test ruleWaveBitsPerValueS1") {
     auto res = mars2mars::applyMappings(mars2mars::mapBitsPerValue(), mars, misc);
 
     EXPECT(res);
-    EXPECT(misc.bitsPerValue.has());
+    EXPECT(misc.bitsPerValue.isSet());
     EXPECT(misc.bitsPerValue.get() == 24);
 };
 
@@ -890,7 +890,7 @@ CASE("Test ruleWaveBitsPerValue") {
 
 
     for (auto paramId : paramIds) {
-        MarsRecord mars;
+        FullMarsRecord mars;
         MiscRecord misc;
 
         mars.param.set(paramId);
@@ -898,7 +898,7 @@ CASE("Test ruleWaveBitsPerValue") {
         auto res = mars2mars::applyMappings(mars2mars::mapBitsPerValue(), mars, misc);
 
         EXPECT(res);
-        EXPECT(misc.bitsPerValue.has());
+        EXPECT(misc.bitsPerValue.isSet());
         EXPECT(misc.bitsPerValue.get() == 24);
     }
 };

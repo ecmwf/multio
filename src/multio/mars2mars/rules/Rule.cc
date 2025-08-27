@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -24,7 +24,7 @@ const DynRule* getRulePtr(const RuleList::RuleEntry& re) {
         re);
 }
 
-std::optional<MappingResult> RuleList::operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const {
+std::optional<MappingResult> RuleList::operator()(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals) const {
     const DynRule* appliedRule = nullptr;
     std::optional<MappingResult> res;
     for (const auto& ruleEntry : rules) {

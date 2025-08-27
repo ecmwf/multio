@@ -22,7 +22,6 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
@@ -60,7 +59,7 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     {
         // Read and set unscoped mars keys
-        auto marsRec = dm::readRecord<dm::MarsRecord>(md);
+        auto marsRec = dm::readRecord<dm::FullMarsRecord>(md);
 
         // Read scoped misc keys
         auto scopedMiscRec = dm::scopeRecord(dm::MiscRecord{});
@@ -71,7 +70,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto scopedGeo = dm::getGeometryRecord(marsRec);
 
         // If grid.. check if atlas is given.
-        if (marsRec.grid.has()) {
+        if (marsRec.grid.isSet()) {
             std::string scope{std::visit([](const auto& k) { return dm::getRecordScope(k); }, scopedGeo)};
             const auto& global = message::Parametrization::instance().get();
             // Fetch atlas and store in global parametrization (by scoping keys...)
@@ -94,7 +93,6 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
 
-        // TODO use upcoming C++ interface
         std::unique_ptr<util::MioGribHandle> sample = mars2grib_.getHandle(marsRec, miscRec, geo);
 
         if (msg.payload().size() == 0) {
@@ -124,11 +122,11 @@ void EncodeMtg2::executeImpl(Message msg) {
             }
 
             // The +32 is related to bug
-            // TODO report this bug
+            // TODO(pgeier) report this bug
             eckit::Buffer buf{sample->length() + 32};
             sample->write(buf);
 
-            // TODO write mapped metadata
+            // TODO(pgeier) write mapped metadata
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source()}, Peer{msg.destination()},
                                            dm::dumpRecord<message::Metadata>(marsRec)},
                            std::move(buf)};

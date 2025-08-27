@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -14,7 +14,7 @@
 
 namespace multio::datamod {
 
-ScopedGeometry getGeometryRecord(const MarsRecord& mars) {
+ScopedGeometry getGeometryRecord(const FullMarsRecord& mars) {
     const auto& grid = mars.grid;
     const auto& trunc = mars.truncation;
     const auto& repres = mars.repres;

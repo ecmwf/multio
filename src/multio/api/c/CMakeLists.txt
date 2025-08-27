@@ -22,6 +22,7 @@ list( APPEND multio_action_plugins
     multio-action-transport
     multio-action-renumber-healpix
     multio-action-scale
+    multio-action-average-rate
 )
 
 if( HAVE_MIR )

@@ -38,8 +38,11 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md);
 
 /** Synchronization with all other clients and servers.
  * \note This method must be called from all clients separately
- * \note This method is blocking until all clients and servers are
- *       synchronized
+ *       and it is blocking until all clients and servers are
+ *       synchronized!
+ * \note This method only works with MPI transport and you must
+ *       set `ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE` in the
+ *       environment!
  * \warning This is an experimental feature and may significantly
  *          harm performance!
  * \param mio Handle to the multio (client) instance

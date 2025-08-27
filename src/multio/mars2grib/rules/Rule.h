@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -31,7 +31,7 @@ namespace dm = multio::datamod;
 struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual bool apply(const dm::MarsRecord& rec, SectionsConf&) const = 0;
+    virtual bool apply(const dm::FullMarsRecord& rec, SectionsConf&) const = 0;
     virtual void print(util::PrintStream&) const = 0;
 
     virtual ~DynRule() = default;
@@ -50,7 +50,7 @@ namespace multio::mars2grib::rules {
 
 template <typename Derived>
 struct DerivedRule : DynRule {
-    bool apply(const dm::MarsRecord& rec, SectionsConf& conf) const override {
+    bool apply(const dm::FullMarsRecord& rec, SectionsConf& conf) const override {
         return static_cast<const Derived&>(*this)(rec, conf);
     }
 
@@ -74,7 +74,7 @@ struct Rule : DerivedRule<Rule<Matcher>> {
     Setter setter;
 
     // Match and set
-    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const {
+    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
         if (matcher(rec)) {
             setter(conf);
             return true;
@@ -128,7 +128,7 @@ struct ExclusiveRuleList : DerivedRule<ExclusiveRuleList> {
     std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const;
+    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const;
 };
 
 
@@ -172,7 +172,7 @@ struct ChainedRuleList : DerivedRule<ChainedRuleList> {
     std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const dm::MarsRecord& rec, SectionsConf& conf) const;
+    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const;
 };
 
 

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -30,14 +30,14 @@ namespace dm = multio::datamod;
 struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual std::optional<MappingResult> apply(dm::MarsRecord&, dm::MiscRecord&) const = 0;
+    virtual std::optional<MappingResult> apply(dm::FullMarsRecord&, dm::MiscRecord&) const = 0;
     virtual void print(util::PrintStream&) const = 0;
 };
 
 
 template <typename Derived>
 struct DerivedRule : DynRule {
-    std::optional<MappingResult> apply(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const override {
+    std::optional<MappingResult> apply(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals) const override {
         return static_cast<const Derived&>(*this)(marsVals, miscVals);
     }
 
@@ -55,7 +55,7 @@ struct Rule : DerivedRule<Rule<Matcher, Setter>> {
     Setter setter;
 
     // Match and set
-    std::optional<MappingResult> operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const {
+    std::optional<MappingResult> operator()(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals) const {
         if (matcher(marsVals)) {
             MappingResult res;
             setter.set(marsVals, miscVals, res);
@@ -85,7 +85,7 @@ struct RuleList : DerivedRule<RuleList> {
     std::vector<RuleEntry> rules;
 
     // Match and set
-    std::optional<MappingResult> operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const;
+    std::optional<MappingResult> operator()(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals) const;
 
 
     // Construction helper

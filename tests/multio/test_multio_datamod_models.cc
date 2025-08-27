@@ -14,6 +14,8 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 
+#include "multio/datamod/types/LevType.h"
+#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 #include "multio/mars2grib/MarsCachedKeys.h"
 
 #include "multio/datamod/core/EntryParser.h"
@@ -31,6 +33,88 @@ CASE("Test reading Param keys from metadata") {
     EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", 3}}).get(), 3);
     EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", "123.456"}}).get(), 456123);
 };
+
+CASE("Test parsing/dumping levtype") {
+    using namespace dm;
+
+    for (auto levtype : dm::allLevTypes()) {
+        EXPECT((ParseType<dm::LevType>::parse(DumpType<dm::LevType>::dump(levtype)) == levtype));
+    }
+
+
+    EXPECT_THROWS(ParseType<dm::LevType>::parse("no_valid_level"));
+};
+
+CASE("Test parsing/dumping stattype") {
+    using namespace dm;
+
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("moav")) == "moav"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("momn")) == "momn"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("momx")) == "momx"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("mosd")) == "mosd"));
+
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("daav")) == "daav"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("damn")) == "damn"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("damx")) == "damx"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("dasd")) == "dasd"));
+
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("moav_daav")) == "moav_daav"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("momn_damn")) == "momn_damn"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("momx_damx")) == "momx_damx"));
+    EXPECT((DumpType<dm::StatType>::dump(ParseType<dm::StatType>::parse("mosd_dasd")) == "mosd_dasd"));
+
+    // Test throw due to invalid combination (durations have an order)
+    EXPECT_THROWS(ParseType<dm::StatType>::parse("mosd_moav"));
+    EXPECT_THROWS(ParseType<dm::StatType>::parse("dasd_daav"));
+    EXPECT_THROWS(ParseType<dm::StatType>::parse("dasd_moav"));
+
+    // Wrong separation character
+    EXPECT_THROWS(ParseType<dm::StatType>::parse("mosd-daav"));
+};
+
+CASE("Test parsing/dumping typeOfStatisticalProcessing") {
+    using namespace dm;
+
+    // clang-format off
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("average")) == "average"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("accumul")) == "accumul"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("max")) == "max"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("min")) == "min"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("difference")) == "difference"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("root-mean-square")) == "root-mean-square"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("stddev")) == "stddev"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("covariance")) == "covariance"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("inverse-difference")) == "inverse-difference"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("ratio")) == "ratio"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("standardized-anomaly")) == "standardized-anomaly"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("summation")) == "summation"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("return-period")) == "return-period"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("median")) == "median"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("severity")) == "severity"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("mode")) == "mode"));
+    EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("index-processing")) == "index-processing"));
+    
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Average)) == TypeOfStatisticalProcessing::Average));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Accumulation)) == TypeOfStatisticalProcessing::Accumulation));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Maximum)) == TypeOfStatisticalProcessing::Maximum));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Minimum)) == TypeOfStatisticalProcessing::Minimum));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Difference)) == TypeOfStatisticalProcessing::Difference));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::RootMeanSquare)) == TypeOfStatisticalProcessing::RootMeanSquare));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::StandardDeviation)) == TypeOfStatisticalProcessing::StandardDeviation));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Covariance)) == TypeOfStatisticalProcessing::Covariance));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::InverseDifference)) == TypeOfStatisticalProcessing::InverseDifference));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Ratio)) == TypeOfStatisticalProcessing::Ratio));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::StandardizedAnomaly)) == TypeOfStatisticalProcessing::StandardizedAnomaly));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Summation)) == TypeOfStatisticalProcessing::Summation));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::ReturnPeriod)) == TypeOfStatisticalProcessing::ReturnPeriod));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Median)) == TypeOfStatisticalProcessing::Median));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Severity)) == TypeOfStatisticalProcessing::Severity));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Mode)) == TypeOfStatisticalProcessing::Mode));
+    EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::IndexProcessing)) == TypeOfStatisticalProcessing::IndexProcessing));
+    // clang-format on
+    
+    EXPECT_THROWS(ParseType<dm::TypeOfStatisticalProcessing>::parse("noop"));
+}
 
 CASE("Test reading time durationkeys from metadata") {
     using namespace dm;
@@ -66,26 +150,26 @@ CASE("Test reading MARS keys from metadata") {
 
     {
         // Expect error because of having grid & truncation defined at the same time
-        EXPECT_THROWS(readRecord<MarsRecord>(makeMarsMetadata()));
+        EXPECT_THROWS(readRecord<FullMarsRecord>(makeMarsMetadata()));
     }
 
     {
         auto md = makeMarsMetadata();
         md.erase("truncation");
-        EXPECT_NO_THROW(readRecord<MarsRecord>(md));
+        EXPECT_NO_THROW(readRecord<FullMarsRecord>(md));
     }
 
     {
         auto md = makeMarsMetadata();
         md.erase("grid");
-        EXPECT_NO_THROW(readRecord<MarsRecord>(md));
+        EXPECT_NO_THROW(readRecord<FullMarsRecord>(md));
     }
 
     {
         auto md = makeMarsMetadata();
         md.erase("truncation");
         md.erase("grid");
-        EXPECT_THROWS(readRecord<MarsRecord>(md));
+        EXPECT_THROWS(readRecord<FullMarsRecord>(md));
     }
 };
 
@@ -93,7 +177,7 @@ CASE("Test reading MARS keys from metadata") {
 CASE("Test encoder hashes") {
     using namespace dm;
 
-    auto marsKeys = readRecordByValue<MarsRecord>(makeValidMarsMetadata());
+    auto marsKeys = readRecordByValue<FullMarsRecord>(makeValidMarsMetadata());
 
     // Create copies
     auto mk1 = marsKeys;

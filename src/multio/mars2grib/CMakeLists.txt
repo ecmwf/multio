@@ -7,7 +7,6 @@ ecbuild_add_library(
         Mars2GribException.cc
         Mars2GribException.h
         MarsCachedKeys.h
-        Options.h
         EncoderCache.cc
         EncoderCache.h
         EncoderConf.h

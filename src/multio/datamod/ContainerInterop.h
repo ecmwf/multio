@@ -34,9 +34,7 @@ namespace multio::datamod {
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryParser<message::BaseMetadata> : BaseEntryParser<message::BaseMetadata> {
-    using Base = BaseEntryParser<message::BaseMetadata>;
-    using Base::getByValue;
+struct EntryParser<message::BaseMetadata> {
 
     static void throwRequiredKeyIsNull(const std::string& keyInfo, const message::BaseMetadata& md) {
         std::ostringstream oss;
@@ -56,7 +54,8 @@ struct EntryParser<message::BaseMetadata> : BaseEntryParser<message::BaseMetadat
     }
 
 
-    template <bool byRef = true, typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    template <bool byRef = true, typename EntryDef_,
+              std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
     static decltype(auto) makeVisitor(const EntryDef_& entryDef, const message::BaseMetadata& md) noexcept {
         using TP = typename EntryDef_::ParserDumper;
         using Ret = EntryType_t<EntryDef_>;
@@ -93,10 +92,11 @@ struct EntryParser<message::BaseMetadata> : BaseEntryParser<message::BaseMetadat
     }
 
 
-    template <typename EntryDef_, typename MD,
-              std::enable_if_t<
-                  (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::BaseMetadata, std::decay_t<MD>>), bool>
-              = true>
+    template <
+        typename EntryDef_, typename MD,
+        std::enable_if_t<
+            (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::BaseMetadata, std::decay_t<MD>>), bool>
+        = true>
     static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, MD&& md) {
         if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
@@ -108,16 +108,22 @@ struct EntryParser<message::BaseMetadata> : BaseEntryParser<message::BaseMetadat
         }
         return defaultOrThrow(entryDef, md);
     }
+
+    template <
+        typename EntryDef_, typename MD,
+        std::enable_if_t<
+            (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<message::BaseMetadata, std::decay_t<MD>>), bool>
+        = true>
+    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, MD&& md) {
+        return getByValueThroughRef<message::BaseMetadata>(entryDef, std::forward<MD>(md));
+    }
 };
 
 // The implementation for Metadata explicitly allows reading from the
 // global parametrization. Global values may be just referenced (i.e. arrays like PV array)
 template <>
-struct EntryParser<message::Metadata> : BaseEntryParser<message::Metadata> {
-    using Base = BaseEntryParser<message::Metadata>;
-    using Base::getByValue;
-
-    using BaseReader = EntryParser<message::BaseMetadata>;
+struct EntryParser<message::Metadata> {
+    using BaseParser = EntryParser<message::BaseMetadata>;
 
     template <typename EntryDef_, typename MD,
               std::enable_if_t<
@@ -126,18 +132,18 @@ struct EntryParser<message::Metadata> : BaseEntryParser<message::Metadata> {
     static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, MD&& md) {
         if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
-                return search->second.visit(BaseReader::makeVisitor(entryDef, md));
+                return search->second.visit(BaseParser::makeVisitor(entryDef, md));
             }
             else {
-                return std::move(search->second).visit(BaseReader::makeVisitor(entryDef, md));
+                return std::move(search->second).visit(BaseParser::makeVisitor(entryDef, md));
             }
         }
         // Then do manual search on parametrization
         const auto& global = message::Parametrization::instance().get();
         if (auto search = global.localFind(entryDef.key()); search != global.end()) {
-            return search->second.visit(BaseReader::makeVisitor(entryDef, md));
+            return search->second.visit(BaseParser::makeVisitor(entryDef, md));
         }
-        return BaseReader::defaultOrThrow(entryDef, md);
+        return BaseParser::defaultOrThrow(entryDef, md);
     }
 
     // The intention is to always store values from global parametrization as reference.
@@ -149,19 +155,19 @@ struct EntryParser<message::Metadata> : BaseEntryParser<message::Metadata> {
     static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, MD&& md) {
         if (auto search = std::forward<MD>(md).localFind(entryDef.key()); search != md.end()) {
             if constexpr (std::is_lvalue_reference_v<MD>) {
-                return search->second.visit(BaseReader::makeVisitor<false>(entryDef, md));
+                return search->second.visit(BaseParser::makeVisitor<false>(entryDef, md));
             }
             else {
-                return std::move(search->second).visit(BaseReader::makeVisitor<false>(entryDef, md));
+                return std::move(search->second).visit(BaseParser::makeVisitor<false>(entryDef, md));
             }
         }
 
         // Then do manual search on parametrization
         const auto& global = message::Parametrization::instance().get();
         if (auto search = global.localFind(entryDef.key()); search != global.end()) {
-            return search->second.visit(BaseReader::makeVisitor<true>(entryDef, md));
+            return search->second.visit(BaseParser::makeVisitor<true>(entryDef, md));
         }
-        return BaseReader::defaultOrThrow(entryDef, md);
+        return BaseParser::defaultOrThrow(entryDef, md);
     }
 };
 
@@ -171,12 +177,12 @@ struct EntryParser<message::Metadata> : BaseEntryParser<message::Metadata> {
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryDumper<message::BaseMetadata>: BaseEntryDumper<message::BaseMetadata> {
+struct EntryDumper<message::BaseMetadata> {
     template <typename EntryDef_, typename Entry_,
               std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>), bool> = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, message::BaseMetadata& md) {
         using TP = typename EntryDef_::ParserDumper;
-        // TODO think about handling missing value by setting Null ?
+        // TODO pgeier think about handling missing value by setting Null ?
         std::forward<Entry_>(entry).visit(  //
             eckit::Overloaded{[&](UnsetType v) {},
                               [&](auto&& v) {
@@ -201,10 +207,7 @@ struct EntryDumper<message::Metadata> : EntryDumper<message::BaseMetadata> {
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryParser<eckit::Configuration> : BaseEntryParser<eckit::Configuration> {
-    using Base = BaseEntryParser<eckit::Configuration>;
-    using Base::getByValue;
-
+struct EntryParser<eckit::Configuration> {
 
     template <typename T>
     static T getValueByType(const eckit::Configuration& c, const std::string& key) {
@@ -297,22 +300,32 @@ struct EntryParser<eckit::Configuration> : BaseEntryParser<eckit::Configuration>
         }
 
 
-        return visitNonNullValue(
-            key, conf,
-            eckit::Overloaded{[&]() -> Ret {
-                                  throwUnsupportedValue(entryDef.keyInfo(), conf);
-                                  return {};  // unreachable
-                              },
-                              [&](auto tt) -> Ret {
-                                  using Type = typename std::decay_t<decltype(tt)>::type;
-                                  if constexpr (TP::template CanCreateFromValue_v<Type>) {
-                                      return entryDef.makeEntry(getValueByType<Type>(conf, key));
-                                  }
-                                  else {
-                                      throwUnsupportedType(util::typeToString<Type>(), entryDef.keyInfo(), conf);
-                                  }
-                                  return {};  // unreachable
-                              }});
+        return visitNonNullValue(key, conf,
+                                 eckit::Overloaded{[&]() -> Ret {
+                                                       throwUnsupportedValue(entryDef.keyInfo(), conf);
+                                                       return {};  // unreachable
+                                                   },
+                                                   [&](auto tt) -> Ret {
+                                                       using Type = typename std::decay_t<decltype(tt)>::type;
+                                                       if constexpr (TP::template CanCreateFromValue_v<Type>) {
+                                                           return entryDef.makeEntry(getValueByType<Type>(conf, key));
+                                                       }
+                                                       else {
+                                                           throwUnsupportedType(util::typeToString<Type>(),
+                                                                                entryDef.keyInfo(), conf);
+                                                       }
+                                                       return {};  // unreachable
+                                                   }});
+    }
+
+
+    template <
+        typename EntryDef_, typename Conf,
+        std::enable_if_t<
+            (IsBaseEntryDefinition_v<EntryDef_> && std::is_base_of_v<eckit::Configuration, std::decay_t<Conf>>), bool>
+        = true>
+    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, Conf&& conf) {
+        return getByValueThroughRef<eckit::Configuration>(entryDef, std::forward<Conf>(conf));
     }
 };
 
@@ -330,10 +343,11 @@ struct EntryParser<eckit::LocalConfiguration> : EntryParser<eckit::Configuration
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryDumper<eckit::LocalConfiguration>: BaseEntryDumper<eckit::LocalConfiguration> {
-    template <typename EntryDef_, typename Entry_,
-              std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
-              = true>
+struct EntryDumper<eckit::LocalConfiguration> {
+    template <
+        typename EntryDef_, typename Entry_,
+        std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
+        = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, eckit::LocalConfiguration& conf) {
         std::forward<Entry_>(entry).visit(eckit::Overloaded{
             [&](UnsetType v) {},
@@ -355,9 +369,7 @@ struct EntryDumper<eckit::LocalConfiguration>: BaseEntryDumper<eckit::LocalConfi
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
-    using Base = BaseEntryParser<util::MioGribHandle>;
-    using Base::getByValue;
+struct EntryParser<util::MioGribHandle> {
 
     static void throwRequiredKeyDefinedButMissing(const std::string& keyInfo) {
         std::ostringstream oss;
@@ -376,14 +388,14 @@ struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
         oss << "Can not create key " << keyInfo << " from " << typeStr;
         throw DataModellingException(oss.str(), Here());
     }
-    
+
 
     template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
     static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const util::MioGribHandle& handle) {
         using TP = typename EntryDef_::ParserDumper;
         using ValueType = typename EntryDef_::ValueType;
 
-        // TODO use const char* in EntryDef for better IO
+        // TODO pgeier use const char* in EntryDef for better IO performance?
         std::string key{entryDef.key()};
 
         // For codes we always copy - no value by ref
@@ -444,7 +456,7 @@ struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
             }
             case GRIB_TYPE_BYTES:
             case GRIB_TYPE_STRING: {
-                // TODO add support for string vectors?
+                // TODO pgeier add support for string vectors?
                 if constexpr (TP::template CanCreateFromValue_v<std::string>) {
                     return entryDef.makeEntry(handle.getString(key));
                 }
@@ -464,6 +476,11 @@ struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
         }
         return {};
     }
+
+    template <typename EntryDef_, typename Conf, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
+    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, const util::MioGribHandle& gh) {
+        return getByValueThroughRef<util::MioGribHandle>(entryDef, gh);
+    }
 };
 
 
@@ -472,7 +489,7 @@ struct EntryParser<util::MioGribHandle> : BaseEntryParser<util::MioGribHandle> {
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryDumper<util::MioGribHandle> : BaseEntryDumper<util::MioGribHandle> {
+struct EntryDumper<util::MioGribHandle> {
     template <typename EntryDef_, typename Entry_, typename GH,
               std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>
                                 && std::is_base_of_v<util::MioGribHandle, std::decay_t<GH>>),

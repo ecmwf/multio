@@ -384,7 +384,7 @@ const RuleList& allRules() {
     return all_;
 }
 
-std::optional<MappingResult> applyMappings(const RuleList& rules, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+std::optional<MappingResult> applyMappings(const RuleList& rules, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     return rules(mars, misc);
 }
 

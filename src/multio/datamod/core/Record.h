@@ -20,6 +20,35 @@
 
 namespace multio::datamod {
 
+
+/// \defgroup datamod_core Reflective-lite data modelling frameork
+/// High-level overview of the (small) reflective datamodelling framework.
+/// It allows describing key/single entities as `Entry` and combine them in a `struct` (a **Record**)
+/// that allows compile-time iteration to generate parsers, dumpers, printing etc.
+
+
+/// \page datamod_usage Framework Usage Guide
+/// \ingroup datamod_core
+///
+/// # Framework Usage
+///
+/// This page explains how to use `MyFramework<T>`.
+///
+/// - `T` must satisfy the `FooConcept`.
+/// - Prefer `BarPolicy` when you need performance.
+///
+/// \section example Example
+///
+/// \code{.cpp}
+/// #include "my_framework.hpp"
+///
+/// int main() {
+///     MyFramework<int> fw;
+///         fw.run();
+/// }
+/// \endcode
+
+
 //-----------------------------------------------------------------------------
 // Definitions to handle records:
 //  * Get a constexpr name
@@ -34,7 +63,7 @@ struct RecordName {
 };
 
 
-// NOTE: Likely to be removed - introduced and used because of metadata ... but this seems to be an mistake 
+// NOTE: Likely to be removed - introduced and used because of metadata ... but this seems to be an mistake
 template <typename RecordType>
 struct ScopedRecord;
 
@@ -50,7 +79,6 @@ inline constexpr std::string_view RecordName_v = RecordName<RecordType>::name;
 
 
 //-----------------------------------------------------------------------------
-
 
 template <typename RecordType, class = void>
 struct HasRecordEntriesMember : std::false_type {};
@@ -208,13 +236,31 @@ void dispatchEntry(std::string_view key, const Rec& rec, Func&& func) {
 
 //-----------------------------------------------------------------------------
 
+/// \brief Flat composing of records
+/// \ingroup datamod_core
+/// \details `ComposedRecord<...>` allows using inheritance to combine and flatten multiple records.
+///   This is all working through C++ inheritance mechanism.
+///   The additional wrapping in `ComposedRecord<...>` ensures that all the `record_entries_`
+///   are combined properly.
+/// \see HasComposingRecords_v
+/// \see composingRecords
+/// \cond
 template <typename... Records>
 struct ComposedRecord : Records... {
     static constexpr auto record_entries_ = std::tuple_cat(recordEntries<Records>()...);
 
     static constexpr auto composing_records_ = std::make_tuple(util::TypeTag<Records>{}...);
 };
+/// \endcond
 
+/// \typedef HasComposingRecords_v
+/// \brief True for types deriving from ComposedRecord
+/// \ingroup datamod_core
+/// \details SFINAE predicate to check if a record has composing records. `false`
+///          for any other types.
+/// \see ComposedRecord
+/// \see composingRecords
+/// \cond
 template <typename RecordType, class = void>
 struct HasComposingRecords : std::false_type {};
 
@@ -223,8 +269,15 @@ struct HasComposingRecords<RecordType, std::void_t<decltype(RecordType::composin
 
 template <typename RecordType>
 inline constexpr bool HasComposingRecords_v = HasComposingRecords<RecordType>::value;
+/// \endcond
 
 
+/// \ingroup datamod_core
+/// \brief    Compile-time function to return a tuple with record types.
+/// \details  The tuple is not ment to be instantiated.
+/// \see HasComposingRecords_v
+/// \see ComposedRecord
+/// \cond
 template <typename RecordType, std::enable_if_t<HasComposingRecords_v<RecordType>, bool> = true>
 constexpr const auto& composingRecords() {
     return RecordType::composing_records_;
@@ -244,21 +297,24 @@ template <typename RecordType, std::enable_if_t<!HasComposingRecords_v<RecordTyp
 constexpr auto composingRecords(const RecordType&) {
     return std::tuple<>{};
 };
+/// \endcond
 
 //-----------------------------------------------------------------------------
 
-// To be specialized by RecordType to provide custom default setting function
-//
-// Example
-// ```
-// template <>
-// struct ApplyRecordDefaults<RecordType> {
-//    static void applyDefaults(RecordType& record) {
-//       ... custom operators like setting dependent default values
-//           or performing complex consistency checks
-//    }
-// };
-// ```
+///  To be specialized by RecordType to provide custom default setting function
+///
+///  Example
+///  ```
+///  template <>
+///  struct ApplyRecordDefaults<RecordType> {
+///     static void applyDefaults(RecordType& record) {
+///        ... custom operators like setting dependent default values
+///            or performing complex consistency checks
+///     }
+///  };
+///  ```
+/// \var template <typename RecordType>
+/// \ingroup datamod_core
 template <typename RecordType>
 struct ApplyRecordDefaults;
 

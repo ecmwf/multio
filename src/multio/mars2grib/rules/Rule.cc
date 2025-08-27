@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -15,7 +15,7 @@ namespace multio::mars2grib::rules {
 
 
 // Match and set
-bool ExclusiveRuleList::operator()(const dm::MarsRecord& rec, SectionsConf& conf) const {
+bool ExclusiveRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
     DynRule* appliedRule = nullptr;
     for (const auto& rule : rules) {
         if (rule->apply(rec, conf)) {
@@ -88,7 +88,7 @@ namespace multio::mars2grib::rules {
 
 
 // Match and set
-bool ChainedRuleList::operator()(const dm::MarsRecord& rec, SectionsConf& conf) const {
+bool ChainedRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
     bool first = true;
     for (const auto& rule : rules) {
         bool matched = rule->apply(rec, conf);

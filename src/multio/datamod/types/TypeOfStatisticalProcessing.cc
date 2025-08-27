@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -58,32 +58,59 @@ std::string DumpType<TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcess
 }
 
 TypeOfStatisticalProcessing ParseType<TypeOfStatisticalProcessing>::parse(const std::string& val) {
-    // May use a vector
-    static const std::vector<std::pair<std::string, TypeOfStatisticalProcessing>> typesOfStat{
-        {"average", TypeOfStatisticalProcessing::Average},
-        {"accumul", TypeOfStatisticalProcessing::Accumulation},
-        {"max", TypeOfStatisticalProcessing::Maximum},
-        {"min", TypeOfStatisticalProcessing::Minimum},
-        {"difference", TypeOfStatisticalProcessing::Difference},
-        {"root-mean-square", TypeOfStatisticalProcessing::RootMeanSquare},
-        {"stddev", TypeOfStatisticalProcessing::StandardDeviation},
-        {"covariance", TypeOfStatisticalProcessing::Covariance},
-        {"inverse-difference", TypeOfStatisticalProcessing::InverseDifference},  // TODO rename? stepType is sdiff
-        {"ratio", TypeOfStatisticalProcessing::Ratio},
-        {"standardized-anomaly", TypeOfStatisticalProcessing::StandardizedAnomaly},
-        {"summation", TypeOfStatisticalProcessing::Summation},
-        {"return-period", TypeOfStatisticalProcessing::ReturnPeriod},
-        {"median", TypeOfStatisticalProcessing::Median},
-        {"severity", TypeOfStatisticalProcessing::Severity},
-        {"mode", TypeOfStatisticalProcessing::Mode},
-        {"index-processing", TypeOfStatisticalProcessing::IndexProcessing},
-    };
-
-    if (auto tos
-        = std::find_if(typesOfStat.begin(), typesOfStat.end(), [&](const auto& pair) { return val == pair.first; });
-        tos != typesOfStat.end()) {
-        return tos->second;
+    if (val == "average") {
+        return TypeOfStatisticalProcessing::Average;
     }
+    if (val == "accumul") {
+        return TypeOfStatisticalProcessing::Accumulation;
+    }
+    if (val == "max") {
+        return TypeOfStatisticalProcessing::Maximum;
+    }
+    if (val == "min") {
+        return TypeOfStatisticalProcessing::Minimum;
+    }
+    if (val == "difference") {
+        return TypeOfStatisticalProcessing::Difference;
+    }
+    if (val == "root-mean-square") {
+        return TypeOfStatisticalProcessing::RootMeanSquare;
+    }
+    if (val == "stddev") {
+        return TypeOfStatisticalProcessing::StandardDeviation;
+    }
+    if (val == "covariance") {
+        return TypeOfStatisticalProcessing::Covariance;
+    }
+    // TODO rename? stepType is sdiff
+    if (val == "inverse-difference") {
+        return TypeOfStatisticalProcessing::InverseDifference;
+    }
+    if (val == "ratio") {
+        return TypeOfStatisticalProcessing::Ratio;
+    }
+    if (val == "standardized-anomaly") {
+        return TypeOfStatisticalProcessing::StandardizedAnomaly;
+    }
+    if (val == "summation") {
+        return TypeOfStatisticalProcessing::Summation;
+    }
+    if (val == "return-period") {
+        return TypeOfStatisticalProcessing::ReturnPeriod;
+    }
+    if (val == "median") {
+        return TypeOfStatisticalProcessing::Median;
+    }
+    if (val == "severity") {
+        return TypeOfStatisticalProcessing::Severity;
+    }
+    if (val == "mode") {
+        return TypeOfStatisticalProcessing::Mode;
+    }
+    if (val == "index-processing") {
+        return TypeOfStatisticalProcessing::IndexProcessing;
+    }
+
     throw DataModellingException(
         std::string("ParseType<TypeOfStatisticalProcessing>::parse Unknown value for TypeOfStatisticalProcessing: ")
             + val,

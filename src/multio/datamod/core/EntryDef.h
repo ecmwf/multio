@@ -63,14 +63,14 @@ struct ApplyDefaultValueFunctor {
     void operator()(EntryType_& v, const DefaultValueFunctor& f) const {
         // Only optional tagged keys can be missing
         if constexpr (hasDefaultValueFunctor) {
-            if (v.isUnset()) {
+            if (!v.isSet()) {
                 v.set(f());
             }
         }
 
         // Check for nested alter recursively
         if constexpr (IsRecord_v<typename std::decay_t<EntryType_>::ValueType>) {
-            if (v.has()) {
+            if (v.isSet()) {
                 applyRecordDefaults(v.modify());
             }
         }
@@ -218,14 +218,14 @@ struct BaseEntryDef {
     void validate(const EntryType& v) const {
         // Only optional tagged keys can be missing
         if constexpr (tag != EntryTag::Optional) {
-            if (v.isUnset()) {
+            if (!v.isSet()) {
                 throw DataModellingException(std::string("Unset required key: ") + this->keyInfo(), Here());
             }
         }
 
         // Check for nested validation
         if constexpr (IsRecord_v<ValueType>) {
-            if (v.has()) {
+            if (v.isSet()) {
                 validateRecord(v.get());
             }
         }

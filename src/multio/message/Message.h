@@ -42,7 +42,6 @@ namespace multio::message {
 
 namespace dm = multio::datamod;
 
-// TODO: we may want to hash the payload (and the header?)
 struct LogMessage;
 
 class Message {

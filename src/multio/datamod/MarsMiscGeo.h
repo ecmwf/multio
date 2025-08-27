@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -115,6 +115,9 @@ struct MarsFieldId {
 
     // Horizontal & Vertical
     EntryType_t<decltype(LEVTYPE)> levtype;
+    
+    // Additional statistical properties
+    EntryType_t<decltype(STATTYPE)> statType;
 
     static constexpr std::string_view record_name_ = "mars-field-id";
     static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE);
@@ -186,7 +189,7 @@ struct MarsEncodingDetails {
 // The final big composed record containing all MARS keys we use so far encoding
 //-----------------------------------------------------------------------------
 
-struct MarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
+struct FullMarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
     static constexpr std::string_view record_name_ = "mars";
 };
 
@@ -195,26 +198,25 @@ struct MarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDeta
 }  // namespace multio::datamod
 
 template <>
-struct multio::util::Print<multio::datamod::MarsRecord> : multio::datamod::PrintRecord {};
+struct multio::util::Print<multio::datamod::FullMarsRecord> : multio::datamod::PrintRecord {};
 
 namespace multio::datamod {
 
 template <>
-struct ApplyRecordDefaults<MarsRecord> {
-    static void applyDefaults(MarsRecord& mars) {
-        // TODO setting conditional defaults and perform validation
+struct ApplyRecordDefaults<FullMarsRecord> {
+    static void applyDefaults(FullMarsRecord& mars) {
         const auto& grid = mars.grid;
         const auto& trunc = mars.truncation;
         auto& repres = mars.repres;
 
-        if (grid.isUnset() && trunc.isUnset()) {
+        if (!grid.isSet() && !trunc.isSet()) {
             std::ostringstream oss;
             oss << "Either mars key 'grid' (x)or 'truncation' need to be given to describe geometry - both are "
                    "missing: ";
             util::print(oss, mars);
             throw DataModellingException(oss.str(), Here());
         }
-        if (!grid.isUnset() && !trunc.isUnset()) {
+        if (grid.isSet() && trunc.isSet()) {
             std::ostringstream oss;
             oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both are "
                    "given: ";
@@ -222,9 +224,9 @@ struct ApplyRecordDefaults<MarsRecord> {
             throw DataModellingException(oss.str(), Here());
         }
 
-        if (!grid.isUnset()) {
+        if (grid.isSet()) {
             auto detRepres = represFromGrid(grid.get());
-            if (!repres.isUnset() && (detRepres != repres.get())) {
+            if (repres.isSet() && (detRepres != repres.get())) {
                 std::ostringstream oss;
                 oss << "Passed value for repres is ";
                 util::print(oss, repres.get());
@@ -235,9 +237,9 @@ struct ApplyRecordDefaults<MarsRecord> {
             }
             repres.set(detRepres);
         }
-        else if (!trunc.isUnset()) {
+        else if (trunc.isSet()) {
             auto detRepres = Repres::SH;
-            if (!repres.isUnset() && (detRepres != repres.get())) {
+            if (repres.isSet() && (detRepres != repres.get())) {
                 std::ostringstream oss;
                 oss << "Passed value for repres is ";
                 util::print(oss, repres.get());
@@ -423,7 +425,7 @@ using Geometry = std::variant<GeoGGRecord, GeoLLRecord, GeoSHRecord, GeoHEALPixR
 using ScopedGeometry = std::variant<ScopedRecord<GeoGGRecord>, ScopedRecord<GeoLLRecord>, ScopedRecord<GeoSHRecord>,
                                     ScopedRecord<GeoHEALPixRecord>>;
 
-ScopedGeometry getGeometryRecord(const MarsRecord& mars);
+ScopedGeometry getGeometryRecord(const FullMarsRecord& mars);
 
 
 //-----------------------------------------------------------------------------

@@ -1,36 +1,49 @@
 import functools
 import os
-from PDT import categories, categorySelectorsWithMappedPdt, categoriesWithAllPossibleValues, camelToPascalCase, listAllCategoriesInOrder, defaultCategoryValue
+from PDT import (
+    categories,
+    categorySelectorsWithMappedPdt,
+    categoriesWithAllPossibleValues,
+    camelToPascalCase,
+    listAllCategoriesInOrder,
+    defaultCategoryValue,
+)
+
+# This file needs refactoring using jinja
+# Will generaed multio/mars2grib/generated/InferPDT.h
+
 
 def generateCPPEnumForCategory(categories, categoryName, setOfValues, namespace):
     """
     Produce string with valid CPP code representing a enum class for a given category.
     """
     values = []
-    default = None if (None in setOfValues) or (categoryName not in categories.name()) else defaultCategoryValue(categories[categoryName])
+    default = (
+        None
+        if (None in setOfValues) or (categoryName not in categories.name())
+        else defaultCategoryValue(categories[categoryName])
+    )
     defaultVal = default if default is None else camelToPascalCase(default)
     values.append(f"    {defaultVal} = 0,")
     for v in setOfValues.difference(set([default])):
         values.append("    {},".format(v if v is None else camelToPascalCase(v)))
 
+    enumName = camelToPascalCase(categoryName)
+    valuesStr = "\n".join(values)
 
-    enumName=camelToPascalCase(categoryName)
-    valuesStr="\n".join(values)
-    
-    readIfElse=[]
-    writeCase=[]
+    readIfElse = []
+    writeCase = []
     for v in setOfValues:
-        valName=v if v is None else camelToPascalCase(v)
+        valName = v if v is None else camelToPascalCase(v)
         values.append(f"""{{"{v}", {enumName}::{valName}}}""")
-        
+
         readIfElse.append(f"""if (s == "{v}") {{ return {enumName}::{valName}; }}""")
         writeCase.append(f"""case {enumName}::{valName}: return "{v}"; """)
-    
-    readIfElseStr="\n".join(readIfElse)
-    writeCaseStr="\n".join(writeCase)
-    
-    
-    errReadEnumValuesStr=", ".join([f"{v}" for v in setOfValues])
+
+    readIfElseStr = "\n".join(readIfElse)
+    writeCaseStr = "\n".join(writeCase)
+
+    errReadEnumValuesStr = ", ".join([f"{v}" for v in setOfValues])
     errReadEnumStr = f"Value for {categoryName} does not match on of the following [{errReadEnumValuesStr}]"
     return f"""
 namespace {namespace} {{
@@ -88,42 +101,52 @@ struct TypeToString<{namespace}::{enumName}> {{
 """
 
 
-def generateCPPPDTCatRecord(categories, categoriesWithAllPossibleValues, categoryHandleOrder,pdtCatName, namespace):
+def generateCPPPDTCatRecord(
+    categories,
+    categoriesWithAllPossibleValues,
+    categoryHandleOrder,
+    pdtCatName,
+    namespace,
+):
     """
     Produce string with valid CPP code defining a enum with all categories and a KeySet
     """
-    pdtCatStringValue="product-categories"
-    
+    pdtCatStringValue = "product-categories"
+
     catEnumValues = []
     for c in categoryHandleOrder:
         catEnumValues.append(f"    {camelToPascalCase(c)},")
 
+    catEnumValuesStr = "\n".join(catEnumValues)
 
-    catEnumValuesStr="\n".join(catEnumValues)
-    
-    
-    entryDefs=[]
+    entryDefs = []
     for index, c in enumerate(categoryHandleOrder, start=1):
-        default = None if (None in categoriesWithAllPossibleValues[c]) or (c not in categories.name()) else defaultCategoryValue(categories[c])
+        default = (
+            None
+            if (None in categoriesWithAllPossibleValues[c])
+            or (c not in categories.name())
+            else defaultCategoryValue(categories[c])
+        )
         defaultVal = default if default is None else camelToPascalCase(default)
         kdStr = f"""constexpr auto {camelToPascalCase(c)}Entry = dm::EntryDef<{camelToPascalCase(c)}>{{"{c}"}}.withDefault({camelToPascalCase(c)}::{defaultVal}).withAccessor([](auto&& v){{ return &v.{c}; }});"""
         entryDefs.append(kdStr)
-   
-    entryDefStr="\n".join(entryDefs)
 
+    entryDefStr = "\n".join(entryDefs)
 
-    entries=[]
+    entries = []
     for index, c in enumerate(categoryHandleOrder, start=1):
-        entries.append(f"""    dm::EntryType_t<decltype({camelToPascalCase(c)}Entry)> {c};""")
-   
-    entriesStr="\n".join(entries)
+        entries.append(
+            f"""    dm::EntryType_t<decltype({camelToPascalCase(c)}Entry)> {c};"""
+        )
 
-    entriesList=[]
+    entriesStr = "\n".join(entries)
+
+    entriesList = []
     for index, c in enumerate(categoryHandleOrder, start=1):
         entriesList.append(f"{camelToPascalCase(c)}Entry")
-   
-    entriesListStr=", ".join(entriesList)
-   
+
+    entriesListStr = ", ".join(entriesList)
+
     return f"""
 namespace {namespace} {{
 
@@ -165,22 +188,36 @@ struct TypeToString<{namespace}::{pdtCatName}> {{
 """
 
 
-
-
-
-def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPossibleValues, namespace):
+def generateCPP(
+    categories,
+    categorySelectorsWithMappedPdt,
+    categoriesWithAllPossibleValues,
+    namespace,
+):
     """
     Produce a string with valid CPP code that produces a function that can infer a PDT.
     """
-    enums="\n\n\n".join([generateCPPEnumForCategory(categories, k, v, namespace=namespace) for (k,v) in categoriesWithAllPossibleValues.items()])
+    enums = "\n\n\n".join(
+        [
+            generateCPPEnumForCategory(categories, k, v, namespace=namespace)
+            for (k, v) in categoriesWithAllPossibleValues.items()
+        ]
+    )
 
     categoryHandleOrder = listAllCategoriesInOrder(categories)
-    
-    pdtCatName="PDTCat"
-    
-    pdtRecord = generateCPPPDTCatRecord(categories, categoriesWithAllPossibleValues, categoryHandleOrder, pdtCatName=pdtCatName, namespace=namespace);
 
-    decisionMapTypeString = f"using DecisionMap = std::unordered_map<{pdtCatName}, std::int64_t>; "
+    pdtCatName = "PDTCat"
+
+    pdtRecord = generateCPPPDTCatRecord(
+        categories,
+        categoriesWithAllPossibleValues,
+        categoryHandleOrder,
+        pdtCatName=pdtCatName,
+        namespace=namespace,
+    )
+    decisionMapTypeString = (
+        f"using DecisionMap = std::unordered_map<{pdtCatName}, std::int64_t>; "
+    )
 
     def buildDecisionMapString(subCatList, selector, mappedSelectorList):
         if len(subCatList) == 0:
@@ -188,7 +225,9 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
                 return [([], "{}".format(mappedSelectorList[0][3][0]))]
             else:
                 # Should not occur, as already checked
-                raise ValueError(f"buildDecisionMapString: selector {selector} matches multiple or no pdts: {mappedSelectorList}")
+                raise ValueError(
+                    f"buildDecisionMapString: selector {selector} matches multiple or no pdts: {mappedSelectorList}"
+                )
 
         else:
             cat = subCatList[0]
@@ -202,29 +241,38 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
             cases = []
             for val in valsInSelectors:
+
                 def filterSelector(sel):
                     if val is None:
                         if cat not in sel.keys():
                             return True
                         else:
-                            return (sel[cat] is None)
+                            return sel[cat] is None
                     else:
                         if cat not in sel.keys():
                             return False
                         else:
-                            return (sel[cat] == val)
+                            return sel[cat] == val
 
                 # Recursion on a proper selection
-                selectorsForVal = [s for s in mappedSelectorList if filterSelector(s[0])]
+                selectorsForVal = [
+                    s for s in mappedSelectorList if filterSelector(s[0])
+                ]
 
-                
-                default = None if (None in categoriesWithAllPossibleValues[cat]) or (cat not in categories.name()) else defaultCategoryValue(categories[cat])
+                default = (
+                    None
+                    if (None in categoriesWithAllPossibleValues[cat])
+                    or (cat not in categories.name())
+                    else defaultCategoryValue(categories[cat])
+                )
                 defaultVal = default if default is None else camelToPascalCase(default)
-        
-                enumVal= val if val is None else camelToPascalCase(val)
+
+                enumVal = val if val is None else camelToPascalCase(val)
                 kvStr = f"{enumName}::{enumVal}"
 
-                for (subEnums, pdtVal) in buildDecisionMapString(subCatList[1:], {cat: val, **selector}, selectorsForVal):
+                for subEnums, pdtVal in buildDecisionMapString(
+                    subCatList[1:], {cat: val, **selector}, selectorsForVal
+                ):
                     # Remove this if cond when None/default should be explicitly in the list
                     if val is None:
                         # Basically just forward
@@ -234,10 +282,17 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
             return cases
 
-    decisionMapCases=buildDecisionMapString(categoryHandleOrder, {}, categorySelectorsWithMappedPdt)
-    
-    decisionMapCasesStr=",\n".join([f"""{{{pdtCatName}{{ {", ".join(subEnums)} }}, {pdtVal} }}""" for (subEnums, pdtVal) in decisionMapCases])
-    decisionMap=f"""{{{decisionMapCasesStr}}}""" # Wrapped in initializer list
+    decisionMapCases = buildDecisionMapString(
+        categoryHandleOrder, {}, categorySelectorsWithMappedPdt
+    )
+
+    decisionMapCasesStr = ",\n".join(
+        [
+            f"""{{{pdtCatName}{{ {", ".join(subEnums)} }}, {pdtVal} }}"""
+            for (subEnums, pdtVal) in decisionMapCases
+        ]
+    )
+    decisionMap = f"""{{{decisionMapCasesStr}}}"""  # Wrapped in initializer list
     return f"""
 #pragma once
 
@@ -323,12 +378,21 @@ std::int64_t inferProductDefinitionTemplateNumber(const {pdtCatName}& pdtCat) co
 """
 
 
-
 def generateCPPTestInclude(categorySelectorsWithMappedPdt, namespace):
     """
     Produce a string with valid CPP code that contains a vector with an pairs of ptd and an unordered map as selector it should be mapped by
     """
-    vals = ", ".join(["""{{{pdt}, {{{selStr}}} }}""".format(pdt=s[3][0], selStr=", ".join(["""{{ "{}", "{}" }}""".format(k,v) for (k,v) in s[0].items()])) for s in categorySelectorsWithMappedPdt])
+    vals = ", ".join(
+        [
+            """{{{pdt}, {{{selStr}}} }}""".format(
+                pdt=s[3][0],
+                selStr=", ".join(
+                    ["""{{ "{}", "{}" }}""".format(k, v) for (k, v) in s[0].items()]
+                ),
+            )
+            for s in categorySelectorsWithMappedPdt
+        ]
+    )
     return f"""
 #pragma once
 #include <vector>
@@ -350,24 +414,30 @@ const static std::vector<PdtWithSelector> mappedPdtAndSelectors{{
 """
 
 
-namespace="multio::mars2grib::rules"
+namespace = "multio::mars2grib::rules"
+
 
 def clangFormat(fname):
     os.system(f"clang-format -i {fname}")
 
+
 # Gen C++
-cppFile='../../../src/multio/mars2grib/generated/InferPDT.h'
+cppFile = "../../../src/multio/mars2grib/generated/InferPDT.h"
 with open(cppFile, "w") as outFile:
-    cppString = generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPossibleValues, namespace=namespace)
+    cppString = generateCPP(
+        categories,
+        categorySelectorsWithMappedPdt,
+        categoriesWithAllPossibleValues,
+        namespace=namespace,
+    )
     outFile.write(cppString)
 clangFormat(cppFile)
-    
 
-cppTestFile='../../../src/multio/mars2grib/generated/InferPDTTest.h'
+
+cppTestFile = "../../../src/multio/mars2grib/generated/InferPDTTest.h"
 with open(cppTestFile, "w") as outFile:
-    cppString = generateCPPTestInclude(categorySelectorsWithMappedPdt, namespace=namespace)
+    cppString = generateCPPTestInclude(
+        categorySelectorsWithMappedPdt, namespace=namespace
+    )
     outFile.write(cppString)
 clangFormat(cppTestFile)
-
-
-

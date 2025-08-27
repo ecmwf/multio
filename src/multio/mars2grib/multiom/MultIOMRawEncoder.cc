@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -19,10 +19,10 @@
 namespace multio::mars2grib {
 
 
-MultIOMRawEncoder::MultIOMRawEncoder(const MultIOMDict& options, const eckit::LocalConfiguration& conf) {
+MultIOMRawEncoder::MultIOMRawEncoder(const eckit::LocalConfiguration& conf) {
     void* handle = NULL;
     if (multio_grib2_raw_encoder_open(
-            options.get(),
+            nullptr,
             static_cast<void*>(const_cast<eckit::Configuration*>(static_cast<const eckit::Configuration*>(&conf))),
             &handle)
         != 0) {
@@ -61,7 +61,7 @@ std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::allocateAndPreset(std::u
 };
 
 // Applies runtime changes on a prepared samel
-// TODO: Should not take geometry  - will be changed after C++ migration
+// TODO pgeier: Should not take geometry  - will be changed after C++ migration
 std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::runtime(std::unique_ptr<util::MioGribHandle> workSample,
                                                                 const MultIOMDict& mars, const MultIOMDict& par,
                                                                 const MultIOMDict& geo) {

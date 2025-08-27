@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -26,9 +26,9 @@ namespace dm = multio::datamod;
 //-----------------------------------------------------------------------------
 
 // Note - currently the only keys we do not include are direction and frequency.
-// Hence it would be enough to reuse the MarsRecord and just unset these keys.
+// Hence it would be enough to reuse the FullMarsRecord and just unset these keys.
 // However with this approach it is made explicit that there is a further logic happening
-// that should be distinguished from the existing MarsRecord.
+// that should be distinguished from the existing FullMarsRecord.
 
 struct MarsCacheRecord {
     dm::EntryType_t<decltype(dm::ORIGIN)> origin;
@@ -39,7 +39,9 @@ struct MarsCacheRecord {
     dm::EntryType_t<decltype(dm::PARAM)> param;
     dm::EntryType_t<decltype(dm::DATE)> date;
     dm::EntryType_t<decltype(dm::TIME)> time;
-    dm::EntryType_t<decltype(dm::STEP)> step;
+    // Caching is step independent
+    // TODO(pgeier) also remove other timeinformation for caching - not changing overall structure. For MULTIOM
+    // RawEncoders they are expected dm::EntryType_t<decltype(dm::STEP)> step;
     dm::EntryType_t<decltype(dm::LEVTYPE)> levtype;
     dm::EntryType_t<decltype(dm::LEVELIST)> levelist;
     dm::EntryType_t<decltype(dm::MODEL)> model;
@@ -70,7 +72,7 @@ struct MarsCacheRecord {
 
     static constexpr std::string_view record_name_ = "mars";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::ORIGIN, dm::CLASS, dm::STREAM, dm::TYPE, dm::EXPVER, dm::PARAM, dm::DATE, dm::TIME, dm::STEP, dm::LEVTYPE,
+        dm::ORIGIN, dm::CLASS, dm::STREAM, dm::TYPE, dm::EXPVER, dm::PARAM, dm::DATE, dm::TIME, dm::LEVTYPE,
         dm::LEVELIST, dm::MODEL, dm::RESOLUTION, dm::ACTIVITY, dm::EXPERIMENT, dm::GENERATION, dm::REALIZATION,
         dm::TIMESPAN, dm::ANOFFSET, dm::PACKING, dm::NUMBER, dm::IDENT, dm::INSTRUMENT, dm::CHANNEL, dm::CHEM,
         dm::WAVELENGTH, dm::HDATE, dm::DATASET, dm::METHOD, dm::SYSTEM, dm::GRID, dm::TRUNCATION, dm::REPRES);
@@ -84,7 +86,7 @@ template <>
 struct ApplyRecordDefaults<mars2grib::MarsCacheRecord> {
     static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
 
-        if (cacheKeys.levtype.has() && cacheKeys.levtype.get() == LevType::ML) {
+        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == LevType::ML) {
             cacheKeys.levelist.unset();
         }
 

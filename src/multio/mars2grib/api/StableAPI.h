@@ -39,7 +39,7 @@ struct MarsValues {
 
     // Implementation  detail
     // Can change in the future
-    dm::MarsRecord values_;
+    dm::FullMarsRecord values_;
 };
 
 
@@ -111,20 +111,18 @@ enum class GeometryType : std::size_t
 
 struct GeometryValues {
 
-    /**
-     * @brief Set the geometry type.
-     *
-     * This function sets the geometry type for the object.
-     * Clears all values if the same type is set twice.
-     *
-     * @param type The geometry type identifier. Valid values are:
-     *  - `"gg"`       : Galactocentric grid
-     *  - `"sh"`       : Spherical harmonics
-     *  - `"HEALPix"`  : HEALPix tessellation
-     *  - `"ll"`       : Latitude-longitude grid
-     *
-     * @throws Mars2GribException if `type` is not one of the valid values.
-     */
+    /// @brief Set the geometry type.
+    ///
+    /// This function sets the geometry type for the object.
+    /// Clears all values if the same type is set twice.
+    ///
+    /// \param type The geometry type identifier. Valid values are:
+    ///  - `"gg"`       : Galactocentric grid
+    ///  - `"sh"`       : Spherical harmonics
+    ///  - `"HEALPix"`  : HEALPix tessellation
+    ///  - `"ll"`       : Latitude-longitude grid
+    ///
+    /// \throws Mars2GribException if `type` is not one of the valid values.
     void setGeometryType(const std::string& key);
     void setGeometryType(GeometryType key);
 

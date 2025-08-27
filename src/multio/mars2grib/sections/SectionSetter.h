@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -50,25 +50,25 @@ struct DynSectionSetter {
 
 
     // Default implementation is to do nothing
-    virtual void prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    virtual void prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                          const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    virtual void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                           const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    virtual void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                         const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    virtual void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                          const dm::Geometry&) const;
 
 
     // Implement a check method that is throwing on inconsistencies
-    virtual void check(const util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    virtual void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                        const dm::Geometry&) const;
 
     // // Implement a check method that is adding dynamic key information to give feed back on requirements
-    // virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::MarsRecord&) const;
+    // virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const;
 
     virtual ~DynSectionSetter() = default;
 };
@@ -79,21 +79,21 @@ public:
     // Registers a new section
     void add(std::unique_ptr<DynSectionSetter>);
 
-    void prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const;
-    void allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                   const dm::Geometry&) const;
-    void preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                 const dm::Geometry&) const;
-    void runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const;
 
-    void check(const util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+    void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                const dm::Geometry&) const;
 
-    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::MarsRecord&) const;
+    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const;
 
-    // void writeKeyInfo(std::ostream&, const dm::MarsRecord&) const;
+    // void writeKeyInfo(std::ostream&, const dm::FullMarsRecord&) const;
 
 private:
     // Storage of all sections

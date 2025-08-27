@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -7,12 +7,6 @@
  * granted to it by virtue of its status as an intergovernmental organisation
  * nor does it submit to any jurisdiction.
  */
-
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
-
-/// @date Oct 2019
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +38,6 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2grib/api/RawAPI.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/Print.h"
@@ -84,36 +77,36 @@ KeySet iterateMarsNamespace(const eckit::message::Message& msg) {
 
 namespace extract {
 
-using GridTypeFunction = std::function<dm::Geometry(util::MioGribHandle&, dm::MarsRecord&, dm::MiscRecord&)>;
+using GridTypeFunction = std::function<dm::Geometry(util::MioGribHandle&, dm::FullMarsRecord&, dm::MiscRecord&)>;
 
-dm::Geometry handleReducedGG(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleReducedGG(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     mars.repres.set(dm::Repres::GG);
     return dm::readRecord<dm::GeoGGRecord>(h);
 }
 
-dm::Geometry handleReducedGGAtlas(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleReducedGGAtlas(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     dm::GeoGGRecord geoGG;
     mars.repres.set(dm::Repres::GG);
     mars.grid.set(h.getString("gridName"));
-    dm::setKeysFromAtlas(geoGG, mars.grid);
+    dm::setKeysFromAtlas(geoGG, mars.grid.get());
     return geoGG;
 }
 
-dm::Geometry handleSH(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
-    // TODO implement with details
+dm::Geometry handleSH(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+    // TODO pgeier implement with details
     mars.repres.set(dm::Repres::SH);
     return dm::readRecord<dm::GeoSHRecord>(h);
 }
 
-dm::Geometry handleLL(util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
-    // TODO implement with details
+dm::Geometry handleLL(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+    // TODO pgeier implement with details
     mars.repres.set(dm::Repres::LL);
     return dm::readRecord<dm::GeoLLRecord>(h);
 }
 
-dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType, dm::MarsRecord& mars,
+dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
                             dm::MiscRecord& misc) {
-    // TODO add HealPpx
+    // TODO pgeier add HealPpx
     const static std::unordered_map<std::string, GridTypeFunction> gridMap{
         {"reduced_gg", &handleReducedGGAtlas},
         {"regular_ll", &handleLL},
@@ -127,7 +120,7 @@ dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType,
     return gridTypeFunc->second(h, mars, misc);
 };
 
-void handlePackingType(util::MioGribHandle& h, const std::string& packingType, dm::MarsRecord& mars) {
+void handlePackingType(util::MioGribHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
         {"grid_simple", "simple"},
         {"grid_complex", "complex"},
@@ -142,7 +135,7 @@ void handlePackingType(util::MioGribHandle& h, const std::string& packingType, d
     mars.packing.set(packingTypeVal->second);
 };
 
-void handleChemId(util::MioGribHandle& h, dm::MarsRecord& mars) {
+void handleChemId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
     const static std::unordered_map<long, long> chemIdMap{{228080, 3}, {228081, 3}, {228082, 3},
                                                           {228083, 3}, {228084, 3}, {228085, 3}};
 
@@ -152,7 +145,7 @@ void handleChemId(util::MioGribHandle& h, dm::MarsRecord& mars) {
     }
 }
 
-void handleParamId(util::MioGribHandle& h, dm::MarsRecord& mars) {
+void handleParamId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
     // Map taken from eccodes
     // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
     long initParamId = h.getLong("paramId");
@@ -270,7 +263,7 @@ void handleStepRange(util::MioGribHandle& h, dm::MarsRecord& mars) {
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -295,7 +288,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
 
     mars.model = dm::parseEntry(dm::MODEL, h);
     mars.levtype = dm::parseEntry(dm::LEVTYPE, h);
-    if (mars.levtype.has()) {
+    if (mars.levtype.isSet()) {
         // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
         if (h.hasKey("level")) {
             std::optional<long> levelist;
@@ -325,7 +318,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
 
     // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
     {
-        // TODO - this will cause problems with referenceDate/time in grib2....
+        // TODO pgeier - this will cause problems with referenceDate/time in grib2....
         long hh = h.getLong("hour");
         long mm = h.getLong("minute");
         long ss = h.getLong("second");
@@ -361,7 +354,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
 
     handleMissingValue(h, misc);
 
-    // TODO set it again ??
+    // TODO pgeier set it again ??
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator, h);
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
@@ -379,7 +372,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
             mars.number.set(number);
             misc.numberOfForecastsInEnsemble.set(numForecasts);
 
-            if (mars.klass.has() && mars.klass.get() == "ai") {
+            if (mars.klass.isSet() && mars.klass.get() == "ai") {
                 // Handled in the encoder
             }
             else if (h.hasKey("typeOfEnsembleForecast")) {
@@ -396,11 +389,11 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::MarsR
     misc.lengthOfTimeWindowInSeconds = dm::parseEntry(dm::LengthOfTimeWindowInSeconds, h);
     misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withDefault(24), h);
 
-    // TODO readd maybe
+    // TODO pgeier readd maybe
     // getAndSet(h, parDict, "periodMin");
     // getAndSet(h, parDict, "periodMax");
 
-    // TODO waveDirections/waveFrequencies may be renamed to the GRIB name
+    // TODO pgeier waveDirections/waveFrequencies may be renamed to the GRIB name
     if (h.hasKey("scaledValuesOfWaveDirections")) {
         misc.waveDirections.set(h.getDoubleArray("scaledValuesOfWaveDirections"));
     }
@@ -928,7 +921,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
     outputFileHandle.openForWrite(0);
 
-    // TODO add to mars2grib if necessary
+    // TODO pgeier add to mars2grib if necessary
     // optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
     // optDict.set("print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0));
 
@@ -937,7 +930,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Message msg;
     while ((msg = reader.next())) {
         // Extract message from datahandle... we expect it to be a memory handle
-        // TODO: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
+        // TODO pgeier: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
         std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
         eckit::MemoryHandle* mh = reinterpret_cast<eckit::MemoryHandle*>(dh.get());
 
@@ -992,7 +985,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
         else {
 
             // now inputHandle is save to use
-            dm::MarsRecord mars;
+            dm::FullMarsRecord mars;
             dm::MiscRecord misc;
 
             KeySet marsKeys = iterateMarsNamespace(inputMsg);
@@ -1040,7 +1033,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             }
 
             if (mappingRules_) {
-                // TODO use upcoming C++ interface
+                // TODO pgeier use upcoming C++ interface
                 auto mappingResult = mars2mars::applyMappings(*mappingRules_, mars, misc);
 
                 if (mappingResult && mappingResult->valuesScaleFactor) {
@@ -1055,7 +1048,6 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             datamod::applyRecordDefaults(misc);
             datamod::validateRecord(misc);
 
-            // TODO use upcoming C++ interface
             std::unique_ptr<util::MioGribHandle> preparedHandle = mars2grib.getHandle(mars, misc, geo);
             preparedHandle->setDataValues(values);
 

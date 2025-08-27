@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -29,7 +29,7 @@ namespace dm = multio::datamod;
 struct DynSetter {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual void set(dm::MarsRecord&, dm::MiscRecord&, MappingResult&) const = 0;
+    virtual void set(dm::FullMarsRecord&, dm::MiscRecord&, MappingResult&) const = 0;
     virtual void print(util::PrintStream&) const = 0;
 
     virtual ~DynSetter() = default;
@@ -41,7 +41,7 @@ struct SetScaleFactor : DynSetter {
     double value;
     SetScaleFactor(double val) : value(val) {}
 
-    void set(dm::MarsRecord&, dm::MiscRecord&, MappingResult& mapRes) const override {
+    void set(dm::FullMarsRecord&, dm::MiscRecord&, MappingResult& mapRes) const override {
         if (mapRes.valuesScaleFactor) {
             std::ostringstream oss;
             util::PrintStream ps(oss);
@@ -65,7 +65,7 @@ struct SetMarsKey : DynSetter {
     std::reference_wrapper<const EntryDef_> entryDef_;
     dm::EntryType_t<EntryDef_> value;
 
-    void set(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
+    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
         entryDef_.get().get(marsVals) = value;
     }
     void print(util::PrintStream& ps) const override { ps << "SetMarsKey(" << value << ")"; }
@@ -92,7 +92,7 @@ struct SetMiscKey : DynSetter {
     std::reference_wrapper<const EntryDef_> entryDef_;
     dm::EntryType_t<EntryDef_> value;
 
-    void set(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
+    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
         entryDef_.get().get(miscVals) = value;
     }
     void print(util::PrintStream& ps) const override { ps << "SetMiscKey(" << value << ")"; }
@@ -115,7 +115,7 @@ SetMiscKey<EntryDef_> setMiscKey(const EntryDef_& entryDef, dm::EntryValueType_t
 struct SetAll : DynSetter {
     std::vector<std::unique_ptr<DynSetter>> setters;
 
-    void set(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult& mapRes) const override {
+    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult& mapRes) const override {
         for (const auto& dynSetter : setters) {
             dynSetter.get()->set(marsVals, miscVals, mapRes);
         }

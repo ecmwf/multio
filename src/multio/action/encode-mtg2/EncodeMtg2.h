@@ -14,7 +14,6 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/api/RawAPI.h"
 
 
@@ -54,7 +53,7 @@ private:
 
     void print(std::ostream& os) const override;
 
-    // TODO this option will be renamed and the action should get it own struct with parsing capabilities again
+    // TODO pgeier this option will be renamed and the action should get it own struct with parsing capabilities again
     EncodeMtg2Options opts_;
     mars2grib::Mars2GribRaw mars2grib_;
 };

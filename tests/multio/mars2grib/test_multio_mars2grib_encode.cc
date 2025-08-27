@@ -19,7 +19,6 @@
 
 #include "multio/datamod/AtlasGeo.h"
 
-#include "multio/mars2grib/Options.h"
 #include "multio/message/Metadata.h"
 
 #include "multio/util/SampleMetadataGen.h"
@@ -40,7 +39,7 @@ CASE("Test cache.getHandle with AIFS single keys") {
 
     for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             auto geo = dm::makeUnscopedGeometry(mars);
             auto handle = cache.getHandle(mars, misc, geo);
         }
@@ -64,7 +63,7 @@ CASE("Test cache.getHandle with AIFS ens keys") {
 
     for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             auto geo = dm::makeUnscopedGeometry(mars);
             auto handle = cache.getHandle(mars, misc, geo);
         }

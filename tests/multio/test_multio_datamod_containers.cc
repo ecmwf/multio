@@ -82,9 +82,9 @@ CASE("Test metadata by value from global parametrization") {
         EXPECT_EQUAL(testKeysRef.key1.get(), "val1");
         EXPECT_EQUAL(testKeysRef.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysRef.key3.get(), 3);
-        EXPECT_EQUAL(testKeysRef.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key4.isSet(), false);
         EXPECT_EQUAL(testKeysRef.key5.get(), true);
-        EXPECT_EQUAL(testKeysRef.key6.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key6.isSet(), false);
 
         EXPECT_EQUAL(testKeysRef.key1.value.index(), VARIANT_REF_INDEX);
         EXPECT_EQUAL(testKeysRef.key2.value.index(), VARIANT_REF_INDEX);
@@ -100,9 +100,9 @@ CASE("Test metadata by value from global parametrization") {
         EXPECT_EQUAL(testKeysValue.key1.get(), "val1");
         EXPECT_EQUAL(testKeysValue.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysValue.key3.get(), 3);
-        EXPECT_EQUAL(testKeysValue.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key4.isSet(), false);
         EXPECT_EQUAL(testKeysValue.key5.get(), true);
-        EXPECT_EQUAL(testKeysValue.key6.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key6.isSet(), false);
 
         EXPECT_EQUAL(testKeysValue.key1.value.index(), VARIANT_VAL_INDEX);
         EXPECT_EQUAL(testKeysValue.key2.value.index(), VARIANT_VAL_INDEX);
@@ -121,9 +121,9 @@ CASE("Test metadata by value from global parametrization") {
         EXPECT_EQUAL(testKeysRef.key1.get(), "val1");
         EXPECT_EQUAL(testKeysRef.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysRef.key3.get(), 3);
-        EXPECT_EQUAL(testKeysRef.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key4.isSet(), false);
         EXPECT_EQUAL(testKeysRef.key5.get(), true);
-        EXPECT_EQUAL(testKeysRef.key6.has(), true);
+        EXPECT_EQUAL(testKeysRef.key6.isSet(), true);
         EXPECT_EQUAL(testKeysRef.key6.get(), (std::vector<double>{{1.0, 2.0, 3.0}}));
 
         EXPECT_EQUAL(testKeysRef.key1.value.index(), VARIANT_REF_INDEX);
@@ -141,9 +141,9 @@ CASE("Test metadata by value from global parametrization") {
         EXPECT_EQUAL(testKeysValue.key1.get(), "val1");
         EXPECT_EQUAL(testKeysValue.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysValue.key3.get(), 3);
-        EXPECT_EQUAL(testKeysValue.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key4.isSet(), false);
         EXPECT_EQUAL(testKeysValue.key5.get(), true);
-        EXPECT_EQUAL(testKeysValue.key6.has(), true);
+        EXPECT_EQUAL(testKeysValue.key6.isSet(), true);
         EXPECT_EQUAL(testKeysValue.key6.get(), (std::vector<double>{{1.0, 2.0, 3.0}}));
 
         EXPECT_EQUAL(testKeysValue.key1.value.index(), VARIANT_VAL_INDEX);
@@ -169,9 +169,9 @@ CASE("Test metadata by value from global parametrization (scoped)") {
         EXPECT_EQUAL(testKeysRef.key1.get(), "val1");
         EXPECT_EQUAL(testKeysRef.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysRef.key3.get(), 3);
-        EXPECT_EQUAL(testKeysRef.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key4.isSet(), false);
         EXPECT_EQUAL(testKeysRef.key5.get(), true);
-        EXPECT_EQUAL(testKeysRef.key6.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key6.isSet(), false);
 
         EXPECT_EQUAL(testKeysRef.key1.value.index(), VARIANT_REF_INDEX);
         EXPECT_EQUAL(testKeysRef.key2.value.index(), VARIANT_REF_INDEX);
@@ -189,9 +189,9 @@ CASE("Test metadata by value from global parametrization (scoped)") {
         EXPECT_EQUAL(testKeysValue.key1.get(), "val1");
         EXPECT_EQUAL(testKeysValue.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysValue.key3.get(), 3);
-        EXPECT_EQUAL(testKeysValue.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key4.isSet(), false);
         EXPECT_EQUAL(testKeysValue.key5.get(), true);
-        EXPECT_EQUAL(testKeysValue.key6.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key6.isSet(), false);
 
         EXPECT_EQUAL(testKeysValue.key1.value.index(), VARIANT_VAL_INDEX);
         EXPECT_EQUAL(testKeysValue.key2.value.index(), VARIANT_VAL_INDEX);
@@ -212,9 +212,9 @@ CASE("Test metadata by value from global parametrization (scoped)") {
         EXPECT_EQUAL(testKeysRef.key1.get(), "val1");
         EXPECT_EQUAL(testKeysRef.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysRef.key3.get(), 3);
-        EXPECT_EQUAL(testKeysRef.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysRef.key4.isSet(), false);
         EXPECT_EQUAL(testKeysRef.key5.get(), true);
-        EXPECT_EQUAL(testKeysRef.key6.has(), true);
+        EXPECT_EQUAL(testKeysRef.key6.isSet(), true);
         EXPECT_EQUAL(testKeysRef.key6.get(), (std::vector<double>{{1.0, 2.0, 3.0}}));
 
         EXPECT_EQUAL(testKeysRef.key1.value.index(), VARIANT_REF_INDEX);
@@ -234,9 +234,9 @@ CASE("Test metadata by value from global parametrization (scoped)") {
         EXPECT_EQUAL(testKeysValue.key1.get(), "val1");
         EXPECT_EQUAL(testKeysValue.key2.get(), 2.0);
         EXPECT_EQUAL(testKeysValue.key3.get(), 3);
-        EXPECT_EQUAL(testKeysValue.key4.isUnset(), true);
+        EXPECT_EQUAL(testKeysValue.key4.isSet(), false);
         EXPECT_EQUAL(testKeysValue.key5.get(), true);
-        EXPECT_EQUAL(testKeysValue.key6.has(), true);
+        EXPECT_EQUAL(testKeysValue.key6.isSet(), true);
         EXPECT_EQUAL(testKeysValue.key6.get(), (std::vector<double>{{1.0, 2.0, 3.0}}));
 
         EXPECT_EQUAL(testKeysValue.key1.value.index(), VARIANT_VAL_INDEX);
@@ -264,9 +264,9 @@ CASE("Test parse simple config 1") {
     EXPECT_EQUAL(testKeys.key1.get(), "val1");
     EXPECT_EQUAL(testKeys.key2.get(), 2.0);
     EXPECT_EQUAL(testKeys.key3.get(), 3);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
     EXPECT_EQUAL(testKeys.key5.get(), true);
-    EXPECT_EQUAL(testKeys.key6.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key6.isSet(), false);
 };
 
 
@@ -289,7 +289,7 @@ CASE("Test parse simple config 2") {
     EXPECT_EQUAL(testKeys.key3.get(), 3);
     EXPECT_EQUAL(testKeys.key4.get(), 4);
     EXPECT_EQUAL(testKeys.key5.get(), true);
-    EXPECT_EQUAL(testKeys.key6.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key6.isSet(), false);
 };
 
 
@@ -310,9 +310,9 @@ CASE("Test parse simple config 3") {
     EXPECT_EQUAL(testKeys.key1.get(), "val1");
     EXPECT_EQUAL(testKeys.key2.get(), 2.0);
     EXPECT_EQUAL(testKeys.key3.get(), 3);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
     EXPECT_EQUAL(testKeys.key5.get(), true);
-    EXPECT_EQUAL(testKeys.key6.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key6.isSet(), false);
 };
 
 
@@ -364,11 +364,11 @@ CASE("Test parse config with int arr") {
     EXPECT_EQUAL(testKeys.key1.get(), "val1");
     EXPECT_EQUAL(testKeys.key2.get(), 2.0);
     EXPECT_EQUAL(testKeys.key3.get(), 3);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
     EXPECT_EQUAL(testKeys.key5.get(), true);
 
     auto& k6 = testKeys.key6;
-    EXPECT_EQUAL(k6.isUnset(), false);
+    EXPECT_EQUAL(k6.isSet(), true);
     EXPECT_EQUAL((k6.get()[0]), 1.0);
     EXPECT_EQUAL((k6.get()[1]), 2.0);
     EXPECT_EQUAL((k6.get()[2]), 3.0);

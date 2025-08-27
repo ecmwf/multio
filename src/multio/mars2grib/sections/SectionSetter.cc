@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -19,17 +19,17 @@ namespace multio::mars2grib::sections {
 //-----------------------------------------------------------------------------
 
 
-void DynSectionSetter::prepare(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                const dm::Geometry&) const {}
-void DynSectionSetter::allocate(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                 const dm::Geometry&) const {}
-void DynSectionSetter::preset(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                               const dm::Geometry&) const {}
-void DynSectionSetter::runtime(util::MioGribHandle&, const dm::MarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                const dm::Geometry&) const {}
-void DynSectionSetter::check(const util::MioGribHandle&, const dm::MarsRecord&,
+void DynSectionSetter::check(const util::MioGribHandle&, const dm::FullMarsRecord&,
                              const dm::MiscRecord&, const dm::Geometry&) const {}
-// void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const dm::MarsRecord&) const {}
+// void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const dm::FullMarsRecord&) const {}
 
 
 void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
@@ -54,49 +54,49 @@ void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
     }
 }
 
-void SectionCollector::prepare(util::MioGribHandle& h, const dm::MarsRecord& mars,
+void SectionCollector::prepare(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
                                const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : prepare_) {
         secRef.get().prepare(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::allocate(util::MioGribHandle& h, const dm::MarsRecord& mars,
+void SectionCollector::allocate(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
                                 const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : allocate_) {
         secRef.get().allocate(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::preset(util::MioGribHandle& h, const dm::MarsRecord& mars,
+void SectionCollector::preset(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
                               const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : preset_) {
         secRef.get().preset(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::runtime(util::MioGribHandle& h, const dm::MarsRecord& mars,
+void SectionCollector::runtime(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
                                const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().runtime(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::check(const util::MioGribHandle& h, const dm::MarsRecord& mars,
+void SectionCollector::check(const util::MioGribHandle& h, const dm::FullMarsRecord& mars,
                              const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().check(h, mars, misc, geo);
     }
 }
 
-// void SectionCollector::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::MarsRecord& mars) const {
+// void SectionCollector::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::FullMarsRecord& mars) const {
 //     for (auto secRef : runtime_) {
 //         secRef.get().collectKeyInfo(req, opt, mars);
 //     }
 // }
 
 
-// void SectionCollector::writeKeyInfo(std::ostream& os, const dm::MarsRecord& mars) const {
+// void SectionCollector::writeKeyInfo(std::ostream& os, const dm::FullMarsRecord& mars) const {
 //     KeyInfoList req;
 //     KeyInfoList opt;
 //     collectKeyInfo(req, opt, mars);

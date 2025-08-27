@@ -15,8 +15,9 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/EncoderConf.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/util/Substitution.h"
+
+#include "multio/LibMultio.h"
 
 #include <unordered_set>
 
@@ -25,18 +26,12 @@ namespace multio::test {
 
 namespace dm = multio::datamod;
 
-mars2grib::EncodeMtg2Conf getConf() {
-    mars2grib::EncodeMtg2Conf opts;
-    dm::applyRecordDefaults(opts);
-    dm::validateRecord(opts);
+eckit::PathName encodeRulesPath() {
+    const auto root = multio::LibMultio::instance().libraryHome();
+    setenv("IFS_INSTALL_DIR", root.c_str(), 0);
 
-    auto& root = opts.knowledgeRoot.get();
-    opts.encodingRules.set(root + "/share/multiom/encodings/encoding-rules.yaml");
-
-    setenv("IFS_INSTALL_DIR", std::string(root).c_str(), 0);
-
-    return opts;
-};
+    return root + "/share/multiom/encodings/encoding-rules.yaml";
+}
 
 struct LoadedConf {
     eckit::PathName file;
@@ -139,8 +134,8 @@ bool compareLocalConf(const eckit::LocalConfiguration& lhs, const eckit::LocalCo
     return true;
 };
 
-std::vector<LoadedConf> loadRuleFiles(const mars2grib::EncodeMtg2Conf& opts) {
-    auto rules = eckit::LocalConfiguration{eckit::YAMLConfiguration{opts.encodingRules.get()}};
+std::vector<LoadedConf> loadRuleFiles() {
+    auto rules = eckit::LocalConfiguration{eckit::YAMLConfiguration{encodeRulesPath()}};
     if (!rules.has("encoding-rules")) {
         std::ostringstream oss;
         oss << "No key \"encoding-rules\" in rules file " << rules << std::endl;
@@ -161,7 +156,7 @@ std::vector<LoadedConf> loadRuleFiles(const mars2grib::EncodeMtg2Conf& opts) {
 
 
 CASE("Test parsing and comparing rule files") {
-    for (const auto& loadedRule : loadRuleFiles(getConf())) {
+    for (const auto& loadedRule : loadRuleFiles()) {
         using namespace datamod;
         std::cout << "Parsing and comparing rule: " << loadedRule.file << std::endl;
 

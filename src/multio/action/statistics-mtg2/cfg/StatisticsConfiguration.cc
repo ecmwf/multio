@@ -84,7 +84,7 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
     // auto gridType = md.find("grid");  // New MTG2 name
 
     // TODO use whole validated keyset...
-    if (const auto& grid = dm::parseEntry(dm::GRID, md); grid.has()) {
+    if (const auto& grid = dm::parseEntry(dm::GRID, md); grid.isSet()) {
         gridType_ = grid.get();
         return;
     }
@@ -113,7 +113,7 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
 
     // TODO use whole validated keyset...
-    if (const auto& grid = dm::parseEntry(dm::PARAM, md); grid.has()) {
+    if (const auto& grid = dm::parseEntry(dm::PARAM, md); grid.isSet()) {
         param_ = std::to_string(grid.get());
     }
 

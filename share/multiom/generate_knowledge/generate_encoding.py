@@ -91,8 +91,14 @@ GRIDS_SH = [
 
 # Class d1 is hacked - we don't expect to have conditions on other classes. Also the local template numbers are hacked in the encoders
 LOCALSECTION = [
-    partialRule([lacksType("anoffset"), notMatchType("class", "d1"), lacksType("method")], [localUse(1)]),
-    partialRule([lacksType("anoffset"), notMatchType("class", "d1"), hasType("method")], [localUse(15)]),
+    partialRule(
+        [lacksType("anoffset"), notMatchType("class", "d1"), lacksType("method")],
+        [localUse(1)],
+    ),
+    partialRule(
+        [lacksType("anoffset"), notMatchType("class", "d1"), hasType("method")],
+        [localUse(15)],
+    ),
     partialRule([hasType("anoffset"), notMatchType("class", "d1")], [localUse(36)]),
     partialRule([lacksType("anoffset"), matchType("class", "d1")], [localUse(1001)]),
     partialRule([hasType("anoffset"), matchType("class", "d1")], [localUse(1036)]),
@@ -100,12 +106,24 @@ LOCALSECTION = [
 
 PROCESSTYPES = [
     partialRule([lacksType("number"), lacksType("hdate")], []),
-    partialRule([hasType("number"), lacksType("hdate")], [ProcessTypeConfig(subType=ProcessSubTypes.ensemble)]),
-    partialRule([hasType("number"), hasType("hdate")], [ProcessTypeConfig(type=ProcessTypes.reforecast, subType=ProcessSubTypes.ensemble)]),
+    partialRule(
+        [hasType("number"), lacksType("hdate")],
+        [ProcessTypeConfig(subType=ProcessSubTypes.ensemble)],
+    ),
+    partialRule(
+        [hasType("number"), hasType("hdate")],
+        [
+            ProcessTypeConfig(
+                type=ProcessTypes.reforecast, subType=ProcessSubTypes.ensemble
+            )
+        ],
+    ),
 ]
 
 PROCESSTYPES_AL = [
-    partialRule([hasType("number")], [ProcessTypeConfig(subType=ProcessSubTypes.largeEnsemble)]),
+    partialRule(
+        [hasType("number")], [ProcessTypeConfig(subType=ProcessSubTypes.largeEnsemble)]
+    ),
 ]
 
 
@@ -237,7 +255,10 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([235087, 235088, 235136, 235137, 235288, 235383])],
+        [
+            matchType("levtype", "sfc"),
+            matchParam([235087, 235088, 235136, 235137, 235288, 235383]),
+        ],
         [
             levelConfig("entireAtmosphere"),
             paramConfig("paramId"),
@@ -285,7 +306,10 @@ PARAM_LEVTYPE_SFC = [
         ],
     ),
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([235039, 235040, 235049, 235050, 235053])],
+        [
+            matchType("levtype", "sfc"),
+            matchParam([235039, 235040, 235049, 235050, 235053]),
+        ],
         [
             levelConfig("nominalTop"),
             paramConfig("paramId"),
@@ -299,8 +323,23 @@ PARAM_LEVTYPE_SFC = [
     partialRule(
         [
             matchType("levtype", "sfc"),
-            matchParam([235020, 235021, 235031, "235033:235038", "235041:235043",
-                        235051, 235052, 235055, 235078, 235079, 235134, 235283])],
+            matchParam(
+                [
+                    235020,
+                    235021,
+                    235031,
+                    "235033:235038",
+                    "235041:235043",
+                    235051,
+                    235052,
+                    235055,
+                    235078,
+                    235079,
+                    235134,
+                    235283,
+                ]
+            ),
+        ],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -844,7 +883,7 @@ PARAM_LEVTYPE_SFC = [
                     262139,
                     262140,
                     262144,
-                    262124
+                    262124,
                 ]
             ),
         ],
@@ -890,7 +929,10 @@ PARAM_LEVTYPE_SFC = [
     ),
     # surface - max since last pp
     partialRule(
-        [matchType("levtype", "sfc"), matchParam([228226, 237013, 237055, 237117, 237321])],
+        [
+            matchType("levtype", "sfc"),
+            matchParam([228226, 237013, 237055, 237117, 237321]),
+        ],
         [
             levelConfig("surface"),
             paramConfig("paramId"),
@@ -936,7 +978,10 @@ PARAM_LEVTYPE_SFC = [
 
 PARAM_LEVTYPE_HL = [
     partialRule(
-        [matchType("levtype", "hl"), matchParam([10,54,130,131,132,157,246,247,3031])],
+        [
+            matchType("levtype", "hl"),
+            matchParam([10, 54, 130, 131, 132, 157, 246, 247, 3031]),
+        ],
         [
             PointInTime(),
             levelConfig("heightAboveGround"),
@@ -963,7 +1008,10 @@ PARAM_LEVTYPE_HL = [
 
 PARAM_LEVTYPE_ML = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam(["75:76", 133, 203, "246:248", "260290"])],
+        [
+            matchType("levtype", "ml"),
+            matchParam(["75:76", 133, 203, "246:248", "260290"]),
+        ],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
     partialRule(
@@ -983,7 +1031,10 @@ PARAM_LEVTYPE_ML = [
 
 PARAM_LEVTYPE_ML_SH = [
     partialRule(
-        [matchType("levtype", "ml"), matchParam([77, 129, "130:132", 135, 138, 152, 155])],
+        [
+            matchType("levtype", "ml"),
+            matchParam([77, 129, "130:132", 135, 138, 152, 155]),
+        ],
         [PointInTime(), levelConfig("hybrid"), paramConfig("paramId")],
     ),
 ]
@@ -1009,14 +1060,14 @@ PARAM_LEVTYPE_PL = combineAndMergePartialRules(
             partialRule(
                 [
                     matchType("levtype", "pl"),
-                    matchParam([60, "75:76", "129:135", 203, "246:248",157, 260290]),
+                    matchParam([60, "75:76", "129:135", 203, "246:248", 157, 260290]),
                 ],
                 [PointInTime(), paramConfig("paramId")],
             ),
             partialRule(
                 [
                     matchType("levtype", "pl"),
-                    matchParam([235100, "235129:235133", 235135, 235157, 235246])
+                    matchParam([235100, "235129:235133", 235135, 235157, 235246]),
                 ],
                 [
                     paramConfig("paramId"),
@@ -1052,51 +1103,64 @@ PARAM_LEVTYPE_PL_SH = combineAndMergePartialRules(
 
 PARAM_LEVTYPE_PT = [
     partialRule(
-        [matchType("levtype", "pt"), matchParam([53, 54, 60, 131, 132, 133, 138, 155, 203])],
-        [levelConfig("theta"), paramConfig("paramId"),
+        [
+            matchType("levtype", "pt"),
+            matchParam([53, 54, 60, 131, 132, 133, 138, 155, 203]),
+        ],
+        [
+            levelConfig("theta"),
+            paramConfig("paramId"),
             PointInTime(),
-        ]
+        ],
     ),
     partialRule(
         [matchType("levtype", "pt"), matchParam([235203])],
-        [levelConfig("theta"), paramConfig("paramId"),
+        [
+            levelConfig("theta"),
+            paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="average",
                 descriptiveName="average",
             ),
-        ]
+        ],
     ),
     partialRule(
         [matchType("levtype", "pt"), matchParam([237203])],
-        [levelConfig("theta"), paramConfig("paramId"),
+        [
+            levelConfig("theta"),
+            paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="max",
                 descriptiveName="max",
             ),
-        ]
+        ],
     ),
     partialRule(
         [matchType("levtype", "pt"), matchParam([238203])],
-        [levelConfig("theta"), paramConfig("paramId"),
+        [
+            levelConfig("theta"),
+            paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="min",
                 descriptiveName="min",
             ),
-        ]
+        ],
     ),
     partialRule(
         [matchType("levtype", "pt"), matchParam([239203])],
-        [levelConfig("theta"), paramConfig("paramId"),
+        [
+            levelConfig("theta"),
+            paramConfig("paramId"),
             TimeRange(
                 type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="stddev",
                 descriptiveName="std",
             ),
-        ]
-    )
+        ],
+    ),
 ]
 
 PARAM_LEVTYPE_PT_SH = [
@@ -1123,9 +1187,12 @@ PARAM_LEVTYPE_PV_SH = [
 PARAM_LEVTYPE_AL = [
     partialRule(
         [matchType("levtype", "al"), matchParam(["213101:213160"])],
-        [levelConfig("abstractSingleLevel"), paramConfig("paramId"),
-            PointInTime(), RandomPatternsConfig(), # this may change
-        ]
+        [
+            levelConfig("abstractSingleLevel"),
+            paramConfig("paramId"),
+            PointInTime(),
+            RandomPatternsConfig(),  # this may change
+        ],
     ),
 ]
 
@@ -1282,7 +1349,6 @@ PARAM_SATELLITE = [
 ]
 
 
-
 # Combine all param levtype configurations
 
 PARAM_LEVTYPE = (
@@ -1297,7 +1363,12 @@ PARAM_LEVTYPE = (
     + PARAM_LEVTYPE_O3D
     + PARAM_SATELLITE
 )
-PARAM_LEVTYPE_SH = PARAM_LEVTYPE_ML_SH + PARAM_LEVTYPE_PL_SH + PARAM_LEVTYPE_PV_SH + PARAM_LEVTYPE_PT_SH
+PARAM_LEVTYPE_SH = (
+    PARAM_LEVTYPE_ML_SH
+    + PARAM_LEVTYPE_PL_SH
+    + PARAM_LEVTYPE_PV_SH
+    + PARAM_LEVTYPE_PT_SH
+)
 
 PACKING = [
     partialRule(
@@ -1346,11 +1417,18 @@ duplicatedRules = {key: val for (key, val) in encodedRulesDict.items() if len(va
 
 
 if len(duplicatedRules) > 0:
-    raise ValueError(f"Not all rule names are unique, detected {len(duplicatedRules)} duplications.")
+    raise ValueError(
+        f"Not all rule names are unique, detected {len(duplicatedRules)} duplications."
+    )
 
 
 def templateCMakeFile(dir, subDirs):
-    fileSubDirsStr = "\n".join([f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")' for sd in subDirs]) + ("\n" if len(subDirs) > 0 else "")
+    fileSubDirsStr = "\n".join(
+        [
+            f'file(MAKE_DIRECTORY "${{CMAKE_BINARY_DIR}}/share/multiom/{dir}/{sd}")'
+            for sd in subDirs
+        ]
+    ) + ("\n" if len(subDirs) > 0 else "")
     addSubDirsStr = "\n".join([f'add_subdirectory("{sd}")' for sd in subDirs])
     return f"""
 file(GLOB encoding_rules RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}} "*.yaml")
@@ -1401,12 +1479,13 @@ def createCMakeFiles(relDir, pathList):
 
     def recPld(basePath, pld):
         for path, subPld in pld.items():
-
             newBasePath = f"{basePath}/{path}" if basePath != "" else path
 
             fileContent = templateCMakeFile(newBasePath, list(sorted(subPld.keys())))
 
-            with open("/".join([relDir, newBasePath, "CMakeLists.txt"]), "w") as fileOut:
+            with open(
+                "/".join([relDir, newBasePath, "CMakeLists.txt"]), "w"
+            ) as fileOut:
                 fileOut.write(fileContent)
 
             recPld(newBasePath, subPld)
@@ -1419,6 +1498,7 @@ class RuleContext(BaseModel):
     path: str
     fname: str
     rule: EncodeRule
+
 
 def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
     levtype = (
@@ -1433,15 +1513,32 @@ def pathForRule(baseDir: str, rule: EncodeRule) -> RuleContext:
         else ""
     )
 
-    marsType = None if rule.encode.identification.marsType is None else rule.encode.identification.marsType.type
-    process = (lambda pt: "_".join( ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]))(rule.encode.product.processType)
+    marsType = (
+        None
+        if rule.encode.identification.marsType is None
+        else rule.encode.identification.marsType.type
+    )
+    process = (
+        lambda pt: "_".join(
+            ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]
+        )
+    )(rule.encode.product.processType)
     packing = rule.encode.dataRepres.descriptiveName
 
     return RuleContext(
-        attr = {"type": marsType, "packing": packing, "levtype": levtype, "process": process},
-        path = "/".join(filter(lambda d: d is not None, [baseDir,packing,process,marsType,levtype])),
-        fname = f"{rule.name}.yaml",
-        rule = rule,
+        attr={
+            "type": marsType,
+            "packing": packing,
+            "levtype": levtype,
+            "process": process,
+        },
+        path="/".join(
+            filter(
+                lambda d: d is not None, [baseDir, packing, process, marsType, levtype]
+            )
+        ),
+        fname=f"{rule.name}.yaml",
+        rule=rule,
     )
 
 
@@ -1463,6 +1560,7 @@ def findMatchTypeFilter(filter: RuleFilter, type: str) -> (str, str):
             return findMatchTypeFilter(r, type)
     return None
 
+
 def findHasOrLacksFilter(filter: RuleFilter, type: str):
     if not isinstance(filter.filter, ComposeAll):
         return None
@@ -1481,7 +1579,9 @@ def fileDictEntry(baseDir, path, fname):
     return {"file": "/".join([baseDir, path, fname])}
 
 
-def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], baseDir):
+def applyNestedFilters(
+    filters: List[Tuple[str, str]], rules: List[RuleContext], baseDir
+):
     if len(filters) == 0:
         return [fileDictEntry(baseDir, rc.path, rc.fname) for rc in rules]
 
@@ -1495,34 +1595,50 @@ def applyNestedFilters(filters: List[Tuple[str,str]], rules: List[RuleContext], 
     fs = filters[1:]
     match filterType:
         case "has/lacks":
-             has = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "has"]
-             lacks = [rc for rc in rules if findHasOrLacksFilter(rc.rule.filter, filterName) == "lacks"]
-             return {
+            has = [
+                rc
+                for rc in rules
+                if findHasOrLacksFilter(rc.rule.filter, filterName) == "has"
+            ]
+            lacks = [
+                rc
+                for rc in rules
+                if findHasOrLacksFilter(rc.rule.filter, filterName) == "lacks"
+            ]
+            return {
                 "key": filterName,
                 "operations": [
-                    { "operation": "has", **recurse(fs, has, baseDir)},
-                    { "operation": "lacks", **recurse(fs, lacks, baseDir)},
-                ]
-             }
+                    {"operation": "has", **recurse(fs, has, baseDir)},
+                    {"operation": "lacks", **recurse(fs, lacks, baseDir)},
+                ],
+            }
 
         case "match/ignore":
-             # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
-             matchPairs = [(findMatchTypeFilter(rc.rule.filter, filterName), rc) for rc in rules]
-             valuesDict = {}
-             for (valAndOp, rc) in matchPairs:
+            # Find all matchers - rules that do not match an this key will return a value None. These should produce a "lacks" operation
+            matchPairs = [
+                (findMatchTypeFilter(rc.rule.filter, filterName), rc) for rc in rules
+            ]
+            valuesDict = {}
+            for valAndOp, rc in matchPairs:
                 if valAndOp not in valuesDict.keys():
                     valuesDict[valAndOp] = []
                 valuesDict[valAndOp].append(rc)
 
-             return {
+            return {
                 "key": filterName,
                 "operations": [
-                    ( {"operation": "lacks", **recurse(fs, rs, baseDir)} if valAndOp is None
-                        else {"operation": valAndOp[1], "value": valAndOp[0], **recurse(fs, rs, baseDir)})  for (valAndOp, rs) in valuesDict.items()
-                ]
-             }
-
-
+                    (
+                        {"operation": "lacks", **recurse(fs, rs, baseDir)}
+                        if valAndOp is None
+                        else {
+                            "operation": valAndOp[1],
+                            "value": valAndOp[0],
+                            **recurse(fs, rs, baseDir),
+                        }
+                    )
+                    for (valAndOp, rs) in valuesDict.items()
+                ],
+            }
 
 
 RELATIVE_DIR = ".."
@@ -1531,11 +1647,20 @@ BASE_DIR_RULE_LIST = "{IFS_INSTALL_DIR}/share/multiom"
 ENCODING_RULES_SPLIT = ["packing", "process"]
 
 # Filters are has/lacks
-NESTED_FILTERS = [("class", "match/ignore"), ("number", "has/lacks"), ("hdate", "has/lacks"), ("anoffset", "has/lacks"), ("repres", "match/ignore"), ("packing", "match/ignore"), ("levtype", "match/ignore")]
+NESTED_FILTERS = [
+    ("class", "match/ignore"),
+    ("number", "has/lacks"),
+    ("hdate", "has/lacks"),
+    ("anoffset", "has/lacks"),
+    ("repres", "match/ignore"),
+    ("packing", "match/ignore"),
+    ("levtype", "match/ignore"),
+]
 
-REL_BASE_DIR="/".join([RELATIVE_DIR, BASE_DIR])
+REL_BASE_DIR = "/".join([RELATIVE_DIR, BASE_DIR])
 
 ruleFiles = [pathForRule(BASE_DIR, rule) for rule in encodedRules]
+
 
 def main():
     # Remove dir if already exists to avoid duplications or different directory structures
@@ -1543,10 +1668,11 @@ def main():
         shutil.rmtree(REL_BASE_DIR)
     os.makedirs(REL_BASE_DIR)
 
-
     for rc in ruleFiles:
-        pathlib.Path("/".join([RELATIVE_DIR, rc.path])).mkdir(parents=True, exist_ok=True)
-        with open("/".join([RELATIVE_DIR,rc.path,rc.fname]), "w") as fileOut:
+        pathlib.Path("/".join([RELATIVE_DIR, rc.path])).mkdir(
+            parents=True, exist_ok=True
+        )
+        with open("/".join([RELATIVE_DIR, rc.path, rc.fname]), "w") as fileOut:
             fileOut.write(toYAML(toDictRepres(rc.rule)))
 
     pathList = list({rc.path for rc in ruleFiles})
@@ -1561,7 +1687,7 @@ def main():
         for rc in ruleFiles
     ]
     rulesBySplit = {k: [] for k in {keyForRuleList(mr[0]) for mr in mappedRuleFiles}}
-    allFiles=[]
+    allFiles = []
     for sel, path, fname in mappedRuleFiles:
         key = keyForRuleList(sel)
         f = fileDictEntry(BASE_DIR_RULE_LIST, path, fname)
@@ -1575,9 +1701,21 @@ def main():
     with open(f"{REL_BASE_DIR}/encoding-rules.yaml", "w") as fileOut:
         fileOut.write(toYAML({"encoding-rules": allFiles}))
 
-    nestedFilterFiles = applyNestedFilters(NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST)
+    nestedFilterFiles = applyNestedFilters(
+        NESTED_FILTERS, ruleFiles, BASE_DIR_RULE_LIST
+    )
     with open(f"{REL_BASE_DIR}/encoding-rules-nested.yaml", "w") as fileOut:
-        fileOut.write(toYAML({("encoding-rules" if len(nestedFilterFiles) == 0 else "nested-rules"): nestedFilterFiles}))
+        fileOut.write(
+            toYAML(
+                {
+                    (
+                        "encoding-rules"
+                        if len(nestedFilterFiles) == 0
+                        else "nested-rules"
+                    ): nestedFilterFiles
+                }
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -58,7 +58,7 @@ CASE("Test level setter") {
         md.set("levtype", levtypeStr);
         md.set("misc-pv", std::vector<double>{{0.1, 0.2, 0.3}});
 
-        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        auto mars = dm::readRecord<dm::FullMarsRecord>(md);
         auto scopedMisc = dm::scopeRecord(dm::MiscRecord{});
         dm::readRecord(scopedMisc, md);
         auto misc = dm::unscopeRecord(std::move(scopedMisc));

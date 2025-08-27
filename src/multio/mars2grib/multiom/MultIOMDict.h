@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -15,32 +15,8 @@
 #include <string>
 
 #include "multio/datamod/core/EntryDumper.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/util/VariantHelpers.h"
 #include "multiom/api/c/api.h"
-
-// extern "C" {
-//     int dict_init(void** dict, const char* type, int len);
-//     int dict_free(void** dict);
-
-//     int dict_set_string(const char*, int, const char*, int);
-//     int dict_set_long(const char*, int, int64_t);
-//     int dict_set_double(const char*, int, double);
-//     int dict_set_string_array(const char*, int, const char**, int*, int);
-//     int dict_set_long_array(const char*, int, int64_t*, int);
-//     int dict_set_double_array(const char*, int, double*, int);
-//     int dict_has(const char*, int);
-
-//     int dict_get_string(const char*, int, char**, int*);
-//     int dict_get_long(const char*, int, int64_t*);
-//     int dict_get_double(const char*, int, double*);
-//     int dict_get_string_array(const char*, int, char***, int**, int*);
-//     int dict_get_long_array(const char*, int, int64_t**, int*);
-//     int dict_get_double_array(const char*, int, double**, int*);
-
-//     int dict_iterator_next(void*, void**, char**, int*, const char**, int*);
-//     int dict_iterator_free(void**);
-// }
 
 namespace multio::mars2grib {
 struct ForeignDictType;
@@ -102,8 +78,6 @@ struct MultIOMDict {
 
     void* get() const;
 
-    static MultIOMDict makeOptions(const EncodeMtg2Conf& opts);
-
 
     MultIOMDictKind kind_;
     std::unique_ptr<ForeignDictType> dict_;
@@ -116,15 +90,15 @@ struct MultIOMDict {
 namespace multio::datamod {
 
 template <>
-struct EntryDumper<mars2grib::MultIOMDict>: BaseEntryDumper<mars2grib::MultIOMDict> {
+struct EntryDumper<mars2grib::MultIOMDict> {
     template <
         typename EntryDef_, typename Entry_,
         std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
         = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, mars2grib::MultIOMDict& md) {
         using TP = typename EntryDef_::ParserDumper;
-        std::forward<Entry_>(entry).visit(  //
-            eckit::Overloaded{[&](UnsetType v) {}, // Set nothing...
+        std::forward<Entry_>(entry).visit(          //
+            eckit::Overloaded{[&](UnsetType v) {},  // Set nothing...
                               [&](auto&& v) {
                                   TP::template dumpToAndVisit<mars2grib::MultIOMDict>(
                                       std::forward<decltype(v)>(v), [&](auto&& vi) {

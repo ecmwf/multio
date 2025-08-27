@@ -22,7 +22,7 @@ void ChainedAction::executeNext(message::Message msg) const {
 }
 
 void ChainedAction::matchedFields(message::match::MatchReduce& selectors) const {
-    // TODO refactor these - passsing down is not directly what we want.
+    // TODO pgeier - refactor these - passsing down is not directly what we want.
     // Usually we want to only inspect the first action of a plan and check it's requirements...
     // However an observing action, e.g. a print action, should explicitly forward these calls.
     // Then it's possible to perform further analysis ... if not too complex and really required

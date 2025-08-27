@@ -73,7 +73,7 @@ struct GetElementType<ElementType::Real64> {
  *             This singleton object is shared accross multiple multio instances (e.g. IFS and NEMO). Hence it is
  * assumed that all global key-value pairs of different models are exclusive to each other or contain the same value.
  *
- * TODO: Make threadsafe. As keys are constant, reading does not need any checks. 
+ * TODO pgeier: Make threadsafe. As keys are constant, reading does not need any checks. 
  * However, we may need a lock to ensure single writers and multilpe readers.
  *
  * Usually we expect to have parametrization updates to arrive at the start, not inbetween. Currently we don't guarantee this.
@@ -118,7 +118,7 @@ private:
     }
     void update(std::string_view key, const MetadataValue&);
 
-    // TODO use RW lock (maybe with atomic flag), shared_mutex not working on all plattforms correctly yet (Mac...)
+    // TODO pgeier use RW lock (maybe with atomic flag), shared_mutex not working on all plattforms correctly yet (Mac...)
     mutable std::mutex mutex_;
 
     BaseMetadata data_;

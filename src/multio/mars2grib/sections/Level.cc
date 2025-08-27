@@ -1,8 +1,8 @@
 #include "multio/mars2grib/sections/Level.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/GribKeys.h"
-#include "multio/datamod/types/LevType.h"
 #include "multio/datamod/core/Compare.h"
+#include "multio/datamod/types/LevType.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/sections/SectionSetter.h"
 
@@ -10,7 +10,7 @@
 
 namespace multio::mars2grib::sections {
 
-std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf, const dm::MarsRecord& mars,
+std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf, const dm::FullMarsRecord& mars,
                                               const dm::MiscRecord& misc) {
     auto throwLevelistMissing = [&]() {
         std::ostringstream oss;
@@ -20,20 +20,20 @@ std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf
         util::print(oss, mars);
         throw Mars2GribException(oss.str(), Here());
     };
-    switch (levelConf.type) {
+    switch (levelConf.type.get()) {
         // The 2m and 10m entries can be removed once the fortran encoder is removed
         case dm::TypeOfLevel::HeightAboveSea:
         case dm::TypeOfLevel::HeightAboveSeaAt10m:
         case dm::TypeOfLevel::HeightAboveGroundAt2m:
         case dm::TypeOfLevel::HeightAboveGroundAt10m:
         case dm::TypeOfLevel::HeightAboveGround: {
-            const bool isSFC = mars.levtype.has() && mars.levtype.get() == dm::LevType::SFC;
+            const bool isSFC = mars.levtype.isSet() && mars.levtype.get() == dm::LevType::SFC;
 
-            if (levelConf.fixedLevel.has()) {
+            if (levelConf.fixedLevel.isSet()) {
                 return levelConf.fixedLevel.get();
             }
             if (isSFC) {
-                if (!mars.levelist.has()) {
+                if (!mars.levelist.isSet()) {
                     throwLevelistMissing();
                 }
                 return mars.levelist.get();
@@ -48,13 +48,13 @@ std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf
         case dm::TypeOfLevel::PotentialVorticity:
         case dm::TypeOfLevel::Theta:
         case dm::TypeOfLevel::Hybrid: {
-            if (!mars.levelist.has()) {
+            if (!mars.levelist.isSet()) {
                 throwLevelistMissing();
             }
             return mars.levelist.get();
         }
         case dm::TypeOfLevel::IsobaricInhPa: {
-            if (!mars.levelist.has()) {
+            if (!mars.levelist.isSet()) {
                 throwLevelistMissing();
             }
             return mars.levelist.get() / 100;
@@ -65,7 +65,7 @@ std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator& levelConf
 }
 
 
-dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelConf, const dm::MarsRecord& mars,
+dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelConf, const dm::FullMarsRecord& mars,
                                                 const dm::MiscRecord& misc) {
     auto throwLevelistMissing = [&]() {
         std::ostringstream oss;
@@ -79,16 +79,16 @@ dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelCo
     auto handleHeightAbove = [&](std::int64_t typeOfFirstFixedSurface) {
         dm::HorizontalGribKeys ret;
 
-        const bool isSFC = mars.levtype.has() && mars.levtype.get() == dm::LevType::SFC;
+        const bool isSFC = mars.levtype.isSet() && mars.levtype.get() == dm::LevType::SFC;
         ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
         ret.typeOfSecondFixedSurface.set(255);
 
-        if (levelConf.fixedLevel.has()) {
+        if (levelConf.fixedLevel.isSet()) {
             ret.scaledValueOfFirstFixedSurface.set(levelConf.fixedLevel.get());
             ret.scaleFactorOfFirstFixedSurface.set(0);
         }
         if (isSFC) {
-            if (mars.levelist.isUnset()) {
+            if (!mars.levelist.isSet()) {
                 throwLevelistMissing();
             }
             ret.scaledValueOfFirstFixedSurface.set(mars.levelist.get());
@@ -130,11 +130,11 @@ dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelCo
               ret.typeOfFirstFixedSurface.set(typeOfFirstFixedSurface);
               ret.typeOfSecondFixedSurface.set(255);
 
-              if (levelConf.fixedLevel.has()) {
+              if (levelConf.fixedLevel.isSet()) {
                   ret.scaledValueOfFirstFixedSurface.set(levelConf.fixedLevel.get());
               }
               else {
-                  if (mars.levelist.isUnset()) {
+                  if (!mars.levelist.isSet()) {
                       throwLevelistMissing();
                   }
                   ret.scaledValueOfFirstFixedSurface.set(mars.levelist.get());
@@ -147,7 +147,7 @@ dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelCo
 
     auto handle2SurfaceLayerWithlevel = [&](std::int64_t typeOfSurface) {
         dm::HorizontalGribKeys ret;
-        if (mars.levelist.isUnset()) {
+        if (!mars.levelist.isSet()) {
             throwLevelistMissing();
         }
         ret.typeOfFirstFixedSurface.set(typeOfSurface);
@@ -161,7 +161,7 @@ dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelCo
         return ret;
     };
 
-    switch (levelConf.type) {
+    switch (levelConf.type.get()) {
         // The 2m and 10m entries can be removed once the fortran encoder is removed
         case dm::TypeOfLevel::HeightAboveSea:
         case dm::TypeOfLevel::HeightAboveSeaAt10m:
@@ -264,15 +264,15 @@ dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator& levelCo
 }
 
 std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurator& levelConf,
-                                                           const dm::MarsRecord& mars, const dm::MiscRecord& misc) {
-    switch (levelConf.type) {
+                                                           const dm::FullMarsRecord& mars, const dm::MiscRecord& misc) {
+    switch (levelConf.type.get()) {
         case dm::TypeOfLevel::Hybrid:
         case dm::TypeOfLevel::Snow: {
-            if (mars.levtype.has() && mars.levtype.get() == dm::LevType::ML) {
+            if (mars.levtype.isSet() && mars.levtype.get() == dm::LevType::ML) {
                 dm::VerticalGribKeys ret;
                 ASSERT(misc.pv.holdsReference());
 
-                if (misc.pv.isUnset()) {
+                if (!misc.pv.isSet()) {
                     std::ostringstream oss;
                     oss << "Missing key " << dm::Pv.keyInfo() << " to set vertical information for typeOfLevel ";
                     util::print(oss, levelConf.type);
@@ -304,7 +304,7 @@ DynSectionSetter::Config LevelSetter::sectionInfo() const {
     return ret;
 };
 
-void LevelSetter::allocate(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::allocate(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                            const dm::Geometry& geo) const {
     // set type of level here....
     auto vert = verticalForTypeOfLevel(conf_, mars, misc);
@@ -313,18 +313,18 @@ void LevelSetter::allocate(util::MioGribHandle& h, const dm::MarsRecord& mars, c
     }
 }
 
-void LevelSetter::preset(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::preset(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                          const dm::Geometry& geo) const {
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::runtime(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::runtime(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                           const dm::Geometry& geo) const {
     // TODO this should be only relevant for ML fields (because we don't cache them on level...)
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::setLevels(util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::setLevels(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                             const dm::Geometry& geo) const {
     auto optLevel = levelForTypeOfLevel(conf_, mars, misc);
     // TODO make the LevelDef own the typeOfLevel after migration
@@ -334,7 +334,7 @@ void LevelSetter::setLevels(util::MioGribHandle& h, const dm::MarsRecord& mars, 
     }
 }
 
-void LevelSetter::check(const util::MioGribHandle& h, const dm::MarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::check(const util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                         const dm::Geometry& geo) const {
     auto inferedHoriz = horizontalForTypeOfLevel(conf_, mars, misc);
     auto horiz = dm::readRecord<dm::HorizontalGribKeys>(h);
@@ -356,7 +356,7 @@ void LevelSetter::check(const util::MioGribHandle& h, const dm::MarsRecord& mars
     }
 }
 
-// void LevelSetter::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::MarsRecord& mars) const {
+// void LevelSetter::collectKeyInfo(KeyInfoList& req, KeyInfoList& opt, const dm::FullMarsRecord& mars) const {
 //     addKeyInfo<MarsKeys::LEVTYPE>(req);
 
 //     // Check if levelist is required
@@ -367,7 +367,7 @@ void LevelSetter::check(const util::MioGribHandle& h, const dm::MarsRecord& mars
 //         case dm::TypeOfLevel::HeightAboveGroundAt2m:
 //         case dm::TypeOfLevel::HeightAboveGroundAt10m:
 //         case dm::TypeOfLevel::HeightAboveGround: {
-//             const bool isSFC = mars.levtype.has() && mars.levtype.get() == LevType::SFC;
+//             const bool isSFC = mars.levtype.isSet() && mars.levtype.get() == LevType::SFC;
 
 //             if (levelConf.fixedLevel.isMissing() && isSFC) {
 //                 addKeyInfo<MarsKeys::LEVELIST>(req);
@@ -394,7 +394,7 @@ void LevelSetter::check(const util::MioGribHandle& h, const dm::MarsRecord& mars
 //     switch (levelConf.type) {
 //         case dm::TypeOfLevel::Hybrid:
 //         case dm::TypeOfLevel::Snow: {
-//             if (mars.levtype.has() && mars.levtype.get() == LevType::ML) {
+//             if (mars.levtype.isSet() && mars.levtype.get() == LevType::ML) {
 //                 addKeyInfo<MiscKeys::Pv>(req);
 //             }
 //             break;

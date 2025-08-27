@@ -18,8 +18,8 @@
 #include "multio/datamod/core/Record.h"
 #include "multio/datamod/core/TypeParserDumper.h"
 
-#include "multio/util/TypeToString.h"
 #include "multio/util/PrehashedKey.h"
+#include "multio/util/TypeToString.h"
 
 
 namespace multio::datamod {
@@ -28,6 +28,70 @@ namespace multio::datamod {
 // Definitions to describe key-value pairs
 //-----------------------------------------------------------------------------
 
+/// \defgroup datamod_core_entrydef EntryDef
+/// \ingroup datamod_core
+/// # Using entry definitions
+///
+/// The following methods/members can be used/accessed on an entry definition:
+///   * `.tag`: Access the constexpr `EntryTag`
+///   * `.key()`: Returns the string accessor
+///   * `.keyInfo()`: String with information about the entry name, its type and tag.
+///   * `.description()`: Returns the provided description (may be used for documentation? Still unsure)
+///   * `.get(MyRecord)`: Accesses the entry on a record.
+///   * `.defaultValue()`: Returns the passed default value. Only possible if `::hasDefaultValueFunctor` is `false`.
+///   * `.applyDefaults(Entry)`: Apply defaults if any defaults are given
+///   * `.validate(Entry)`: Validates an entry - throws `DataModellingException` if a non optional entry is missing.
+///   * `.makeEntry(V&&)`: Creates an entry from a value - may perform conversion.
+///   * `.makeEntryRef(V&&)`: Creates an entry explicitly as reference, if the passed type is the same as the internal
+///   representation.
+///
+/// # Defining entries
+///
+/// Entries are defined via the template `EntryDef<Type, Mapper>{"string-accessor"}.withAcessor([](auto&& v){return
+/// &v.structAccessor;})`, where
+///   * `Type` is the used type used to represent values for the entry
+///   * `Mapper` is an optional mapping functor that allows custom mapping from other types.
+///      E.g. `ParamMapper` for `param` that handles string representations.
+///      It is also possible that `Type` is more complex and supports constructions from other types.
+///   * the first argument in the constructor is a constexpr string that is used to access (parse/dump) the entry
+///     from/to containers (i.e. `JSON`)
+///   * `withAccesosr(...)` accepts an indefinite lambda that allows accessing the entry in a record.
+///     It is expected to return a pointer to an entry - usally by accessing the proper `struct` member.
+///     Through this mechanisms, an entry can occur in different places and is not strictly bound to one composed type.
+///
+/// ```
+/// #include "multio/datamod/core/EntryDef.h"
+/// namespace dm = multio::datamod;
+///
+/// constexpr auto MyEntry = dm::EntryDef<std::string>{"my-entry"}.withAccessor([](auto&& v){return &v.myEntry;});
+/// ```
+///
+/// Entries hold a tag `EntryTag` that can be accesed via `.tag` and can hold either:
+///   * `EntryTag::Required` (default) - must be specified when parsing from a container
+///   * `EntryTag::Defaulted` - has a direct default value or it`s default value may be depended on other entries -
+///      that means it may be set through the `ApplyRecordDefaults` specialization.
+///   * or `EntryTag::Optional` to declare an entry is optional.
+///
+/// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is throw if the entry definition is not tagged
+/// optional.
+///
+/// ```
+/// // Make an optional entry
+/// constexpr auto MyOptionalEntry = dm::EntryDef<std::string>{"my-entry"}
+///     .withAccessor([](auto&& v){ return &v.myEntry; })
+///     .tagOptional();
+///
+/// // Provide default value
+/// constexpr auto MyOptionalEntry = dm::EntryDef<std::string>{"my-entry"}
+///     .withAccessor([](auto&& v){ return &v.myEntry; })
+///     .withDefault("lalelu");
+///
+/// // Provide default value for non-constexpress types
+/// constexpr auto MyOptionalEntry = dm::EntryDef<std::string>{"my-entry"}
+///     .withAccessor([](auto&& v){ return &v.myEntry; })
+///     .withDefault([](){ return  "lalelu"; });
+/// ```
+///
 
 // Forward declaration
 enum class EntryTag : std::uint64_t
@@ -63,14 +127,14 @@ struct ApplyDefaultValueFunctor {
     void operator()(EntryType_& v, const DefaultValueFunctor& f) const {
         // Only optional tagged keys can be missing
         if constexpr (hasDefaultValueFunctor) {
-            if (v.isUnset()) {
+            if (!v.isSet()) {
                 v.set(f());
             }
         }
 
         // Check for nested alter recursively
         if constexpr (IsRecord_v<typename std::decay_t<EntryType_>::ValueType>) {
-            if (v.has()) {
+            if (v.isSet()) {
                 applyRecordDefaults(v.modify());
             }
         }
@@ -125,18 +189,18 @@ struct AccessFunctor {
 };
 
 
-// Base key definition without id specialization
-// This definition is ment to be constructed as constexpr and in static const objects without beeing modified.
-// It is used to retrieve information like type, customized mappers, default value and a description description.
-//
-// The BaseKeyDef has no "key specific" accessor and is used with Parser/Dumper.
-// This significantly reduces the binary size, otherwise every single key with same types will trigger generation of
-// code again. E.g. the test_multio_datamod_models where a lot of marskeys have the same type signature reduces
-// from 3.9 MB -> 1.7 MB (intel)
-// from 1.3 MB -> 0.7 MB (gcc)
-//      It should be also noted that due to the branching with the Metadata a lot of detailed branches are created -
-//       often this is basically a big jump table with specialized code instead of many conditional jumps
-//
+/// Base key definition without id specialization
+/// This definition is ment to be constructed as constexpr and in static const objects without beeing modified.
+/// It is used to retrieve information like type, customized mappers, default value and a description description.
+///
+/// The BaseKeyDef has no "key specific" accessor and is used with Parser/Dumper.
+/// This significantly reduces the binary size, otherwise every single key with same types will trigger generation of
+/// code again. E.g. the test_multio_datamod_models where a lot of marskeys have the same type signature reduces
+/// from 3.9 MB -> 1.7 MB (intel)
+/// from 1.3 MB -> 0.7 MB (gcc)
+///      It should be also noted that due to the branching with the Metadata a lot of detailed branches are created -
+///       often this is basically a big jump table with specialized code instead of many conditional jumps
+///
 template <typename ValueType_, typename Mapper_, EntryTag tag_>
 struct BaseEntryDef {
     using KeyType = util::PrehashedKey<std::string_view>;
@@ -218,14 +282,14 @@ struct BaseEntryDef {
     void validate(const EntryType& v) const {
         // Only optional tagged keys can be missing
         if constexpr (tag != EntryTag::Optional) {
-            if (v.isUnset()) {
+            if (!v.isSet()) {
                 throw DataModellingException(std::string("Unset required key: ") + this->keyInfo(), Here());
             }
         }
 
         // Check for nested validation
         if constexpr (IsRecord_v<ValueType>) {
-            if (v.has()) {
+            if (v.isSet()) {
                 validateRecord(v.get());
             }
         }
@@ -345,9 +409,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
     }
 
     // Sets the key of the value (to scope)
-    constexpr auto withKey(KeyType key) const {
-        return This{key, accessor_, defaultFunctor_, Base::description_};
-    }
+    constexpr auto withKey(KeyType key) const { return This{key, accessor_, defaultFunctor_, Base::description_}; }
 
     // Sets the description of the value
     constexpr auto withDescription(std::string_view descr) const {
@@ -396,7 +458,8 @@ using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
 //-----------------------------------------------------------------------------
 
-// NOTE: This may be removed once the metadata is cleaned up again. We probably will use nested metadata instead of having prefixes (too cumbersome)
+// NOTE: This may be removed once the metadata is cleaned up again. We probably will use nested metadata instead of
+// having prefixes (too cumbersome)
 //
 // ScopedEntryDef ... written on a cumbersome way to reuse the BaseEntryDef to reduced code generation.
 // The accessor is not copyable - hence we reference it to the const version - moreover it should never carry state.

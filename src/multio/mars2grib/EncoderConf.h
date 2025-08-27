@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -10,10 +10,8 @@
 
 #pragma once
 
-#include "eckit/config/LocalConfiguration.h"
 #include "multio/datamod/GribKeys.h"
 #include "multio/datamod/core/Compare.h"
-#include "multio/datamod/core/Entry.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/NestedRecord.h"
 #include "multio/datamod/core/Record.h"
@@ -22,25 +20,22 @@
 #include "multio/mars2grib/sections/Level.h"
 #include "multio/mars2grib/sections/SectionTypes.h"
 
-#include <memory>
-
 
 namespace multio {
 
-//-----------------------------------------------------------------------------
-// Detailed descriptions of the encoder configuration.
-// First attempt is to replicate existing structure and to migrate the rule
-// search mechanism while keeping the fortran encoders.
-// Often the structures of the configs have a subconfiguration where to only available key-value is "type": "default"
-// These have to be refactored to something less but more expressive
-//
-// TODO: After the migration this should become a proper struct with optionals
-//       Encoding/Parsing will not be needed then.
-//       It was a quick way to represent the current encoder configuration and
-//       to set keys on it
-//-----------------------------------------------------------------------------
+/// Detailed descriptions of the encoder configuration.
+/// First attempt is to replicate existing structure and to migrate the rule
+/// search mechanism while keeping the fortran encoders.
+/// Often the structures of the configs have a subconfiguration where to only available key-value is "type": "default"
+/// These have to be refactored to something less but more expressive
+///
+/// TODO: After the migration this should become a proper struct with optionals
+///       Encoding/Parsing will not be needed then.
+///       It was a quick way to represent the current encoder configuration and
+///       to set keys on it
 
 namespace dm = multio::datamod;
+
 
 //-----------------------------------------------------------------------------
 // Section0
@@ -49,10 +44,12 @@ namespace dm = multio::datamod;
 
 namespace mars2grib {
 
-constexpr auto IndicatorTemplateNumber =           //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto IndicatorTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.templateNumber; });
+// clang-format on
 
 struct IndicatorSection {
     dm::EntryType_t<decltype(IndicatorTemplateNumber)> templateNumber;
@@ -70,15 +67,17 @@ struct IndicatorSection {
 // Origin configurator
 namespace mars2grib {
 
-constexpr auto OriginType =            //
-    dm::EntryDef<std::string>{"type"}  //
+// clang-format off
+constexpr auto OriginType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
 
-constexpr auto OriginSubCentre =              //
-    dm::EntryDef<std::int64_t>{"sub-centre"}  //
+constexpr auto OriginSubCentre =
+    dm::EntryDef<std::int64_t>{"sub-centre"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.subCentre; });
+// clang-format on
 
 struct OriginConfigurator {
     dm::EntryType_t<decltype(OriginType)> type;
@@ -92,10 +91,13 @@ struct OriginConfigurator {
 
 
 namespace mars2grib {
-constexpr auto DataType =              //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto DataType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct DataTypeConfigurator {
     dm::EntryType_t<decltype(DataType)> type;
@@ -108,10 +110,13 @@ struct DataTypeConfigurator {
 
 // ReferenceTime configurator
 namespace mars2grib {
-constexpr auto ReferenceTimeType =     //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto ReferenceTimeType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct ReferenceTimeConfigurator {
     dm::EntryType_t<decltype(ReferenceTimeType)> type;
@@ -124,18 +129,21 @@ struct ReferenceTimeConfigurator {
 
 // Tables configurator
 namespace mars2grib {
-constexpr auto TablesType =            //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto TablesType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto TablesVersion =                    //
-    dm::EntryDef<std::int64_t>{"tables-version"}  //
+constexpr auto TablesVersion =
+    dm::EntryDef<std::int64_t>{"tables-version"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.tablesVersion; });
-constexpr auto LocalTablesVersion =                     //
-    dm::EntryDef<std::int64_t>{"local-tables-version"}  //
+constexpr auto LocalTablesVersion =
+    dm::EntryDef<std::int64_t>{"local-tables-version"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.localTablesVersion; });
+// clang-format on
 
 struct TablesConfigurator {
     dm::EntryType_t<decltype(TablesType)> type;
@@ -151,27 +159,29 @@ struct TablesConfigurator {
 // Whole identification section
 namespace mars2grib {
 
-constexpr auto IdentificationTemplateNumber =      //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto IdentificationTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.templateNumber; });
 
 
-constexpr auto NestedTablesConfigurator =   //
-    dm::nestedRecord<TablesConfigurator>()  //
+constexpr auto NestedTablesConfigurator =
+    dm::nestedRecord<TablesConfigurator>()  
         .withAccessor([](auto&& v) { return &v.tables; });
 
-constexpr auto NestedOriginConfigurator =   //
-    dm::nestedRecord<OriginConfigurator>()  //
+constexpr auto NestedOriginConfigurator =
+    dm::nestedRecord<OriginConfigurator>()  
         .withAccessor([](auto&& v) { return &v.origin; });
 
-constexpr auto NestedDataTypeConfigurator =   //
-    dm::nestedRecord<DataTypeConfigurator>()  //
+constexpr auto NestedDataTypeConfigurator =
+    dm::nestedRecord<DataTypeConfigurator>()  
         .withAccessor([](auto&& v) { return &v.dataType; });
 
-constexpr auto NestedReferenceTimeConfigurator =   //
-    dm::nestedRecord<ReferenceTimeConfigurator>()  //
+constexpr auto NestedReferenceTimeConfigurator =
+    dm::nestedRecord<ReferenceTimeConfigurator>()  
         .withAccessor([](auto&& v) { return &v.referenceTime; });
+// clang-format on
 
 
 struct IdentificationSection {
@@ -194,10 +204,12 @@ struct IdentificationSection {
 
 namespace mars2grib {
 
-constexpr auto LocalUseTemplateNumber =            //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto LocalUseTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.templateNumber; });
+// clang-format on
 
 struct LocalUseSection {
     dm::EntryType_t<decltype(LocalUseTemplateNumber)> templateNumber;
@@ -215,10 +227,12 @@ struct LocalUseSection {
 
 namespace mars2grib {
 
-constexpr auto GridTemplateNumber =                //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto GridTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.templateNumber; });
+// clang-format on
 
 struct GridSection {
     dm::EntryType_t<decltype(GridTemplateNumber)> templateNumber;
@@ -236,14 +250,17 @@ struct GridSection {
 
 // Param
 namespace mars2grib {
-constexpr auto ParamType =             //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto ParamType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("paramId")
         .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto DatasetForLocal =                    //
-    dm::EntryDef<std::string>{"dataset-for-local"}  //
+constexpr auto DatasetForLocal =
+    dm::EntryDef<std::string>{"dataset-for-local"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.datasetForLocal; });
+// clang-format on
 
 struct ParamConfigurator {
     dm::EntryType_t<decltype(ParamType)> type;
@@ -258,10 +275,13 @@ struct ParamConfigurator {
 
 // PointInTime config
 namespace mars2grib {
-constexpr auto PointInTimeType =       //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto PointInTimeType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct PointInTimeConfigurator {
     dm::EntryType_t<decltype(PointInTimeType)> type;
@@ -275,16 +295,19 @@ struct PointInTimeConfigurator {
 
 // TimeRange config
 namespace mars2grib {
-constexpr auto TimeRangeTypeEntry =                //
-    dm::EntryDef<sections::TimeRangeType>{"type"}  //
+
+// clang-format off
+constexpr auto TimeRangeTypeEntry =
+    dm::EntryDef<sections::TimeRangeType>{"type"}  
         .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto TypeOfStatisticalProcessing =                                         //
-    dm::EntryDef<dm::TypeOfStatisticalProcessing>{"type-of-statistical-processing"}  //
+constexpr auto TypeOfStatisticalProcessing =
+    dm::EntryDef<dm::TypeOfStatisticalProcessing>{"type-of-statistical-processing"}  
         .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });
-constexpr auto OverallLengthOfTimeRange =                     //
-    dm::EntryDef<std::string>{"overall-length-of-timerange"}  //
-        .tagOptional()                                        //
+constexpr auto OverallLengthOfTimeRange =
+    dm::EntryDef<std::string>{"overall-length-of-timerange"}  
+        .tagOptional()
         .withAccessor([](auto&& v) { return &v.overallLengthOfTimeRange; });
+// clang-format on
 
 struct TimeRangeConfigurator {
     dm::EntryType_t<decltype(TimeRangeTypeEntry)> type;
@@ -301,10 +324,13 @@ struct TimeRangeConfigurator {
 
 // Process config
 namespace mars2grib {
-constexpr auto ProcessType =           //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto ProcessType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct ProcessConfigurator {
     dm::EntryType_t<decltype(ProcessType)> type;
@@ -318,10 +344,13 @@ struct ProcessConfigurator {
 
 // Model config
 namespace mars2grib {
-constexpr auto ModelType =             //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto ModelType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct ModelConfigurator {
     dm::EntryType_t<decltype(ModelType)> type;
@@ -334,10 +363,13 @@ struct ModelConfigurator {
 
 // Random patterns config
 namespace mars2grib {
-constexpr auto RandomPatternsType =    //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto RandomPatternsType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct RandomPatternsConfigurator {
     dm::EntryType_t<decltype(RandomPatternsType)> type;
@@ -350,10 +382,13 @@ struct RandomPatternsConfigurator {
 
 // Chem config
 namespace mars2grib {
-constexpr auto ChemType =              //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto ChemType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("chemical")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct ChemConfigurator {
     dm::EntryType_t<decltype(ChemType)> type;
@@ -366,10 +401,13 @@ struct ChemConfigurator {
 
 // Directions frequencies config
 namespace mars2grib {
-constexpr auto DirFreqType =           //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto DirFreqType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct DirFreqConfigurator {
     dm::EntryType_t<decltype(DirFreqType)> type;
@@ -382,10 +420,13 @@ struct DirFreqConfigurator {
 
 // Satellite frequencies config
 namespace mars2grib {
-constexpr auto SatelliteType =         //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto SatelliteType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct SatelliteConfigurator {
     dm::EntryType_t<decltype(SatelliteType)> type;
@@ -398,10 +439,13 @@ struct SatelliteConfigurator {
 
 // Period frequencies config
 namespace mars2grib {
-constexpr auto PeriodType =            //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto PeriodType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("default")
         .withAccessor([](auto&& v) { return &v.type; });
+// clang-format on
 
 struct PeriodConfigurator {
     dm::EntryType_t<decltype(PeriodType)> type;
@@ -414,56 +458,57 @@ struct PeriodConfigurator {
 
 namespace mars2grib {
 
-constexpr auto ProductTemplateNumber =             //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto ProductTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withAccessor([](auto&& v) { return &v.templateNumber; });
 
-
-constexpr auto NestedPDTCat =              //
-    dm::nestedOptRecord<rules::PDTCat>().  //
+constexpr auto NestedPDTCat =
+    dm::nestedOptRecord<rules::PDTCat>().  
     withAccessor([](auto&& v) { return &v.pdtCat; });
 
 // Param and Model are the only required configurators
 // All others are optional/product dependent
-constexpr auto NestedParam =                //
-    dm::nestedRecord<ParamConfigurator>().  //
+constexpr auto NestedParam =
+    dm::nestedRecord<ParamConfigurator>().  
     withAccessor([](auto&& v) { return &v.param; });
-constexpr auto NestedModel =                //
-    dm::nestedRecord<ModelConfigurator>().  //
+constexpr auto NestedModel =
+    dm::nestedRecord<ModelConfigurator>().  
     withAccessor([](auto&& v) { return &v.model; });
 
-constexpr auto NestedPointInTime =                   //
-    dm::nestedOptRecord<PointInTimeConfigurator>().  //
+constexpr auto NestedPointInTime =
+    dm::nestedOptRecord<PointInTimeConfigurator>().  
     withAccessor([](auto&& v) { return &v.pointInTime; });
-constexpr auto NestedTimeRange =                   //
-    dm::nestedOptRecord<TimeRangeConfigurator>().  //
+constexpr auto NestedTimeRange =
+    dm::nestedOptRecord<TimeRangeConfigurator>().  
     withAccessor([](auto&& v) { return &v.timeRange; });
 
 using multio::mars2grib::sections::LevelConfigurator;
 
-constexpr auto NestedLevel =                   //
-    dm::nestedOptRecord<LevelConfigurator>().  //
+constexpr auto NestedLevel =
+    dm::nestedOptRecord<LevelConfigurator>().  
     withAccessor([](auto&& v) { return &v.level; });
 
-constexpr auto NestedProcess =                   //
-    dm::nestedOptRecord<ProcessConfigurator>().  //
+constexpr auto NestedProcess =
+    dm::nestedOptRecord<ProcessConfigurator>().  
     withAccessor([](auto&& v) { return &v.process; });
-constexpr auto NestedRandomPatterns =                   //
-    dm::nestedOptRecord<RandomPatternsConfigurator>().  //
+constexpr auto NestedRandomPatterns =
+    dm::nestedOptRecord<RandomPatternsConfigurator>().  
     withAccessor([](auto&& v) { return &v.randomPatterns; });
-constexpr auto NestedChemical =               //
-    dm::nestedOptRecord<ChemConfigurator>().  //
+constexpr auto NestedChemical =
+    dm::nestedOptRecord<ChemConfigurator>().  
     withAccessor([](auto&& v) { return &v.chemical; });
-constexpr auto NestedDirFreq =                   //
-    dm::nestedOptRecord<DirFreqConfigurator>().  //
+constexpr auto NestedDirFreq =
+    dm::nestedOptRecord<DirFreqConfigurator>().  
     withAccessor([](auto&& v) { return &v.dirFreq; });
-constexpr auto NestedPeriodRange =              //
-    dm::nestedOptRecord<PeriodConfigurator>().  //
+constexpr auto NestedPeriodRange =
+    dm::nestedOptRecord<PeriodConfigurator>().  
     withAccessor([](auto&& v) { return &v.periodRange; });
-constexpr auto NestedSatellite =                   //
-    dm::nestedOptRecord<SatelliteConfigurator>().  //
+constexpr auto NestedSatellite =
+    dm::nestedOptRecord<SatelliteConfigurator>().  
     withAccessor([](auto&& v) { return &v.satellite; });
 
+// clang-format on
 
 struct ProductSection {
     dm::EntryType_t<decltype(ProductTemplateNumber)> templateNumber;
@@ -499,10 +544,10 @@ struct ApplyRecordDefaults<mars2grib::ProductSection> {
 
         // Checking PDT
         {
-            if (product.pdtCat.has()) {
+            if (product.pdtCat.isSet()) {
                 auto pdtNum = InferPdt<>{}.inferProductDefinitionTemplateNumber(product.pdtCat.get());
 
-                if (product.templateNumber.has() && product.templateNumber.get() != pdtNum) {
+                if (product.templateNumber.isSet() && product.templateNumber.get() != pdtNum) {
                     std::ostringstream oss;
                     oss << "ProductSection configuration has a template number and PDT categories specified, but the "
                            "generated PDT "
@@ -523,7 +568,7 @@ struct ValidateRecord<mars2grib::ProductSection> {
 
         // Checking PDT
         {
-            if (product.templateNumber.isUnset() && product.pdtCat.isUnset()) {
+            if (!product.templateNumber.isSet() && !product.pdtCat.isSet()) {
                 std::ostringstream oss;
                 oss << "ProductSection configuration has no template number and no PDT categories  specified.";
                 throw Mars2GribException(oss.str(), Here());
@@ -532,12 +577,12 @@ struct ValidateRecord<mars2grib::ProductSection> {
 
         // Checking Time
         {
-            if (product.timeRange.has() && product.pointInTime.has()) {
+            if (product.timeRange.isSet() && product.pointInTime.isSet()) {
                 std::ostringstream oss;
                 oss << "ProductSection configuration has a PointInTime and a TimeStatistics section." << std::endl;
                 throw Mars2GribException(oss.str(), Here());
             }
-            if (product.timeRange.isUnset() && product.pointInTime.isUnset()) {
+            if (!product.timeRange.isSet() && !product.pointInTime.isSet()) {
                 std::ostringstream oss;
                 oss << "ProductSection configuration has no time definition." << std::endl;
                 throw Mars2GribException(oss.str(), Here());
@@ -553,10 +598,12 @@ struct ValidateRecord<mars2grib::ProductSection> {
 
 namespace mars2grib {
 
-constexpr auto DataRepresTemplateNumber =          //
-    dm::EntryDef<std::int64_t>{"template-number"}  //
+// clang-format off
+constexpr auto DataRepresTemplateNumber =
+    dm::EntryDef<std::int64_t>{"template-number"}  
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.templateNumber; });
+// clang-format on
 
 struct DataRepresSection {
     dm::EntryType_t<decltype(DataRepresTemplateNumber)> templateNumber;
@@ -573,30 +620,33 @@ struct DataRepresSection {
 //-----------------------------------------------------------------------------
 
 namespace mars2grib {
-constexpr auto SectionsConfType =      //
-    dm::EntryDef<std::string>{"type"}  //
+
+// clang-format off
+constexpr auto SectionsConfType =
+    dm::EntryDef<std::string>{"type"}  
         .withDefault("grib2")
         .withAccessor([](auto&& v) { return &v.type; });
 
 
-constexpr auto NestedIndicator =          //
-    dm::nestedRecord<IndicatorSection>()  //
+constexpr auto NestedIndicator =
+    dm::nestedRecord<IndicatorSection>()  
         .withAccessor([](auto&& v) { return &v.indicator; });
-constexpr auto NestedIdentification =          //
-    dm::nestedRecord<IdentificationSection>()  //
+constexpr auto NestedIdentification =
+    dm::nestedRecord<IdentificationSection>()  
         .withAccessor([](auto&& v) { return &v.identification; });
-constexpr auto NestedLocalUse =          //
-    dm::nestedRecord<LocalUseSection>()  //
+constexpr auto NestedLocalUse =
+    dm::nestedRecord<LocalUseSection>()  
         .withAccessor([](auto&& v) { return &v.localUse; });
-constexpr auto NestedGrid =          //
-    dm::nestedRecord<GridSection>()  //
+constexpr auto NestedGrid =
+    dm::nestedRecord<GridSection>()  
         .withAccessor([](auto&& v) { return &v.grid; });
-constexpr auto NestedProduct =          //
-    dm::nestedRecord<ProductSection>()  //
+constexpr auto NestedProduct =
+    dm::nestedRecord<ProductSection>()  
         .withAccessor([](auto&& v) { return &v.product; });
-constexpr auto NestedDataRepres =          //
-    dm::nestedRecord<DataRepresSection>()  //
+constexpr auto NestedDataRepres =
+    dm::nestedRecord<DataRepresSection>()  
         .withAccessor([](auto&& v) { return &v.dataRepres; });
+// clang-format on
 
 struct SectionsConf {
     dm::EntryType_t<decltype(SectionsConfType)> type;

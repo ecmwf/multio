@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -95,11 +95,11 @@ void setKeysFromAtlas(Record& rec, const std::string& gridName) {
 }
 
 
-inline ScopedGeometry makeGeometry(const MarsRecord& mars) {
+inline ScopedGeometry makeGeometry(const FullMarsRecord& mars) {
     auto res = getGeometryRecord(mars);
     std::visit(
         [&](auto& rec) {
-            if (mars.grid.has()) {
+            if (mars.grid.isSet()) {
                 setKeysFromAtlas(rec, mars.grid.get());
             }
         },
@@ -107,7 +107,7 @@ inline ScopedGeometry makeGeometry(const MarsRecord& mars) {
     return res;
 }
 
-inline Geometry makeUnscopedGeometry(const MarsRecord& mars) {
+inline Geometry makeUnscopedGeometry(const FullMarsRecord& mars) {
     return std::visit([](auto&& geo) -> Geometry { return unscopeRecord(std::move(geo));}, makeGeometry(mars));
 }
 

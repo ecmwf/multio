@@ -110,7 +110,8 @@ class MatchType(BaseModel):
 
 def matchType(t: str, v: str) -> MatchType:
     return MatchType(type=t, value=v)
-    
+
+
 class NotMatchType(BaseModel):
     type: str
     value: str
@@ -118,6 +119,7 @@ class NotMatchType(BaseModel):
 
 def notMatchType(t: str, v: str) -> NotMatchType:
     return NotMatchType(type=t, value=v)
+
 
 class NotMatchType(BaseModel):
     type: str
@@ -266,6 +268,8 @@ def gridDefinition(tn: int, n: str) -> GridDefinition:
 # Section 4
 class ModelConfig(BaseModel):
     type: str = "default"
+
+
 def modelConfig(t: str) -> ModelConfig:
     return ModelConfig(type=t)
 
@@ -311,20 +315,23 @@ def levelConfig(t: str) -> LevelConfig:
 
 
 class ProcessTypes(str, Enum):
-    default = 'default'
-    reforecast = 'reforecast'
-    derivedForecast = 'derivedForecast'
+    default = "default"
+    reforecast = "reforecast"
+    derivedForecast = "derivedForecast"
     # Add more according to the categorization
 
+
 class ProcessSubTypes(str, Enum):
-    deterministic = 'deterministic'
-    ensemble = 'ensemble'
-    largeEnsemble = 'largeEnsemble'
+    deterministic = "deterministic"
+    ensemble = "ensemble"
+    largeEnsemble = "largeEnsemble"
     # Add more according to the categorization
+
 
 class ProcessTypeConfig(BaseModel):
     type: ProcessTypes = ProcessTypes.default
     subType: ProcessSubTypes = ProcessSubTypes.deterministic
+
 
 class RandomPatternsConfig(BaseModel):
     type: str = "default"
@@ -336,6 +343,7 @@ class ChemConfig(BaseModel):
 
 class DirectionsFrequenciesConfig(BaseModel):
     type: str = "default"
+
 
 class SatelliteConfig(BaseModel):
     type: str = "default"
@@ -423,15 +431,19 @@ def nameFromEncode(encode: Encode, additionalPrefix: Optional[str] = None):
         else None
     )
     satellite = (
-        encode.product.satellite.type
-        if encode.product.satellite is not None
-        else None
+        encode.product.satellite.type if encode.product.satellite is not None else None
     )
 
-    levelWaveStr = "-".join([l for l in [level, wave, periodRange, satellite] if l is not None])
+    levelWaveStr = "-".join(
+        [l for l in [level, wave, periodRange, satellite] if l is not None]
+    )
 
     grid = encode.grid.shortName
-    process = (lambda pt: "-".join( ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]))(encode.product.processType)
+    process = (
+        lambda pt: "-".join(
+            ([] if pt.type == ProcessTypes.default else [pt.type]) + [pt.subType]
+        )
+    )(encode.product.processType)
     time = encode.product.timeConfig.config.descriptiveName
     packing = encode.dataRepres.descriptiveName
     paramConfig = encode.product.param.type
@@ -546,7 +558,8 @@ def toDictRepres(val):
                 ),
                 **(
                     {"ensemble-configurator": {"type": "default"}}
-                    if val.processType.subType == ProcessSubTypes.ensemble or val.processType.subType == ProcessSubTypes.largeEnsemble
+                    if val.processType.subType == ProcessSubTypes.ensemble
+                    or val.processType.subType == ProcessSubTypes.largeEnsemble
                     else {}
                 ),
                 # **(
@@ -577,11 +590,7 @@ def toDictRepres(val):
                     else {}
                 ),
                 **(
-                    {
-                        "satellite-configurator": toDictRepres(
-                            val.satellite
-                        )
-                    }
+                    {"satellite-configurator": toDictRepres(val.satellite)}
                     if val.satellite is not None
                     else {}
                 ),
@@ -750,7 +759,7 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                     yield pdtCatPair("productCategory", "chemical")
                 case ProcessTypeConfig():
                     if crumb.type != ProcessTypes.default:
-                        yield pdtCatPair("processType", crumb.type )
+                        yield pdtCatPair("processType", crumb.type)
                     if crumb.subType != ProcessSubTypes.deterministic:
                         yield pdtCatPair("processSubType", crumb.subType)
 
@@ -758,7 +767,9 @@ def mapPDTCategories(crumbs: List[EncodePart]) -> List[PDTCategoryPair]:
                     # if crumb.type == ProcessTypes.reforecast and crumb.subType == ProcessSubTypes.deterministic:
                     #     yield pdtCatPair("processSubType", ProcessSubTypes.ensemble)
                 case RandomPatternsConfig():
-                    yield pdtCatPair("spatialExtent", "randomPatterns") # Todo may change
+                    yield pdtCatPair(
+                        "spatialExtent", "randomPatterns"
+                    )  # Todo may change
                 case PeriodConfig():
                     yield pdtCatPair("productCategory", "wave")
                     yield pdtCatPair("productSubCategory", "periodRange")
@@ -838,9 +849,7 @@ def buildProductDefiniton(crumbs: List[EncodePart]):
             "directionsFrequencies", getCrumb(DirectionsFrequenciesConfig, pdtCrumbs)
         ),
         **toArgDict("periodRange", getCrumb(PeriodConfig, pdtCrumbs)),
-        **toArgDict(
-            "satellite", getCrumb(SatelliteConfig, pdtCrumbs)
-        ),
+        **toArgDict("satellite", getCrumb(SatelliteConfig, pdtCrumbs)),
     }
     try:
         return ProductDefinition(**args)

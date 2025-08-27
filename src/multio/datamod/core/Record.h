@@ -20,6 +20,177 @@
 
 namespace multio::datamod {
 
+
+/// \defgroup datamod_core
+/// \page datamod_about About
+/// \ingroup datamod_core
+///
+/// For the purpose of datamodelling a (small) reflective-lite framework is used.
+/// It allows describing key/single entities as `Entry` and combine them in a `struct` (a **Record**)
+/// that allows compile-time iteration to generate parsers, dumpers, printing etc.
+/// The mechanism is used to express *data models* like groups of mars keys, grib keys or action specific metadata
+/// expectations.
+/// C++ does not offer any reflective features (not yet), but has a powerful template system.
+/// This framework tries to be minimal but yet provides mechanisms to frame common repeating mechanisms.
+
+/// \page datamod_motivation Motivation
+/// \ingroup datamod_core
+///
+/// This page explains how to use this reflective-lite framework to model data descriptions.
+/// The reason to have it and advantages of using it are the following:
+///  - data models describe domain specific logic - all other technical components should be able to use it
+///    and there must be clear separation between technical solutions/logic and the application domain.
+///  - while is is completely legitimate to introduce duplication for technical mechanisms,
+///    it is wise to avoid for domain knowledge.
+///      - reduce risk of inconsistency
+///      - simplify maintenance
+///      - low cognitive overhead / try to have *one truth*
+///  - domain logic is often driven by data schemas, i.e. objects that describe or are passed between different domain
+///    specific operations. For ECMWF and this use case it are:
+///      - sub groups of MARS keys
+///      - sub groups of GRIB2 (low-level) or ECCODES (high-level) keys
+///      - configuration of actions (e.g. input to MIR)
+///      - custom data models for actions/expected metadata content e.g
+///        - universal time description for temporal statistics to which different models can map to (including
+///        different time axes for MARS)
+///  - these descriptios are usually a set of keys with specific types. In C++ the choice of representation may be a
+///  `struct`.
+///    While for interfaces the shared object might be a valid `JSON` that can be described through a schema.
+///    In python it might be described with `pydantic`.
+///  - usual operations on these set of keys are:
+///     - parsing to internal representation (C++ struct) from an external container (`JSON`,
+///     `eckit::LocalConfiguration`, custom metadata object, GRIB handle)
+///     - dumping from an internal representation (C++ struct) to an external container
+///     - printing, comparing or even hashing the internal representation
+///     - converting/mapping different representations for single keys:
+///       - `param` may be represented as int and mapped from strings
+///       - enum types are converted from/to strings or integers
+///       - a time duration, or specific date/time can be described by a specific string format
+///
+
+/// \page datamod_usage Usage guide
+///
+/// # Defining entries
+///
+/// \code{.cpp}
+/// #include "datamod/core/EntryDef.h"
+/// namespace dm = multio::datamod;
+///
+/// // Define single keys as entry definitons
+/// constexpr auto MyKey =
+///     dm::EntryDef<std::string>{"my-key"}
+///         .withDefault("a pleasant value")
+///         .withAccessor([](auto&& v) { return &v.myKey; });
+///
+/// constexpr auto MyRequiredKey =
+///     dm::EntryDef<std::string>{"my-required-key"}
+///         .withAccessor([](auto&& v) { return &v.myRequiredKey; });
+///
+/// constexpr auto MyOptionalKey =
+///     dm::EntryDef<std::string>{"my-optional-key"}
+///         .tagOptional()
+///         .withAccessor([](auto&& v) { return &v.myOptionalKey; });
+/// \endcode
+///
+///
+/// # Defining records
+///
+/// \code{.cpp}
+/// #include "datamod/core/Record.h"
+/// namespace dm = multio::datamod;
+///
+/// struct MyRecord {
+///     // Define members with the same accessors as defined in the entry
+///     dm::EntryType_t<decltype(MyKey)> myKey;
+///     dm::EntryType_t<decltype(MyRequiredKey)> myRequiredKey;
+///     dm::EntryType_t<decltype(MyOptionalKey)> myOptionalKey;
+///
+///     // Give the record a name (for printing or nesting...)
+///     static constexpr std::string_view record_name_ = "my-record";
+///
+///     // List up all the entries in a compile time tuple. This make it a `record`.
+///     static constexpr auto record_entries_ = std::make_tuple(MyKey, MyRequiredKey, MyOptionalKey);
+/// };
+/// \endcode
+///
+///
+/// # Using entries
+///
+/// \code{.cpp}
+/// #include "datamod/ContainerInterop.h"
+/// namespace dm = multio::datamod;
+///
+/// multio::Metadata& md = message.metadata();
+///
+/// // Parse a single key to an entry -
+/// // no defaults are applied, no validation happens
+/// auto myKey = dm::parseEntry(MyKey, md);
+///
+/// // Work on the entry with
+/// // `isSet()`, `set(...)`, `get(...)`
+/// if (myKey.isSet()) {
+///   std::cout << myKey.get() << std::endl;
+/// }
+///
+/// // Writing an entry to an container
+/// dm::dumpEntry(MyKey, myKey, md);
+/// \endcode
+///
+///
+/// # Using records
+///
+/// \code{.cpp}
+/// #include "datamod/ContainerInterop.h"
+/// namespace dm = multio::datamod;
+///
+/// multio::Metadata& md = message.metadata();
+///
+/// // Parsing a record, no defaults are applied, no valiadation
+/// auto myRecord = dm::parseRecord<MyRecord>(md);
+/// // Apply defaults
+/// dm::applyRecordDefaults(myRecord);
+/// // Validate - throws dm::DataModellingException for every key that is not set and not tagged optional.
+/// dm::validateRecord(myRecord);
+///
+///
+/// // Parsing, applying defaults & validating in one go
+/// auto myRecord = dm::readRecord<MyRecord>(md);
+///
+/// // Or reading/parising to an existing entity
+/// MyRecord myRecord;
+/// dm::readRecord(myRecord, md);
+///
+/// // Using the record
+///
+/// myRecord.myKey.get();    // myKey has a default value - safe to use after applying defaults
+/// myRecord.myReqKey.get(); // myReqKey is required - safe to use after validation
+///
+/// // Optional keys need checking
+/// if (myRecord.myOptionalKey.isSet()) {
+///   myRecord.myOptionalKey.get();
+/// }
+///
+/// // Or set custom defaults
+/// myRecord.myOptionalKey.ensureInit("eat something").get();
+///
+/// // Writing the record
+/// dm::dumpRecord(myRecord, md);
+///
+/// \endcode
+
+
+/// \defgroup datamod_core_records Records
+/// \ingroup datamod_core
+///
+/// # Records
+/// ## TO BE DONE
+///
+/// ```
+/// TBD
+/// ```
+///
+
+
 //-----------------------------------------------------------------------------
 // Definitions to handle records:
 //  * Get a constexpr name
@@ -34,7 +205,7 @@ struct RecordName {
 };
 
 
-// NOTE: Likely to be removed - introduced and used because of metadata ... but this seems to be an mistake 
+// NOTE: Likely to be removed - introduced and used because of metadata ... but this seems to be an mistake
 template <typename RecordType>
 struct ScopedRecord;
 
@@ -50,7 +221,6 @@ inline constexpr std::string_view RecordName_v = RecordName<RecordType>::name;
 
 
 //-----------------------------------------------------------------------------
-
 
 template <typename RecordType, class = void>
 struct HasRecordEntriesMember : std::false_type {};
@@ -208,13 +378,33 @@ void dispatchEntry(std::string_view key, const Rec& rec, Func&& func) {
 
 //-----------------------------------------------------------------------------
 
+/// \defgroup datamod_core_composedrecord ComposedRecord
+/// \ingroup datamod_core_records
+///
+/// \section ComposedRecord
+///
+/// \brief Flat composing of records
+///
+/// \details `ComposedRecord<...>` allows using inheritance to combine and flatten multiple records.
+///   This is all working through C++ inheritance mechanism.
+///   The additional wrapping in `ComposedRecord<...>` ensures that all the `record_entries_`
+///   are combined properly.
+///
+/// \cond
 template <typename... Records>
 struct ComposedRecord : Records... {
     static constexpr auto record_entries_ = std::tuple_cat(recordEntries<Records>()...);
 
     static constexpr auto composing_records_ = std::make_tuple(util::TypeTag<Records>{}...);
 };
+/// \endcond
 
+/// \defgroup datamod_core_hascomposedrecords HasComposedRecords_v
+/// \ingroup datamod_core_records
+/// \brief True for types deriving from ComposedRecord
+/// \details SFINAE predicate to check if a record has composing records. `false`
+///          for any other types.
+/// \cond
 template <typename RecordType, class = void>
 struct HasComposingRecords : std::false_type {};
 
@@ -223,8 +413,14 @@ struct HasComposingRecords<RecordType, std::void_t<decltype(RecordType::composin
 
 template <typename RecordType>
 inline constexpr bool HasComposingRecords_v = HasComposingRecords<RecordType>::value;
+/// \endcond
 
 
+/// \defgroup datamod_core_composingrecords composingRecords
+/// \ingroup datamod_core_records
+/// \brief    Compile-time function to return a tuple with record types.
+/// \details  The tuple is not ment to be instantiated.
+/// \cond
 template <typename RecordType, std::enable_if_t<HasComposingRecords_v<RecordType>, bool> = true>
 constexpr const auto& composingRecords() {
     return RecordType::composing_records_;
@@ -244,21 +440,26 @@ template <typename RecordType, std::enable_if_t<!HasComposingRecords_v<RecordTyp
 constexpr auto composingRecords(const RecordType&) {
     return std::tuple<>{};
 };
+/// \endcond
 
 //-----------------------------------------------------------------------------
 
-// To be specialized by RecordType to provide custom default setting function
-//
-// Example
-// ```
-// template <>
-// struct ApplyRecordDefaults<RecordType> {
-//    static void applyDefaults(RecordType& record) {
-//       ... custom operators like setting dependent default values
-//           or performing complex consistency checks
-//    }
-// };
-// ```
+/// \var template <typename RecordType>
+/// \defgroup datamod_core_appylrecorddefaults ApplyRecordDefaults
+/// \ingroup datamod_core_records
+///
+///  To be specialized by RecordType to provide custom default setting function
+///
+///  Example
+///  ```
+///  template <>
+///  struct ApplyRecordDefaults<RecordType> {
+///     static void applyDefaults(RecordType& record) {
+///        ... custom operators like setting dependent default values
+///            or performing complex consistency checks
+///     }
+///  };
+///  ```
 template <typename RecordType>
 struct ApplyRecordDefaults;
 

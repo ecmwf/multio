@@ -55,7 +55,7 @@ CASE("Test rules gen matchers") {
         chainedRuleList(rule(OneOf{dm::LEVTYPE, {dm::LevType::AL}})));
 
     {
-        dm::MarsRecord mars{};
+        dm::FullMarsRecord mars{};
         SectionsConf sections;
 
         // Nothing should match the outer rule, which is allowed to not match
@@ -66,7 +66,7 @@ CASE("Test rules gen matchers") {
         auto md = util::sample_gen::mkMd();
         md.set("param", 1);
 
-        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        auto mars = dm::readRecord<dm::FullMarsRecord>(md);
         SectionsConf sections;
 
         EXPECT(ruleSet(mars, sections));
@@ -78,7 +78,7 @@ CASE("Test rules gen matchers") {
         auto md = util::sample_gen::mkMd();
         md.set("param", 42);  // Not included in rule
 
-        auto mars = dm::readRecord<dm::MarsRecord>(md);
+        auto mars = dm::readRecord<dm::FullMarsRecord>(md);
         SectionsConf sections;
 
         // First rule matches because grid is given, but then no param matches - the rule is not fully determined and
@@ -111,7 +111,7 @@ void detailedCompare(const Rec& computed, const Rec& expected) {
                 const auto& compEntry = entryDef.get(computed);
                 const auto& exptEntry = entryDef.get(expected);
                 if constexpr (dm::IsRecord_v<dm::EntryValueType_t<decltype(entryDef)>>) {
-                    if (compEntry.has() && exptEntry.isUnset()) {
+                    if (compEntry.isSet() && !exptEntry.isSet()) {
                         std::ostringstream oss;
                         oss << "Nested record " << entryDef.keyInfo()
                             << " is given but expected to be missing. Computed: ";
@@ -119,7 +119,7 @@ void detailedCompare(const Rec& computed, const Rec& expected) {
                         oss << std::endl;
                         throw eckit::Exception(oss.str(), Here());
                     }
-                    if (compEntry.isUnset() && exptEntry.has()) {
+                    if (!compEntry.isSet() && exptEntry.isSet()) {
                         std::ostringstream oss;
                         oss << "Nested record " << entryDef.keyInfo()
                             << " is missing but expected to be given. Expected: ";
@@ -127,7 +127,7 @@ void detailedCompare(const Rec& computed, const Rec& expected) {
                         oss << std::endl;
                         throw eckit::Exception(oss.str(), Here());
                     }
-                    if (compEntry.has() && exptEntry.has()) {
+                    if (compEntry.isSet() && exptEntry.isSet()) {
                         try {
                             detailedCompare(compEntry.get(), exptEntry.get());
                         }
@@ -174,7 +174,7 @@ CASE("Test real rules matchers with AIFS single keys") {
 
     for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             SectionsConf sections;
 
 
@@ -182,7 +182,7 @@ CASE("Test real rules matchers with AIFS single keys") {
             EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
             EXPECT_NO_THROW(dm::validateRecord(sections));
 
-            EXPECT((sections.product.get().templateNumber.has()));
+            EXPECT((sections.product.get().templateNumber.isSet()));
 
             SectionsConf expectedSections = expectedAIFSSingleEncoderSections(mars);
 
@@ -202,7 +202,7 @@ CASE("Test real rules matchers with AIFS ens keys") {
 
     for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(md);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             SectionsConf sections;
 
 
@@ -210,7 +210,7 @@ CASE("Test real rules matchers with AIFS ens keys") {
             EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
             EXPECT_NO_THROW(dm::validateRecord(sections));
 
-            EXPECT((sections.product.get().templateNumber.has()));
+            EXPECT((sections.product.get().templateNumber.isSet()));
 
             SectionsConf expectedSections = expectedAIFSEnsEncoderSections(mars);
 
@@ -237,7 +237,7 @@ CASE("Test real rules matchers with AIFS JSON rules") {
         ++i;
         eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(marsConf);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(marsConf);
             SectionsConf expectedSections = dm::readRecord<SectionsConf>(subConf.getSubConfiguration("rule"));
 
             SectionsConf computedSections;
@@ -274,7 +274,7 @@ CASE("Test real rules matchers with era6 5220 JSON rules") {
         ++i;
         eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
         try {
-            auto mars = dm::readRecord<dm::MarsRecord>(marsConf);
+            auto mars = dm::readRecord<dm::FullMarsRecord>(marsConf);
             SectionsConf expectedSections = dm::readRecord<SectionsConf>(subConf.getSubConfiguration("rule"));
 
             SectionsConf computedSections;

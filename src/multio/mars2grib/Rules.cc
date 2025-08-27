@@ -732,7 +732,7 @@ const ExclusiveRuleList& allRules() {
     return all_;
 }
 
-SectionsConf buildEncoderConf(const dm::MarsRecord& mars) {
+SectionsConf buildEncoderConf(const dm::FullMarsRecord& mars) {
     SectionsConf sections;
     if (!allRules()(mars, sections)) {
         std::ostringstream oss;

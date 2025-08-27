@@ -22,7 +22,6 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
@@ -60,7 +59,7 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     {
         // Read and set unscoped mars keys
-        auto marsRec = dm::readRecord<dm::MarsRecord>(md);
+        auto marsRec = dm::readRecord<dm::FullMarsRecord>(md);
 
         // Read scoped misc keys
         auto scopedMiscRec = dm::scopeRecord(dm::MiscRecord{});
@@ -71,7 +70,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto scopedGeo = dm::getGeometryRecord(marsRec);
 
         // If grid.. check if atlas is given.
-        if (marsRec.grid.has()) {
+        if (marsRec.grid.isSet()) {
             std::string scope{std::visit([](const auto& k) { return dm::getRecordScope(k); }, scopedGeo)};
             const auto& global = message::Parametrization::instance().get();
             // Fetch atlas and store in global parametrization (by scoping keys...)

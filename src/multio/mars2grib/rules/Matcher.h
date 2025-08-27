@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -37,10 +37,10 @@ struct Range {
     dm::EntryValueType_t<EntryDef_> first;
     dm::EntryValueType_t<EntryDef_> last;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         const auto& entry = entryDef.get().get(rec);
 
-        return (entry.has() && ((entry.get() >= first) && (entry.get() <= last)));
+        return (entry.isSet() && ((entry.get() >= first) && (entry.get() <= last)));
     }
 };
 
@@ -53,7 +53,7 @@ template <typename EntryDef_>
 struct Ranges {
     std::vector<Range<EntryDef_>> ranges;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         for (const auto& range : ranges) {
             if (range(rec)) {
                 return true;
@@ -75,10 +75,10 @@ struct OneOf {
     std::reference_wrapper<const EntryDef_> entryDef;
     std::vector<dm::EntryValueType_t<EntryDef_>> values;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         const auto& entry = entryDef.get().get(rec);
 
-        return (entry.has() && (std::find(values.begin(), values.end(), entry.get()) != values.end()));
+        return (entry.isSet() && (std::find(values.begin(), values.end(), entry.get()) != values.end()));
     }
 };
 
@@ -93,10 +93,10 @@ struct NoneOf {
     std::reference_wrapper<const EntryDef_> entryDef;
     std::vector<dm::EntryValueType_t<EntryDef_>> values;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         const auto& entry = entryDef.get().get(rec);
 
-        return (entry.has() && (std::find(values.begin(), values.end(), entry.get()) == values.end()));
+        return (entry.isSet() && (std::find(values.begin(), values.end(), entry.get()) == values.end()));
     }
 };
 template <typename EntryDef_>
@@ -108,7 +108,7 @@ template <typename EntryDef_>
 struct Has {
     std::reference_wrapper<const EntryDef_> entryDef;
 
-    bool operator()(const dm::MarsRecord& rec) const { return entryDef.get().get(rec).has(); }
+    bool operator()(const dm::FullMarsRecord& rec) const { return entryDef.get().get(rec).isSet(); }
 };
 template <typename EntryDef_>
 Has(const EntryDef_&) -> Has<EntryDef_>;
@@ -119,7 +119,7 @@ template <typename EntryDef_>
 struct Missing {
     std::reference_wrapper<const EntryDef_> entryDef;
 
-    bool operator()(const dm::MarsRecord& rec) const { return entryDef.get().get(rec).isUnset(); }
+    bool operator()(const dm::FullMarsRecord& rec) const { return !entryDef.get().get(rec).isSet(); }
 };
 template <typename EntryDef_>
 Missing(const EntryDef_&) -> Missing<EntryDef_>;
@@ -131,9 +131,9 @@ struct MatchOp {
     std::reference_wrapper<const EntryDef_> entryDef;
     dm::EntryValueType_t<EntryDef_> value;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         const auto& entry = entryDef.get().get(rec);
-        return (entry.has() && (OpFunctor{}(entry.get(), value)));
+        return (entry.isSet() && (OpFunctor{}(entry.get(), value)));
     }
 };
 template <typename EntryDef_, typename OpFunctor>
@@ -176,7 +176,7 @@ template <typename Matcher, typename... Matchers>
 struct All {
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         return std::apply([&](const auto&... mx) { return (mx(rec) && ... && true); }, matchers);
     }
 };
@@ -193,7 +193,7 @@ template <typename Matcher, typename... Matchers>
 struct Any {
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const dm::MarsRecord& rec) const {
+    bool operator()(const dm::FullMarsRecord& rec) const {
         return std::apply([&](const auto&... mx) { return (mx(rec) || ... || false); }, matchers);
     }
 };

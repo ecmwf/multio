@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -26,9 +26,9 @@ namespace dm = multio::datamod;
 //-----------------------------------------------------------------------------
 
 // Note - currently the only keys we do not include are direction and frequency.
-// Hence it would be enough to reuse the MarsRecord and just unset these keys.
+// Hence it would be enough to reuse the FullMarsRecord and just unset these keys.
 // However with this approach it is made explicit that there is a further logic happening
-// that should be distinguished from the existing MarsRecord.
+// that should be distinguished from the existing FullMarsRecord.
 
 struct MarsCacheRecord {
     dm::EntryType_t<decltype(dm::ORIGIN)> origin;
@@ -84,7 +84,7 @@ template <>
 struct ApplyRecordDefaults<mars2grib::MarsCacheRecord> {
     static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
 
-        if (cacheKeys.levtype.has() && cacheKeys.levtype.get() == LevType::ML) {
+        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == LevType::ML) {
             cacheKeys.levelist.unset();
         }
 

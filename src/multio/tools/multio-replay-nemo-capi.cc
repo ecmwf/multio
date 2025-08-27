@@ -17,7 +17,7 @@
 using multio::config::configuration_path_name;
 
 namespace {
-// TODO: Remove this helper class and update test configs to use the parameter-mapping action
+// TODO pgeier: Remove this helper class and update test configs to use the metadata-mapping action
 
 using NemoKey = std::string;
 

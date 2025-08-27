@@ -4,7 +4,7 @@ namespace multio::mars2grib {
 
 Mars2GribRaw::Mars2GribRaw(RawOptions options) : cache_{} {}
 
-std::unique_ptr<util::MioGribHandle> Mars2GribRaw::getHandle(const dm::MarsRecord& marsKeys,
+std::unique_ptr<util::MioGribHandle> Mars2GribRaw::getHandle(const dm::FullMarsRecord& marsKeys,
                                                              const dm::MiscRecord& miscKeys,
                                                              const dm::Geometry& geoKeys) {
     return cache_.getHandle(marsKeys, miscKeys, geoKeys);

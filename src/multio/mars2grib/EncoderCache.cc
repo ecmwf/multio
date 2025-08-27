@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -15,7 +15,6 @@
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/Mars2GribException.h"
-#include "multio/mars2grib/Options.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 #include "multio/util/MioGribHandle.h"
@@ -31,7 +30,7 @@ namespace dm = multio::datamod;
 namespace {
 
 std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGribHandle> sample,
-                                                   const dm::MarsRecord& marsKeys) {
+                                                   const dm::FullMarsRecord& marsKeys) {
 
     switch (marsKeys.repres.get()) {
         case dm::Repres::SH: {
@@ -63,22 +62,8 @@ std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGrib
 }  // namespace
 
 
-EncoderCache::EncoderCache(const EncodeMtg2Conf& opts) : EncoderCache(opts, MultIOMDict::makeOptions(opts)) {}
 
-EncoderCache::EncoderCache() :
-    EncoderCache(([]() {
-        EncodeMtg2Conf res{};
-        dm::applyRecordDefaults(res);
-        dm::validateRecord(res);
-        return res;
-    })()) {}
-
-
-EncoderCache::EncoderCache(const EncodeMtg2Conf& conf, MultIOMDict&& options) :
-    conf_{conf}, options_{std::move(options)} {}
-
-
-EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::MarsRecord& marsKeys, const MultIOMDict& mars,
+EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
                                                        const MultIOMDict& misc, const MultIOMDict& geo) {
     // Select caching keys and prehash
     PrehashedMarsKeys cacheKeySet = dm::readRecord<MarsCacheRecord>(marsKeys);
@@ -95,7 +80,7 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::MarsRecord& mar
     SectionsConf sections = rules::buildEncoderConf(marsKeys);
     auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
 
-    MultIOMRawEncoder encoder{options_, exportedConf};
+    MultIOMRawEncoder encoder{exportedConf};
 
     auto sample = util::MioGribHandle::makeDefault();
 
@@ -111,13 +96,13 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::MarsRecord& mar
 }
 
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys, const MultIOMDict& mars,
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
                                                              const MultIOMDict& misc, const MultIOMDict& geo) {
     CacheEntry& entry = makeOrGetEntry(marsKeys, mars, misc, geo);
     return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, misc, geo);
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys,
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
                                                              const dm::MiscRecord& miscKeys,
                                                              const dm::Geometry& geoKeys) {
     try {
@@ -147,15 +132,15 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecor
         // return getHandle(marsKeys, mars, misc, geom);
         auto ret = getHandle(marsKeys, mars, misc, geom);
 
-        // TODO fix that needs to be expressed in GeoGG once MULTIOM is gone
+        // TODO pgeier fix that needs to be expressed in GeoGG once MULTIOM is gone
         if (marsKeys.repres.get() == dm::Repres::GG) {
             ret->setValue("shapeOfTheEarth", 6);
         }
-        // TODO - this is a fix that needs to be moved to the section setters
-        if (miscKeys.bitmapPresent.has()) {
+        // TODO pgeier this is a fix that needs to be moved to the section setters
+        if (miscKeys.bitmapPresent.isSet()) {
             ret->setValue("bitmapPresent", miscKeys.bitmapPresent.get());
         }
-        if (miscKeys.missingValue.has()) {
+        if (miscKeys.missingValue.isSet()) {
             ret->setValue("missingValue", miscKeys.missingValue.get());
         }
         return ret;
@@ -193,7 +178,7 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecor
     }
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::MarsRecord& marsKeys,
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
                                                              const dm::MiscRecord& miscKeys) {
     auto geo = makeUnscopedGeometry(marsKeys);
     return getHandle(marsKeys, miscKeys, geo);

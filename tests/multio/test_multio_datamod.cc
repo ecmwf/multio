@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-
-/// @author Philipp Geier
-
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/EntryDef.h"
@@ -280,7 +277,7 @@ CASE("Test parse record from metadata [2]") {
     EXPECT_EQUAL(testKeys.key1.get(), "val1");
     EXPECT_EQUAL(testKeys.key2.get(), 2.0);
     EXPECT_EQUAL(testKeys.key3.get(), 3);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
     EXPECT_EQUAL(testKeys.key5.get(), true);
 };
 
@@ -295,7 +292,7 @@ CASE("Test parse record from metadata [2, scoped]") {
     EXPECT_EQUAL(testKeys.key1.get(), "val1");
     EXPECT_EQUAL(testKeys.key2.get(), 2.0);
     EXPECT_EQUAL(testKeys.key3.get(), 3);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
     EXPECT_EQUAL(testKeys.key5.get(), true);
 };
 
@@ -315,11 +312,11 @@ CASE("Test parse record and dump to metadata [1]") {
     TestKeys testKeys;
     EXPECT_THROWS(validateRecord(testKeys));
 
-    EXPECT_EQUAL(testKeys.key1.isUnset(), true);
-    EXPECT_EQUAL(testKeys.key2.isUnset(), true);
-    EXPECT_EQUAL(testKeys.key3.isUnset(), true);
-    EXPECT_EQUAL(testKeys.key4.isUnset(), true);
-    EXPECT_EQUAL(testKeys.key5.isUnset(), true);
+    EXPECT_EQUAL(testKeys.key1.isSet(), false);
+    EXPECT_EQUAL(testKeys.key2.isSet(), false);
+    EXPECT_EQUAL(testKeys.key3.isSet(), false);
+    EXPECT_EQUAL(testKeys.key4.isSet(), false);
+    EXPECT_EQUAL(testKeys.key5.isSet(), false);
 
     testKeys.key1.set("val1");
     testKeys.key2.set(2.0);
@@ -362,7 +359,6 @@ CASE("Test parse record and dump to metadata [1]") {
     {
         auto scopedTestKeys = dm::scopeRecord(testKeys);
         auto md = dumpRecord<Metadata>(scopedTestKeys);
-        std::cout << md << std::endl;
         EXPECT_EQUAL(md.get<std::string>("test-key1"), "val1");
         EXPECT_EQUAL(md.get<double>("test-key2"), 2.0);
         EXPECT_EQUAL(md.get<std::int64_t>("test-key3"), 3);
@@ -391,10 +387,10 @@ CASE("Test parse subset record[1]") {
 
     EXPECT_NO_THROW(validateRecord(subKeys));
 
-    EXPECT_EQUAL(subKeys.key1.isUnset(), false);
+    EXPECT_EQUAL(subKeys.key1.isSet(), true);
     EXPECT_EQUAL(subKeys.key1.get(), "val1");
     EXPECT_EQUAL(subKeys.key1.value.index(), VARIANT_VAL_INDEX);
-    EXPECT_EQUAL(subKeys.key4.isUnset(), true);
+    EXPECT_EQUAL(subKeys.key4.isSet(), false);
 
     subKeys.key4.set(4);
     EXPECT_EQUAL(subKeys.key4.get(), 4);
@@ -475,25 +471,25 @@ CASE("Test setting defaults") {
 
     {
         auto opts = readRecord<TestOpts>(Metadata{{"req-key", "val"}});
-        EXPECT_EQUAL(opts.defKey1.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey1.isSet(), true);
         EXPECT_EQUAL(opts.defKey1.get(), "default-key1-value");
-        EXPECT_EQUAL(opts.defKey2.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey2.isSet(), true);
         EXPECT_EQUAL(opts.defKey2.get(), "default-key1-value");
     }
 
     {
         auto opts = readRecord<TestOpts>(Metadata{{"req-key", "val"}, {"def-key1", "val1"}});
-        EXPECT_EQUAL(opts.defKey1.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey1.isSet(), true);
         EXPECT_EQUAL(opts.defKey1.get(), "val1");
-        EXPECT_EQUAL(opts.defKey2.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey2.isSet(), true);
         EXPECT_EQUAL(opts.defKey2.get(), "val1");
     }
 
     {
         auto opts = readRecord<TestOpts>(Metadata{{"req-key", "val"}, {"def-key2", "val2"}});
-        EXPECT_EQUAL(opts.defKey1.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey1.isSet(), true);
         EXPECT_EQUAL(opts.defKey1.get(), "default-key1-value");
-        EXPECT_EQUAL(opts.defKey2.isUnset(), false);
+        EXPECT_EQUAL(opts.defKey2.isSet(), true);
         EXPECT_EQUAL(opts.defKey2.get(), "val2");
     }
 }

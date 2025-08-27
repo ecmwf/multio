@@ -39,7 +39,7 @@ struct MarsValues {
 
     // Implementation  detail
     // Can change in the future
-    dm::MarsRecord values_;
+    dm::FullMarsRecord values_;
 };
 
 

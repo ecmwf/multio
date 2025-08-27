@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 2025- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -35,6 +35,6 @@ const RuleList& allRulesNoWMOMapping();
 
 const RuleList& allRules();
 
-std::optional<MappingResult> applyMappings(const RuleList&, dm::MarsRecord&, dm::MiscRecord&);
+std::optional<MappingResult> applyMappings(const RuleList&, dm::FullMarsRecord&, dm::MiscRecord&);
 
 }  // namespace multio::mars2mars

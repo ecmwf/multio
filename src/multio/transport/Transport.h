@@ -55,6 +55,8 @@ public:  // methods
 
     virtual void bufferedSend(const Message& message) = 0;
 
+    virtual void synchronize() = 0;
+
     virtual const Peer& localPeer() const = 0;
 
     virtual void listen();

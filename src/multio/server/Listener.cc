@@ -103,7 +103,7 @@ using util::ScopedThread;
 
 Listener::Listener(const config::ComponentConfiguration& compConf, Transport& trans) :
     FailureAware(compConf),
-    dispatcher_{std::make_unique<Dispatcher>(compConf, msgQueue_)},
+    dispatcher_{std::make_unique<Dispatcher>(compConf, msgQueue_, trans)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024 * 1024)) {}
@@ -148,6 +148,18 @@ void Listener::start() {
                         << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
                         << std::endl;
                     break;
+
+                case Message::Tag::Synchronization: {
+                    checkConnection(msg.source());
+                    LOG_DEBUG_LIB(LibMultio)
+                        << "*** SYNCHRONIZATION received from " << msg.source() << ":    Received "
+                        << syncCount_ + 1 << " / " << clientCount_ << " synchronization messages" << std::endl;
+                    if (++syncCount_ == clientCount_) {
+                        msgQueue_.emplace(std::move(msg));
+                        syncCount_ = 0;
+                    }
+                    break;
+                }
 
                 case Message::Tag::Domain:
                 case Message::Tag::Parametrization:

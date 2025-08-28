@@ -59,6 +59,7 @@ public:  // types
         Flush,
         Notification,
         Parametrization,
+        Synchronization,
         ENDTAG
     };
 

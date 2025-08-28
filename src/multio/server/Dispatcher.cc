@@ -8,6 +8,8 @@
 #include "multio/action/Plan.h"
 #include "multio/message/Parametrization.h"
 
+#include "multio/transport/Transport.h"
+
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
 
@@ -17,8 +19,8 @@ namespace multio::server {
 
 using config::ComponentConfiguration;
 
-Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue) :
-    FailureAware(compConf), queue_{queue} {
+Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue, multio::transport::Transport& transport) :
+    FailureAware(compConf), queue_{queue}, transport_{transport} {
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
@@ -67,6 +69,10 @@ void Dispatcher::handle(message::Message msg) const {
         case message::Message::Tag::Parametrization:
             LOG_DEBUG_LIB(multio::LibMultio) << "Server received parametrization: " << msg << std::endl;
             message::Parametrization::instance().update(std::move(msg));
+            break;
+
+        case message::Message::Tag::Synchronization:
+            transport_.synchronize();
             break;
 
         default:

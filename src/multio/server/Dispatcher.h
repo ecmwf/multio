@@ -28,6 +28,8 @@
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
 
+#include "multio/transport/Transport.h"
+
 namespace eckit {
 class Configuration;
 class Timer;
@@ -60,7 +62,7 @@ struct DispatcherFailureTraits {
 
 class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
 public:
-    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue);
+    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue, multio::transport::Transport& transport);
     ~Dispatcher();
 
     void dispatch();
@@ -73,6 +75,8 @@ private:
 
     eckit::Queue<message::Message>& queue_;
     std::vector<std::unique_ptr<action::Plan>> plans_;
+
+    multio::transport::Transport& transport_;
 
     util::Timing<> timing_;
 };

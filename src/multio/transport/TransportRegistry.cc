@@ -43,6 +43,18 @@ void TransportRegistry::abortAll(std::exception_ptr ptr) {
     }
 }
 
+void TransportRegistry::synchronize() {
+    std::lock_guard<std::mutex> lock{mutex_};
+
+    if (transports_.size() != 1) {
+        throw eckit::NotImplemented{"Synchronisation is currently only supported for a single transport", Here()};
+    }
+
+    for (const auto& tr : transports_) {
+        tr.second->synchronize();
+    }
+}
+
 void TransportRegistry::add(const std::string& serverName, const ComponentConfiguration& compConf) {
     std::lock_guard<std::mutex> lock{mutex_};
 

@@ -551,6 +551,27 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
+int multio_synchronize(multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio]() {
+            ASSERT(mio != nullptr);
+
+            multio::message::Metadata md;
+            md.set("flushKind", "default");
+            md.set("toAllServers", true);
+            md.set("domain", "global");
+            mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+
+            mio->synchronize();
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(

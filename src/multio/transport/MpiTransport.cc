@@ -174,9 +174,25 @@ void MpiTransport::closeConnections() {
     for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         bufferedSend(msg);
-        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+        pool_.sendBuffer(msg.destination());
     }
     pool_.waitAll();
+}
+
+void MpiTransport::synchronize() {
+    // TODO: Maybe we can restructure this a bit as clearly the behaviour is different
+    //       depending on which side (client or server) is calling this method.
+
+    if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
+        for (auto& server : serverPeers()) {
+            Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
+            bufferedSend(msg);
+            pool_.sendBuffer(msg.destination());
+        }
+        pool_.waitAll();
+    }
+
+    comm().barrier();
 }
 
 Message MpiTransport::receive() {
@@ -189,8 +205,8 @@ Message MpiTransport::receive() {
      * Return single messages until msgPack_ is empty and start over
      */
 
-    do {
-        while (not msgPack_.empty()) {
+    while(true) {
+        if (not msgPack_.empty()) {
             util::ScopedTiming retTiming{statistics_.returnTiming_};
             //! TODO For switch to MPMC queue: combine front() and pop()
             auto msg = std::move(msgPack_.front());
@@ -210,7 +226,7 @@ Message MpiTransport::receive() {
             streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
 
-    } while (true);
+    }
 }
 
 void MpiTransport::abort(std::exception_ptr ptr) {
@@ -238,7 +254,7 @@ void MpiTransport::send(const Message& msg) {
 
     // eckit::Log::info() << " *** MpiTransport::send from " << local_.group() << " " << local_.id
     // << std::endl;
-    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer, sz, dest, msg_tag);
+    comm().send<void>(buffer, sz, dest, msg_tag);
 
     ++statistics_.sendCount_;
     statistics_.sendSize_ += sz;

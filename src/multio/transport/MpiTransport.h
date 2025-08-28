@@ -50,6 +50,8 @@ private:
     void openConnections() override;
     void closeConnections() override;
 
+    void synchronize() override;
+
     Message receive() override;
 
     void abort(std::exception_ptr) override;

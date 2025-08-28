@@ -53,6 +53,8 @@ private:
 
     void bufferedSend(const Message& msg) override;
 
+    void synchronize() override;
+
     void print(std::ostream& os) const override;
 
     const Peer& localPeer() const override;

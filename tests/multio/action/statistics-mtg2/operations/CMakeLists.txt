@@ -70,3 +70,10 @@ ecbuild_add_test(
     NO_AS_NEEDED
     LIBS multio-action-debug-sink multio-action-statistics-mtg2
 )
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_stddev
+    SOURCES StdDev.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2
+)

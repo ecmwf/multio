@@ -35,6 +35,7 @@ public:
     virtual void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
     virtual void init(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
     virtual bool needStepZero() const = 0;
+    virtual bool isComposable() const { return false; };
 
 protected:
     virtual void print(std::ostream& os) const = 0;

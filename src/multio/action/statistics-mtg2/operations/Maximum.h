@@ -23,6 +23,8 @@ public:
             const StatisticsOptions& opt) :
         OperationWithData<T>{name, "maximum", true, win, IOmanager, opt, std::numeric_limits<T>::min()} {};
 
+    bool isComposable() const override { return true; }
+
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());

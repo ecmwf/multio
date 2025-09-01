@@ -7,9 +7,6 @@
 
 inline constexpr std::size_t SIZE = 4096;
 
-template <typename T>
-inline constexpr T TOLLERANCE = 10 * std::numeric_limits<T>::epsilon();
-
 
 namespace multio::test::statistics_mtg2 {
 
@@ -25,7 +22,10 @@ public:
     using SpatialData = std::vector<ElemType>;
     using SpatialDataOverTime = std::vector<SpatialData>;
 
-    StatisticsOperationTest(const std::string &name) : name_{name} {};
+    StatisticsOperationTest(
+        const std::string &name,
+        const ElemType tolerance = 10 * std::numeric_limits<ElemType>::epsilon()
+    ) : name_{name}, tolerance_{tolerance} {};
 
     void runSingle() {
         const std::string plan = getPlan();
@@ -51,7 +51,7 @@ public:
         auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                      env.debugSink().front().payload().size() / sizeof(ElemType));
         EXPECT_EQUAL(res.size(), SIZE);
-        EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
+        EXPECT(res.isApproximatelyEqual(ref, tolerance_));
     }
 
     void runMultiple() {
@@ -79,7 +79,7 @@ public:
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
             env.debugSink().pop();
         }
         {   // August (31 days)
@@ -87,7 +87,7 @@ public:
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
             env.debugSink().pop();
         }
         {   // September (2 days)
@@ -95,7 +95,7 @@ public:
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
-            EXPECT(res.isApproximatelyEqual(ref, TOLLERANCE<ElemType>));
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
             env.debugSink().pop();
         }
     }
@@ -109,6 +109,7 @@ protected:
 
 private:
     const std::string name_;
+    const ElemType tolerance_;
 
     SpatialData reference(const SpatialDataOverTime& input) {
         return reference(input, 1, input.size());

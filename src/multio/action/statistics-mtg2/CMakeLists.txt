@@ -33,6 +33,7 @@ list( APPEND _statistics_sources
     operations/Maximum.h
     operations/DeAccumulate.h
     operations/FixedWindowFluxAverage.h
+    operations/StdDev.h
     StatisticsParamMapping.cc
     StatisticsParamMapping.h
     TemporalStatistics.cc

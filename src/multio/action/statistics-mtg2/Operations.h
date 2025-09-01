@@ -26,6 +26,7 @@
 #include "multio/action/statistics-mtg2/operations/Instant.h"
 #include "multio/action/statistics-mtg2/operations/Maximum.h"
 #include "multio/action/statistics-mtg2/operations/Minimum.h"
+#include "multio/action/statistics-mtg2/operations/StdDev.h"
 
 #include "multio/action/statistics-mtg2/operations/DeAccumulate.h"
 #include "multio/action/statistics-mtg2/operations/FixedWindowFluxAverage.h"
@@ -65,6 +66,9 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
     }
     if (opname == "fixed-window-flux-average") {
         return std::make_unique<FixedWindowFluxAverage<Precision>>(opname, sz, win, cfg);
+    }
+    if (opname == "stddev") {
+        return std::make_unique<StdDev<Precision>>(opname, sz, win, cfg);
     }
 
     std::ostringstream os;
@@ -119,6 +123,9 @@ std::unique_ptr<Operation> load_operation(const std::string& opname, std::shared
     if (opname == "fixed-window-flux-average") {
         found = true;
         ret = std::make_unique<FixedWindowFluxAverage<Precision>>(opname, win, IOmanager, opt);
+    }
+    if (opname == "stddev") {
+        throw eckit::NotImplemented(Here());
     }
 
     if (!found) {

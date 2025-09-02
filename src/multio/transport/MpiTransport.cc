@@ -146,16 +146,30 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     serverGroup_{std::move(std::get<3>(peerSetup))},
     pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_},
     streamQueue_{1024} {
-    const auto& otherGroup
-        = compConf.multioConfig().localPeerTag() == config::LocalPeerTag::Server ? clientGroup_ : serverGroup_;
-    if (getMpiPoolSize(compConf) < otherGroup.size()) {
-        throw eckit::UserError(
-            "Pool size of the client and server must be at least equal to the size of the other MPI communicator. "
-            "Consider unsetting or increasing the values of the following environment variables:\n"
-            "    MULTIO_CLIENT_MPI_POOL_SIZE\n"
-            "    MULTIO_SERVER_MPI_POOL_SIZE\n"
-            "    MULTIO_MPI_POOL_SIZE",
-            Here());
+    // Check if the MpiPoolSize is correct:
+    //   If LocalPeerTag == Client -> MpiPoolSize >= size of server communicator
+    //   If LocalPeerTag == Server -> MpiPoolSize >= 1
+    auto poolSize = getMpiPoolSize(compConf);
+    if (compConf.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
+        if (poolSize < serverGroup_.size()) {
+            std::ostringstream os;
+            os << "Pool size of the client must be at least equal to the size of the server MPI communicator. ";
+            os << "Consider unsetting or increasing the values of the following environment variables:\n";
+            os << "    MULTIO_CLIENT_MPI_POOL_SIZE\n";
+            os << "    MULTIO_MPI_POOL_SIZE\n";
+            os << "Currently client MPI pool size is " << poolSize << " size of server communicator is " << serverGroup_.size();
+            throw eckit::UserError(os.str(), Here());
+        }
+    } else {
+        if (poolSize < 1) {
+            std::ostringstream os;
+            os << "Pool size of the server must be at least 1. ";
+            os << "Consider unsetting or increasing the values of the following environment variables:\n";
+            os << "    MULTIO_SERVER_MPI_POOL_SIZE\n";
+            os << "    MULTIO_MPI_POOL_SIZE\n";
+            os << "Currently server MPI pool size is " << poolSize;
+            throw eckit::UserError(os.str(), Here());
+        }
     }
 }
 
@@ -370,7 +384,8 @@ size_t MpiTransport::getMpiPoolSize(const ComponentConfiguration& compConf) {
             if (pMul) {
                 return eckit::translate<size_t>(std::string{*pMul});
             };
-            return clientGroup_.size();
+            // Default between 1 and 4 (inclusive)
+            return std::max<size_t>(1, std::min<size_t>(clientGroup_.size() / 2, 4));
         }
 
         case config::LocalPeerTag::Client: {

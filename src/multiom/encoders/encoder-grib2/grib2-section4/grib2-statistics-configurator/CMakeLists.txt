@@ -15,6 +15,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_STATISTICS_MAIN_SOURCES
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_STATISTICS_DIR}/grib2_section4_statistics_since_lastpp_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_STATISTICS_DIR}/grib2_section4_statistics_factory_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_STATISTICS_DIR}/grib2_section4_statistics_utils_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_STATISTICS_DIR}/grib2_section4_stattype_utils_mod.F90
 )
 
 # Collect source files in module2

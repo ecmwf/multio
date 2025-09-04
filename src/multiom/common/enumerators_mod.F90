@@ -450,6 +450,12 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_STATISTICAL_PROCESS_MISSING_E=255_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_TYPE_OF_STATISTICAL_PROCESS=16_JPIB_K
 
+  ! Enumerators for periods
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PERIOD_DAILY_E=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PERIOD_MONTHLY_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_PERIODS=2_JPIB_K
+  
+
   ! Enumeators for type of time range
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_TIME_RANGE_INSTANT_E=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_TIME_RANGE_FROM_STEP0_E=2_JPIB_K
@@ -1096,6 +1102,10 @@ END INTERFACE
   PUBLIC :: TYPE_OF_STATISTICAL_PROCESS_MISSING_E
   PUBLIC :: N_TYPE_OF_STATISTICAL_PROCESS
 
+  ! Enumerators for type of period
+  PUBLIC :: TYPE_OF_PERIOD_DAILY_E
+  PUBLIC :: TYPE_OF_PERIOD_MONTHLY_E
+
   ! Enumeators for type of time range
   PUBLIC :: TYPE_OF_TIME_RANGE_INSTANT_E
   PUBLIC :: TYPE_OF_TIME_RANGE_FROM_STEP0_E
@@ -1254,6 +1264,8 @@ END INTERFACE
   PUBLIC :: CPACKING2IPACKING
   PUBLIC :: ITYPE_OF_STATISTICAL_PROCESS2CTYPE_OF_STATISTICAL_PROCESS
   PUBLIC :: CTYPE_OF_STATISTICAL_PROCESS2ITYPE_OF_STATISTICAL_PROCESS
+  PUBLIC :: ITYPE_OF_PERIOD2CTYPE_OF_PERIOD
+  PUBLIC :: CTYPE_OF_PERIOD2ITYPE_OF_PERIOD
   PUBLIC :: ITYPE_OF_TIME_RANGE2CTYPE_OF_TIME_RANGE
   PUBLIC :: CTYPE_OF_TIME_RANGE2ITYPE_OF_TIME_RANGE
   PUBLIC :: FLT_INT_IOP2COP
@@ -5107,19 +5119,19 @@ IMPLICIT NONE
 
   CASE ( 'instant' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_INSTANT_E
-  CASE ( 'average' )
+  CASE ( 'average', 'av' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_AVERAGE_E
-  CASE ( 'accumul' )
+  CASE ( 'accumul', 'ac' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_ACCUMUL_E
-  CASE ( 'max' )
+  CASE ( 'max', 'mx' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_MAX_E
-  CASE ( 'min' )
+  CASE ( 'min', 'mn' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_MIN_E
   CASE ( 'diff-fwd' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_DIFF_FWD_E
   CASE ( 'rms' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_RMS_E
-  CASE ( 'stddev' )
+  CASE ( 'stddev', 'sd' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_STDDEV_E
   CASE ( 'covariance' )
     ITYPE_OF_STATISTICAL_PROCESS = TYPE_OF_STATISTICAL_PROCESS_COV_E
@@ -5186,6 +5198,232 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION CTYPE_OF_STATISTICAL_PROCESS2ITYPE_OF_STATISTICAL_PROCESS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ITYPE_OF_PERIOD2CTYPE_OF_PERIOD'
+PP_THREAD_SAFE FUNCTION ITYPE_OF_PERIOD2CTYPE_OF_PERIOD( ITYPE_OF_PERIOD, CTYPE_OF_PERIOD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ITYPE_OF_PERIOD
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CTYPE_OF_PERIOD
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_TYPE_OF_PERIOD=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CTYPE_OF_PERIOD = REPEAT(' ', 16)
+
+  !> Select the repres
+  SELECT CASE ( ITYPE_OF_PERIOD )
+  CASE ( TYPE_OF_PERIOD_DAILY_E )
+    CTYPE_OF_PERIOD = 'daily'
+  CASE ( TYPE_OF_PERIOD_MONTHLY_E )
+    CTYPE_OF_PERIOD = 'monthly'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_TYPE_OF_PERIOD )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_TYPE_OF_PERIOD)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) ITYPE_OF_PERIOD
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown itypeOfPeriod: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ITYPE_OF_PERIOD2CTYPE_OF_PERIOD
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CTYPE_OF_PERIOD2ITYPE_OF_PERIOD'
+PP_THREAD_SAFE FUNCTION CTYPE_OF_PERIOD2ITYPE_OF_PERIOD( CTYPE_OF_PERIOD, ITYPE_OF_PERIOD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CTYPE_OF_PERIOD
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ITYPE_OF_PERIOD
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CTYPE_OF_PERIOD)) :: LOC_CTYPE_OF_PERIOD
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_TYPE_OF_PERIOD=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  ITYPE_OF_PERIOD = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CTYPE_OF_PERIOD, LOC_CTYPE_OF_PERIOD, HOOKS )
+
+  !> Select the repres
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CTYPE_OF_PERIOD)) )
+
+  CASE ( 'daily', 'da' )
+    ITYPE_OF_PERIOD = TYPE_OF_PERIOD_DAILY_E
+
+  CASE ( 'monthly', 'mo' )
+    ITYPE_OF_PERIOD = TYPE_OF_PERIOD_MONTHLY_E
+
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_TYPE_OF_PERIOD )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_TYPE_OF_PERIOD)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown ctypeOfStatisticaProcess: '//TRIM(ADJUSTL(CTYPE_OF_PERIOD)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CTYPE_OF_PERIOD2ITYPE_OF_PERIOD
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

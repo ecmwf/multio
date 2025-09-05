@@ -33,7 +33,7 @@ struct Options {
 //---------------------------------------------------------------------------------------------------------------------
 
 
-struct MarsValues {
+struct MarsIdentifiers {
     void set(const std::string& key, std::int64_t value);
     void set(const std::string& key, const std::string& value);
 
@@ -150,19 +150,19 @@ public:
     ~Mars2Grib() = default;
 
 
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc,
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const GeometryValues& geom, const std::vector<double>& values);
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc,
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const GeometryValues& geom, const std::vector<float>& values);
 
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc,
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const std::vector<double>& values);
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc,
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const std::vector<float>& values);
 
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc,
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const GeometryValues& geom);
-    std::unique_ptr<codes_handle> encode(const MarsValues& mars, const AdditionalValues& misc);
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc);
 
 private:
     Mars2GribRaw rawApi_;

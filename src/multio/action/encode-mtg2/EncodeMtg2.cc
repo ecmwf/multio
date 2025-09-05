@@ -122,7 +122,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             }
 
             // The +32 is related to bug
-            // TODO(pgeier) report this bug
+            // TODO(pgeier) Track bug ECC-2130: https://jira.ecmwf.int/browse/ECC-2130
             eckit::Buffer buf{sample->length() + 32};
             sample->write(buf);
 

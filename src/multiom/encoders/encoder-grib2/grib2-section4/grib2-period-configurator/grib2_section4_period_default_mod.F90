@@ -715,17 +715,17 @@ IMPLICIT NONE
   ITMAX = PAR%WAVE%ITMAX
 
   ! Logic to preset the wave parameters
-  IF ( ITMIN .NE. 0 .AND. ITMAX .NE. 0 ) THEN
+  IF ( ITMIN .GT. 0 .AND. ITMAX .GT. 0 ) THEN
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 7_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfLowerWavePeriodLimit', 0_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfLowerWavePeriodLimit', ITMIN)
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfUpperWavePeriodLimit', 0_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfUpperWavePeriodLimit', ITMAX)
-  ELSEIF ( ITMIN .NE. 0 ) THEN
+  ELSEIF ( ITMIN .GT. 0 ) THEN
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 3_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfLowerWavePeriodLimit', 0_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfLowerWavePeriodLimit', ITMIN )
-  ELSEIF ( ITMAX .NE. 0 ) THEN
+  ELSEIF ( ITMAX .GT. 0 ) THEN
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfWavePeriodInterval', 4_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaleFactorOfUpperWavePeriodLimit', 0_JPIB_K )
     PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'scaledValueOfUpperWavePeriodLimit', ITMAX )

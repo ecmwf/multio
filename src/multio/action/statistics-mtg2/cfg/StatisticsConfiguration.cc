@@ -162,7 +162,9 @@ void StatisticsConfiguration::readStartDate(const message::Metadata& md, const S
         date_ = *dateVal;
     }
     else {
-        throw eckit::SeriousBug{"Unable to find start date", Here()};
+        std::ostringstream os;
+        os << "Unable to find start date : " << md;
+        throw eckit::SeriousBug{os.str(), Here()};
     }
     return;
 };

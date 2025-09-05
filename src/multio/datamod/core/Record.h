@@ -28,6 +28,7 @@ namespace multio::datamod {
 /// For the purpose of datamodelling a (small) reflective-lite framework is used.
 /// It allows describing key/single entities as `Entry` and combine them in a `struct` (a **Record**)
 /// that allows compile-time iteration to generate parsers, dumpers, printing etc.
+/// Moreover it expresses follow up mechanisms like `applyRecordDefaults` and `validateRecord`.
 /// The mechanism is used to express *data models* like groups of mars keys, grib keys or action specific metadata
 /// expectations.
 /// C++ does not offer any reflective features (not yet), but has a powerful template system.

@@ -42,9 +42,9 @@ constexpr auto TablesVersion =
         .withAccessor([](auto&& v) { return &v.tablesVersion; });
         
 constexpr auto LocalTablesVersion =
-    EntryDef<std::int64_t>{"LocalTablesVersion"}  
+    EntryDef<std::int64_t>{"localTablesVersion"}  
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.LocalTablesVersion; });
+        .withAccessor([](auto&& v) { return &v.localTablesVersion; });
         
 constexpr auto ProductionStatusOfProcessedData =
     EntryDef<std::int64_t>{"productionStatusOfProcessedData"}  

@@ -64,6 +64,17 @@ class Statistics(Action):
     output_frequency: str = Field(examples=["5h", "10d", "1w"])
 
 
+class StatisticsMTG(Action):
+    """StatisticsMTG Action.
+
+    Calculate statistics on the data based on MARS keys.
+    """
+
+    type: Literal["statistics-mtg2"] = Field("statistics-mtg2", init=False)
+    operations: list[Literal["average", "minimum", "maximum", "accumulate", "instant", "difference", "stddev" ]]
+    output_frequency: str = Field(examples=["5h", "10d", "1w"])
+
+
 class Transport(Action):
     """Transport Action"""
 
@@ -124,10 +135,6 @@ class EncodeMTG(Action):
     type: Literal["encode-mtg2"] = Field("encode-mtg2", init=False)
     
     geo_from_atlas: bool = Field(False)
-    knowledge_root: str | None = Field(None)
-    samples_path: str | None = Field(None)
-    mapping_rules: str | None = Field(None)
-    encoding_rules: str | None = Field(None)
 
 
 class Sink(Action):
@@ -154,6 +161,6 @@ class SingleField(Action):
     type: Literal["single-field-sink"] = Field("single-field-sink", init=False)
 
 
-ACTIONS = Union[Select, Statistics, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
+ACTIONS = Union[Select, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
 
-__all__ = ["ACTIONS", "Action", "Select", "Statistics", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]
+__all__ = ["ACTIONS", "Action", "Select", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]

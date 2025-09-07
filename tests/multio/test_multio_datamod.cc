@@ -115,24 +115,13 @@ struct TestOpts {
 
     static constexpr std::string_view record_name_ = "test-opts";
     static constexpr auto record_entries_ = std::make_tuple(REQKEY, DEFKEY1, DEFKEY2, OPTKEY);
-};
 
-}  // namespace multio::test
-
-namespace multio::datamod {
-
-template <>
-struct ApplyRecordDefaults<test::TestOpts> {
     static void applyDefaults(test::TestOpts& opts) {
         // Conditionally set default of def-key2 to value of def-key1
         opts.defKey2.ensureInit([&]() { return opts.defKey1.get(); });
     }
 };
 
-}  // namespace multio::datamod
-
-
-namespace multio::test {
 
 using namespace multio::datamod;
 using multio::message::Metadata;

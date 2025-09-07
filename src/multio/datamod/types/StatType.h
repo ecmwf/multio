@@ -13,6 +13,7 @@
 #include "multio/datamod/core/DataModellingException.h"
 #include "multio/datamod/core/TypeParserDumper.h"
 
+#include "multio/util/Hash.h"
 #include "multio/util/Print.h"
 #include "multio/util/TypeToString.h"
 
@@ -60,8 +61,29 @@ struct StatType {
     std::size_t levels() const;
 };
 
+bool operator==(const StatType& lhs, const StatType& rhs) noexcept;
+bool operator!=(const StatType& lhs, const StatType& rhs) noexcept;
+
 
 }  // namespace multio::datamod
+
+
+namespace std {
+
+template <>
+struct std::hash<multio::datamod::SingleStatType> {
+    std::size_t operator()(const multio::datamod::SingleStatType& o) const noexcept {
+        return multio::util::hashCombine(multio::util::hash(o.duration), multio::util::hash(o.operation));
+    }
+};
+
+template <>
+struct std::hash<multio::datamod::StatType> {
+    std::size_t operator()(const multio::datamod::StatType& o) const noexcept {
+        return multio::util::hashCombine(multio::util::hash(o.firstLevel), multio::util::hash(o.secondLevel));
+    }
+};
+}  // namespace std
 
 
 namespace multio::util {

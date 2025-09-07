@@ -130,8 +130,7 @@ std::string DumpType<StatType>::dump(StatType v) {
 StatType ParseType<StatType>::parse(std::string_view val) {
     auto throwUnknownValue = [&]() {
         throw DataModellingException(
-            std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val),
-            Here());
+            std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val), Here());
     };
     switch (val.size()) {
         case 4:
@@ -146,6 +145,14 @@ StatType ParseType<StatType>::parse(std::string_view val) {
             throwUnknownValue();
     }
 }
+
+
+bool operator==(const StatType& lhs, const StatType& rhs) noexcept {
+    return (lhs.firstLevel == rhs.firstLevel) && (lhs.secondLevel == rhs.secondLevel);
+};
+bool operator!=(const StatType& lhs, const StatType& rhs) noexcept {
+    return !(lhs == rhs);
+};
 
 }  // namespace multio::datamod
 

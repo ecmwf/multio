@@ -111,6 +111,17 @@ namespace multio::datamod {
 ///
 ///     // List up all the entries in a compile time tuple. This make it a `record`.
 ///     static constexpr auto record_entries_ = std::make_tuple(MyKey, MyRequiredKey, MyOptionalKey);
+///
+///     // Optional - apply context dependent defaults
+///     static void applyDefaults(RecordType& record) {
+///        ... custom operators like setting dependent default values
+///            or performing complex consistency checks
+///     }
+///
+///     // Optional - perform context dependent validation
+///     static void validate(const RecordType& record) {
+///        ... do checks and potentially throw
+///     }
 /// };
 /// \endcode
 ///
@@ -445,32 +456,12 @@ constexpr auto composingRecords(const RecordType&) {
 
 //-----------------------------------------------------------------------------
 
-/// \var template <typename RecordType>
-/// \defgroup datamod_core_appylrecorddefaults ApplyRecordDefaults
-/// \ingroup datamod_core_records
-///
-///  To be specialized by RecordType to provide custom default setting function
-///
-///  Example
-///  ```
-///  template <>
-///  struct ApplyRecordDefaults<RecordType> {
-///     static void applyDefaults(RecordType& record) {
-///        ... custom operators like setting dependent default values
-///            or performing complex consistency checks
-///     }
-///  };
-///  ```
-template <typename RecordType>
-struct ApplyRecordDefaults;
-
 
 template <typename RecordType, class = void>
 struct HasApplyDefaults : std::false_type {};
 
 template <typename RecordType>
-struct HasApplyDefaults<
-    RecordType, std::void_t<decltype(ApplyRecordDefaults<RecordType>::applyDefaults(std::declval<RecordType&>()))>>
+struct HasApplyDefaults<RecordType, std::void_t<decltype(RecordType::applyDefaults(std::declval<RecordType&>()))>>
     : std::true_type {};
 
 
@@ -481,7 +472,7 @@ inline constexpr bool HasApplyDefaults_v = HasApplyDefaults<RecordType>::value;
 struct ApplyDefaultsFunctor {
     template <typename RecordType, std::enable_if_t<(HasApplyDefaults_v<RecordType>), bool> = true>
     void operator()(RecordType& rec) const {
-        ApplyRecordDefaults<RecordType>::applyDefaults(rec);
+        RecordType::applyDefaults(rec);
     }
 
     template <typename RecordType, std::enable_if_t<(!HasApplyDefaults_v<RecordType>), bool> = true>
@@ -503,28 +494,12 @@ void applyRecordDefaults(RecordType& rec) {
 
 //-----------------------------------------------------------------------------
 
-// To be specialized by RecordType to provide additional validation
-//
-// Example
-// ```
-// template <>
-// struct ValidateRecord<RecordType> {
-//    static void validate(RecordType& record) {
-//       ... custom operators like setting dependent default values
-//           or performing complex consistency checks
-//    }
-// };
-// ```
-template <typename RecordType>
-struct ValidateRecord;
-
 
 template <typename RecordType, class = void>
 struct HasValidate : std::false_type {};
 
 template <typename RecordType>
-struct HasValidate<RecordType,
-                   std::void_t<decltype(ValidateRecord<RecordType>::validate(std::declval<const RecordType&>()))>>
+struct HasValidate<RecordType, std::void_t<decltype(RecordType::validate(std::declval<const RecordType&>()))>>
     : std::true_type {};
 
 
@@ -535,7 +510,7 @@ inline constexpr bool HasValidate_v = HasValidate<RecordType>::value;
 struct ValidateRecordFunctor {
     template <typename RecordType, std::enable_if_t<(HasValidate_v<RecordType>), bool> = true>
     void operator()(const RecordType& rec) const {
-        ValidateRecord<RecordType>::validate(rec);
+        RecordType::validate(rec);
     }
 
     template <typename RecordType, std::enable_if_t<(!HasValidate_v<RecordType>), bool> = true>

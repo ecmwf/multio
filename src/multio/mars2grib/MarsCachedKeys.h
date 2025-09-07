@@ -37,6 +37,7 @@ struct MarsCacheRecord {
     dm::EntryType_t<decltype(dm::TYPE)> type;
     dm::EntryType_t<decltype(dm::EXPVER)> expver;
     dm::EntryType_t<decltype(dm::PARAM)> param;
+    dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
     dm::EntryType_t<decltype(dm::DATE)> date;
     dm::EntryType_t<decltype(dm::TIME)> time;
     // Caching is step independent
@@ -72,30 +73,23 @@ struct MarsCacheRecord {
 
     static constexpr std::string_view record_name_ = "mars";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::ORIGIN, dm::CLASS, dm::STREAM, dm::TYPE, dm::EXPVER, dm::PARAM, dm::DATE, dm::TIME, dm::LEVTYPE,
+        dm::ORIGIN, dm::CLASS, dm::STREAM, dm::TYPE, dm::EXPVER, dm::PARAM, dm::STATTYPE, dm::DATE, dm::TIME, dm::LEVTYPE,
         dm::LEVELIST, dm::MODEL, dm::RESOLUTION, dm::ACTIVITY, dm::EXPERIMENT, dm::GENERATION, dm::REALIZATION,
         dm::TIMESPAN, dm::ANOFFSET, dm::PACKING, dm::NUMBER, dm::IDENT, dm::INSTRUMENT, dm::CHANNEL, dm::CHEM,
         dm::WAVELENGTH, dm::HDATE, dm::DATASET, dm::METHOD, dm::SYSTEM, dm::GRID, dm::TRUNCATION, dm::REPRES);
-};
 
-}  // namespace multio::mars2grib
-
-namespace multio::datamod {
-
-template <>
-struct ApplyRecordDefaults<mars2grib::MarsCacheRecord> {
     static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
-
-        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == LevType::ML) {
+        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == dm::LevType::ML) {
             cacheKeys.levelist.unset();
         }
 
         // Explicitly acquire because all the whole data structure is ment to be stored in a container
-        acquireRecord(cacheKeys);
+        dm::acquireRecord(cacheKeys);
     }
 };
 
-}  // namespace multio::datamod
+}  // namespace multio::mars2grib
+
 
 namespace std {
 

@@ -13,5 +13,3 @@ Records
 .. doxygengroup:: datamod_core_composingrecords
    :project: multio
 
-.. doxygengroup:: datamod_core_appylrecorddefaults
-   :project: multio

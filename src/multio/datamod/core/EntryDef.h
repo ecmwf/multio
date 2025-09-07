@@ -69,7 +69,7 @@ namespace multio::datamod {
 /// Entries hold a tag `EntryTag` that can be accesed via `.tag` and can hold either:
 ///   * `EntryTag::Required` (default) - must be specified when parsing from a container
 ///   * `EntryTag::Defaulted` - has a direct default value or it`s default value may be depended on other entries -
-///      that means it may be set through the `ApplyRecordDefaults` specialization.
+///      that means it may be set through the `applyRecord(RecordType&)` specialization.
 ///   * or `EntryTag::Optional` to declare an entry is optional.
 ///
 /// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is throw if the entry definition is not tagged
@@ -455,6 +455,36 @@ using EntryType_t = typename std::decay_t<T>::EntryType;
 
 template <typename T>
 using EntryValueType_t = typename std::decay_t<T>::ValueType;
+
+//-----------------------------------------------------------------------------
+
+/// Implicit EntryDefs are the usual way how to use "reflections" to model data structures.
+/// However, given that in ECMWF MARS and GRIB keys are are often used key by key, there is a need
+/// To make the definitions usable first, and then group them.
+/// The implicit definition is something more naturally as it defines an accessor only for a specific
+/// `struct`.
+/// Whenever it is possible to define it is strongly encouraged to do so, e.g. for configuration objects.
+
+template <typename T, typename M>
+struct PointerToMemberAccessor {
+    M T::*member;
+
+    template <typename U>
+    decltype(auto) operator()(U&& obj) const {
+        // U can be T&, const T&, or T&&
+        return &(std::forward<U>(obj).*member);
+    }
+};
+
+template <typename T, typename M>
+constexpr auto entryDef(std::string_view key, M T::*member) {
+    static_assert(IsEntry_v<M>);
+    using ValueType = typename M::ValueType;
+    using Mapper = typename M::Mapper;
+
+    return EntryDef<ValueType, Mapper>{key}.withAccessor(PointerToMemberAccessor<T, M>{member});
+}
+
 
 //-----------------------------------------------------------------------------
 

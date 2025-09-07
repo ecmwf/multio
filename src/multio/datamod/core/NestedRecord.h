@@ -22,7 +22,7 @@
 ///
 /// ```
 /// { "key1": "value1",
-/// , "nested-rec": 
+/// , "nested-rec":
 ///     { "nested-key1": "value"
 ///     , "nested-key2": "value"
 ///     }
@@ -31,7 +31,7 @@
 ///
 /// In this case "nested-rec" is derived from `RecordName_v<MyNestedRecord>`, where `MyNestedRecord`
 /// contains 2 entries with "nested-key1" and "nested-key2".
-///   
+///
 
 namespace multio::datamod {
 
@@ -58,8 +58,13 @@ struct RecordMapper {
 
 
 template <typename RecordType>
-constexpr auto nestedRecord() {
-    return EntryDef<RecordType, RecordMapper<RecordType>>{RecordName_v<RecordType>}.withDefault([]() {
+using NestedEntry_t = Entry<RecordType, RecordMapper<RecordType>>;
+
+template <typename T, typename M>
+constexpr auto nestedEntryDef(M T::*member) {
+    static_assert(IsEntry_v<M>);
+    using RecordType = typename M::ValueType;
+    return entryDef(RecordName_v<RecordType>, member).withDefault([]() {
         RecordType rec;
         applyRecordDefaults(rec);
         return rec;
@@ -67,9 +72,11 @@ constexpr auto nestedRecord() {
 }
 
 
-template <typename RecordType>
-constexpr auto nestedOptRecord() {
-    return EntryDef<RecordType, RecordMapper<RecordType>>{RecordName_v<RecordType>}.tagOptional();
+template <typename T, typename M>
+constexpr auto nestedOptEntryDef(M T::*member) {
+    static_assert(IsEntry_v<M>);
+    using RecordType = typename M::ValueType;
+    return entryDef(RecordName_v<RecordType>, member).tagOptional();
 }
 
 

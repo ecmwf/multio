@@ -104,9 +104,9 @@ constexpr auto TIMESPAN =
         .withAccessor([](auto&& v) { return &v.timespan; });
 
 constexpr auto STATTYPE =
-    EntryDef<StatType>{"statType"}  
+    EntryDef<StatType>{"stattype"}  
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.statType; });
+        .withAccessor([](auto&& v) { return &v.stattype; });
 
 constexpr auto ANOFFSET =
     EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}  

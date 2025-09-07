@@ -20,14 +20,14 @@
 #include "multio/mars2grib/sections/Level.h"
 #include "multio/mars2grib/sections/SectionTypes.h"
 
-
 namespace multio {
 
 /// Detailed descriptions of the encoder configuration.
 /// First attempt is to replicate existing structure and to migrate the rule
 /// search mechanism while keeping the fortran encoders.
-/// Often the structures of the configs have a subconfiguration where to only available key-value is "type": "default"
-/// These have to be refactored to something less but more expressive
+/// Often the structures of the configs have a subconfiguration where to only
+/// available key-value is "type": "default" These have to be refactored to
+/// something less but more expressive
 ///
 /// TODO: After the migration this should become a proper struct with optionals
 ///       Encoding/Parsing will not be needed then.
@@ -36,508 +36,232 @@ namespace multio {
 
 namespace dm = multio::datamod;
 
+namespace mars2grib {
 
 //-----------------------------------------------------------------------------
 // Section0
 //-----------------------------------------------------------------------------
 
-
-namespace mars2grib {
-
-// clang-format off
-constexpr auto IndicatorTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-// clang-format on
-
 struct IndicatorSection {
-    dm::EntryType_t<decltype(IndicatorTemplateNumber)> templateNumber;
+    dm::Entry<std::int64_t> templateNumber;
 
     static constexpr std::string_view record_name_ = "indicator-section";
-    static constexpr auto record_entries_ = std::make_tuple(IndicatorTemplateNumber);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("template-number", &IndicatorSection::templateNumber).withDefault(0));
 };
-
-}  // namespace mars2grib
 
 //-----------------------------------------------------------------------------
 // Section1
 //-----------------------------------------------------------------------------
 
-// Origin configurator
-namespace mars2grib {
-
-// clang-format off
-constexpr auto OriginType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-
-constexpr auto OriginSubCentre =
-    dm::EntryDef<std::int64_t>{"sub-centre"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.subCentre; });
-// clang-format on
-
 struct OriginConfigurator {
-    dm::EntryType_t<decltype(OriginType)> type;
-    dm::EntryType_t<decltype(OriginSubCentre)> subCentre;
+    dm::Entry<std::string> type;
+    dm::Entry<std::int64_t> subCentre;
 
     static constexpr std::string_view record_name_ = "origin-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(OriginType, OriginSubCentre);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &OriginConfigurator::type).withDefault("default"),
+                          dm::entryDef("sub-centre", &OriginConfigurator::subCentre).withDefault(0));
 };
-
-}  // namespace mars2grib
-
-
-namespace mars2grib {
-
-// clang-format off
-constexpr auto DataType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct DataTypeConfigurator {
-    dm::EntryType_t<decltype(DataType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "data-type-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(DataType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &DataTypeConfigurator::type).withDefault("default"));
 };
-}  // namespace mars2grib
-
-
-// ReferenceTime configurator
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ReferenceTimeType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct ReferenceTimeConfigurator {
-    dm::EntryType_t<decltype(ReferenceTimeType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "reference-time-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(ReferenceTimeType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &ReferenceTimeConfigurator::type).withDefault("default"));
 };
-}  // namespace mars2grib
-
-
-// Tables configurator
-namespace mars2grib {
-
-// clang-format off
-constexpr auto TablesType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto TablesVersion =
-    dm::EntryDef<std::int64_t>{"tables-version"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.tablesVersion; });
-constexpr auto LocalTablesVersion =
-    dm::EntryDef<std::int64_t>{"local-tables-version"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.localTablesVersion; });
-// clang-format on
 
 struct TablesConfigurator {
-    dm::EntryType_t<decltype(TablesType)> type;
-    dm::EntryType_t<decltype(TablesVersion)> tablesVersion;
-    dm::EntryType_t<decltype(LocalTablesVersion)> localTablesVersion;
+    dm::Entry<std::string> type;
+    dm::Entry<std::int64_t> tablesVersion;
+    dm::Entry<std::int64_t> localTablesVersion;
 
     static constexpr std::string_view record_name_ = "tables-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(TablesType, TablesVersion, LocalTablesVersion);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &TablesConfigurator::type).withDefault("default"),
+                          dm::entryDef("tables-version", &TablesConfigurator::tablesVersion).tagOptional(),
+                          dm::entryDef("local-tables-version", &TablesConfigurator::localTablesVersion).withDefault(0));
 };
-}  // namespace mars2grib
-
 
 // Whole identification section
-namespace mars2grib {
-
-// clang-format off
-constexpr auto IdentificationTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-
-
-constexpr auto NestedTablesConfigurator =
-    dm::nestedRecord<TablesConfigurator>()  
-        .withAccessor([](auto&& v) { return &v.tables; });
-
-constexpr auto NestedOriginConfigurator =
-    dm::nestedRecord<OriginConfigurator>()  
-        .withAccessor([](auto&& v) { return &v.origin; });
-
-constexpr auto NestedDataTypeConfigurator =
-    dm::nestedRecord<DataTypeConfigurator>()  
-        .withAccessor([](auto&& v) { return &v.dataType; });
-
-constexpr auto NestedReferenceTimeConfigurator =
-    dm::nestedRecord<ReferenceTimeConfigurator>()  
-        .withAccessor([](auto&& v) { return &v.referenceTime; });
-// clang-format on
-
-
 struct IdentificationSection {
-    dm::EntryType_t<decltype(IdentificationTemplateNumber)> templateNumber;
-    dm::EntryType_t<decltype(NestedOriginConfigurator)> origin;
-    dm::EntryType_t<decltype(NestedDataTypeConfigurator)> dataType;
-    dm::EntryType_t<decltype(NestedReferenceTimeConfigurator)> referenceTime;
-    dm::EntryType_t<decltype(NestedTablesConfigurator)> tables;
+    dm::Entry<std::int64_t> templateNumber;
+    dm::NestedEntry_t<TablesConfigurator> tables;
+    dm::NestedEntry_t<OriginConfigurator> origin;
+    dm::NestedEntry_t<DataTypeConfigurator> dataType;
+    dm::NestedEntry_t<ReferenceTimeConfigurator> referenceTime;
 
     static constexpr std::string_view record_name_ = "identification-section";
-    static constexpr auto record_entries_
-        = std::make_tuple(IdentificationTemplateNumber, NestedOriginConfigurator, NestedDataTypeConfigurator,
-                          NestedReferenceTimeConfigurator, NestedTablesConfigurator);
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::entryDef("template-number", &IdentificationSection::templateNumber).withDefault(0),
+        dm::nestedEntryDef(&IdentificationSection::origin), dm::nestedEntryDef(&IdentificationSection::dataType),
+        dm::nestedEntryDef(&IdentificationSection::referenceTime), dm::nestedEntryDef(&IdentificationSection::tables));
 };
-}  // namespace mars2grib
 
 //-----------------------------------------------------------------------------
 // Section2 Local use
 //-----------------------------------------------------------------------------
 
-namespace mars2grib {
-
-// clang-format off
-constexpr auto LocalUseTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-// clang-format on
-
 struct LocalUseSection {
-    dm::EntryType_t<decltype(LocalUseTemplateNumber)> templateNumber;
+    dm::Entry<std::int64_t> templateNumber;
 
     static constexpr std::string_view record_name_ = "local-use-section";
-    static constexpr auto record_entries_ = std::make_tuple(LocalUseTemplateNumber);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("template-number", &LocalUseSection::templateNumber).withDefault(0));
 };
-
-}  // namespace mars2grib
-
 
 //-----------------------------------------------------------------------------
 // Section3 Grid
 //-----------------------------------------------------------------------------
 
-namespace mars2grib {
-
-// clang-format off
-constexpr auto GridTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-// clang-format on
-
 struct GridSection {
-    dm::EntryType_t<decltype(GridTemplateNumber)> templateNumber;
+    dm::Entry<std::int64_t> templateNumber;
 
     static constexpr std::string_view record_name_ = "grid-definition-section";
-    static constexpr auto record_entries_ = std::make_tuple(GridTemplateNumber);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("template-number", &GridSection::templateNumber).withDefault(0));
 };
-
-}  // namespace mars2grib
-
 
 //-----------------------------------------------------------------------------
 // Section4 Product definition
 //-----------------------------------------------------------------------------
 
-// Param
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ParamType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("paramId")
-        .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto DatasetForLocal =
-    dm::EntryDef<std::string>{"dataset-for-local"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.datasetForLocal; });
-// clang-format on
-
 struct ParamConfigurator {
-    dm::EntryType_t<decltype(ParamType)> type;
-    dm::EntryType_t<decltype(DatasetForLocal)> datasetForLocal;
+    dm::Entry<std::string> type;
+    dm::Entry<std::string> datasetForLocal;
 
     static constexpr std::string_view record_name_ = "param-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(ParamType, DatasetForLocal);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &ParamConfigurator::type).withDefault("paramId"),
+                          dm::entryDef("dataset-for-local", &ParamConfigurator::datasetForLocal).tagOptional());
 };
-
-}  // namespace mars2grib
-
-
-// PointInTime config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto PointInTimeType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct PointInTimeConfigurator {
-    dm::EntryType_t<decltype(PointInTimeType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "point-in-time-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(PointInTimeType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &PointInTimeConfigurator::type).withDefault("default"));
 };
-
-}  // namespace mars2grib
-
-
-// TimeRange config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto TimeRangeTypeEntry =
-    dm::EntryDef<sections::TimeRangeType>{"type"}  
-        .withAccessor([](auto&& v) { return &v.type; });
-constexpr auto TypeOfStatisticalProcessing =
-    dm::EntryDef<dm::TypeOfStatisticalProcessing>{"type-of-statistical-processing"}  
-        .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });
-constexpr auto OverallLengthOfTimeRange =
-    dm::EntryDef<std::string>{"overall-length-of-timerange"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.overallLengthOfTimeRange; });
-// clang-format on
 
 struct TimeRangeConfigurator {
-    dm::EntryType_t<decltype(TimeRangeTypeEntry)> type;
-    dm::EntryType_t<decltype(TypeOfStatisticalProcessing)> typeOfStatisticalProcessing;
-    dm::EntryType_t<decltype(OverallLengthOfTimeRange)> overallLengthOfTimeRange;
+    dm::Entry<sections::TimeRangeType> type;
+    dm::Entry<dm::TypeOfStatisticalProcessing> typeOfStatisticalProcessing;
+    dm::Entry<std::string> overallLengthOfTimeRange;
 
     static constexpr std::string_view record_name_ = "time-statistics-configurator";
-    static constexpr auto record_entries_
-        = std::make_tuple(TimeRangeTypeEntry, TypeOfStatisticalProcessing, OverallLengthOfTimeRange);
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::entryDef("type", &TimeRangeConfigurator::type),
+        dm::entryDef("type-of-statistical-processing", &TimeRangeConfigurator::typeOfStatisticalProcessing),
+        dm::entryDef("overall-length-of-timerange", &TimeRangeConfigurator::overallLengthOfTimeRange).tagOptional());
 };
-
-}  // namespace mars2grib
-
-
-// Process config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ProcessType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct ProcessConfigurator {
-    dm::EntryType_t<decltype(ProcessType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "ensemble-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(ProcessType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &ProcessConfigurator::type).withDefault("default"));
 };
-
-}  // namespace mars2grib
-
-
-// Model config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ModelType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct ModelConfigurator {
-    dm::EntryType_t<decltype(ModelType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "model-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(ModelType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &ModelConfigurator::type).withDefault("default"));
 };
-}  // namespace mars2grib
-
-
-// Random patterns config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto RandomPatternsType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct RandomPatternsConfigurator {
-    dm::EntryType_t<decltype(RandomPatternsType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "random-patterns-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(RandomPatternsType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &RandomPatternsConfigurator::type).withDefault("default"));
 };
-}  // namespace mars2grib
-
-
-// Chem config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ChemType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("chemical")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct ChemConfigurator {
-    dm::EntryType_t<decltype(ChemType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "chemistry-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(ChemType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &ChemConfigurator::type).withDefault("chemical"));
 };
-}  // namespace mars2grib
-
-
-// Directions frequencies config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto DirFreqType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct DirFreqConfigurator {
-    dm::EntryType_t<decltype(DirFreqType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "directions-frequencies-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(DirFreqType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &DirFreqConfigurator::type).withDefault("default")
+
+        );
 };
-}  // namespace mars2grib
-
-
-// Satellite frequencies config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto SatelliteType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct SatelliteConfigurator {
-    dm::EntryType_t<decltype(SatelliteType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "satellite-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(SatelliteType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &SatelliteConfigurator::type).withDefault("default")
+
+        );
 };
-}  // namespace mars2grib
-
-
-// Period frequencies config
-namespace mars2grib {
-
-// clang-format off
-constexpr auto PeriodType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("default")
-        .withAccessor([](auto&& v) { return &v.type; });
-// clang-format on
 
 struct PeriodConfigurator {
-    dm::EntryType_t<decltype(PeriodType)> type;
+    dm::Entry<std::string> type;
 
     static constexpr std::string_view record_name_ = "period-configurator";
-    static constexpr auto record_entries_ = std::make_tuple(PeriodType);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("type", &PeriodConfigurator::type).withDefault("default"));
 };
-}  // namespace mars2grib
-
-
-namespace mars2grib {
-
-// clang-format off
-constexpr auto ProductTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-
-constexpr auto NestedPDTCat =
-    dm::nestedOptRecord<rules::PDTCat>().  
-    withAccessor([](auto&& v) { return &v.pdtCat; });
-
-// Param and Model are the only required configurators
-// All others are optional/product dependent
-constexpr auto NestedParam =
-    dm::nestedRecord<ParamConfigurator>().  
-    withAccessor([](auto&& v) { return &v.param; });
-constexpr auto NestedModel =
-    dm::nestedRecord<ModelConfigurator>().  
-    withAccessor([](auto&& v) { return &v.model; });
-
-constexpr auto NestedPointInTime =
-    dm::nestedOptRecord<PointInTimeConfigurator>().  
-    withAccessor([](auto&& v) { return &v.pointInTime; });
-constexpr auto NestedTimeRange =
-    dm::nestedOptRecord<TimeRangeConfigurator>().  
-    withAccessor([](auto&& v) { return &v.timeRange; });
 
 using multio::mars2grib::sections::LevelConfigurator;
 
-constexpr auto NestedLevel =
-    dm::nestedOptRecord<LevelConfigurator>().  
-    withAccessor([](auto&& v) { return &v.level; });
-
-constexpr auto NestedProcess =
-    dm::nestedOptRecord<ProcessConfigurator>().  
-    withAccessor([](auto&& v) { return &v.process; });
-constexpr auto NestedRandomPatterns =
-    dm::nestedOptRecord<RandomPatternsConfigurator>().  
-    withAccessor([](auto&& v) { return &v.randomPatterns; });
-constexpr auto NestedChemical =
-    dm::nestedOptRecord<ChemConfigurator>().  
-    withAccessor([](auto&& v) { return &v.chemical; });
-constexpr auto NestedDirFreq =
-    dm::nestedOptRecord<DirFreqConfigurator>().  
-    withAccessor([](auto&& v) { return &v.dirFreq; });
-constexpr auto NestedPeriodRange =
-    dm::nestedOptRecord<PeriodConfigurator>().  
-    withAccessor([](auto&& v) { return &v.periodRange; });
-constexpr auto NestedSatellite =
-    dm::nestedOptRecord<SatelliteConfigurator>().  
-    withAccessor([](auto&& v) { return &v.satellite; });
-
-// clang-format on
-
 struct ProductSection {
-    dm::EntryType_t<decltype(ProductTemplateNumber)> templateNumber;
+    dm::Entry<std::int64_t> templateNumber;
+    // Optional as it is used to generate templateNumber
+    dm::NestedEntry_t<rules::PDTCat> pdtCat;
 
-    dm::EntryType_t<decltype(NestedPDTCat)> pdtCat;
-    dm::EntryType_t<decltype(NestedParam)> param;
-    dm::EntryType_t<decltype(NestedModel)> model;
-    dm::EntryType_t<decltype(NestedPointInTime)> pointInTime;
-    dm::EntryType_t<decltype(NestedTimeRange)> timeRange;
-    dm::EntryType_t<decltype(NestedLevel)> level;
-    dm::EntryType_t<decltype(NestedProcess)> process;
-    dm::EntryType_t<decltype(NestedRandomPatterns)> randomPatterns;
-    dm::EntryType_t<decltype(NestedChemical)> chemical;
-    dm::EntryType_t<decltype(NestedDirFreq)> dirFreq;
-    dm::EntryType_t<decltype(NestedPeriodRange)> periodRange;
-    dm::EntryType_t<decltype(NestedSatellite)> satellite;
+    // Param and Model are the only required configurators
+    // All others are optional/product dependent
+    dm::NestedEntry_t<ParamConfigurator> param;
+    dm::NestedEntry_t<ModelConfigurator> model;
+
+    // All optional in the sum of all products
+    dm::NestedEntry_t<PointInTimeConfigurator> pointInTime;
+    dm::NestedEntry_t<TimeRangeConfigurator> timeRange;
+    dm::NestedEntry_t<LevelConfigurator> level;
+    dm::NestedEntry_t<ProcessConfigurator> process;
+    dm::NestedEntry_t<RandomPatternsConfigurator> randomPatterns;
+    dm::NestedEntry_t<ChemConfigurator> chemical;
+    dm::NestedEntry_t<DirFreqConfigurator> dirFreq;
+    dm::NestedEntry_t<PeriodConfigurator> periodRange;
+    dm::NestedEntry_t<SatelliteConfigurator> satellite;
 
     static constexpr std::string_view record_name_ = "product-definition-section";
-    static constexpr auto record_entries_
-        = std::make_tuple(ProductTemplateNumber, NestedPDTCat, NestedParam, NestedModel, NestedPointInTime,
-                          NestedTimeRange, NestedLevel, NestedProcess, NestedLevel, NestedRandomPatterns,
-                          NestedChemical, NestedDirFreq, NestedPeriodRange, NestedSatellite);
-};
-}  // namespace mars2grib
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::entryDef("template-number", &ProductSection::templateNumber),
 
+        dm::nestedOptEntryDef(&ProductSection::pdtCat),
 
-namespace datamod {
-template <>
-struct ApplyRecordDefaults<mars2grib::ProductSection> {
+        dm::nestedEntryDef(&ProductSection::param), dm::nestedEntryDef(&ProductSection::model),
+
+        dm::nestedOptEntryDef(&ProductSection::pointInTime), dm::nestedOptEntryDef(&ProductSection::timeRange),
+        dm::nestedOptEntryDef(&ProductSection::level), dm::nestedOptEntryDef(&ProductSection::process),
+        dm::nestedOptEntryDef(&ProductSection::level), dm::nestedOptEntryDef(&ProductSection::randomPatterns),
+        dm::nestedOptEntryDef(&ProductSection::chemical), dm::nestedOptEntryDef(&ProductSection::dirFreq),
+        dm::nestedOptEntryDef(&ProductSection::periodRange), dm::nestedOptEntryDef(&ProductSection::satellite));
+
     static void applyDefaults(mars2grib::ProductSection& product) {
         using namespace mars2grib;
         using namespace mars2grib::rules;
@@ -549,7 +273,8 @@ struct ApplyRecordDefaults<mars2grib::ProductSection> {
 
                 if (product.templateNumber.isSet() && product.templateNumber.get() != pdtNum) {
                     std::ostringstream oss;
-                    oss << "ProductSection configuration has a template number and PDT categories specified, but the "
+                    oss << "ProductSection configuration has a template number and PDT "
+                           "categories specified, but the "
                            "generated PDT "
                         << pdtNum << " is different from the passed " << product.templateNumber.get();
                     throw Mars2GribException(oss.str(), Here());
@@ -558,10 +283,7 @@ struct ApplyRecordDefaults<mars2grib::ProductSection> {
             }
         }
     }
-};
 
-template <>
-struct ValidateRecord<mars2grib::ProductSection> {
     static void validate(mars2grib::ProductSection& product) {
         using namespace mars2grib;
         using namespace mars2grib::rules;
@@ -570,7 +292,8 @@ struct ValidateRecord<mars2grib::ProductSection> {
         {
             if (!product.templateNumber.isSet() && !product.pdtCat.isSet()) {
                 std::ostringstream oss;
-                oss << "ProductSection configuration has no template number and no PDT categories  specified.";
+                oss << "ProductSection configuration has no template number and no PDT "
+                       "categories  specified.";
                 throw Mars2GribException(oss.str(), Here());
             }
         }
@@ -579,7 +302,9 @@ struct ValidateRecord<mars2grib::ProductSection> {
         {
             if (product.timeRange.isSet() && product.pointInTime.isSet()) {
                 std::ostringstream oss;
-                oss << "ProductSection configuration has a PointInTime and a TimeStatistics section." << std::endl;
+                oss << "ProductSection configuration has a PointInTime and a "
+                       "TimeStatistics section."
+                    << std::endl;
                 throw Mars2GribException(oss.str(), Here());
             }
             if (!product.timeRange.isSet() && !product.pointInTime.isSet()) {
@@ -590,81 +315,47 @@ struct ValidateRecord<mars2grib::ProductSection> {
         }
     }
 };
-}  // namespace datamod
+
 
 //-----------------------------------------------------------------------------
 // Section5 Data representation
 //-----------------------------------------------------------------------------
 
-namespace mars2grib {
-
-// clang-format off
-constexpr auto DataRepresTemplateNumber =
-    dm::EntryDef<std::int64_t>{"template-number"}  
-        .withDefault(0)
-        .withAccessor([](auto&& v) { return &v.templateNumber; });
-// clang-format on
-
 struct DataRepresSection {
-    dm::EntryType_t<decltype(DataRepresTemplateNumber)> templateNumber;
+    dm::Entry<std::int64_t> templateNumber;
 
     static constexpr std::string_view record_name_ = "data-representation-section";
-    static constexpr auto record_entries_ = std::make_tuple(DataRepresTemplateNumber);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("template-number", &DataRepresSection::templateNumber).withDefault(0)
+
+        );
 };
-
-}  // namespace mars2grib
-
 
 //-----------------------------------------------------------------------------
 // All sections
 //-----------------------------------------------------------------------------
 
-namespace mars2grib {
-
-// clang-format off
-constexpr auto SectionsConfType =
-    dm::EntryDef<std::string>{"type"}  
-        .withDefault("grib2")
-        .withAccessor([](auto&& v) { return &v.type; });
-
-
-constexpr auto NestedIndicator =
-    dm::nestedRecord<IndicatorSection>()  
-        .withAccessor([](auto&& v) { return &v.indicator; });
-constexpr auto NestedIdentification =
-    dm::nestedRecord<IdentificationSection>()  
-        .withAccessor([](auto&& v) { return &v.identification; });
-constexpr auto NestedLocalUse =
-    dm::nestedRecord<LocalUseSection>()  
-        .withAccessor([](auto&& v) { return &v.localUse; });
-constexpr auto NestedGrid =
-    dm::nestedRecord<GridSection>()  
-        .withAccessor([](auto&& v) { return &v.grid; });
-constexpr auto NestedProduct =
-    dm::nestedRecord<ProductSection>()  
-        .withAccessor([](auto&& v) { return &v.product; });
-constexpr auto NestedDataRepres =
-    dm::nestedRecord<DataRepresSection>()  
-        .withAccessor([](auto&& v) { return &v.dataRepres; });
-// clang-format on
-
 struct SectionsConf {
-    dm::EntryType_t<decltype(SectionsConfType)> type;
+    dm::Entry<std::string> type;
 
-    dm::EntryType_t<decltype(NestedIndicator)> indicator;
-    dm::EntryType_t<decltype(NestedIdentification)> identification;
-    dm::EntryType_t<decltype(NestedLocalUse)> localUse;
-    dm::EntryType_t<decltype(NestedGrid)> grid;
-    dm::EntryType_t<decltype(NestedProduct)> product;
-    dm::EntryType_t<decltype(NestedDataRepres)> dataRepres;
+    dm::NestedEntry_t<IndicatorSection> indicator;
+    dm::NestedEntry_t<IdentificationSection> identification;
+    dm::NestedEntry_t<LocalUseSection> localUse;
+    dm::NestedEntry_t<GridSection> grid;
+    dm::NestedEntry_t<ProductSection> product;
+    dm::NestedEntry_t<DataRepresSection> dataRepres;
 
     static constexpr std::string_view record_name_ = "encoder";
-    static constexpr auto record_entries_
-        = std::make_tuple(SectionsConfType, NestedIndicator, NestedIdentification, NestedLocalUse, NestedGrid,
-                          NestedProduct, NestedDataRepres);
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::entryDef("type", &SectionsConf::type).withDefault("grib2"),
+
+        dm::nestedEntryDef(&SectionsConf::indicator), dm::nestedEntryDef(&SectionsConf::identification),
+        dm::nestedEntryDef(&SectionsConf::localUse), dm::nestedEntryDef(&SectionsConf::grid),
+        dm::nestedEntryDef(&SectionsConf::product), dm::nestedEntryDef(&SectionsConf::dataRepres)
+
+    );
 };
 }  // namespace mars2grib
-
 
 // //---------------------------------------------------------------------------------------------------------------------
 
@@ -714,7 +405,6 @@ template <>
 struct Print<multio::mars2grib::DataRepresSection> : datamod::PrintRecord {};
 template <>
 struct Print<multio::mars2grib::SectionsConf> : datamod::PrintRecord {};
-
 
 template <>
 struct TypeToString<multio::mars2grib::IndicatorSection> {
@@ -804,4 +494,3 @@ struct TypeToString<multio::mars2grib::SectionsConf> {
 }  // namespace util
 
 }  // namespace multio
-

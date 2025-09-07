@@ -12,6 +12,7 @@
 
 
 #include "multio/action/ChainedAction.h"
+#include "multio/datamod/Mapper.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
 #include "multio/mars2grib/api/RawAPI.h"
@@ -23,20 +24,16 @@ namespace dm = multio::datamod;
 
 //-----------------------------------------------------------------------------
 
-constexpr auto Cached
-    = dm::EntryDef<bool>{"cached"}.withDefault(false).withAccessor([](auto&& v) { return &v.cached; });
-    
-constexpr auto GeoFromAtlas
-    = dm::EntryDef<bool>{"geo-from-atlas"}.withDefault(false).withAccessor([](auto&& v) { return &v.geoFromAtlas; });
-
-
 struct EncodeMtg2Options {
-    dm::EntryType_t<decltype(Cached)> cached;
-    dm::EntryType_t<decltype(GeoFromAtlas)> geoFromAtlas;
+    dm::Entry<bool, dm::mapper::BoolMapper> cached;
+    dm::Entry<bool, dm::mapper::BoolMapper> geoFromAtlas;
 
     static constexpr std::string_view record_name_ = "encode-mtg2";
-    static constexpr auto record_entries_ = std::make_tuple(Cached, GeoFromAtlas);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("cached", &EncodeMtg2Options::cached).withDefault(false),
+                          dm::entryDef("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas).withDefault(false));
 };
+
 
 //-----------------------------------------------------------------------------
 

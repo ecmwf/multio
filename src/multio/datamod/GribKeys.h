@@ -263,11 +263,7 @@ struct VerticalGribKeys {
 
     static constexpr std::string_view record_name_ = "vertical";
     static constexpr auto record_entries_ = std::make_tuple(PVPresent, Pv);
-};
-
-
-template <>
-struct ApplyRecordDefaults<VerticalGribKeys> {
+    
     static void applyDefaults(VerticalGribKeys& v) {
         if (v.pv.isSet()) {
             v.pvPresent.set(true);

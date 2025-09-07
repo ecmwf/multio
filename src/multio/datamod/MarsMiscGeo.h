@@ -121,13 +121,13 @@ struct MarsFieldId {
 
     // Horizontal & Vertical
     EntryType_t<decltype(LEVTYPE)> levtype;
-    
+
     // Additional statistical properties
-    EntryType_t<decltype(STATTYPE)> statType;
+    EntryType_t<decltype(STATTYPE)> stattype;
 
 
     static constexpr std::string_view record_name_ = "mars-field-id";
-    static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE);
+    static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE, STATTYPE);
 };
 
 
@@ -196,22 +196,19 @@ struct MarsEncodingDetails {
 // The final big composed record containing all MARS keys we use so far encoding
 //-----------------------------------------------------------------------------
 
-struct FullMarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
-    static constexpr std::string_view record_name_ = "mars";
-};
-
-//-----------------------------------------------------------------------------
-
+struct FullMarsRecord;
 
 }  // namespace multio::datamod
 
 template <>
 struct multio::util::Print<multio::datamod::FullMarsRecord> : multio::datamod::PrintRecord {};
 
+
 namespace multio::datamod {
 
-template <>
-struct ApplyRecordDefaults<FullMarsRecord> {
+struct FullMarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
+    static constexpr std::string_view record_name_ = "mars";
+
     static void applyDefaults(FullMarsRecord& mars) {
         const auto& grid = mars.grid;
         const auto& trunc = mars.truncation;
@@ -261,10 +258,9 @@ struct ApplyRecordDefaults<FullMarsRecord> {
     }
 };
 
-}  // namespace multio::datamod
+//-----------------------------------------------------------------------------
 
 
-namespace multio::datamod {
 
 /// \defgroup datamod_models_misc Misc Keys
 /// \ingroup datamod_models

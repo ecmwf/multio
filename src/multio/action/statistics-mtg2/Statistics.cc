@@ -469,6 +469,9 @@ const std::map<const std::string, const std::string> opname_to_stattype{
 
 void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
     for (auto it = ts.begin(); it != ts.end(); ++it) {
+        // Skip if there was no input to base this message on in the first place
+        if (ts.win().count() == 0) { continue; }
+
         eckit::Buffer payload;
         payload.resize((*it)->byte_size());
         payload.zero();

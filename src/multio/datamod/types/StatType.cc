@@ -154,7 +154,7 @@ StatType ParseType<StatType>::parse(std::string_view val) {
 
 
 bool operator==(const StatType& lhs, const StatType& rhs) noexcept {
-    return (lhs.firstLevel == rhs.firstLevel) && (lhs.secondLevel == rhs.secondLevel);
+    return (lhs.firstLevel() == rhs.firstLevel()) && (lhs.secondLevel() == rhs.secondLevel());
 };
 bool operator!=(const StatType& lhs, const StatType& rhs) noexcept {
     return !(lhs == rhs);

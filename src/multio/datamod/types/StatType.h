@@ -85,7 +85,7 @@ struct hash<multio::datamod::SingleStatType> {
 template <>
 struct hash<multio::datamod::StatType> {
     std::size_t operator()(const multio::datamod::StatType& o) const noexcept {
-        return multio::util::hashCombine(multio::util::hash(o.firstLevel), multio::util::hash(o.secondLevel));
+        return multio::util::hashCombine(multio::util::hash(o.firstLevel()), multio::util::hash(o.secondLevel()));
     }
 };
 }  // namespace std

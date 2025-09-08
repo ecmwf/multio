@@ -493,22 +493,24 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         md.set(dm::legacy::Step, step);
 
         auto opname = (*it)->operation();
-        if (currentLoop == 1) {
-            const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
-            dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
-            paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
-        }
-        else {
-            auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
-                                                      operationNameToStatTypeOperation(opname)};
-
-            if (currentLoop == 2) {
-                stattype.set(dm::StatType{currentStatType});
-                dm::dumpEntry(dm::STATTYPE, stattype, md);
+        if (opname != "instant") {
+            if (currentLoop == 1) {
+                const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
             else {
-                stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
-                dm::dumpEntry(dm::STATTYPE, stattype, md);
+                auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
+                                                        operationNameToStatTypeOperation(opname)};
+
+                if (currentLoop == 2) {
+                    stattype.set(dm::StatType{currentStatType});
+                    dm::dumpEntry(dm::STATTYPE, stattype, md);
+                }
+                else {
+                    stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
+                    dm::dumpEntry(dm::STATTYPE, stattype, md);
+                }
             }
         }
 

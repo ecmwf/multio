@@ -22,8 +22,12 @@ namespace multio::datamod {
 // Writing to other containers
 //-----------------------------------------------------------------------------
 
+struct DumpOptions {
+    bool removeMissingKeys = false;
+};
+
 // Methods to dump entries of a record to specific containers (i.e. to Metadata)
-// set(EntryDef, Entry, Container)
+// set(EntryDef, Entry, Container, DumpOptions)
 template <typename Container>
 struct EntryDumper {
     using UNSPECIALIZED_TAG = void;
@@ -41,7 +45,7 @@ struct EntryDumper {
 //                                 && std::is_base_of_v<MyContainer, std::decay_t<Cont_>>),
 //                                bool>
 //               = true>
-//     static void dump(const EntryDef_& entryDef, Entry_&& entry, Cont_& rec) {
+//     static void set(const EntryDef_& entryDef, Entry_&& entry, Cont_& rec, const DumpOptions&) {
 //         // Implemenation
 //     }
 // };
@@ -68,8 +72,8 @@ template <
                       && !IsRecord_v<std::decay_t<Container>> && EntryDumperIsSpecialized_v<std::decay_t<Container>>),
                      bool>
     = true>
-void dumpEntry(const EntryDef_& entryDef, Entry_&& entry, Container& cont) {
-    EntryDumper<std::decay_t<Container>>::set(entryDef.toBase(), std::forward<Entry_>(entry), cont);
+void dumpEntry(const EntryDef_& entryDef, Entry_&& entry, Container& cont, const DumpOptions& opts = DumpOptions{}) {
+    EntryDumper<std::decay_t<Container>>::set(entryDef.toBase(), std::forward<Entry_>(entry), cont, opts);
 }
 
 // dump to other records
@@ -79,23 +83,25 @@ template <
                       && IsRecord_v<std::decay_t<Container>> && EntryDumperIsSpecialized_v<std::decay_t<Container>>),
                      bool>
     = true>
-void dumpEntry(const EntryDef_& entryDef, Entry_&& entry, Container& cont) {
-    entryDef.get(cont).dump(std::forward<Entry_>(entry));
+void dumpEntry(const EntryDef_& entryDef, Entry_&& entry, Container& cont, const DumpOptions& opts = DumpOptions{}) {
+    entryDef.get(cont).dump(std::forward<Entry_>(entry), opts);
 }
 
 
 template <typename RecordType, typename Container,
           std::enable_if_t<EntryDumperIsSpecialized_v<std::decay_t<Container>>, bool> = true>
-void dumpRecord(RecordType&& rec, Container& cont) {
+void dumpRecord(RecordType&& rec, Container& cont, const DumpOptions& opts = DumpOptions{}) {
     std::apply(
-        [&](const auto&... entryDef) { (dumpEntry(entryDef, entryDef.get(std::forward<RecordType>(rec)), cont), ...); },
+        [&](const auto&... entryDef) {
+            (dumpEntry(entryDef, entryDef.get(std::forward<RecordType>(rec)), cont, opts), ...);
+        },
         recordEntries(rec));
 }
 
 template <typename Container, typename RecordType, std::enable_if_t<EntryDumperIsSpecialized_v<Container>, bool> = true>
-Container dumpRecord(RecordType&& rec) {
+Container dumpRecord(RecordType&& rec, const DumpOptions& opts = DumpOptions{}) {
     Container ret;
-    dumpRecord(std::forward<RecordType>(rec), ret);
+    dumpRecord(std::forward<RecordType>(rec), ret, opts);
     return ret;
 }
 

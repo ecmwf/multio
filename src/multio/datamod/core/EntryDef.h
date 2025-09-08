@@ -437,6 +437,9 @@ struct IsBaseEntryDefinition<BaseEntryDef<ValueType, Mapper, tag>> : std::true_t
 template <typename T>
 inline constexpr bool IsBaseEntryDefinition_v = IsBaseEntryDefinition<T>::value;
 
+/// C++20 Concept
+// template <typename T>
+// concept BaseEntryDefinitionType = IsBaseEntryDefinition<std::remove_cvref_t<T>>::value;
 
 //-----------------------------------------------------------------------------
 
@@ -447,6 +450,10 @@ struct IsEntryDefinition<EntryDef<ValueType, Mapper, tag, Acc, DefFunctor>> : st
 
 template <typename T>
 inline constexpr bool IsEntryDefinition_v = IsEntryDefinition<T>::value;
+
+/// C++20 Concept
+// template <typename T>
+// concept EntryDefinitionType = IsEntryDefinition<std::remove_cvref_t<T>>::value;
 
 //-----------------------------------------------------------------------------
 

@@ -21,6 +21,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
 #include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
@@ -42,11 +43,23 @@ mars2grib::RawOptions mapOpts(EncodeMtg2Options opts) {
     return ret;
 };
 
+EncodeMtg2Options parseOpts(const ComponentConfiguration& compConf) {
+    /// TODO(pgeier) With C++20 designators are more useful for inline creation of structs:
+    /// ParsedOptions{.allowAdditionalKeys=false}
+    dm::ParseOptions opts;
+    opts.allowAdditionalKeys = false;
+    
+    // TODO(pgeier) Fix after refactoring action - need to remove keys "type" and "next"
+    auto conf = compConf.parsedConfig();
+    conf.remove("type");
+    conf.remove("next");
+    
+    return dm::readRecordByValue<EncodeMtg2Options>(conf, opts);
+}
+
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf},
-    opts_{dm::readRecordByValue<EncodeMtg2Options>(compConf.parsedConfig())},
-    mars2grib_{mapOpts(opts_)} {}
+    ChainedAction{compConf}, opts_{parseOpts(compConf)}, mars2grib_{mapOpts(opts_)} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {

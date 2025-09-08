@@ -284,25 +284,32 @@ const auto& recordEntries(const RecordType& rec) {
 
 //-----------------------------------------------------------------------------
 
-template <typename RecordType, class = void>
+template <typename Rec, class = void>
 struct IsRecord : std::false_type {};
 
-template <typename RecordType>
-struct IsRecord<RecordType, std::void_t<decltype(recordEntries(std::declval<const RecordType&>()))>> : std::true_type {
-};
+template <typename Rec>
+struct IsRecord<Rec, std::void_t<decltype(recordEntries(std::declval<const Rec&>()))>> : std::true_type {};
 
-template <typename RecordType>
-inline constexpr bool IsRecord_v = IsRecord<RecordType>::value;
+template <typename Rec>
+inline constexpr bool IsRecord_v = IsRecord<Rec>::value;
+
+/// C++20 concept
+// template <typename T>
+// concept RecordType = IsRecord<std::remove_cvref_t<T>>::value;
 
 
-template <typename RecordType>
+template <typename Rec>
 struct IsScopedRecord : std::false_type {};
 
-template <typename RecordType>
-struct IsScopedRecord<ScopedRecord<RecordType>> : std::true_type {};
+template <typename Rec>
+struct IsScopedRecord<ScopedRecord<Rec>> : std::true_type {};
 
-template <typename RecordType>
-inline constexpr bool IsScopedRecord_v = IsScopedRecord<RecordType>::value;
+template <typename Rec>
+inline constexpr bool IsScopedRecord_v = IsScopedRecord<Rec>::value;
+
+/// C++20 concept
+// template <typename T>
+// concept ScopedRecordType = IsScopedRecord<std::remove_cvref_t<T>>::value;
 
 
 //-----------------------------------------------------------------------------
@@ -370,6 +377,11 @@ std::string_view getRecordScope(SRecordType&& rec) {
 
 //-----------------------------------------------------------------------------
 
+template <typename Rec, std::enable_if_t<IsRecord_v<std::decay_t<Rec>>, bool> = true>
+bool containsKey(std::string_view key, const Rec& rec) {
+    return std::apply([&](const auto&... entryDef) { return ((entryDef.key() == key) || ... || false); }, recordEntries(rec));
+}
+
 // Takes a string and searches the entry with the given key in the record.
 // Then calls the passed function with the entry definition `func(entryDef)`.
 template <typename Rec, typename Func, std::enable_if_t<IsRecord_v<std::decay_t<Rec>>, bool> = true>
@@ -425,6 +437,12 @@ struct HasComposingRecords<RecordType, std::void_t<decltype(RecordType::composin
 
 template <typename RecordType>
 inline constexpr bool HasComposingRecords_v = HasComposingRecords<RecordType>::value;
+
+
+/// C++20 concept
+// template <typename T>
+// concept ComposedRecordType = HasComposedRecords<std::remove_cvref_t<T>>::value;
+
 /// \endcond
 
 

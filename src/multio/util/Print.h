@@ -40,6 +40,11 @@ struct Print;
 //         requires(std::ostream& os, const T& t) {
 //                 { Print<T>::print(os, t) } -> std::same_as<void>; // 2️⃣ must have correct signature
 //         };
+// Or just
+// template <typename T>
+// concept Printable = requires(PrintStream& ps, const T& value) {
+//     { Print<T>::print(ps, value) } -> std::same_as<void>;
+// };
 
 
 // Forward declaration - wrapper around ostream
@@ -57,6 +62,8 @@ template <typename T>
 inline constexpr bool Printable_v = Printable<T>::value;
 
 
+
+
 template <typename T, class = void>
 struct OstreamPrintable : std::false_type {};
 
@@ -66,6 +73,14 @@ struct OstreamPrintable<T, std::void_t<decltype(std::declval<std::ostream&>() <<
 
 template <typename T>
 inline constexpr bool OstreamPrintable_v = OstreamPrintable<T>::value;
+
+
+/// C++20 concept
+// template <typename T>
+// concept OstreamPrintable = requires(std::ostream& os, const T& value) {
+//     { os << value } -> std::same_as<std::ostream&>;
+// };
+
 
 //-----------------------------------------------------------------------------
 

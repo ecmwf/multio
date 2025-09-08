@@ -95,7 +95,7 @@ struct EntryDumper<mars2grib::MultIOMDict> {
         typename EntryDef_, typename Entry_,
         std::enable_if_t<(IsBaseEntryDefinition_v<std::decay_t<EntryDef_>> && IsEntry_v<std::decay_t<Entry_>>), bool>
         = true>
-    static void set(const EntryDef_& entryDef, Entry_&& entry, mars2grib::MultIOMDict& md) {
+    static void set(const EntryDef_& entryDef, Entry_&& entry, mars2grib::MultIOMDict& md, const DumpOptions& opts) {
         using TP = typename EntryDef_::ParserDumper;
         std::forward<Entry_>(entry).visit(          //
             eckit::Overloaded{[&](UnsetType v) {},  // Set nothing...

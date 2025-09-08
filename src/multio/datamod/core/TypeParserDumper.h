@@ -91,6 +91,12 @@ struct HasParse<MapperOrSpec, FromType, std::void_t<decltype(MapperOrSpec::parse
 template <typename MapperOrSpec, typename FromType>
 inline constexpr bool HasParse_v = HasParse<MapperOrSpec, FromType>::value;
 
+/// C++20 concept
+// template <typename MapperOrSpec, typename FromType>
+// concept HasParse = requires(FromType from) {
+//     { MapperOrSpec::parse(from) }; // return type optional, we just care it's valid
+// };
+
 
 template <typename MapperOrSpec, typename FromType, class = void>
 struct HasDump : std::false_type {};
@@ -104,6 +110,13 @@ template <typename MapperOrSpec, typename FromType>
 inline constexpr bool HasDump_v = HasDump<MapperOrSpec, FromType>::value;
 
 
+/// C++20 concept
+// template <typename MapperOrSpec, typename FromType>
+// concept HasParse = requires(FromType from) {
+//     { MapperOrSpec::dump(from) }; // return type optional, we just care it's valid
+// };
+
+
 template <typename MapperOrSpec, typename Container, typename FromType, class = void>
 struct HasDumpTo : std::false_type {};
 
@@ -115,6 +128,12 @@ struct HasDumpTo<MapperOrSpec, Container, FromType,
 
 template <typename MapperOrSpec, typename Container, typename FromType>
 inline constexpr bool HasDumpTo_v = HasDumpTo<MapperOrSpec, Container, FromType>::value;
+
+/// C++20 concept
+// template <typename MapperOrSpec, typename FromType>
+// concept HasParse = requires(FromType from) {
+//     { MapperOrSpec::dumpTo(from) }; // return type optional, we just care it's valid
+// };
 
 
 //=============================================================================

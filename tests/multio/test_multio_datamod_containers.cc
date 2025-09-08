@@ -23,43 +23,19 @@ namespace multio::test {
 
 namespace dm = multio::datamod;
 
-
-constexpr auto KEY1 =                  //
-    dm::EntryDef<std::string>{"key1"}  //
-        .withAccessor([](auto&& v) { return &v.key1; });
-
-constexpr auto KEY2 =             //
-    dm::EntryDef<double>{"key2"}  //
-        .withAccessor([](auto&& v) { return &v.key2; });
-
-constexpr auto KEY3 =                   //
-    dm::EntryDef<std::int64_t>{"key3"}  //
-        .withAccessor([](auto&& v) { return &v.key3; });
-
-constexpr auto KEY4 =                   //
-    dm::EntryDef<std::int64_t>{"key4"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.key4; });
-
-constexpr auto KEY5 =           //
-    dm::EntryDef<bool>{"key5"}  //
-        .withAccessor([](auto&& v) { return &v.key5; });
-
-constexpr auto KEY6 =                          //
-    dm::EntryDef<std::vector<double>>{"key6"}  //
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.key6; });
-
 struct TestKeys {
-    dm::EntryType_t<decltype(KEY1)> key1;
-    dm::EntryType_t<decltype(KEY2)> key2;
-    dm::EntryType_t<decltype(KEY3)> key3;
-    dm::EntryType_t<decltype(KEY4)> key4;
-    dm::EntryType_t<decltype(KEY5)> key5;
-    dm::EntryType_t<decltype(KEY6)> key6;
+    dm::Entry<std::string> key1;
+    dm::Entry<double> key2;
+    dm::Entry<std::int64_t> key3;
+    dm::Entry<std::int64_t> key4;
+    dm::Entry<bool> key5;
+    dm::Entry<std::vector<double>> key6;
 
     static constexpr std::string_view record_name_ = "test";
-    static constexpr auto record_entries_ = std::make_tuple(KEY1, KEY2, KEY3, KEY4, KEY5, KEY6);
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::entryDef("key1", &TestKeys::key1), dm::entryDef("key2", &TestKeys::key2),
+                          dm::entryDef("key3", &TestKeys::key3), dm::entryDef("key4", &TestKeys::key4).tagOptional(),
+                          dm::entryDef("key5", &TestKeys::key5), dm::entryDef("key6", &TestKeys::key6).tagOptional());
 };
 
 
@@ -372,6 +348,28 @@ CASE("Test parse config with int arr") {
     EXPECT_EQUAL((k6.get()[0]), 1.0);
     EXPECT_EQUAL((k6.get()[1]), 2.0);
     EXPECT_EQUAL((k6.get()[2]), 3.0);
+};
+
+
+CASE("Test parse simple config with unexpected additional keys") {
+    const std::string exampleJson(
+        R"json({
+            "key1": "val1",
+            "key2": 2.0,
+            "key3": 3,
+            "key4": null,
+            "key5": true,
+            "too_much": "yes",
+            "not_needed": "so true"
+        })json");
+
+    eckit::LocalConfiguration conf{eckit::YAMLConfiguration(exampleJson)};
+
+    /// TODO(pgeier) With C++20 designators are more useful for inline creation of structs:
+    /// ParsedOptions{.allowAdditionalKeys=false}
+    datamod::ParseOptions opts;
+    opts.allowAdditionalKeys = false;
+    EXPECT_THROWS(dm::readRecord<TestKeys>(conf, opts));
 };
 
 }  // namespace multio::test

@@ -341,6 +341,11 @@ struct IsEntry<Entry<Val, Mapper>> : std::true_type {};
 template <typename T>
 inline constexpr bool IsEntry_v = IsEntry<T>::value;
 
+/// C++20 Concept
+// template <typename T>
+// concept EntryType = IsEntry<std::remove_cvref_t<T>>::value;
+
+
 
 }  // namespace multio::datamod
 

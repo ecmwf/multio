@@ -52,3 +52,4 @@ mapping-rules:
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-runoff-water-param-205.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-snowfall-water-equiv-param-144.yaml'
   - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-total-precip-param-228.yaml'
+  - file: '{IFS_INSTALL_DIR}/share/multiom/mappings/fix/fix-snowcover-260289.yaml'

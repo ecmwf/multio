@@ -119,11 +119,14 @@ namespace multio::util {
 template <typename Matcher, typename Setter>
 struct Print<mars2mars::rules::Rule<Matcher, Setter>> {
     static void print(PrintStream& ps, const mars2mars::rules::Rule<Matcher, Setter>& r) {
-        ps << "rule(" << std::endl;
+        ps << "rule(";
+        ps.softBreak();
         {
             IndentGuard g(ps);
-            ps << "  " << r.matcher << std::endl;
-            ps << ", " << r.setter << std::endl;
+            ps << "  " << r.matcher;
+            ps.softBreak();
+            ps << ", " << r.setter;
+            ps.softBreak();
         }
         ps << ")";
     }

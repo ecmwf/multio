@@ -107,11 +107,13 @@ namespace multio::util {
 template <typename Matcher>
 struct Print<mars2grib::rules::Rule<Matcher>> {
     static void print(util::PrintStream& ps, const mars2grib::rules::Rule<Matcher>& r) {
-        ps << "rule(" << std::endl;
+        ps << "rule(";
+        ps.softBreak();
         ps << "  ";
         {
             IndentGuard g(ps);
-            ps << r.matcher << std::endl;
+            ps << r.matcher;
+            ps.softBreak(); 
         }
         ps << ")";
     }

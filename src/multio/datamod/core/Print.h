@@ -66,13 +66,13 @@ struct PrintRecord {
 
         ps << key << ": ";
         if (IsRecord_v<EntryValueType_t<Entry_>>) {
-            ps << std::endl;
+            ps.softBreak();
         }
         {
             util::IndentGuard g(ps);
             ps << entry;
         }
-        ps << std::endl;
+        ps.softBreak();
     }
 
     template <typename Record>

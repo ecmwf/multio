@@ -62,7 +62,6 @@ std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGrib
 }  // namespace
 
 
-
 EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
                                                        const MultIOMDict& misc, const MultIOMDict& geo) {
     // Select caching keys and prehash
@@ -96,8 +95,9 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 }
 
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
-                                                             const MultIOMDict& misc, const MultIOMDict& geo) {
+std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
+                                                             const MultIOMDict& mars, const MultIOMDict& misc,
+                                                             const MultIOMDict& geo) {
     CacheEntry& entry = makeOrGetEntry(marsKeys, mars, misc, geo);
     return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, misc, geo);
 }
@@ -148,30 +148,14 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsR
     catch (...) {
         std::ostringstream oss;
         util::PrintStream ps(oss);
+        ps.repres(util::PrintRepres::Compact);
         ps << "Failure in EncoderCache::getHandle" << std::endl;
         {
             util::IndentGuard gout(ps);
 
-            ps << "Mars: " << std::endl;
-            {
-                util::IndentGuard g(ps);
-                util::print(ps, marsKeys);
-            }
-            ps << std::endl;
-
-            ps << "Misc: " << std::endl;
-            {
-                util::IndentGuard g(ps);
-                util::print(ps, miscKeys);
-            }
-            ps << std::endl;
-
-            ps << "Geo: " << std::endl;
-            {
-                util::IndentGuard g(ps);
-                util::print(ps, geoKeys);
-            }
-            ps << std::endl;
+            ps << "Mars: " << marsKeys << std::endl;
+            ps << "Misc: " << miscKeys << std::endl;
+            ps << "Geo: " << geoKeys << std::endl;
         }
 
         std::throw_with_nested(mars2grib::Mars2GribException(oss.str(), Here()));

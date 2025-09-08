@@ -234,7 +234,7 @@ struct Print<mars2grib::matcher::Ranges<EntryDef_>> {
                 IndentGuard g(ps);
                 ps << ri;
             }
-            ps << std::endl;
+            ps.softBreak();
         }
         ps << ")";
     }
@@ -335,11 +335,13 @@ struct Print<mars2grib::matcher::All<Matchers...>> {
         }
         {
             IndentGuard g(ps);
-            ps << m << std::endl;;
+            ps << m;
+            ps.softBreak(); 
         }
     }
     static void print(PrintStream& ps, const mars2grib::matcher::All<Matchers...>& a) {
-        ps << "all(" << std::endl;
+        ps << "all(";
+        ps.softBreak();
         bool first = true;
         std::apply([&](const auto&... matchers) { (printMatcher(first, ps, matchers), ...); }, a.matchers);
         ps << ")";
@@ -360,11 +362,13 @@ struct Print<mars2grib::matcher::Any<Matchers...>> {
         }
         {
             IndentGuard g(ps);
-            ps << m << std::endl;;
+            ps << m;
+            ps.softBreak(); 
         }
     }
     static void print(PrintStream& ps, const mars2grib::matcher::Any<Matchers...>& a) {
-        ps << "any(" << std::endl;
+        ps << "any(";
+        ps.softBreak(); 
         bool first = true;
         std::apply([&](const auto&... matchers) { (printMatcher(first, ps, matchers), ...); }, a.matchers);
         ps << ")";

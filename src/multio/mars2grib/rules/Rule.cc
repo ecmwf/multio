@@ -58,7 +58,8 @@ ExclusiveRuleList mergeRuleList(ExclusiveRuleList&& res) {
 namespace multio::util {
 void Print<mars2grib::rules::ExclusiveRuleList>::print(PrintStream& ps, const mars2grib::rules::ExclusiveRuleList& r) {
     constexpr int MAX_RULES = 3;
-    ps << "exclusiveRuleList(" << std::endl;
+    ps << "exclusiveRuleList(";
+    ps.softBreak(); 
     bool first = true;
     int i = 0;
     for (const auto& ri : r.rules) {
@@ -72,11 +73,13 @@ void Print<mars2grib::rules::ExclusiveRuleList>::print(PrintStream& ps, const ma
             }
             {
                 IndentGuard g(ps);
-                ps << *ri.get() << std::endl;;
+                ps << *ri.get();
+                ps.softBreak(); 
             }
         }
         else if (i == MAX_RULES) {
-            ps << "  ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ..." << std::endl;
+            ps << "  ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ...";
+            ps.softBreak(); 
         }
         ++i;
     }
@@ -146,7 +149,8 @@ namespace multio::util {
 
 void Print<mars2grib::rules::ChainedRuleList>::print(PrintStream& ps, const mars2grib::rules::ChainedRuleList& r) {
     constexpr int MAX_RULES = 3;
-    ps << "chainedRuleList(" << std::endl;
+    ps << "chainedRuleList(";
+    ps.softBreak(); 
     bool first = true;
     int i = 0;
     for (const auto& ri : r.rules) {
@@ -160,11 +164,13 @@ void Print<mars2grib::rules::ChainedRuleList>::print(PrintStream& ps, const mars
             }
             {
                 IndentGuard g(ps);
-                ps << *ri.get() << std::endl;;
+                ps << *ri.get();
+                ps.softBreak(); 
             }
         }
         else if (i == MAX_RULES) {
-            ps << "   ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ..." << std::endl;;
+            ps << "   ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ...";
+            ps.softBreak(); 
         }
         ++i;
     }

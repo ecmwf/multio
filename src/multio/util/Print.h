@@ -24,7 +24,7 @@ namespace multio::util {
 // While CLang is doing this all fine, gcc can complain that it does not find a proper overlead.
 // With explicit template instantiation this problem is avoided.
 // Moreover it supports indendation.
-// 
+//
 // Possible further option: short or multiline mode (such that implementations can vary)
 
 template <typename T>
@@ -99,10 +99,16 @@ std::ostream& operator<<(std::ostream& os, const T& v) {
 
 //-----------------------------------------------------------------------------
 
+enum class PrintRepres : int64_t
+{
+    Long,
+    Compact
+};
+
 class PrintStream {
 public:
-    explicit PrintStream(std::ostream& os, int indentSize = 2) :
-        os_(os), indentSize_(indentSize), currentIndent_(0), atLineStart_(true) {}
+    explicit PrintStream(std::ostream& os, int indentSize = 2, PrintRepres repres = PrintRepres::Long) :
+        os_(os), indentSize_(indentSize), currentIndent_(0), atLineStart_(true), repres_{repres} {}
 
     void indent() { ++currentIndent_; }
     void unindent() {
@@ -113,6 +119,15 @@ public:
     int indentLevel() const { return currentIndent_; }
     int indentSize() const { return indentSize_; }
 
+    void repres(PrintRepres repres) { repres_ = repres; }
+    PrintRepres repres() const { return repres_; }
+
+    /// Adds a new line in long mode and does nothing in soft mode
+    void softBreak() {
+        if (repres_ == PrintRepres::Long) {
+            os_ << std::endl;
+        }
+    }
 
     template <typename T, std::enable_if_t<Printable_v<T>, bool> = true>
     PrintStream& operator<<(const T& value) {
@@ -149,6 +164,8 @@ private:
     int indentSize_;
     int currentIndent_;
     bool atLineStart_;
+
+    PrintRepres repres_;
 };
 
 
@@ -160,6 +177,20 @@ public:
 
 private:
     PrintStream& os_;
+};
+
+
+// RAII guard for indentation
+class PrintRepresGuard {
+public:
+    explicit PrintRepresGuard(PrintStream& os, PrintRepres repres) : os_(os), repres_{os.repres()} {
+        os_.repres(repres);
+    }
+    ~PrintRepresGuard() { os_.repres(repres_); }
+
+private:
+    PrintStream& os_;
+    PrintRepres repres_;
 };
 
 

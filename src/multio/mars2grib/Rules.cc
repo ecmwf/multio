@@ -486,9 +486,18 @@ auto paramHLRules() {
         rule(matchParams(10, 54, 130, 131, 132, 157, 246, 247, 3031),               //
              pointInTime(),                                                         //
              typeOfLevel(TOL::HeightAboveGround)),                                  //
-        rule(matchParams(235131, 235132),                                           //
+        rule(matchParams(235097, 235131, 235132),                                   //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
-             typeOfLevel(TOL::HeightAboveGround))                                   //
+             typeOfLevel(TOL::HeightAboveGround)),                                  //
+        rule(matchParams(237097, 237131, 237132),                                   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
+             typeOfLevel(TOL::HeightAboveGround)),                                  //
+        rule(matchParams(238097, 238131, 238132),                                   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),  //
+             typeOfLevel(TOL::HeightAboveGround)),                                  //
+        rule(matchParams(239097, 239131, 239132),                                             //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
+             typeOfLevel(TOL::HeightAboveGround))                                             //
     );
 }
 

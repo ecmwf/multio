@@ -62,10 +62,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-simple-paramId-36.yaml'
@@ -101,7 +101,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-simple-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -168,10 +168,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-ccsds-paramId-36.yaml'
@@ -207,7 +207,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -242,8 +242,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-instant-simple-paramId-36.yaml'
@@ -323,10 +323,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-simple-paramId-1.yaml'
@@ -384,10 +384,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-simple-paramId-15.yaml'
@@ -425,9 +425,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-simple-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -509,10 +509,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-ccsds-paramId-1.yaml'
@@ -570,10 +570,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-ccsds-paramId-15.yaml'
@@ -611,9 +611,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -663,10 +663,10 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-instant-simple-paramId-1.yaml'
@@ -757,10 +757,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-tropopause-gg-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-simple-paramId-36.yaml'
@@ -796,7 +796,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-simple-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -863,10 +863,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-tropopause-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-ccsds-paramId-36.yaml'
@@ -902,7 +902,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -937,8 +937,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-instant-simple-paramId-36.yaml'
@@ -1018,10 +1018,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-tropopause-gg-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-simple-paramId-1.yaml'
@@ -1079,10 +1079,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-tropopause-gg-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-simple-paramId-15.yaml'
@@ -1120,9 +1120,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-simple-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -1204,10 +1204,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-tropopause-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-ccsds-paramId-1.yaml'
@@ -1265,10 +1265,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-tropopause-gg-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-ccsds-paramId-15.yaml'
@@ -1306,9 +1306,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -1358,10 +1358,10 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-instant-simple-paramId-1.yaml'
@@ -1468,10 +1468,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-tropopause-gg-deterministic-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-simple-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-simple-paramId-36.yaml'
@@ -1507,7 +1507,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-simple-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -1574,10 +1574,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-tropopause-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-ccsds-paramId-36.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-ccsds-paramId-36.yaml'
@@ -1613,7 +1613,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-ccsds-paramId-36.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -1648,8 +1648,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-36.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-ccsds-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-simple-paramId-36.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-ccsds-paramId-36.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-instant-simple-paramId-36.yaml'
@@ -1729,10 +1729,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-tropopause-gg-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-simple-paramId-1.yaml'
@@ -1790,10 +1790,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-tropopause-gg-deterministic-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-simple-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-simple-paramId-15.yaml'
@@ -1831,9 +1831,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-simple-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-simple-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -1915,10 +1915,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-tropopause-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-ccsds-paramId-1.yaml'
@@ -1976,10 +1976,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-tropopause-gg-deterministic-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-ccsds-paramId-15.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-ccsds-paramId-15.yaml'
@@ -2017,9 +2017,9 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-ccsds-paramId-1.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-ccsds-paramId-15.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2069,10 +2069,10 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-ccsds-paramId-1.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-15.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-ccsds-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-simple-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-ccsds-paramId-1.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-simple-paramId-15.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-ccsds-paramId-15.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-instant-simple-paramId-1.yaml'
@@ -2172,10 +2172,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-simple-paramId-1036.yaml'
@@ -2211,7 +2211,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2278,10 +2278,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-ccsds-paramId-1036.yaml'
@@ -2317,7 +2317,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2352,8 +2352,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-instant-simple-paramId-1036.yaml'
@@ -2433,10 +2433,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-simple-paramId-1001.yaml'
@@ -2472,7 +2472,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2539,10 +2539,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixedLayerParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mixingLayer-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-mostUnstableParcel-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accumul-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-nominalTop-gg-reforecast-ensemble-average-since-last-pp-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-tropopause-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-1h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-3h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-reforecast-ensemble-average-over-last-6h-ccsds-paramId-1001.yaml'
@@ -2578,7 +2578,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/ml/rule-hybrid-gg-reforecast-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2613,8 +2613,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/reforecast_ensemble/sfc/rule-surface-gg-chem-reforecast-ensemble-instant-simple-paramId-1001.yaml'
@@ -2698,10 +2698,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-tropopause-gg-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-simple-paramId-1036.yaml'
@@ -2737,7 +2737,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2804,10 +2804,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-tropopause-gg-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-ccsds-paramId-1036.yaml'
@@ -2843,7 +2843,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -2878,8 +2878,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-instant-simple-paramId-1036.yaml'
@@ -2959,10 +2959,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-tropopause-gg-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-simple-paramId-1001.yaml'
@@ -2998,7 +2998,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3065,10 +3065,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixedLayerParcel-gg-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mixingLayer-gg-ensemble-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-mostUnstableParcel-gg-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accumul-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-accum-since-last-pp-nominalTop-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-nominalTop-gg-ensemble-average-since-last-pp-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-tropopause-gg-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-1h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-3h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-ensemble-average-over-last-6h-ccsds-paramId-1001.yaml'
@@ -3104,7 +3104,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/ml/rule-hybrid-gg-ensemble-accum-since-last-pp-hybrid-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3139,8 +3139,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/ensemble/sfc/rule-surface-gg-chem-ensemble-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/ensemble/sfc/rule-surface-gg-chem-ensemble-instant-simple-paramId-1001.yaml'
@@ -3240,10 +3240,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-tropopause-gg-deterministic-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-simple-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-simple-paramId-1036.yaml'
@@ -3279,7 +3279,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-simple-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3346,10 +3346,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-tropopause-gg-deterministic-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-ccsds-paramId-1036.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-ccsds-paramId-1036.yaml'
@@ -3385,7 +3385,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-ccsds-paramId-1036.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3420,8 +3420,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-1036.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-ccsds-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-simple-paramId-1036.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-ccsds-paramId-1036.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-instant-simple-paramId-1036.yaml'
@@ -3501,10 +3501,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-tropopause-gg-deterministic-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-simple-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-simple-paramId-1001.yaml'
@@ -3540,7 +3540,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-instant-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-simple-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3607,10 +3607,10 @@ nested-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixedLayerParcel-gg-deterministic-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mixingLayer-gg-deterministic-instant-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-mostUnstableParcel-gg-deterministic-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accumul-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-accum-since-last-pp-nominalTop-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-nominalTop-gg-deterministic-average-since-last-pp-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-tropopause-gg-deterministic-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-1h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-3h-ccsds-paramId-1001.yaml'
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-deterministic-average-over-last-6h-ccsds-paramId-1001.yaml'
@@ -3646,7 +3646,7 @@ nested-rules:
                                           value: ml
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-instant-ccsds-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/ml/rule-hybrid-gg-deterministic-accum-since-last-pp-hybrid-ccsds-paramId-1001.yaml'
                                         - operation: match
                                           value: pl
                                           encoding-rules:
@@ -3681,8 +3681,8 @@ nested-rules:
                                         - operation: match
                                           value: sfc
                                           encoding-rules:
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-simple-paramId-1001.yaml'
-                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-since-beginning-ccsds-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-simple-paramId-1001.yaml'
+                                            - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/ccsds/deterministic/sfc/rule-surface-gg-chem-deterministic-accum-since-last-pp-surface-ccsds-paramId-1001.yaml'
                                         - operation: lacks
                                           encoding-rules:
                                             - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/deterministic/sfc/rule-surface-gg-chem-deterministic-instant-simple-paramId-1001.yaml'

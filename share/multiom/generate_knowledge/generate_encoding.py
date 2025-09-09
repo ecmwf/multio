@@ -403,10 +403,10 @@ PARAM_LEVTYPE_SFC = [
         [matchType("levtype", "sfc"), matchParam(["178:179", "208:209", 212])],
         [
             TimeRange(
-                type="since-beginning-of-forecast",
+                type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="accumul-since-beginning",
+                descriptiveName="accum-since-last-pp-nominalTop",
             ),
             levelConfig("nominalTop"),
         ],
@@ -441,10 +441,10 @@ PARAM_LEVTYPE_SFC = [
             paramConfig("paramId"),
             ChemConfig(),
             TimeRange(
-                type="since-beginning-of-forecast",
+                type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="since-beginning",
+                descriptiveName="accum-since-last-pp-surface",
             ),
             TablesConfig(type="custom", localTablesVersion=0, tablesVersion=30),
         ],
@@ -506,10 +506,10 @@ PARAM_LEVTYPE_SFC = [
             levelConfig("surface"),
             paramConfig("paramId"),
             TimeRange(
-                type="since-beginning-of-forecast",
+                type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="since-beginning",
+                descriptiveName="accum-since-last-pp-surface",
             ),
         ],
     ),
@@ -972,10 +972,10 @@ PARAM_LEVTYPE_ML = [
         [matchType("levtype", "ml"), matchParam(["162100:162113"])],
         [
             TimeRange(
-                type="since-beginning-of-forecast",
+                type="since-last-post-processing-step",
                 typeOfStatisticalProcessing="accumul",
                 encodeStepZero=True,
-                descriptiveName="since-beginning",
+                descriptiveName="accum-since-last-pp-hybrid",
             ),
             levelConfig("hybrid"),
             paramConfig("paramId"),

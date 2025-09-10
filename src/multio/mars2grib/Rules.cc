@@ -279,20 +279,18 @@ auto paramSFCRules() {
         rule(matchParams(235039, 235040, 235049, 235050, 235053),                   //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::NominalTop)),                                         //
-        rule(matchParams(235020, 235021, 235031, paramRange(235033, 235038), paramRange(235041, 235043), 235051, 235052,  //
-                         235055, paramRange(235078, 235080), 235083, 235084, 235093, 235134, 235159, 235189, 235263,      //
-                         235283, 235326),                                                //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
-             typeOfLevel(TOL::Surface)),                                                 //
-        rule(matchParams(235108),                                                        //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
-             typeOfLevel(TOL::LowCloudLayer)),                                           //
-        rule(matchParams(235090),                                                        //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
-             typeOfLevel(TOL::MixingLayer)),                                             //
-        rule(matchParams(235322),                                                        //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
-             typeOfLevel(TOL::Tropopause)),                                              //
+        rule(matchParams(235020, 235021, paramRange(235029, 235031), paramRange(235033, 235038),              //
+                         paramRange(235041, 235043), 235048, 235051, 235052, 235055, 235058,                  //
+                         paramRange(235078, 235080), 235083, 235084, 235093, 235134, 235159, 235189, 235263,  //
+                         235283, 235326, 235339),                                                             //
+            timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                             //
+            typeOfLevel(TOL::Surface)),                                                                       //
+        rule(matchParams(235108), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+             typeOfLevel(TOL::LowCloudLayer)),
+        rule(matchParams(235090), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+             typeOfLevel(TOL::MixingLayer)),
+        rule(matchParams(235322), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+             typeOfLevel(TOL::Tropopause)),
         rule(matchParams(235077, 235094),  // 235077 also exists on SOL !
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
              typeOfLevel(TOL::SoilLayer)),                                               //

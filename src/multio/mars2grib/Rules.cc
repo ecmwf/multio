@@ -280,7 +280,8 @@ auto paramSFCRules() {
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::NominalTop)),                                         //
         rule(matchParams(235020, 235021, 235031, paramRange(235033, 235038), paramRange(235041, 235043), 235051, 235052,  //
-                         235055, paramRange(235078, 235080), 235083, 235084, 235093, 235134, 235159, 235263, 235283),     //
+                         235055, paramRange(235078, 235080), 235083, 235084, 235093, 235134, 235159, 235189, 235263,      //
+                         235283, 235326),                                                //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
              typeOfLevel(TOL::Surface)),                                                 //
         rule(matchParams(235108),                                                        //
@@ -403,9 +404,6 @@ auto paramSFCRules() {
         rule(matchParams(228225),             //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Minimum),
              overallLengthOfTimeRange("6h"),                                        //
-             typeOfLevel(TOL::Surface)),                                            //
-        rule(matchParams(paramRange(235033, 235038), 235189, 235326),               //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::Surface)),                                            //
         rule(matchParams(260320),                                                   //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Mode),

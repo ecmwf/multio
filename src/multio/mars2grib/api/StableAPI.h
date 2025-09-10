@@ -45,58 +45,58 @@ struct MarsIdentifiers {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-// Additional key/values for encoding
-// Alternative name suggestion: EncodingDetails
+/// Additional key/values for encoding
+/// Alternative name suggestion: EncodingDetails
 struct AdditionalValues {
-    // Default is the latest tablesVersion
+    /// Default is the latest tablesVersion
     void setTablesVersion(std::int64_t);
 
-    // ATM we try to map these keys for a few combination of MARS keys
-    // however, we can not guaratee to do it for all cases and it might need
-    // customization
+    /// ATM we try to map these keys for a few combination of MARS keys
+    /// however, we can not guaratee to do it for all cases and it might need
+    /// customization
     void setGeneratingProcessIdentifier(std::int64_t);
     void setTypeOfProcessedData(std::int64_t);
 
-    // to be reviewed if required after implemneting statType & timeSpan properly
+    /// to be reviewed if required after implemneting statType & timeSpan properly
     void setInitialStep(std::int64_t);
 
-    // Describe the time difference between points for inner most statistical computation
+    /// Describe the time difference between points for inner most statistical computation
     void setTimeIncrementInSeconds(std::int64_t);
 
-    // Used with ANOFFSET
-    // anoffset: sets position within a time window
-    // lengthOfTimeWindow: sets the duration of the analysis window
+    /// Used with ANOFFSET
+    /// anoffset: sets position within a time window
+    /// lengthOfTimeWindow: sets the duration of the analysis window
     void setLengthOfTimeWindowInSeconds(std::int64_t);
 
     void setBitmapPresent(bool);
-    // If bitmap present is set, missing value can be overwritten
+    /// If bitmap present is set, missing value can be overwritten
     void setMissingValue(double);
 
     void setTypeOfEnsembleForecast(std::int64_t);
     void setNumberOfForecastsInEnsemble(std::int64_t);
 
-    // to be removed once DGOV updates MARS language
+    /// to be removed once DGOV updates MARS language
     void setSatelliteSeries(std::int64_t);
-    // to be checked if these are possibly derived from MARS keys
+    /// to be checked if these are possibly derived from MARS keys
     void setScaleFactorOfCentralWaveNumber(std::int64_t);
     void setScaledValueOfCentralWaveNumber(std::int64_t);
 
-    // Will be inferred in the future given the numberOfLevels
-    // For now the full array has to be provided
+    /// Will be inferred in the future given the numberOfLevels
+    /// For now the full array has to be provided
     void setPV(std::reference_wrapper<const std::vector<double>>);
-    // To be implemented ...
-    void setPV(std::int64_t numberOfLevels);
+    /// TODO(pgeier) To be implemented ...
+    // void setPV(std::int64_t numberOfLevels);
 
-    // Will be inferred in the future.
-    // For now the full array has to be provided
+    /// Will be inferred in the future.
+    /// For now the full array has to be provided
     void setWaveDirections(std::reference_wrapper<const std::vector<double>>);
     void setWaveFrequencies(std::reference_wrapper<const std::vector<double>>);
 
-    // Should be looked up by a table with Param, Levtype...
+    /// Should be looked up by a table with Param, Levtype...
     void setBitsPerValue(std::int64_t);
 
-    // Implementation  detail
-    // Can change in the future
+    /// Implementation  detail
+    /// Can change in the future
     dm::MiscRecord values_;
 };
 
@@ -111,15 +111,15 @@ enum class GeometryType : std::size_t
 
 struct GeometryValues {
 
-    /// @brief Set the geometry type.
+    /// \brief Set the geometry type.
     ///
     /// This function sets the geometry type for the object.
     /// Clears all values if the same type is set twice.
     ///
     /// \param type The geometry type identifier. Valid values are:
-    ///  - `"gg"`       : Galactocentric grid
-    ///  - `"sh"`       : Spherical harmonics
-    ///  - `"HEALPix"`  : HEALPix tessellation
+    ///  - `"gg"`       : Gaussian grid
+    ///  - `"sh"`       : Spherical harmonics representation
+    ///  - `"HEALPix"`  : HEALPix
     ///  - `"ll"`       : Latitude-longitude grid
     ///
     /// \throws Mars2GribException if `type` is not one of the valid values.
@@ -154,11 +154,19 @@ public:
                                          const GeometryValues& geom, const std::vector<double>& values);
     std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const GeometryValues& geom, const std::vector<float>& values);
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                         const GeometryValues& geom, const double* values, size_t len);
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                         const GeometryValues& geom, const float* values, size_t len);
 
     std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const std::vector<double>& values);
     std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const std::vector<float>& values);
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                         const double* values, size_t len);
+    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc, const float* values,
+                                         size_t len);
 
     std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
                                          const GeometryValues& geom);

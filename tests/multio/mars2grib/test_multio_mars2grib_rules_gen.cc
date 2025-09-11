@@ -15,7 +15,8 @@
 
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/EntryDef.h"
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/Grib2Layout.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/rules/Matcher.h"
@@ -41,7 +42,8 @@ CASE("Test rules gen matchers") {
         // Branch for grids
         chainedRuleList(
             rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),
-            rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}}, Setter([](SectionsConf& c) {
+            rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}},
+                 Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout&) {
                      c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(
                          TimeExtent::PointInTime);
                      c.product.ensureInit().modify().level.ensureInit().modify().type.set(
@@ -57,10 +59,12 @@ CASE("Test rules gen matchers") {
 
     {
         dm::FullMarsRecord mars{};
-        SectionsConf sections;
+        dm::MiscRecord misc{};
+        LegacySectionsConf sections;
+        Grib2Layout layout;
 
         // Nothing should match the outer rule, which is allowed to not match
-        EXPECT(ruleSet(mars, sections) != true);
+        EXPECT(ruleSet(mars, misc, sections, layout) != true);
     }
 
     {
@@ -68,11 +72,15 @@ CASE("Test rules gen matchers") {
         md.set("param", 1);
 
         auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-        SectionsConf sections;
+        dm::MiscRecord misc{};
+        LegacySectionsConf sections;
+        Grib2Layout layout;
 
-        EXPECT(ruleSet(mars, sections));
+        EXPECT(ruleSet(mars, misc, sections, layout));
         EXPECT((sections.product.get().level.get().type.get()) == dm::TypeOfLevel::HeightAboveGround);
         EXPECT(((sections.product.get().pdtCat.get().timeExtent.get()) == TimeExtent::PointInTime));
+        EXPECT((layout.level->typeOfLevel.get() == dm::TypeOfLevel::HeightAboveGround));
+        EXPECT(((layout.pdtCat.timeExtent.get()) == TimeExtent::PointInTime));
     }
 
     {
@@ -80,11 +88,13 @@ CASE("Test rules gen matchers") {
         md.set("param", 42);  // Not included in rule
 
         auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-        SectionsConf sections;
+        dm::MiscRecord misc{};
+        LegacySectionsConf sections;
+        Grib2Layout layout;
 
         // First rule matches because grid is given, but then no param matches - the rule is not fully determined and
         // throws
-        EXPECT_THROWS(ruleSet(mars, sections));
+        EXPECT_THROWS(ruleSet(mars, misc, sections, layout));
     }
 };
 
@@ -179,16 +189,18 @@ CASE("Test real rules matchers with AIFS single keys") {
     for (auto md : multio::util::sample_gen::mkAifsSingleMd()) {
         try {
             auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-            SectionsConf sections;
+            dm::MiscRecord misc{};
+            LegacySectionsConf sections;
+            Grib2Layout layout;
 
 
-            EXPECT(allRules()(mars, sections));
+            EXPECT(allRules()(mars, misc, sections, layout));
             EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
             EXPECT_NO_THROW(dm::validateRecord(sections));
 
             EXPECT((sections.product.get().templateNumber.isSet()));
 
-            SectionsConf expectedSections = expectedAIFSSingleEncoderSections(mars);
+            LegacySectionsConf expectedSections = expectedAIFSSingleEncoderSections(mars);
 
             detailedCompare(sections, expectedSections);
         }
@@ -207,16 +219,18 @@ CASE("Test real rules matchers with AIFS ens keys") {
     for (auto md : multio::util::sample_gen::mkAifsEnsMd()) {
         try {
             auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-            SectionsConf sections;
+            dm::MiscRecord misc{};
+            LegacySectionsConf sections;
+            Grib2Layout layout;
 
 
-            EXPECT(mars2grib::rules::allRules()(mars, sections));
+            EXPECT(mars2grib::rules::allRules()(mars, misc, sections, layout));
             EXPECT_NO_THROW(dm::applyRecordDefaults(sections));
             EXPECT_NO_THROW(dm::validateRecord(sections));
 
             EXPECT((sections.product.get().templateNumber.isSet()));
 
-            SectionsConf expectedSections = expectedAIFSEnsEncoderSections(mars);
+            LegacySectionsConf expectedSections = expectedAIFSEnsEncoderSections(mars);
 
             detailedCompare(sections, expectedSections);
         }
@@ -242,11 +256,14 @@ CASE("Test real rules matchers with AIFS JSON rules") {
         eckit::LocalConfiguration marsConf = subConf.getSubConfiguration("message");
         try {
             auto mars = dm::readRecord<dm::FullMarsRecord>(marsConf);
-            SectionsConf expectedSections = dm::readRecord<SectionsConf>(subConf.getSubConfiguration("rule"));
+            dm::MiscRecord misc{};
+            LegacySectionsConf expectedSections
+                = dm::readRecord<LegacySectionsConf>(subConf.getSubConfiguration("rule"));
 
-            SectionsConf computedSections;
+            LegacySectionsConf computedSections;
+            Grib2Layout layout;  // TODO(pgeier) not used, whole test will be replaced
 
-            EXPECT(mars2grib::rules::allRules()(mars, computedSections));
+            EXPECT(mars2grib::rules::allRules()(mars, misc, computedSections, layout));
             EXPECT_NO_THROW(dm::applyRecordDefaults(computedSections));
             EXPECT_NO_THROW(dm::validateRecord(computedSections));
 

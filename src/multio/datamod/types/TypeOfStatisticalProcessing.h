@@ -13,6 +13,8 @@
 #include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/util/Print.h"
 
+#include "metkit/codes/api/CodesAPI.h"
+
 
 namespace multio::datamod {
 
@@ -57,11 +59,10 @@ struct DumpType<TypeOfStatisticalProcessing> {
     static std::string dump(TypeOfStatisticalProcessing);
 };
 
-// TBD - add dump spec for writing to grib (dump as int)
-// template <>
-// struct DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle> {
-//     static std::int64_t dump(TypeOfStatisticalProcessing);
-// };
+template <>
+struct DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle> {
+    static std::int64_t dump(TypeOfStatisticalProcessing);
+};
 
 template <>
 struct ParseType<TypeOfStatisticalProcessing> {

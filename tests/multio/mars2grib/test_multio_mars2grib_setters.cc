@@ -10,7 +10,7 @@
 
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/generated/InferPDT.h"

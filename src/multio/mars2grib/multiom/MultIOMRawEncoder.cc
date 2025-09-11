@@ -49,21 +49,20 @@ void* MultIOMRawEncoder::get() const {
 }
 
 
-std::unique_ptr<metkit::codes::CodesHandle> MultIOMRawEncoder::allocateAndPreset(
-    std::unique_ptr<metkit::codes::CodesHandle> workSample, const MultIOMDict& mars, const MultIOMDict& par,
-    const MultIOMDict& geo) {
-
+std::unique_ptr<metkit::codes::CodesHandle> MultIOMRawEncoder::allocateAndPreset(std::unique_ptr<metkit::codes::CodesHandle> workSample,
+                                                                const MultIOMDict& mars, const MultIOMDict& par,
+                                                                const MultIOMDict& geo) {
     std::unique_ptr<codes_handle> h{reinterpret_cast<codes_handle*>(workSample->release())};
-    if (multio_grib2_raw_encoder_prepare(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
-        throw Mars2GribException(std::string("Can not prepare grib sample"));
-    }
+    // if (multio_grib2_raw_encoder_prepare(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
+    //     throw Mars2GribException(std::string("Can not prepare grib sample"));
+    // }
 
-    h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
-    if (multio_grib2_raw_encoder_allocate(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
-        throw Mars2GribException(std::string("Can not allocate grib sample"));
-    }
-
-    h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
+    // h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
+    // if (multio_grib2_raw_encoder_allocate(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
+    //     throw Mars2GribException(std::string("Can not allocate grib sample"));
+    // }
+    
+    // h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
     if (multio_grib2_raw_encoder_preset(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
         throw Mars2GribException(std::string("Can not preset grib sample"));
     }

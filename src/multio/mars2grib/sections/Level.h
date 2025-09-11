@@ -42,9 +42,6 @@ class LevelSetter : public DynSectionSetter {
 public:
     DynSectionSetter::Config sectionInfo() const override;
 
-    // Allocate is setting vertical
-    void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
-                  const dm::Geometry&) const override;
     // Calls set level
     void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                 const dm::Geometry&) const override;

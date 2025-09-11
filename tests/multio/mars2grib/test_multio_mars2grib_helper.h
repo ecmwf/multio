@@ -1,7 +1,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
 
 #include <sstream>
@@ -10,11 +10,11 @@ namespace multio::test {
 
 namespace dm = multio::datamod;
 
-mars2grib::SectionsConf expectedAIFSSingleEncoderSections(const dm::FullMarsRecord& mars) {
+mars2grib::LegacySectionsConf expectedAIFSSingleEncoderSections(const dm::FullMarsRecord& mars) {
     ASSERT(mars.param.isSet());
 
     auto toSections = [](std::string&& str) {
-        return dm::readRecord<mars2grib::SectionsConf>(
+        return dm::readRecord<mars2grib::LegacySectionsConf>(
             eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
     switch (mars.param.get().id()) {
@@ -66,11 +66,11 @@ mars2grib::SectionsConf expectedAIFSSingleEncoderSections(const dm::FullMarsReco
 }
 
 
-mars2grib::SectionsConf expectedAIFSEnsEncoderSections(const dm::FullMarsRecord& mars) {
+mars2grib::LegacySectionsConf expectedAIFSEnsEncoderSections(const dm::FullMarsRecord& mars) {
     ASSERT(mars.param.isSet());
 
     auto toSections = [](std::string&& str) {
-        return dm::readRecord<mars2grib::SectionsConf>(
+        return dm::readRecord<mars2grib::LegacySectionsConf>(
             eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
     switch (mars.param.get().id()) {

@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include "multio/datamod/Glossary.h"
 #include "multio/datamod/Mapper.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
+#include "multio/datamod/types/GridType.h"
 #include "multio/datamod/types/TypeOfLevel.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 #include "multio/datamod/types/TypeOfProcessedData.h"
@@ -41,7 +43,9 @@ constexpr auto TablesVersion =
     EntryDef<std::int64_t>{"tablesVersion"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.tablesVersion; });
-        
+
+// Readonly ....
+       
 constexpr auto LocalTablesVersion =
     EntryDef<std::int64_t>{"localTablesVersion"}  
         .tagOptional()
@@ -58,96 +62,8 @@ constexpr auto TypeOfProcessedDataEntry =
         .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
 
 
-// Section3 (more to be moved here from MarsMiscGeo.h)
-
-constexpr auto ShapeOfTheEarth =
-    EntryDef<std::int64_t>{"shapeOfTheEarth"}  
-        .withDefault(6)
-        .withAccessor([](auto&& v) { return &v.shapeOfTheEarth; });
-
-// Section 3 - GG
-
-constexpr auto TruncateDegrees =
-    EntryDef<std::int64_t>{"truncateDegrees"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.truncateDegrees; });
-
-constexpr auto NumberOfPointsAlongAMeridian =
-    EntryDef<std::int64_t>{"numberOfPointsAlongAMeridian"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAMeridian; });
-
-constexpr auto NumberOfParallelsBetweenAPoleAndTheEquator =
-    EntryDef<std::int64_t>{"numberOfParallelsBetweenAPoleAndTheEquator"}  
-        .withAccessor([](auto&& v) { return &v.numberOfParallelsBetweenAPoleAndTheEquator; });
-
-constexpr auto LatitudeOfFirstGridPointInDegrees =
-    EntryDef<double>{"latitudeOfFirstGridPointInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.latitudeOfFirstGridPointInDegrees; });
-
-constexpr auto LongitudeOfFirstGridPointInDegrees =
-    EntryDef<double>{"longitudeOfFirstGridPointInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.longitudeOfFirstGridPointInDegrees; });
-
-constexpr auto LatitudeOfLastGridPointInDegrees =
-    EntryDef<double>{"latitudeOfLastGridPointInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.latitudeOfLastGridPointInDegrees; });
-
-constexpr auto LongitudeOfLastGridPointInDegrees =
-    EntryDef<double>{"longitudeOfLastGridPointInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.longitudeOfLastGridPointInDegrees; });
-
-constexpr auto IDirectionIncrementInDegrees =
-    EntryDef<double>{"iDirectionIncrementInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.iDirectionIncrementInDegrees; });
-
-constexpr auto JDirectionIncrementInDegrees =
-    EntryDef<double>{"jDirectionIncrementInDegrees"}  
-        .withAccessor([](auto&& v) { return &v.jDirectionIncrementInDegrees; });
-
-
-constexpr auto Pl =
-    EntryDef<std::vector<std::int64_t>>{"pl"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.pl; });
-        
-        
-// Section 3 - LL
-
-constexpr auto NumberOfPointsAlongAParallel =
-    EntryDef<std::int64_t>{"numberOfPointsAlongAParallel"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAParallel; });
-
-
-// Section 3 - SH
-
-constexpr auto PentagonalResolutionParameterJ = 
-    EntryDef<std::int64_t>{"pentagonalResolutionParameterJ"}.withAccessor(
-    [](auto&& v) { return &v.pentagonalResolutionParameterJ; });
-constexpr auto PentagonalResolutionParameterK = EntryDef<std::int64_t>{"pentagonalResolutionParameterK"}.withAccessor(
-    [](auto&& v) { return &v.pentagonalResolutionParameterK; });
-constexpr auto PentagonalResolutionParameterM = EntryDef<std::int64_t>{"pentagonalResolutionParameterM"}.withAccessor(
-    [](auto&& v) { return &v.pentagonalResolutionParameterM; });
-
-
-// Section 3 - HEALpix
-
-constexpr auto NSide =
-    EntryDef<std::int64_t>{"nside"}  
-        .withAccessor([](auto&& v) { return &v.nside; });
-
-constexpr auto OrderingConvention =
-    EntryDef<std::string>{"orderingConvention"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.orderingConvention; });
-
 
 // Section4
-constexpr auto ProductDefinitionTemplateNumber =
-    EntryDef<std::int64_t>{"productDefinitionTemplateNumber"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.productDefinitionTemplateNumber; });  
 constexpr auto GeneratingProcessIdentifier =
     EntryDef<std::int64_t>{"generatingProcessIdentifier"}
         .tagOptional()
@@ -156,7 +72,7 @@ constexpr auto TypeOfLevelEntry =
     EntryDef<TypeOfLevel>{"typeOfLevel"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfLevel; });
-constexpr auto TypeOfStatisticalProcessingEntry =
+constexpr auto TypeOfStatisticalProcessingKey =
     EntryDef<TypeOfStatisticalProcessing>{"typeOfStatisticalProcessing"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });  
@@ -186,52 +102,30 @@ constexpr auto SatelliteSeries =
     EntryDef<std::int64_t>{"satelliteSeries"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.satelliteSeries; });
-// Horizontal Keys
-constexpr auto PressureUnits
-    = EntryDef<std::string>{"pressureUnits"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.pressureUnits; });
-constexpr auto TypeOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"typeOfFirstFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.typeOfFirstFixedSurface; });
-constexpr auto TypeOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"typeOfSecondFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.typeOfSecondFixedSurface; });
-constexpr auto ScaledValueOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"scaledValueOfFirstFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.scaledValueOfFirstFixedSurface; });
-constexpr auto ScaledValueOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"scaledValueOfSecondFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.scaledValueOfSecondFixedSurface; });
-constexpr auto ScaleFactorOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"scaleFactorOfFirstFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.scaleFactorOfFirstFixedSurface; });
-constexpr auto ScaleFactorOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"scaleFactorOfSecondFixedSurface"}  
-          .tagOptional()
-          .withAccessor([](auto&& v) { return &v.scaleFactorOfSecondFixedSurface; });
+
 
 // clang-format on
 
 struct HorizontalGribKeys {
-    EntryType_t<decltype(PressureUnits)> pressureUnits;
-    EntryType_t<decltype(TypeOfFirstFixedSurface)> typeOfFirstFixedSurface;
-    EntryType_t<decltype(TypeOfSecondFixedSurface)> typeOfSecondFixedSurface;
-    EntryType_t<decltype(ScaledValueOfFirstFixedSurface)> scaledValueOfFirstFixedSurface;
-    EntryType_t<decltype(ScaledValueOfSecondFixedSurface)> scaledValueOfSecondFixedSurface;
-    EntryType_t<decltype(ScaleFactorOfFirstFixedSurface)> scaleFactorOfFirstFixedSurface;
-    EntryType_t<decltype(ScaleFactorOfSecondFixedSurface)> scaleFactorOfSecondFixedSurface;
+    Entry<std::string> pressureUnits;
+    Entry<std::int64_t> typeOfFirstFixedSurface;
+    Entry<std::int64_t> typeOfSecondFixedSurface;
+    Entry<std::int64_t> scaledValueOfFirstFixedSurface;
+    Entry<std::int64_t> scaledValueOfSecondFixedSurface;
+    Entry<std::int64_t> scaleFactorOfFirstFixedSurface;
+    Entry<std::int64_t> scaleFactorOfSecondFixedSurface;
 
 
     static constexpr std::string_view record_name_ = "horizontal";
     static constexpr auto record_entries_ = std::make_tuple(
-        PressureUnits, TypeOfFirstFixedSurface, TypeOfSecondFixedSurface, ScaledValueOfFirstFixedSurface,
-        ScaledValueOfSecondFixedSurface, ScaleFactorOfFirstFixedSurface, ScaleFactorOfSecondFixedSurface);
+        entryDef("pressureUnits", &HorizontalGribKeys::pressureUnits).tagOptional(),
+        entryDef("typeOfFirstFixedSurface", &HorizontalGribKeys::typeOfFirstFixedSurface).tagOptional(),
+        entryDef("typeOfSecondFixedSurface", &HorizontalGribKeys::typeOfSecondFixedSurface).tagOptional(),
+        entryDef("scaledValueOfFirstFixedSurface", &HorizontalGribKeys::scaledValueOfFirstFixedSurface).tagOptional(),
+        entryDef("scaledValueOfSecondFixedSurface", &HorizontalGribKeys::scaledValueOfSecondFixedSurface).tagOptional(),
+        entryDef("scaleFactorOfFirstFixedSurface", &HorizontalGribKeys::scaleFactorOfFirstFixedSurface).tagOptional(),
+        entryDef("scaleFactorOfSecondFixedSurface", &HorizontalGribKeys::scaleFactorOfSecondFixedSurface)
+            .tagOptional());
 };
 
 //-----------------------------------------------------------------------------
@@ -262,12 +156,6 @@ constexpr auto LaplacianOperator =
 
 //-----------------------------------------------------------------------------
 
-
-constexpr auto PVPresent =
-    EntryDef<bool>{"PVPresent"}  
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.pvPresent; });
-
 constexpr auto Pv =
     EntryDef<std::vector<double>>{"pv"}  
         .tagOptional()
@@ -276,11 +164,12 @@ constexpr auto Pv =
 // clang-format on
 
 struct VerticalGribKeys {
-    EntryType_t<decltype(PVPresent)> pvPresent;
+    Entry<bool> pvPresent;
     EntryType_t<decltype(Pv)> pv;
 
     static constexpr std::string_view record_name_ = "vertical";
-    static constexpr auto record_entries_ = std::make_tuple(PVPresent, Pv);
+    static constexpr auto record_entries_
+        = std::make_tuple(entryDef("PVPresent", &VerticalGribKeys::pvPresent).tagOptional(), Pv);
 
     static void applyDefaults(VerticalGribKeys& v) {
         if (v.pv.isSet()) {
@@ -291,6 +180,8 @@ struct VerticalGribKeys {
         }
     }
 };
+
+//-----------------------------------------------------------------------------
 
 
 //-----------------------------------------------------------------------------

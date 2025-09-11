@@ -17,29 +17,68 @@ namespace multio::datamod {
 ScopedGeometry getGeometryRecord(const FullMarsRecord& mars) {
     const auto& grid = mars.grid;
     const auto& trunc = mars.truncation;
-    const auto& repres = mars.repres;
+    GridType gridType;
 
-    switch (repres.get()) {
-        case Repres::GG: {
+    if (grid.isSet()) {
+        gridType = gridTypeFromGrid(grid.get());
+    }
+    else if (trunc.isSet()) {
+        gridType = GridType::SH;
+    }
+    else {
+        std::ostringstream oss;
+        oss << "Neither grid nor truncation is given. Can not determine gridType to create a geometry record.";
+        throw DataModellingException(oss.str(), Here());
+    }
+
+    switch (gridType) {
+        case GridType::RegularGG: {
             std::string scope = std::string("geo-") + grid.get();
-            return scopeRecord(GeoGGRecord{}, scope);
+            return scopeRecord(GeoRegularGGRecord{}, scope);
         }
-        case Repres::LL: {
+        case GridType::ReducedGG: {
             std::string scope = std::string("geo-") + grid.get();
-            return scopeRecord(GeoLLRecord{}, scope);
+            return scopeRecord(GeoReducedGGRecord{}, scope);
         }
-        case Repres::HEALPix: {
+        case GridType::RegularLL: {
+            std::string scope = std::string("geo-") + grid.get();
+            return scopeRecord(GeoRegularLLRecord{}, scope);
+        }
+        case GridType::HEALPix: {
             std::string scope = std::string("geo-") + grid.get();
             return scopeRecord(GeoHEALPixRecord{}, scope);
         }
-        case Repres::SH: {
+        case GridType::SH: {
             std::string scope = std::string("geo-TCO") + std::to_string(trunc.get());
             return scopeRecord(GeoSHRecord{}, scope);
         }
         default:
             throw DataModellingException(
-                std::string("getGeometryRecord: Unhandled repres ") + TypeDumper<Repres>::dump(repres.get()), Here());
+                std::string("getGeometryRecord: Unhandled gridType ") + TypeDumper<GridType>::dump(gridType), Here());
     }
+}
+
+GridType GeoSHRecord::gridType() const {
+    if (this->stretchingFactor.isSet()) {
+        if (this->latitudeOfStretchingPoleInDegrees.isSet() || this->longitudeOfStretchingPoleInDegrees.isSet()) {
+            return GridType::StretchedRotatedSH;
+        }
+        else {
+            return GridType::StretchedSH;
+        }
+    }
+    else {
+        return GridType::SH;
+    }
+};
+
+GridType gridTypeFromGeometry(const Geometry& geo) {
+    return std::visit(eckit::Overloaded{[&](const GeoRegularGGRecord&) { return GridType::RegularGG; },
+                                        [&](const GeoReducedGGRecord&) { return GridType::ReducedGG; },
+                                        [&](const GeoRegularLLRecord&) { return GridType::RegularLL; },
+                                        [&](const GeoHEALPixRecord&) { return GridType::HEALPix; },
+                                        [&](const GeoSHRecord& g) { return g.gridType(); }},
+                      geo);
 }
 
 }  // namespace multio::datamod

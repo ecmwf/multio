@@ -11,19 +11,21 @@
 
 #pragma once
 
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/mars2grib/Grib2Layout.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 
 
 namespace multio::mars2grib::rules {
 
-using Setter = std::function<void(SectionsConf&)>;
+using Setter = std::function<void(const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf&, Grib2Layout&)>;
 
 struct SetAll {
     std::vector<Setter> setters;
 
-    void operator()(SectionsConf& conf) const {
+    void operator()(const dm::FullMarsRecord& mars, const dm::MiscRecord& misc, LegacySectionsConf& conf, Grib2Layout& g2l) const {
         for (const auto& setter : setters) {
-            setter(conf);
+            setter(mars, misc, conf, g2l);
         }
     }
 };

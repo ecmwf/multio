@@ -21,8 +21,9 @@
 
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/datamod/types/Repres.h"
+#include "multio/datamod/types/GridType.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
@@ -33,10 +34,23 @@ namespace dm = multio::datamod;
 struct AtlasGeoSetter {
     using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
 
+    static void handleReducedGG(const std::string& scope, const std::string& gridName) {
+        message::Metadata md{{scope, true}};
+
+        auto geoGG = datamod::scopeRecord(dm::GeoReducedGGRecord{}, scope);
+
+        dm::setKeysFromAtlas(geoGG, gridName);
+
+        dm::dumpRecord(geoGG, md);
+
+        message::Parametrization::instance().update(md);
+    }
+
+    template <typename GGRec>
     static void handleGG(const std::string& scope, const std::string& gridName) {
         message::Metadata md{{scope, true}};
 
-        auto geoGG = datamod::scopeRecord(dm::GeoGGRecord{}, scope);
+        auto geoGG = datamod::scopeRecord(GGRec{}, scope);
 
         dm::setKeysFromAtlas(geoGG, gridName);
 
@@ -48,7 +62,7 @@ struct AtlasGeoSetter {
     static void handleLL(const std::string& scope, const std::string& gridName) {
         message::Metadata md{{scope, true}};
 
-        auto geoLL = datamod::scopeRecord(dm::GeoLLRecord{}, scope);
+        auto geoLL = datamod::scopeRecord(dm::GeoRegularLLRecord{}, scope);
 
         dm::setKeysFromAtlas(geoLL, gridName);
 
@@ -58,19 +72,22 @@ struct AtlasGeoSetter {
     }
 
     static void handleGrid(const std::string& scope, const std::string& gridName) {
-        // TODO(pgeier) Use gridType instead of repres in follow up PR
-        auto repres = dm::represFromGrid(gridName);
-        switch (repres) {
-            case dm::Repres::GG:
-                handleGG(scope, gridName);
+        auto gridType = dm::gridTypeFromGrid(gridName);
+        switch (gridType) {
+            case dm::GridType::ReducedGG:
+                handleGG<dm::GeoReducedGGRecord>(scope, gridName);
                 break;
-            case dm::Repres::LL:
+            case dm::GridType::RegularGG:
+                handleGG<dm::GeoRegularGGRecord>(scope, gridName);
+                break;
+            case dm::GridType::RegularLL:
                 handleLL(scope, gridName);
                 break;
-            default:
+            default: {
                 std::ostringstream oss;
                 oss << "GeoFromAtlas: No grid function specified for grid " << gridName << std::endl;
                 throw multio::message::MetadataException(oss.str(), Here());
+            }
         }
     }
 };

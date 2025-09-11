@@ -270,7 +270,6 @@ std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurat
         case dm::TypeOfLevel::Snow: {
             if (mars.levtype.isSet() && mars.levtype.get() == dm::LevType::ML) {
                 dm::VerticalGribKeys ret;
-                ASSERT(misc.pv.holdsReference());
 
                 if (!misc.pv.isSet()) {
                     std::ostringstream oss;
@@ -280,6 +279,7 @@ std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurat
                     util::print(oss, mars);
                     throw Mars2GribException(oss.str(), Here());
                 };
+                ASSERT(misc.pv.holdsReference());
 
                 ret.pv.setRef(misc.pv.get());
                 ASSERT(ret.pv.holdsReference());
@@ -296,22 +296,13 @@ std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurat
 
 DynSectionSetter::Config LevelSetter::sectionInfo() const {
     DynSectionSetter::Config ret;
-    ret.registerPrepare = false;
-    ret.registerAllocate = true;
+    // ret.registerPrepare = false;
+    // ret.registerAllocate = true;
     ret.registerPreset = true;
     ret.registerRuntime = true;
     ret.registerCheck = true;
     return ret;
 };
-
-void LevelSetter::allocate(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
-                           const dm::Geometry& geo) const {
-    // set type of level here....
-    auto vert = verticalForTypeOfLevel(conf_, mars, misc);
-    if (vert) {
-        dm::dumpRecord(*vert, h);
-    }
-}
 
 void LevelSetter::preset(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                          const dm::Geometry& geo) const {

@@ -9,6 +9,7 @@
  */
 
 #include "TypeOfStatisticalProcessing.h"
+#include "multio/action/encode/GribEncoder.h"
 #include "multio/datamod/core/DataModellingException.h"
 
 
@@ -50,6 +51,49 @@ std::string DumpType<TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcess
             return "mode";
         case TypeOfStatisticalProcessing::IndexProcessing:
             return "index-processing";
+        default:
+            throw DataModellingException(
+                "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing",
+                Here());
+    }
+}
+
+std::int64_t DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle>::dump(TypeOfStatisticalProcessing v) {
+    switch (v) {
+        case TypeOfStatisticalProcessing::Average:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Average);
+        case TypeOfStatisticalProcessing::Accumulation:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Accumulation);
+        case TypeOfStatisticalProcessing::Maximum:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Maximum);
+        case TypeOfStatisticalProcessing::Minimum:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Minimum);
+        case TypeOfStatisticalProcessing::Difference:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Difference);
+        case TypeOfStatisticalProcessing::RootMeanSquare:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::RootMeanSquare);
+        case TypeOfStatisticalProcessing::StandardDeviation:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::StandardDeviation);
+        case TypeOfStatisticalProcessing::Covariance:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Covariance);
+        case TypeOfStatisticalProcessing::InverseDifference:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::InverseDifference);
+        case TypeOfStatisticalProcessing::Ratio:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Ratio);
+        case TypeOfStatisticalProcessing::StandardizedAnomaly:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::StandardizedAnomaly);
+        case TypeOfStatisticalProcessing::Summation:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Summation);
+        case TypeOfStatisticalProcessing::ReturnPeriod:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::ReturnPeriod);
+        case TypeOfStatisticalProcessing::Median:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Median);
+        case TypeOfStatisticalProcessing::Severity:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Severity);
+        case TypeOfStatisticalProcessing::Mode:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Mode);
+        case TypeOfStatisticalProcessing::IndexProcessing:
+            return static_cast<std::int64_t>(TypeOfStatisticalProcessing::IndexProcessing);
         default:
             throw DataModellingException(
                 "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing",

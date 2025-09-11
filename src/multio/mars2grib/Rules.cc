@@ -5,9 +5,13 @@
 #include "multio/datamod/core/Record.h"
 #include "multio/datamod/types/TypeOfLevel.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/Grib2Layout.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/generated/InferPDT.h"
+#include "multio/mars2grib/grib2/DirFreq.h"
+#include "multio/mars2grib/grib2/Satellite.h"
+#include "multio/mars2grib/grib2/Time.h"
 #include "multio/mars2grib/rules/Matcher.h"
 #include "multio/mars2grib/rules/ParamMatcher.h"
 #include "multio/mars2grib/rules/Rule.h"
@@ -27,16 +31,18 @@ using TOSP = dm::TypeOfStatisticalProcessing;
 
 namespace dm = multio::datamod;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Matchers
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto matchChemical() {
-    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength}, lessThan(&dm::FullMarsRecord::chem, 900));
+    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength},
+               lessThan(&dm::FullMarsRecord::chem, 900));
 }
 
 auto matchAerosol() {
-    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength}, greaterEqual(&dm::FullMarsRecord::chem, 900));
+    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength},
+               greaterEqual(&dm::FullMarsRecord::chem, 900));
 }
 
 auto matchOptical() {
@@ -60,144 +66,257 @@ auto matchSatellite() {
     return Has{&dm::FullMarsRecord::channel};
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Setters
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // Category setters
 auto pointInTime() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord& mars, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(TimeExtent::PointInTime);
         c.product.ensureInit().modify().pointInTime.ensureInit();
+
+        // New structure
+        gl.pdtCat.timeExtent.set(TimeExtent::PointInTime);
+        gl.dateTime = grib2::setDateTime(mars);
+        gl.initForecastTime = grib2::setInitForecastTime();
+        gl.pointInTime = grib2::setPointInTime(mars);
     });
 }
 auto timeRange(TimeRangeType type, TOSP typeOfStatisticalProcessing) {
-    return Setter([=](SectionsConf& c) {
-        c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(TimeExtent::TimeRange);
-        c.product.ensureInit().modify().timeRange.ensureInit().modify().type.set(type);
-        c.product.ensureInit().modify().timeRange.ensureInit().modify().typeOfStatisticalProcessing.set(
-            typeOfStatisticalProcessing);
-    });
+    return Setter(
+        [=](const dm::FullMarsRecord& mars, const dm::MiscRecord& misc, LegacySectionsConf& c, Grib2Layout& gl) {
+            // Legacy
+            c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(TimeExtent::TimeRange);
+            c.product.ensureInit().modify().timeRange.ensureInit().modify().type.set(type);
+            c.product.ensureInit().modify().timeRange.ensureInit().modify().typeOfStatisticalProcessing.set(
+                typeOfStatisticalProcessing);
+
+            // New structure
+            gl.pdtCat.timeExtent.set(TimeExtent::TimeRange);
+            gl.dateTime = grib2::setDateTime(mars);
+            gl.initForecastTime = grib2::setInitForecastTime();
+            gl.timeRange = grib2::setTimeRange(mars, misc);
+        });
 }
 auto overallLengthOfTimeRange(const std::string& l) {
-    return Setter([=](SectionsConf& c) {
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
         c.product.ensureInit().modify().timeRange.ensureInit().modify().overallLengthOfTimeRange.set(l);
     });
 }
 
 auto ensemble() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().processSubType.set(ProcessSubType::Ensemble);
         c.product.ensureInit().modify().process.ensureInit();
+
+        // New structure
+        gl.pdtCat.processSubType.set(ProcessSubType::Ensemble);
     });
 }
 auto largeEnsemble() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().processSubType.set(ProcessSubType::LargeEnsemble);
         c.product.ensureInit().modify().process.ensureInit();
+
+        // New structure
+        gl.pdtCat.processSubType.set(ProcessSubType::LargeEnsemble);
     });
 }
 auto reforecast() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord& mars, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().processType.set(ProcessType::Reforecast);
         c.product.ensureInit().modify().process.ensureInit();
+
+        // New structure
+        gl.pdtCat.processType.set(ProcessType::Reforecast);
+        gl.refDateTime = grib2::setRefDateTime(mars);
     });
 }
 
 auto chemical() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().chemical.ensureInit();
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().productCategory.set(ProductCategory::Chemical);
+
+        // New structure
+        gl.pdtCat.productCategory.set(ProductCategory::Chemical);
     });
 }
 
 auto periodRange() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().periodRange.ensureInit();
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().productCategory.set(ProductCategory::Wave);
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().productSubCategory.set(
             ProductSubCategory::PeriodRange);
+
+        // New structure
+        gl.pdtCat.productCategory.set(ProductCategory::Wave);
+        gl.pdtCat.productSubCategory.set(ProductSubCategory::PeriodRange);
     });
 }
 
 auto dirFreq() {
-    return Setter([](SectionsConf& c) {
-        c.product.ensureInit().modify().dirFreq.ensureInit();
-        c.product.ensureInit().modify().pdtCat.ensureInit().modify().productCategory.set(ProductCategory::Wave);
-        c.product.ensureInit().modify().pdtCat.ensureInit().modify().productSubCategory.set(
-            ProductSubCategory::SpectraList);
-    });
+    return Setter(
+        [](const dm::FullMarsRecord& mars, const dm::MiscRecord& misc, LegacySectionsConf& c, Grib2Layout& gl) {
+            // Legacy
+            c.product.ensureInit().modify().dirFreq.ensureInit();
+            c.product.ensureInit().modify().pdtCat.ensureInit().modify().productCategory.set(ProductCategory::Wave);
+            c.product.ensureInit().modify().pdtCat.ensureInit().modify().productSubCategory.set(
+                ProductSubCategory::SpectraList);
+
+
+            // New structure
+            gl.pdtCat.productCategory.set(ProductCategory::Wave);
+            gl.pdtCat.productSubCategory.set(ProductSubCategory::SpectraList);
+
+            gl.dirFreqArrays = grib2::setDirFreqArrays(misc);
+            gl.dirFreqMars = grib2::setDirFreqMars(mars);
+        });
 }
 
 auto satellite() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord& mars, const dm::MiscRecord& misc, LegacySectionsConf& c,
+                     Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().satellite.ensureInit();
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().productCategory.set(ProductCategory::Satellite);
+
+        // New structure
+        gl.pdtCat.productCategory.set(ProductCategory::Satellite);
+        gl.satellite = grib2::setSatellite(mars, misc);
     });
 }
 
 auto randomPattern() {
-    return Setter([](SectionsConf& c) {
+    return Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.product.ensureInit().modify().randomPatterns.ensureInit();
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().spatialExtent.set(SpatialExtent::RandomPatterns);
+
+        // New structure
+        gl.pdtCat.spatialExtent.set(SpatialExtent::RandomPatterns);
     });
 }
 
 
 // Other setters
 
-auto typeOfLevel(TOL type) {
-    return Setter([=](SectionsConf& c) { c.product.ensureInit().modify().level.ensureInit().modify().type.set(type); });
-}
-auto fixedLevel(dm::EntryValueType_t<decltype(FixedLevel)> lvl) {
+auto typeOfLevel(TOL type, std::optional<std::int64_t> fixedLevel = std::optional<std::int64_t>{}) {
     return Setter(
-        [=](SectionsConf& c) { c.product.ensureInit().modify().level.ensureInit().modify().fixedLevel.set(lvl); });
+        [=](const dm::FullMarsRecord& mars, const dm::MiscRecord& misc, LegacySectionsConf& c, Grib2Layout& gl) {
+            // Legacy
+            c.product.ensureInit().modify().level.ensureInit().modify().type.set(type);
+
+            // New structure
+            gl.level = grib2::setLevel(type, fixedLevel, mars);
+            gl.vertical = grib2::setVertical(type, mars, misc);
+        });
 }
+
 auto localUse(std::int64_t num) {
-    return Setter([=](SectionsConf& c) { c.localUse.ensureInit().modify().templateNumber.set(num); });
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
+        c.localUse.ensureInit().modify().templateNumber.set(num);
+
+        // New structure
+        gl.structure.setLocalDefinition.set(1);
+        gl.structure.localDefinitionNumber.set(num);
+        if (num > 1000) {
+            gl.structure.localDefinitionNumber.set(num - 1000);
+            gl.structure.destineLocalVersion.set(1);
+        }
+    });
 }
 
 auto dataRepres(std::int64_t num) {
-    return Setter([=](SectionsConf& c) { c.dataRepres.ensureInit().modify().templateNumber.set(num); });
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
+        c.dataRepres.ensureInit().modify().templateNumber.set(num);
+
+        // New structure
+        gl.structure.dataRepresentationTemplateNumber.set(num);
+    });
 }
 
 
+// TODO(pgeier) can be removed after migration
 auto tablesConfig(const std::string& type) {
-    return Setter(
-        [=](SectionsConf& c) { c.identification.ensureInit().modify().tables.ensureInit().modify().type.set(type); });
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        c.identification.ensureInit().modify().tables.ensureInit().modify().type.set(type);
+    });
 }
 
 auto tablesVersion(std::int64_t version) {
-    return Setter([=](SectionsConf& c) {
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.identification.ensureInit().modify().tables.ensureInit().modify().tablesVersion.set(version);
+
+        // New structure
+        gl.structure.tablesVersion.set(version);
     });
 }
 
 auto localTablesVersion(std::int64_t version) {
-    return Setter([=](SectionsConf& c) {
+    return Setter([=](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+        // Legacy
         c.identification.ensureInit().modify().tables.ensureInit().modify().localTablesVersion.set(version);
+
+        // New structure
+        gl.structure.localTablesVersion.set(version);
     });
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Composed rules
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-auto makeGridRule(dm::Repres repres, std::int64_t num) {
-    return rule(OneOf{&dm::FullMarsRecord::repres, {repres}},
-                Setter([=](SectionsConf& c) { c.grid.ensureInit().modify().templateNumber.set(num); }));
-}
-
+// TODO(pgeier) - Grid mapping is completely orthognal and should not be separated in separate branches
 auto gridRules() {
-    return exclusiveRuleList(makeGridRule(dm::Repres::LL, 0), makeGridRule(dm::Repres::GG, 40),
-                             makeGridRule(dm::Repres::SH, 50));
+    return exclusiveRuleList(
+        rule(Has{&dm::FullMarsRecord::grid},
+             Setter([=](const dm::FullMarsRecord& mars, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+                 // c.grid.ensureInit().modify().gridDefinitionTemplateNumber.set(dm::gridTypeFromGrid(mars.grid.get()));
+                 gl.structure.gridType.set(dm::gridTypeFromGrid(mars.grid.get()));
+
+                 switch (gl.structure.gridType.get()) {
+                     case dm::GridType::RegularGG:
+                     case dm::GridType::ReducedGG:
+                         c.grid.ensureInit().modify().templateNumber.set(40);
+                         break;
+                     case dm::GridType::RegularLL:
+                         c.grid.ensureInit().modify().templateNumber.set(0);
+                         break;
+                     default:
+                         throw Mars2GribException(
+                             std::string("Grid ") + mars.grid.get() + std::string(" is not supported yet."), Here());
+                 }
+             })),
+        rule(Has{&dm::FullMarsRecord::truncation},
+             Setter([=](const dm::FullMarsRecord& mars, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& gl) {
+                 // c.grid.ensureInit().modify().gridDefinitionTemplateNumber.set(dm::GridType::SH);
+                 c.grid.ensureInit().modify().templateNumber.set(50);
+                 gl.structure.gridType.set(dm::GridType::SH);
+             })));
 }
+
 
 auto localSectionRules() {
     return exclusiveRuleList(  //
-        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Missing{&dm::FullMarsRecord::method}), localUse(1)),
-        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Has{&dm::FullMarsRecord::method}), localUse(15)),
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}},
+                 Missing{&dm::FullMarsRecord::method}),
+             localUse(1)),
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}},
+                 Has{&dm::FullMarsRecord::method}),
+             localUse(15)),
         rule(all(Has{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(36)),
         rule(all(Missing{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1001)),
         rule(all(Has{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1036)));
@@ -206,31 +325,38 @@ auto localSectionRules() {
 auto processTypesRules() {
     return exclusiveRuleList(
         // Match any levtype but AL (or no levtype)
-        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate})),
-        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), ensemble()),
-        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), ensemble()),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number},
+                 Missing{&dm::FullMarsRecord::hdate})),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number},
+                 Missing{&dm::FullMarsRecord::hdate}),
+             ensemble()),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number},
+                 Has{&dm::FullMarsRecord::hdate}),
+             reforecast(), ensemble()),
         // Levtype AL specific - detection whether a largeEnsemble is used should actually depend on
         // numberOfForecastsInEnsemble > 254
-        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), largeEnsemble()),
-        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), largeEnsemble()));
+        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}),
+             largeEnsemble()),
+        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}),
+             reforecast(), largeEnsemble()));
 }
 
 
 auto packingRules() {
-    return exclusiveRuleList(                                 //
+    return exclusiveRuleList(                                                  //
         rule(OneOf{&dm::FullMarsRecord::packing, {"simple"}}, dataRepres(0)),  //
         rule(OneOf{&dm::FullMarsRecord::packing, {"ccsds"}}, dataRepres(42)),  //
         rule(OneOf{&dm::FullMarsRecord::packing, {"complex"}}, dataRepres(51)));
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Params
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Satellite
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // Single satellite rule - defined here to be checked twice - with levtype sfc
 // and without any levtype but ident, instrument and channel
@@ -244,9 +370,9 @@ auto paramSatelliteRules() {
     return exclusiveRuleList(singleSatelliteRule());
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // SFC
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto paramSFCRules() {
     return exclusiveRuleList(                              //
@@ -260,35 +386,35 @@ auto paramSFCRules() {
              pointInTime(), typeOfLevel(TOL::EntireLake)),                 //
         rule(matchParams(121),                                             //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),
-             overallLengthOfTimeRange("6h"),                           //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),  //
-        rule(matchParams(122),                                         //
+             overallLengthOfTimeRange("6h"),               //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),  //
+        rule(matchParams(122),                             //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Minimum),
              overallLengthOfTimeRange("6h"),                                                  //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(201, 237167, 237168),                                                //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),            //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(202, 238167, 238168),                                                //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),            //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(228004, 235168),                                                     //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),            //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(239167, 239168),                                                     //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(123),                                                                //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),                         //
              overallLengthOfTimeRange("6h"),                                                  //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                       //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                                   //
         rule(matchParams(228028),                                                             //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),
              overallLengthOfTimeRange("3h"),                                        //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                         //
         rule(matchParams(49, 237165, 237166, 237207, 237318),                       //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                         //
         rule(matchParams(235087, 235088, 235136, 235137, 235087, 235088, 235137, 235288, 235287, 235290, 235326,
                          235383),                                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
@@ -304,13 +430,13 @@ auto paramSFCRules() {
              typeOfLevel(TOL::EntireAtmosphere)),                                                             //
         rule(matchParams(228005, 235165, 235166),                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                                       //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                                                   //
         rule(matchParams(238165, 238166, 238207),                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),                            //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                                       //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                                                   //
         rule(matchParams(239165, 239166, 239207),                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),                  //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                                       //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                                                   //
         rule(matchParams(235151),                                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
              typeOfLevel(TOL::MeanSea)),                                                                      //
@@ -403,13 +529,13 @@ auto paramSFCRules() {
              typeOfLevel(TOL::HeightAboveGround)),                                            //
         rule(matchParams(165, 166, 207, 228029, 228131, 228132, 260260),                      //
              pointInTime(),                                                                   //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                       //
+             typeOfLevel(TOL::HeightAboveGroundAt10m, 10)),                                   //
         rule(matchParams(167, 168, 174096, 228037, 260242),                                   //
              pointInTime(),                                                                   //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                         //
+             typeOfLevel(TOL::HeightAboveGroundAt2m, 2)),                                     //
         rule(matchParams(140245, 140249, 140233),                                             //
              pointInTime(),                                                                   //
-             typeOfLevel(TOL::HeightAboveSeaAt10m), fixedLevel(10)),                          //
+             typeOfLevel(TOL::HeightAboveSeaAt10m, 10)),                                      //
         rule(matchParams(3075),                                                               //
              pointInTime(),                                                                   //
              typeOfLevel(TOL::HighCloudLayer)),                                               //
@@ -456,14 +582,14 @@ auto paramSFCRules() {
              chemical(),                                                                 //
              typeOfLevel(TOL::Surface),                                                  //
              tablesConfig("custom"), localTablesVersion(0), tablesVersion(30)),          //
-        rule(
-            matchParams(  //
-                8, 9, 20, 44, 45, 47, 50, 57, 58, paramRange(142, 147), 169, 175, 176, 177, 180, 181, 182, 189, 195,
-                196, 197, 205, 210, 211, 213, 228, 239, 240, 3062, 3099, paramRange(162100, 162113),
-                paramRange(222001, 222256), 228021, 228022, 228129, 228130, 228143, 228144, 228216, 228228, 228251,
-                231001, 231002, 231003, 231005, 231010, 231012, 231057, 231058, paramRange(233000, 233031), 260259),  //
-            timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),
-            typeOfLevel(TOL::Surface)),    //
+        rule(matchParams(                                                                //
+                 8, 9, 20, 44, 45, 47, 50, 57, 58, paramRange(142, 147), 169, 175, 176, 177, 180, 181, 182, 189, 195,
+                 196, 197, 205, 210, 211, 213, 228, 239, 240, 3062, 3099, paramRange(162100, 162113),
+                 paramRange(222001, 222256), 228021, 228022, 228129, 228130, 228143, 228144, 228216, 228228, 228251,
+                 231001, 231002, 231003, 231005, 231010, 231012, 231057, 231058, paramRange(233000, 233031),
+                 260259),  //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),
+             typeOfLevel(TOL::Surface)),   //
         rule(matchParams(228051, 228053),  //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Average),
              overallLengthOfTimeRange("1h"),  //
@@ -593,9 +719,9 @@ auto paramHLRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // ML
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // NOTE - levtype ML is always mapped to TOL::Hybrid - these rules can be generalized once the time mapping is mapped
 // orthogonally
@@ -611,20 +737,20 @@ auto paramMLRules() {
     );
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // PL
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // Special composer to handle pressure units differently
 // The exclusion list should be the outermost - hence we are passing in the specializations
 template <typename MkTail>
 auto plLevelRules(MkTail&& mkTail) {
-    return exclusiveRuleList(                      //
-        chainedRuleList(                           //
+    return exclusiveRuleList(                                       //
+        chainedRuleList(                                            //
             rule(greaterEqual(&dm::FullMarsRecord::levelist, 100),  //
                  typeOfLevel(TOL::IsobaricInhPa)),
-            mkTail()),                         //
-        chainedRuleList(                       //
+            mkTail()),                                          //
+        chainedRuleList(                                        //
             rule(lessThan(&dm::FullMarsRecord::levelist, 100),  //
                  typeOfLevel(TOL::IsobaricInPa)),
             mkTail())  //
@@ -644,9 +770,9 @@ auto paramPLRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // PT
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto paramPTRules() {
     return exclusiveRuleList(                                                       //
@@ -670,9 +796,9 @@ auto paramPTRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // PV
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto paramPVRules() {
     return exclusiveRuleList(                                                       //
@@ -686,9 +812,9 @@ auto paramPVRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Soil
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto paramSOLRules() {
     return exclusiveRuleList(                                                       //
@@ -711,9 +837,9 @@ auto paramSOLRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Al
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 auto paramAlRules() {
     return exclusiveRuleList(                          //
@@ -725,14 +851,9 @@ auto paramAlRules() {
 }
 
 
-//-----------------------------------------------------------------------------
-// Satellite
-//-----------------------------------------------------------------------------
-
-
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Final composed param rules
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // TODO can be optimized by pulling the levtype check one level out -
 // exclusiveRuleList(
@@ -755,9 +876,9 @@ auto paramRules() {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Big rule tree...
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 const ChainedRuleList& allRules() {
     static auto all_ = chainedRuleList(  //
@@ -771,9 +892,11 @@ const ChainedRuleList& allRules() {
     return all_;
 }
 
-SectionsConf buildEncoderConf(const dm::FullMarsRecord& mars) {
-    SectionsConf sections;
-    if (!allRules()(mars, sections)) {
+std::tuple<LegacySectionsConf, Grib2Layout> buildEncoderConf(const dm::FullMarsRecord& mars,
+                                                             const dm::MiscRecord& misc) {
+    LegacySectionsConf sections;
+    Grib2Layout layout;
+    if (!allRules()(mars, misc, sections, layout)) {
         std::ostringstream oss;
         oss << "Cannot map mars keys. None of the outermost rules apply: ";
         util::print(oss, allRules());
@@ -781,7 +904,11 @@ SectionsConf buildEncoderConf(const dm::FullMarsRecord& mars) {
     }
     dm::applyRecordDefaults(sections);
     dm::validateRecord(sections);
-    return sections;
+
+    // TODO(pgeier) will change in future
+    dm::applyRecordDefaults(layout.pdtCat);
+    dm::validateRecord(layout.pdtCat);
+    return std::make_tuple(std::move(sections), std::move(layout));
 }
 
 }  // namespace multio::mars2grib::rules

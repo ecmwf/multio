@@ -335,7 +335,7 @@ struct DataRepresSection {
 // All sections
 //----------------------------------------------------------------------------------------------------------------------
 
-struct SectionsConf {
+struct LegacySectionsConf {
     dm::Entry<std::string> type;
 
     dm::Entry<IndicatorSection> indicator;
@@ -347,14 +347,40 @@ struct SectionsConf {
 
     static constexpr std::string_view record_name_ = "encoder";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::entryDef("type", &SectionsConf::type).withDefault("grib2"),
+        dm::entryDef("type", &LegacySectionsConf::type).withDefault("grib2"),
 
-        dm::nestedEntryDef(&SectionsConf::indicator), dm::nestedEntryDef(&SectionsConf::identification),
-        dm::nestedEntryDef(&SectionsConf::localUse), dm::nestedEntryDef(&SectionsConf::grid),
-        dm::nestedEntryDef(&SectionsConf::product), dm::nestedEntryDef(&SectionsConf::dataRepres)
+        dm::nestedEntryDef(&LegacySectionsConf::indicator), dm::nestedEntryDef(&LegacySectionsConf::identification),
+        dm::nestedEntryDef(&LegacySectionsConf::localUse), dm::nestedEntryDef(&LegacySectionsConf::grid),
+        dm::nestedEntryDef(&LegacySectionsConf::product), dm::nestedEntryDef(&LegacySectionsConf::dataRepres)
 
     );
 };
+
+
+// Temporary solution - all in all the rules should directly map to the Grib2Structure
+// inline dm::Grib2Structure toGrib2Structure(const LegacySectionsConf& conf) {
+//     dm::Grib2Structure s;
+
+//     s.tablesVersion.set(conf.identification.get().tables.get().tablesVersion);
+//     s.localTablesVersion.set(conf.identification.get().tables.get().localTablesVersion);
+
+//     s.localDefinitionNumber.set(conf.localUse.get().templateNumber.get());
+
+//     // TODO(pgeier) Legacy - the MULTIOM code hacked in destine templates as 1036 and 1001
+//     if (s.localDefinitionNumber.get() > 1000) {
+//         s.localDefinitionNumber.set(s.localDefinitionNumber.get() - 1000);
+//         s.destineLocalVersion.set(1);
+//     }
+
+//     // s.gridType.set(conf.grid.get().templateNumber.get());
+//     s.productDefinitionTemplateNumber.set(conf.product.get().templateNumber.get());
+//     s.dataRepresentationTemplateNumber.set(conf.dataRepres.get().templateNumber.get());
+
+//     dm::applyRecordDefaults(s);
+//     dm::validateRecord(s);
+//     return s;
+// };
+
 }  // namespace mars2grib
 
 // //---------------------------------------------------------------------------------------------------------------------
@@ -404,7 +430,7 @@ struct Print<multio::mars2grib::ProductSection> : datamod::PrintRecord {};
 template <>
 struct Print<multio::mars2grib::DataRepresSection> : datamod::PrintRecord {};
 template <>
-struct Print<multio::mars2grib::SectionsConf> : datamod::PrintRecord {};
+struct Print<multio::mars2grib::LegacySectionsConf> : datamod::PrintRecord {};
 
 }  // namespace util
 

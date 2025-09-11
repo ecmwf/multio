@@ -156,8 +156,8 @@ list( APPEND multio_datamod_srcs
     datamod/core/Compare.h
     datamod/core/Record.h
     datamod/core/NestedRecord.h
-    datamod/types/Repres.cc
-    datamod/types/Repres.h
+    datamod/types/GridType.cc
+    datamod/types/GridType.h
     datamod/types/TimeDuration.cc
     datamod/types/TimeDuration.h
     datamod/types/LevType.cc

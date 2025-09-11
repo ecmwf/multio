@@ -15,7 +15,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/mars2grib/EncoderCache.h"
+#include "multio/mars2grib/Encoder.h"
 
 #include "multio/datamod/AtlasGeo.h"
 
@@ -28,11 +28,11 @@ namespace multio::test {
 
 namespace dm = multio::datamod;
 
-CASE("Test cache.getHandle with AIFS single keys") {
+CASE("Test encoder.getHandle with AIFS single keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
 
-    EncoderCache cache{};
+    Encoder encoder{};
     dm::MiscRecord misc;
     dm::applyRecordDefaults(misc);
     dm::validateRecord(misc);
@@ -41,7 +41,7 @@ CASE("Test cache.getHandle with AIFS single keys") {
         try {
             auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             auto geo = dm::makeUnscopedGeometry(mars);
-            auto handle = cache.getHandle(mars, misc, geo);
+            auto handle = encoder.getHandle(mars, misc, geo);
         }
         catch (...) {
             std::cout << "Error while generating & comparing message: " << md << std::endl;
@@ -50,11 +50,11 @@ CASE("Test cache.getHandle with AIFS single keys") {
     }
 };
 
-CASE("Test cache.getHandle with AIFS ens keys") {
+CASE("Test encoder.getHandle with AIFS ens keys") {
     using namespace multio::mars2grib::rules;
     using namespace multio::mars2grib;
 
-    EncoderCache cache{};
+    Encoder encoder{};
     dm::MiscRecord misc;
     misc.typeOfEnsembleForecast.set(1);
     misc.numberOfForecastsInEnsemble.set(50);
@@ -65,7 +65,7 @@ CASE("Test cache.getHandle with AIFS ens keys") {
         try {
             auto mars = dm::readRecord<dm::FullMarsRecord>(md);
             auto geo = dm::makeUnscopedGeometry(mars);
-            auto handle = cache.getHandle(mars, misc, geo);
+            auto handle = encoder.getHandle(mars, misc, geo);
         }
         catch (...) {
             std::cout << "Error while generating & comparing message: " << md << std::endl;

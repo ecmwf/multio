@@ -7,9 +7,10 @@ ecbuild_add_library(
         Mars2GribException.cc
         Mars2GribException.h
         MarsCachedKeys.h
-        EncoderCache.cc
-        EncoderCache.h
-        EncoderConf.h
+        Encoder.cc
+        Encoder.h
+        LegacyEncoderConf.h
+        Grib2Layout.h
         Rules.cc
         Rules.h
         api/RawAPI.cc
@@ -31,6 +32,16 @@ ecbuild_add_library(
         sections/SectionTypes.h
         sections/Level.cc
         sections/Level.h
+        grib2/Geometry.cc
+        grib2/Geometry.h
+        grib2/Level.cc
+        grib2/Level.h
+        grib2/Satellite.cc
+        grib2/Satellite.h
+        grib2/DirFreq.cc
+        grib2/DirFreq.h
+        grib2/Time.cc
+        grib2/Time.h
         generated/InferPDT.h
         generated/InferPDTTest.h
 

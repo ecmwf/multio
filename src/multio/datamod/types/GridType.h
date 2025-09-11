@@ -22,36 +22,35 @@ namespace multio::datamod {
 //----------------------------------------------------------------------------------------------------------------------
 
 // To be renamed and kept internal -
-enum class Repres : std::size_t
+enum class GridType : std::size_t
 {
-    GG,
-    LL,
+    RegularGG,
+    ReducedGG,
+    RegularLL,
     SH,
+    StretchedSH,
+    StretchedRotatedSH,
     HEALPix  // We added it here because we use repres as an intermediate type. Officially healpix is not mapped to any
              // of the others...
 };
 
-Repres represFromGrid(const std::string& grid);
+GridType gridTypeFromGrid(const std::string& grid);
 
 }  // namespace multio::datamod
 
 
-
 template <>
-struct multio::util::Print<multio::datamod::Repres> {
-    static void print(PrintStream& ps, const datamod::Repres& v);
+struct multio::util::Print<multio::datamod::GridType> {
+    static void print(PrintStream& ps, const datamod::GridType& v);
 };
 
 
 template <>
-struct multio::datamod::DumpType<multio::datamod::Repres> {
-    static std::string dump(Repres);
+struct multio::datamod::DumpType<multio::datamod::GridType> {
+    static std::string dump(GridType);
 };
 
 template <>
-struct multio::datamod::ParseType<multio::datamod::Repres> {
-    static Repres parse(const std::string& s);
+struct multio::datamod::ParseType<multio::datamod::GridType> {
+    static GridType parse(const std::string& s);
 };
-
-
-

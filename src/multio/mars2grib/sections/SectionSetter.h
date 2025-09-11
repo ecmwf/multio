@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "multio/datamod/MarsMiscGeo.h"
 #include "metkit/codes/api/CodesAPI.h"
+#include "multio/datamod/MarsMiscGeo.h"
 
 #include <functional>
 #include <memory>
@@ -38,8 +38,8 @@ namespace dm = multio::datamod;
 
 struct DynSectionSetter {
     struct Config {
-        bool registerPrepare;
-        bool registerAllocate;
+        // bool registerPrepare;
+        // bool registerAllocate;
         bool registerPreset;
         bool registerRuntime;
         bool registerCheck;
@@ -49,12 +49,6 @@ struct DynSectionSetter {
     virtual Config sectionInfo() const = 0;
 
 
-    // Default implementation is to do nothing
-    virtual void prepare(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
-                         const dm::Geometry&) const;
-    // Default implementation is to do nothing
-    virtual void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
-                          const dm::Geometry&) const;
     // Default implementation is to do nothing
     virtual void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                         const dm::Geometry&) const;
@@ -67,9 +61,6 @@ struct DynSectionSetter {
     virtual void check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                        const dm::Geometry&) const;
 
-    // // Implement a check method that is adding dynamic key information to give feed back on requirements
-    // virtual void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const;
-
     virtual ~DynSectionSetter() = default;
 };
 
@@ -79,10 +70,6 @@ public:
     // Registers a new section
     void add(std::unique_ptr<DynSectionSetter>);
 
-    void prepare(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
-                 const dm::Geometry&) const;
-    void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
-                  const dm::Geometry&) const;
     void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                 const dm::Geometry&) const;
     void runtime(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
@@ -91,17 +78,11 @@ public:
     void check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                const dm::Geometry&) const;
 
-    // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const;
-
-    // void writeKeyInfo(std::ostream&, const dm::FullMarsRecord&) const;
-
 private:
     // Storage of all sections
     std::vector<std::unique_ptr<DynSectionSetter>> sections_;
 
     // References to specific setters that perform operation in orderd
-    std::vector<std::reference_wrapper<const DynSectionSetter>> prepare_;
-    std::vector<std::reference_wrapper<const DynSectionSetter>> allocate_;
     std::vector<std::reference_wrapper<const DynSectionSetter>> preset_;
     std::vector<std::reference_wrapper<const DynSectionSetter>> runtime_;
     std::vector<std::reference_wrapper<const DynSectionSetter>> check_;

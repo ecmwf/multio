@@ -11,7 +11,7 @@
 #pragma once
 
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/EncoderCache.h"
+#include "multio/mars2grib/Encoder.h"
 
 namespace multio::mars2grib {
 
@@ -40,7 +40,7 @@ public:
                                                    const dm::Geometry& geoKeys);
 
 private:
-    EncoderCache cache_;
+    Encoder encoder_;
 };
 
 }  // namespace multio::mars2grib

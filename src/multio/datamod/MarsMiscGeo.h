@@ -183,13 +183,12 @@ struct MarsField : ComposedRecord<MarsFieldId, MarsFieldDetails, MarsSatellite> 
 struct MarsEncodingDetails {
     EntryType_t<decltype(GRID)> grid;
     EntryType_t<decltype(TRUNCATION)> truncation;
-    EntryType_t<decltype(REPRES)> repres;
 
     EntryType_t<decltype(PACKING)> packing;
 
 
     static constexpr std::string_view record_name_ = "mars-encoding";
-    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, REPRES, PACKING);
+    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, PACKING);
 };
 
 
@@ -213,7 +212,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
     static void applyDefaults(FullMarsRecord& mars) {
         const auto& grid = mars.grid;
         const auto& trunc = mars.truncation;
-        auto& repres = mars.repres;
 
         if (!grid.isSet() && !trunc.isSet()) {
             std::ostringstream oss;
@@ -228,33 +226,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
                    "given: ";
             util::print(oss, mars);
             throw DataModellingException(oss.str(), Here());
-        }
-
-        if (grid.isSet()) {
-            auto detRepres = represFromGrid(grid.get());
-            if (repres.isSet() && (detRepres != repres.get())) {
-                std::ostringstream oss;
-                oss << "Passed value for repres is ";
-                util::print(oss, repres.get());
-                oss << " but derived value  ";
-                util::print(oss, detRepres);
-                oss << " from grid " << grid.get();
-                throw DataModellingException(oss.str(), Here());
-            }
-            repres.set(detRepres);
-        }
-        else if (trunc.isSet()) {
-            auto detRepres = Repres::SH;
-            if (repres.isSet() && (detRepres != repres.get())) {
-                std::ostringstream oss;
-                oss << "Passed value for repres is ";
-                util::print(oss, repres.get());
-                oss << " but derived value  ";
-                util::print(oss, detRepres);
-                oss << " from truncation " << std::to_string(trunc.get());
-                throw DataModellingException(oss.str(), Here());
-            }
-            repres.set(detRepres);
         }
     }
 };
@@ -275,14 +246,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
 // Parametrization keys
 //-----------------------------------------------------------------------------
 
-// Userfacing keys
-
-// TablesVersion defined in GribKeys
-
-// GeneratingProcessIdentifier defined in GribKeys
-
-// TypeOfProcessedData defined in GribKeys
-
 constexpr auto InitialStep =               //
     EntryDef<std::int64_t>{"initialStep"}  //
         .withDefault(0)
@@ -302,22 +265,6 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
     EntryDef<std::int64_t>{"lengthOfTimeWindowInSeconds"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
-
-// BitmapPresent defined in GribKeys
-
-// MissingValue defined in GribKeys
-
-// TypeOfEnsembleForecast defined in GribKeys
-
-// NumberOfForecastsInEnsemble defined in GribKeys
-
-// SatelliteSeries defined in GribKeys
-
-// ScaleFactorOfCentralWavenumber defined in GribKeys
-
-// ScaledValueOfCentralWavenumber defined in GribKeys
-
-// Pv defined in GribKeys
 
 constexpr auto ScaleFactorOfWaveDirections =               //
     EntryDef<std::int64_t>{"scaleFactorOfWaveDirections"}  //
@@ -359,10 +306,10 @@ struct MiscRecord {
     EntryType_t<decltype(ScaleFactorOfCentralWaveNumber)> scaleFactorOfCentralWaveNumber;
     EntryType_t<decltype(ScaledValueOfCentralWaveNumber)> scaledValueOfCentralWaveNumber;
     EntryType_t<decltype(Pv)> pv;
-    EntryType_t<decltype(ScaleFactorOfWaveDirections)> scaleFactorOfWaveDirections;
-    EntryType_t<decltype(ScaleFactorOfWaveFrequencies)> scaleFactorOfWaveFrequencies;
-    EntryType_t<decltype(WaveDirections)> waveDirections;
-    EntryType_t<decltype(WaveFrequencies)> waveFrequencies;
+    Entry<int64_t> scaleFactorOfWaveDirections;
+    Entry<int64_t> scaleFactorOfWaveFrequencies;
+    Entry<std::vector<double>> waveDirections;
+    Entry<std::vector<double>> waveFrequencies;
     EntryType_t<decltype(BitsPerValue)> bitsPerValue;
     EntryType_t<decltype(LaplacianOperator)> laplacianOperator;
 
@@ -372,8 +319,10 @@ struct MiscRecord {
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
-        Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
-        LaplacianOperator);
+        Pv, entryDef("scaleFactorOfWaveDirections", &MiscRecord::scaleFactorOfWaveDirections).tagOptional(),
+        entryDef("scaleFactorOfWaveFrequencies", &MiscRecord::scaleFactorOfWaveFrequencies).tagOptional(),
+        entryDef("waveDirections", &MiscRecord::waveDirections).tagOptional(),
+        entryDef("waveFrequencies", &MiscRecord::waveFrequencies).tagOptional(), BitsPerValue, LaplacianOperator);
 };
 
 
@@ -381,23 +330,70 @@ struct MiscRecord {
 // Geometry keys - gg
 //-----------------------------------------------------------------------------
 
-struct GeoGGRecord {
-    EntryType_t<decltype(TruncateDegrees)> truncateDegrees;
-    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
-    EntryType_t<decltype(NumberOfParallelsBetweenAPoleAndTheEquator)> numberOfParallelsBetweenAPoleAndTheEquator;
-    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(Pl)> pl;
+struct GeoRegularGGRecord {
+    Entry<std::int64_t> numberOfPointsAlongAMeridian;
+    Entry<std::int64_t> numberOfPointsAlongAParallel;
+    Entry<std::int64_t> numberOfParallelsBetweenAPoleAndTheEquator;
+    Entry<double> latitudeOfFirstGridPointInDegrees;
+    Entry<double> longitudeOfFirstGridPointInDegrees;
+    Entry<double> latitudeOfLastGridPointInDegrees;
+    Entry<double> longitudeOfLastGridPointInDegrees;
+
+    Entry<double> iDirectionIncrementInDegrees;
+
+    Entry<std::int64_t> shapeOfTheEarth;
 
 
-    static constexpr std::string_view record_name_ = "geo-gg";
-    static constexpr auto record_entries_
-        = std::make_tuple(TruncateDegrees, NumberOfPointsAlongAMeridian, NumberOfParallelsBetweenAPoleAndTheEquator,
-                          LatitudeOfFirstGridPointInDegrees, LongitudeOfFirstGridPointInDegrees,
-                          LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees, Pl);
+    static constexpr std::string_view record_name_ = "geo-regular-gg";
+    static constexpr auto record_entries_ = std::make_tuple(
+        entryDef("numberOfPointsAlongAMeridian", &GeoRegularGGRecord::numberOfPointsAlongAMeridian),
+        entryDef("numberOfPointsAlongAParallel", &GeoRegularGGRecord::numberOfPointsAlongAParallel),
+        entryDef("numberOfParallelsBetweenAPoleAndTheEquator",
+                 &GeoRegularGGRecord::numberOfParallelsBetweenAPoleAndTheEquator),
+        entryDef("latitudeOfFirstGridPointInDegrees", &GeoRegularGGRecord::latitudeOfFirstGridPointInDegrees),
+        entryDef("longitudeOfFirstGridPointInDegrees", &GeoRegularGGRecord::longitudeOfFirstGridPointInDegrees),
+        entryDef("latitudeOfLastGridPointInDegrees", &GeoRegularGGRecord::latitudeOfLastGridPointInDegrees),
+        entryDef("longitudeOfLastGridPointInDegrees", &GeoRegularGGRecord::longitudeOfLastGridPointInDegrees),
+        entryDef("iDirectionIncrementInDegrees", &GeoRegularGGRecord::iDirectionIncrementInDegrees),
+        entryDef("shapeOfTheEarth", &GeoRegularGGRecord::shapeOfTheEarth).withDefault(6));
 };
+
+struct GeoReducedGGRecord {
+    Entry<std::int64_t> numberOfPointsAlongAMeridian;
+    Entry<std::int64_t> numberOfParallelsBetweenAPoleAndTheEquator;
+    Entry<double> latitudeOfFirstGridPointInDegrees;
+    Entry<double> longitudeOfFirstGridPointInDegrees;
+    Entry<double> latitudeOfLastGridPointInDegrees;
+    Entry<double> longitudeOfLastGridPointInDegrees;
+
+    Entry<std::vector<std::int64_t>> pl;
+
+    Entry<std::int64_t> shapeOfTheEarth;
+
+
+    static constexpr std::string_view record_name_ = "geo-regular-gg";
+    static constexpr auto record_entries_ = std::make_tuple(
+        entryDef("numberOfPointsAlongAMeridian", &GeoReducedGGRecord::numberOfPointsAlongAMeridian),
+        entryDef("numberOfParallelsBetweenAPoleAndTheEquator",
+                 &GeoReducedGGRecord::numberOfParallelsBetweenAPoleAndTheEquator),
+        entryDef("latitudeOfFirstGridPointInDegrees", &GeoReducedGGRecord::latitudeOfFirstGridPointInDegrees),
+        entryDef("longitudeOfFirstGridPointInDegrees", &GeoReducedGGRecord::longitudeOfFirstGridPointInDegrees),
+        entryDef("latitudeOfLastGridPointInDegrees", &GeoReducedGGRecord::latitudeOfLastGridPointInDegrees),
+        entryDef("longitudeOfLastGridPointInDegrees", &GeoReducedGGRecord::longitudeOfLastGridPointInDegrees),
+        entryDef("pl", &GeoReducedGGRecord::pl),
+        entryDef("shapeOfTheEarth", &GeoReducedGGRecord::shapeOfTheEarth).withDefault(6));
+
+
+    static void validateRecord(const GeoReducedGGRecord& g) {
+        if (g.pl.get().size() != g.numberOfParallelsBetweenAPoleAndTheEquator.get()) {
+            std::ostringstream oss;
+            oss << "The size of the passed pl array is different from the numberOfParallelsBetweenAPoleAndTheEquator: "
+                << g.pl.get().size() << " != " << g.numberOfParallelsBetweenAPoleAndTheEquator.get();
+            throw DataModellingException(oss.str(), Here());
+        }
+    }
+};
+
 
 //
 //-----------------------------------------------------------------------------
@@ -406,13 +402,39 @@ struct GeoGGRecord {
 
 
 struct GeoSHRecord {
-    EntryType_t<decltype(PentagonalResolutionParameterJ)> pentagonalResolutionParameterJ;
-    EntryType_t<decltype(PentagonalResolutionParameterK)> pentagonalResolutionParameterK;
-    EntryType_t<decltype(PentagonalResolutionParameterM)> pentagonalResolutionParameterM;
+    Entry<double> stretchingFactor;
+    Entry<double> latitudeOfStretchingPoleInDegrees;
+    Entry<double> longitudeOfStretchingPoleInDegrees;
+    Entry<std::int64_t> pentagonalResolutionParameterJ;
+    Entry<std::int64_t> pentagonalResolutionParameterK;
+    Entry<std::int64_t> pentagonalResolutionParameterM;
 
-    static constexpr std::string_view record_name_ = "geo-sh";
+    static constexpr std::string_view record_name_ = "geo-stretched-rotated-sh";
     static constexpr auto record_entries_ = std::make_tuple(
-        PentagonalResolutionParameterJ, PentagonalResolutionParameterK, PentagonalResolutionParameterM);
+        entryDef("stretchingFactor", &GeoSHRecord::stretchingFactor).tagOptional(),
+        entryDef("latitudeOfStretchingPoleInDegrees", &GeoSHRecord::latitudeOfStretchingPoleInDegrees).tagOptional(),
+        entryDef("longitudeOfStretchingPoleInDegrees", &GeoSHRecord::longitudeOfStretchingPoleInDegrees).tagOptional(),
+        entryDef("pentagonalResolutionParameterJ", &GeoSHRecord::pentagonalResolutionParameterJ),
+        entryDef("pentagonalResolutionParameterK", &GeoSHRecord::pentagonalResolutionParameterK),
+        entryDef("pentagonalResolutionParameterM", &GeoSHRecord::pentagonalResolutionParameterM));
+
+    static void applyDefaults(GeoSHRecord& g) {}
+
+    GridType gridType() const;
+
+    static void validate(GeoSHRecord& g) {
+        if (g.gridType() == GridType::StretchedRotatedSH) {
+            // Check that both latitudeOfStretchingPoleInDegrees and longitudeOfStretchingPoleInDegrees are defined
+            if (!g.latitudeOfStretchingPoleInDegrees.isSet()) {
+                throw DataModellingException(
+                    "latitudeOfStretchingPoleInDegrees is not set but required for stretched_rotated_sh", Here());
+            }
+            if (!g.longitudeOfStretchingPoleInDegrees.isSet()) {
+                throw DataModellingException(
+                    "longitudeOfStretchingPoleInDegrees is not set but required for stretched_rotated_sh", Here());
+            }
+        }
+    }
 };
 
 
@@ -420,23 +442,31 @@ struct GeoSHRecord {
 // Geometry keys - ll
 //-----------------------------------------------------------------------------
 
-struct GeoLLRecord {
-    EntryType_t<decltype(NumberOfPointsAlongAParallel)> numberOfPointsAlongAParallel;
-    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
+struct GeoRegularLLRecord {
+    Entry<std::int64_t> numberOfPointsAlongAMeridian;
+    Entry<std::int64_t> numberOfPointsAlongAParallel;
 
-    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
+    Entry<double> latitudeOfFirstGridPointInDegrees;
+    Entry<double> longitudeOfFirstGridPointInDegrees;
+    Entry<double> latitudeOfLastGridPointInDegrees;
+    Entry<double> longitudeOfLastGridPointInDegrees;
 
-    EntryType_t<decltype(IDirectionIncrementInDegrees)> iDirectionIncrementInDegrees;
-    EntryType_t<decltype(JDirectionIncrementInDegrees)> jDirectionIncrementInDegrees;
+    Entry<double> iDirectionIncrementInDegrees;
+    Entry<double> jDirectionIncrementInDegrees;
 
-    static constexpr std::string_view record_name_ = "geo-ll";
+    Entry<std::int64_t> shapeOfTheEarth;
+
+    static constexpr std::string_view record_name_ = "geo-regular-ll";
     static constexpr auto record_entries_ = std::make_tuple(
-        NumberOfPointsAlongAParallel, NumberOfPointsAlongAMeridian, LatitudeOfFirstGridPointInDegrees,
-        LongitudeOfFirstGridPointInDegrees, LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees,
-        IDirectionIncrementInDegrees, JDirectionIncrementInDegrees);
+        entryDef("numberOfPointsAlongAMeridian", &GeoRegularLLRecord::numberOfPointsAlongAMeridian),
+        entryDef("numberOfPointsAlongAParallel", &GeoRegularLLRecord::numberOfPointsAlongAParallel),
+        entryDef("latitudeOfFirstGridPointInDegrees", &GeoRegularLLRecord::latitudeOfFirstGridPointInDegrees),
+        entryDef("longitudeOfFirstGridPointInDegrees", &GeoRegularLLRecord::longitudeOfFirstGridPointInDegrees),
+        entryDef("latitudeOfLastGridPointInDegrees", &GeoRegularLLRecord::latitudeOfLastGridPointInDegrees),
+        entryDef("longitudeOfLastGridPointInDegrees", &GeoRegularLLRecord::longitudeOfLastGridPointInDegrees),
+        entryDef("iDirectionIncrementInDegrees", &GeoRegularLLRecord::iDirectionIncrementInDegrees),
+        entryDef("jDirectionIncrementInDegrees", &GeoRegularLLRecord::jDirectionIncrementInDegrees),
+        entryDef("shapeOfTheEarth", &GeoRegularLLRecord::shapeOfTheEarth).withDefault(6));
 };
 
 //-----------------------------------------------------------------------------
@@ -444,13 +474,17 @@ struct GeoLLRecord {
 //-----------------------------------------------------------------------------
 
 struct GeoHEALPixRecord {
-    EntryType_t<decltype(NSide)> nside;
-    EntryType_t<decltype(OrderingConvention)> orderingConvention;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
+    Entry<GridType> gridType;
+
+    Entry<std::int64_t> nside;
+    Entry<std::string> orderingConvention;
+    Entry<double> longitudeOfFirstGridPointInDegrees;
 
     static constexpr std::string_view record_name_ = "geo-healpix";
-    static constexpr auto record_entries_
-        = std::make_tuple(NSide, OrderingConvention, LongitudeOfFirstGridPointInDegrees.tagOptional());
+    static constexpr auto record_entries_ = std::make_tuple(
+        entryDef("gridType", &GeoHEALPixRecord::gridType).tagDefaulted(), entryDef("nside", &GeoHEALPixRecord::nside),
+        entryDef("orderingConvention", &GeoHEALPixRecord::orderingConvention),
+        entryDef("longitudeOfFirstGridPointInDegrees", &GeoHEALPixRecord::longitudeOfFirstGridPointInDegrees));
 };
 
 
@@ -458,9 +492,13 @@ struct GeoHEALPixRecord {
 // Evaluate geometry from mars
 //-----------------------------------------------------------------------------
 
-using Geometry = std::variant<GeoGGRecord, GeoLLRecord, GeoSHRecord, GeoHEALPixRecord>;
-using ScopedGeometry = std::variant<ScopedRecord<GeoGGRecord>, ScopedRecord<GeoLLRecord>, ScopedRecord<GeoSHRecord>,
-                                    ScopedRecord<GeoHEALPixRecord>>;
+using Geometry
+    = std::variant<GeoReducedGGRecord, GeoRegularGGRecord, GeoRegularLLRecord, GeoSHRecord, GeoHEALPixRecord>;
+using ScopedGeometry
+    = std::variant<ScopedRecord<GeoReducedGGRecord>, ScopedRecord<GeoRegularGGRecord>, ScopedRecord<GeoRegularLLRecord>,
+                   ScopedRecord<GeoSHRecord>, ScopedRecord<GeoHEALPixRecord>>;
+
+GridType gridTypeFromGeometry(const Geometry& geo);
 
 ScopedGeometry getGeometryRecord(const FullMarsRecord& mars);
 
@@ -474,9 +512,11 @@ namespace multio::util {
 template <>
 struct Print<multio::datamod::MiscRecord> : multio::datamod::PrintRecord {};
 template <>
-struct Print<multio::datamod::GeoGGRecord> : multio::datamod::PrintRecord {};
+struct Print<multio::datamod::GeoReducedGGRecord> : multio::datamod::PrintRecord {};
 template <>
-struct Print<multio::datamod::GeoLLRecord> : multio::datamod::PrintRecord {};
+struct Print<multio::datamod::GeoRegularGGRecord> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::datamod::GeoRegularLLRecord> : multio::datamod::PrintRecord {};
 template <>
 struct Print<multio::datamod::GeoSHRecord> : multio::datamod::PrintRecord {};
 template <>

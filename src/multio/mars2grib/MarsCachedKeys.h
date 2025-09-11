@@ -26,19 +26,14 @@ namespace dm = multio::datamod;
 // MARS encoder hash keys
 //-----------------------------------------------------------------------------
 
-// Note - currently the only keys we do not include are direction and frequency.
-// Hence it would be enough to reuse the FullMarsRecord and just unset these keys.
-// However with this approach it is made explicit that there is a further logic happening
-// that should be distinguished from the existing FullMarsRecord.
-
-struct MarsCacheRecord: dm::FullMarsRecord {
+struct MarsCacheRecord : dm::FullMarsRecord {
     static constexpr std::string_view record_name_ = "mars-cache";
 
     static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
         if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == dm::LevType::ML) {
             cacheKeys.levelist.unset();
         }
-        
+
         cacheKeys.step.unset();
         cacheKeys.direction.unset();
         cacheKeys.frequency.unset();

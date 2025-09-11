@@ -10,17 +10,17 @@
 
 #pragma once
 
+#include <cstdint>
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/LegacyEncoderConf.h"
-#include "multio/mars2grib/rules/Rule.h"
-#include "multio/mars2grib/Grib2Layout.h"
+
+#include "multio/datamod/core/EntryDef.h"
+
+// Level config
+namespace multio::mars2grib::grib2 {
+
+namespace dm = multio::datamod;
+
+void writeGeometry(const dm::Geometry&, metkit::codes::CodesHandle& handle);
 
 
-namespace multio::mars2grib::rules {
-using namespace rules;
-
-const ChainedRuleList& allRules();
-
-std::tuple<LegacySectionsConf, Grib2Layout> buildEncoderConf(const dm::FullMarsRecord&, const dm::MiscRecord&);
-
-}  // namespace multio::mars2grib::rules
+}  // namespace multio::mars2grib::grib2

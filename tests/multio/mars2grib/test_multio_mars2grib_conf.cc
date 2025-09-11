@@ -14,7 +14,7 @@
 #include "eckit/testing/Test.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/util/Substitution.h"
 
 #include "multio/LibMultio.h"
@@ -161,7 +161,7 @@ CASE("Test parsing and comparing rule files") {
         std::cout << "Parsing and comparing rule: " << loadedRule.file << std::endl;
 
         auto encoderConf = loadedRule.conf.getSubConfiguration("encoder");
-        auto sections = dm::readRecord<mars2grib::SectionsConf>(encoderConf);
+        auto sections = dm::readRecord<mars2grib::LegacySectionsConf>(encoderConf);
         // Delete key "type" because we don't consider it
         // encoderConf.remove("type");
 

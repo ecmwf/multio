@@ -92,11 +92,14 @@ void AdditionalValues::setBitsPerValue(std::int64_t value) {
 }
 
 GeometryType parseGeometryType(const std::string& val) {
-    if (val == "gg") {
-        return GeometryType::GG;
+    if (val == "regular_gg") {
+        return GeometryType::RegularGG;
     }
-    if (val == "ll") {
-        return GeometryType::LL;
+    if (val == "reduced_gg") {
+        return GeometryType::ReducedGG;
+    }
+    if (val == "regular_ll") {
+        return GeometryType::RegularLL;
     }
     if (val == "sh") {
         return GeometryType::SH;
@@ -109,11 +112,14 @@ GeometryType parseGeometryType(const std::string& val) {
 
 dm::Geometry initGeometry(GeometryType t) {
     switch (t) {
-        case GeometryType::GG: {
-            return dm::GeoGGRecord{};
+        case GeometryType::ReducedGG: {
+            return dm::GeoReducedGGRecord{};
         }
-        case GeometryType::LL: {
-            return dm::GeoLLRecord{};
+        case GeometryType::RegularGG: {
+            return dm::GeoRegularGGRecord{};
+        }
+        case GeometryType::RegularLL: {
+            return dm::GeoRegularLLRecord{};
         }
         case GeometryType::HEALPix: {
             return dm::GeoHEALPixRecord{};

@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include "multio/mars2grib/EncoderConf.h"
+#include "multio/mars2grib/Grib2Layout.h"
+#include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/rules/Setter.h"
 
@@ -31,7 +32,7 @@ namespace dm = multio::datamod;
 struct DynRule {
     // Combines matching and setting. If matched on `keys`, the setter is applied and true is returned.
     // If nothing matches only false is returned
-    virtual bool apply(const dm::FullMarsRecord& rec, SectionsConf&) const = 0;
+    virtual bool apply(const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf&, Grib2Layout&) const = 0;
     virtual void print(util::PrintStream&) const = 0;
 
     virtual ~DynRule() = default;
@@ -50,8 +51,9 @@ namespace multio::mars2grib::rules {
 
 template <typename Derived>
 struct DerivedRule : DynRule {
-    bool apply(const dm::FullMarsRecord& rec, SectionsConf& conf) const override {
-        return static_cast<const Derived&>(*this)(rec, conf);
+    bool apply(const dm::FullMarsRecord& rec, const dm::MiscRecord& misc, LegacySectionsConf& conf,
+               Grib2Layout& g2l) const override {
+        return static_cast<const Derived&>(*this)(rec, misc, conf, g2l);
     }
 
     void print(util::PrintStream& ps) const override { util::print(ps, static_cast<const Derived&>(*this)); }
@@ -74,9 +76,10 @@ struct Rule : DerivedRule<Rule<Matcher>> {
     Setter setter;
 
     // Match and set
-    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
+    bool operator()(const dm::FullMarsRecord& rec, const dm::MiscRecord& misc, LegacySectionsConf& conf,
+                    Grib2Layout& g2l) const {
         if (matcher(rec)) {
-            setter(conf);
+            setter(rec, misc, conf, g2l);
             return true;
         }
         return false;
@@ -92,7 +95,9 @@ auto rule(Matcher_&& matcher, Setter&& setter) {
 // Rule maker with a NoOp (to just match)
 template <typename Matcher_>
 auto rule(Matcher_&& matcher) {
-    return Rule<std::decay_t<Matcher_>>{std::forward<Matcher_>(matcher), Setter([](SectionsConf&) {})};
+    return Rule<std::decay_t<Matcher_>>{
+        std::forward<Matcher_>(matcher),
+        Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf&, Grib2Layout& g2l) {})};
 }
 
 // Rule with a matcher and mustiple setters (which get combined with `setAll`)
@@ -113,7 +118,7 @@ struct Print<mars2grib::rules::Rule<Matcher>> {
         {
             IndentGuard g(ps);
             ps << r.matcher;
-            ps.softBreak(); 
+            ps.softBreak();
         }
         ps << ")";
     }
@@ -130,7 +135,7 @@ struct ExclusiveRuleList : DerivedRule<ExclusiveRuleList> {
     std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const;
+    bool operator()(const dm::FullMarsRecord& rec, const dm::MiscRecord&, LegacySectionsConf& conf, Grib2Layout& g2l) const;
 };
 
 
@@ -174,7 +179,7 @@ struct ChainedRuleList : DerivedRule<ChainedRuleList> {
     std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
-    bool operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const;
+    bool operator()(const dm::FullMarsRecord& rec, const dm::MiscRecord&, LegacySectionsConf& conf, Grib2Layout& g2l) const;
 };
 
 

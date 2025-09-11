@@ -14,7 +14,6 @@
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/types/LevType.h"
 #include "multio/datamod/types/Param.h"
-#include "multio/datamod/types/Repres.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/datamod/types/TimeDuration.h"
 
@@ -268,21 +267,6 @@ constexpr auto TRUNCATION =
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.truncation; });
 
-
-// TODO pgeier this key has been modified and is used internally (with the encoder rules...) should not be handled as
-// official mars key
-constexpr auto REPRES
-    = EntryDef<Repres>{"repres"}
-          .tagDefaulted()
-          .withAccessor([](auto&& v) { return &v.repres; })
-          .withDescription(
-              "DEPRECATED - internal key that got expanded to support HEALpix and differs from usual values "
-              "`repres` describes the type of representation (e.g. gaussian grid, longitude/latitude, spherical "
-              "harmonics) "
-              "without defining resolution. It can be derived from `grid` and `truncation`. If passed its value is "
-              "compared "
-              "against the derived value.")
-;
 
 // clang-format on
 

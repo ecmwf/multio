@@ -279,7 +279,7 @@ struct BaseEntryDef {
         // Only optional tagged keys can be missing
         if constexpr (tag != EntryTag::Optional) {
             if (!v.isSet()) {
-                throw DataModellingException(std::string("Unset required key: ") + this->keyInfo(), Here());
+                throw DataModellingException(std::string("Required key is unset: ") + this->keyInfo(), Here());
             }
         }
 

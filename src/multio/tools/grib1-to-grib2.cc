@@ -79,14 +79,15 @@ namespace extract {
 
 using GridTypeFunction = std::function<dm::Geometry(metkit::codes::CodesHandle&, dm::FullMarsRecord&, dm::MiscRecord&)>;
 
-dm::Geometry handleReducedGG(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    mars.repres.set(dm::Repres::GG);
-    return dm::readRecord<dm::GeoGGRecord>(h);
+dm::Geometry handleReducedGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+    dm::GeoReducedGGRecord geoGG;
+    mars.grid.set(h.getString("gridName"));
+    dm::setKeysFromAtlas(geoGG, mars.grid.get());
+    return geoGG;
 }
 
-dm::Geometry handleReducedGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    dm::GeoGGRecord geoGG;
-    mars.repres.set(dm::Repres::GG);
+dm::Geometry handleRegularGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+    dm::GeoRegularGGRecord geoGG;
     mars.grid.set(h.getString("gridName"));
     dm::setKeysFromAtlas(geoGG, mars.grid.get());
     return geoGG;
@@ -94,14 +95,12 @@ dm::Geometry handleReducedGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRec
 
 dm::Geometry handleSH(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     // TODO pgeier implement with details
-    mars.repres.set(dm::Repres::SH);
     return dm::readRecord<dm::GeoSHRecord>(h);
 }
 
 dm::Geometry handleLL(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    mars.repres.set(dm::Repres::LL);
     mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
-    dm::GeoLLRecord res;
+    dm::GeoRegularLLRecord res;
     res.numberOfPointsAlongAParallel.set(h.getLong("Ni"));
     res.numberOfPointsAlongAMeridian.set(h.getLong("Nj"));
     res.latitudeOfFirstGridPointInDegrees.set(h.getDouble("latitudeOfFirstGridPointInDegrees"));
@@ -116,8 +115,7 @@ dm::Geometry handleLL(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, d
 }
 
 dm::Geometry handleRegularLLAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    dm::GeoLLRecord geoLL;
-    mars.repres.set(dm::Repres::LL);
+    dm::GeoRegularLLRecord geoLL;
     mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
     dm::setKeysFromAtlas(geoLL, mars.grid.get());
 
@@ -130,8 +128,8 @@ dm::Geometry handleGridType(metkit::codes::CodesHandle& h, const std::string& gr
     // TODO(pgeier) add HealPpx
     const static std::unordered_map<std::string, GridTypeFunction> gridMap{
         {"reduced_gg", &handleReducedGGAtlas},
+        {"regular_gg", &handleRegularGGAtlas},
         {"regular_ll", &handleRegularLLAtlas},
-        // {"regular_ll", &handleLL}, // Works as well
         {"sh", &handleSH},
     };
 

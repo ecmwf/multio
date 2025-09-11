@@ -7,9 +7,9 @@ namespace aifs {
 
 auto mkAifsSingleBaseMd() {
     return message::Metadata{
-        {"class", "ai"},  {"model", "aifs-single"}, {"expver", "0001"}, {"type", "fc"},   {"stream", "oper"},
-        {"repres", "gg"}, {"packing", "ccsds"},     {"levelist", 700},  {"grid", "N320"}, {"step", 6},
-        {"time", 0},      {"date", 20230901},       {"levtype", "pl"},  {"param", 133}};
+        {"class", "ai"},      {"model", "aifs-single"}, {"expver", "0001"}, {"type", "fc"}, {"stream", "oper"},
+        {"packing", "ccsds"}, {"levelist", 700},        {"grid", "N320"},   {"step", 6},    {"time", 0},
+        {"date", 20230901},   {"levtype", "pl"},        {"param", 133}};
 }
 
 

@@ -54,45 +54,67 @@ struct SetKeysFromAtlas<ScopedRecord<RecordType>> {
     }
 };
 
+
+template <typename GGRec,
+          std::enable_if_t<std::is_same_v<GGRec, GeoReducedGGRecord> || std::is_same_v<GGRec, GeoRegularGGRecord>, bool>
+          = true>
+void setGGKeysFromAtlas(GGRec& geoGG, const std::string& gridName) {
+    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
+    geoGG.numberOfParallelsBetweenAPoleAndTheEquator.set(gaussianGrid.N());
+
+    geoGG.numberOfPointsAlongAMeridian.set(gaussianGrid.ny());
+
+    {
+        auto it = gaussianGrid.lonlat().begin();
+
+        geoGG.latitudeOfFirstGridPointInDegrees.set((*it)[1]);
+        geoGG.longitudeOfFirstGridPointInDegrees.set((*it)[0]);
+
+        it += gaussianGrid.size() - 1;
+        geoGG.latitudeOfLastGridPointInDegrees.set((*it)[1]);
+
+        const auto equator = gaussianGrid.N();
+        const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
+        geoGG.longitudeOfLastGridPointInDegrees.set(maxLongitude);
+    }
+
+    if constexpr (std::is_same_v<GGRec, GeoRegularGGRecord>) {
+        geoGG.numberOfPointsAlongAParallel.set(gaussianGrid.nx(0));
+        geoGG.iDirectionIncrementInDegrees.set(360.0 / gaussianGrid.nx(0));
+    }
+
+    if constexpr (std::is_same_v<GGRec, GeoReducedGGRecord>) {
+        auto tmp = gaussianGrid.nx();
+        std::vector<long> pl(tmp.size(), 0);
+        for (int i = 0; i < tmp.size(); ++i) {
+            pl[i] = long(tmp[i]);
+        }
+        geoGG.pl.set(std::move(pl));
+    }
+
+    // Explicitly validate after manual setting
+    applyRecordDefaults(geoGG);
+    validateRecord(geoGG);
+}
+
 template <>
-struct SetKeysFromAtlas<GeoGGRecord> {
-    void operator()(GeoGGRecord& geoGG, const std::string& gridName) const {
-        const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
-        geoGG.numberOfParallelsBetweenAPoleAndTheEquator.set(gaussianGrid.N());
+struct SetKeysFromAtlas<GeoReducedGGRecord> {
+    void operator()(GeoReducedGGRecord& geoGG, const std::string& gridName) const {
+        return setGGKeysFromAtlas(geoGG, gridName);
+    }
+};
 
-        {
-            auto it = gaussianGrid.lonlat().begin();
-
-            geoGG.latitudeOfFirstGridPointInDegrees.set((*it)[1]);
-            geoGG.longitudeOfFirstGridPointInDegrees.set((*it)[0]);
-
-            it += gaussianGrid.size() - 1;
-            geoGG.latitudeOfLastGridPointInDegrees.set((*it)[1]);
-
-            const auto equator = gaussianGrid.N();
-            const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-            geoGG.longitudeOfLastGridPointInDegrees.set(maxLongitude);
-        }
-
-        {
-            auto tmp = gaussianGrid.nx();
-            std::vector<long> pl(tmp.size(), 0);
-            for (int i = 0; i < tmp.size(); ++i) {
-                pl[i] = long(tmp[i]);
-            }
-            geoGG.pl.set(std::move(pl));
-        }
-
-        // Explicitly validate after manual setting
-        applyRecordDefaults(geoGG);
-        validateRecord(geoGG);
+template <>
+struct SetKeysFromAtlas<GeoRegularGGRecord> {
+    void operator()(GeoRegularGGRecord& geoGG, const std::string& gridName) const {
+        return setGGKeysFromAtlas(geoGG, gridName);
     }
 };
 
 
 template <>
-struct SetKeysFromAtlas<GeoLLRecord> {
-    void operator()(GeoLLRecord& geoLL, const std::string& gridName) const {
+struct SetKeysFromAtlas<GeoRegularLLRecord> {
+    void operator()(GeoRegularLLRecord& geoLL, const std::string& gridName) const {
         const auto regularLLGrid = createGrid<atlas::RegularLonLatGrid>(gridName);
         geoLL.numberOfPointsAlongAParallel.set(regularLLGrid.nx());
         geoLL.numberOfPointsAlongAMeridian.set(regularLLGrid.ny());

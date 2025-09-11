@@ -101,10 +101,11 @@ struct AdditionalValues {
 
 enum class GeometryType : std::size_t
 {
-    GG,       // gg
-    LL,       // ll
-    SH,       // sh
-    HEALPix,  // HEALPix
+    RegularGG,  // regular_gg
+    ReducedGG,  // reduced_gg
+    RegularLL,  // regular_ll
+    SH,         // sh
+    HEALPix,    // HEALPix
 };
 
 struct GeometryValues {
@@ -115,10 +116,11 @@ struct GeometryValues {
     /// Clears all values if the same type is set twice.
     ///
     /// \param type The geometry type identifier. Valid values are:
-    ///  - `"gg"`       : Gaussian grid
-    ///  - `"sh"`       : Spherical harmonics representation
-    ///  - `"HEALPix"`  : HEALPix
-    ///  - `"ll"`       : Latitude-longitude grid
+    ///  - `"reduced_gg"`
+    ///  - `"regular_gg"`
+    ///  - `"sh"`
+    ///  - `"HEALPix"`
+    ///  - `"regular_ll"`
     ///
     /// \throws Mars2GribException if `type` is not one of the valid values.
     void setGeometryType(const std::string& key);

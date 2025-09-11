@@ -9,16 +9,18 @@
  */
 
 #include "Rule.h"
+#include "multio/mars2grib/Grib2Layout.h"
 #include "multio/util/Print.h"
 
 namespace multio::mars2grib::rules {
 
 
 // Match and set
-bool ExclusiveRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
+bool ExclusiveRuleList::operator()(const dm::FullMarsRecord& rec, const dm::MiscRecord& misc, LegacySectionsConf& conf,
+                                   Grib2Layout& g2l) const {
     DynRule* appliedRule = nullptr;
     for (const auto& rule : rules) {
-        if (rule->apply(rec, conf)) {
+        if (rule->apply(rec, misc, conf, g2l)) {
             if (appliedRule != nullptr) {
                 std::ostringstream oss;
                 util::PrintStream ps(oss);
@@ -27,17 +29,17 @@ bool ExclusiveRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& 
                 ;
                 {
                     util::IndentGuard g(ps);
-                    ps <<  *appliedRule << std::endl;
+                    ps << *appliedRule << std::endl;
                 }
                 ps << " second match: " << std::endl;
                 {
                     util::IndentGuard g(ps);
-                    ps <<  *rule.get() << std::endl;
+                    ps << *rule.get() << std::endl;
                 }
                 ps << " Keys: " << std::endl;
                 {
                     util::IndentGuard g(ps);
-                    ps <<  rec << std::endl;
+                    ps << rec << std::endl;
                 }
                 throw Mars2GribException(oss.str(), Here());
             }
@@ -59,7 +61,7 @@ namespace multio::util {
 void Print<mars2grib::rules::ExclusiveRuleList>::print(PrintStream& ps, const mars2grib::rules::ExclusiveRuleList& r) {
     constexpr int MAX_RULES = 3;
     ps << "exclusiveRuleList(";
-    ps.softBreak(); 
+    ps.softBreak();
     bool first = true;
     int i = 0;
     for (const auto& ri : r.rules) {
@@ -74,12 +76,12 @@ void Print<mars2grib::rules::ExclusiveRuleList>::print(PrintStream& ps, const ma
             {
                 IndentGuard g(ps);
                 ps << *ri.get();
-                ps.softBreak(); 
+                ps.softBreak();
             }
         }
         else if (i == MAX_RULES) {
-            ps << "  ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ...";
-            ps.softBreak(); 
+            ps << "  ... " << (((int)r.rules.size()) - ((int)(MAX_RULES * 2))) << " more rules ...";
+            ps.softBreak();
         }
         ++i;
     }
@@ -91,10 +93,11 @@ namespace multio::mars2grib::rules {
 
 
 // Match and set
-bool ChainedRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& conf) const {
+bool ChainedRuleList::operator()(const dm::FullMarsRecord& rec, const dm::MiscRecord& misc, LegacySectionsConf& conf,
+                                 Grib2Layout& g2l) const {
     bool first = true;
     for (const auto& rule : rules) {
-        bool matched = rule->apply(rec, conf);
+        bool matched = rule->apply(rec, misc, conf, g2l);
         if (first) {
             // First failed - nothing has been applied yet
             if (!matched) {
@@ -115,7 +118,8 @@ bool ChainedRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& co
                     ps << " #" << i << " failed: " << std::endl;
                     {
                         util::IndentGuard g(ps);
-                        ps << *r.get() << std::endl;;
+                        ps << *r.get() << std::endl;
+                        ;
                     }
                     break;
                 }
@@ -123,7 +127,8 @@ bool ChainedRuleList::operator()(const dm::FullMarsRecord& rec, SectionsConf& co
                     ps << " #" << i << " matched: " << std::endl;
                     {
                         util::IndentGuard g(ps);
-                        ps <<  *r.get() << std::endl;;
+                        ps << *r.get() << std::endl;
+                        ;
                     }
                 }
                 ++i;
@@ -150,7 +155,7 @@ namespace multio::util {
 void Print<mars2grib::rules::ChainedRuleList>::print(PrintStream& ps, const mars2grib::rules::ChainedRuleList& r) {
     constexpr int MAX_RULES = 3;
     ps << "chainedRuleList(";
-    ps.softBreak(); 
+    ps.softBreak();
     bool first = true;
     int i = 0;
     for (const auto& ri : r.rules) {
@@ -165,12 +170,12 @@ void Print<mars2grib::rules::ChainedRuleList>::print(PrintStream& ps, const mars
             {
                 IndentGuard g(ps);
                 ps << *ri.get();
-                ps.softBreak(); 
+                ps.softBreak();
             }
         }
         else if (i == MAX_RULES) {
-            ps << "   ... " << (((int)r.rules.size()) - ((int) (MAX_RULES * 2))) << " more rules ...";
-            ps.softBreak(); 
+            ps << "   ... " << (((int)r.rules.size()) - ((int)(MAX_RULES * 2))) << " more rules ...";
+            ps.softBreak();
         }
         ++i;
     }

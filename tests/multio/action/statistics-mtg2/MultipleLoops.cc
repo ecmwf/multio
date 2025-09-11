@@ -58,7 +58,7 @@ CASE("Monthly average of daily high temperature") {
     EXPECT_EQUAL(env.debugSink().size(), 2);
 
     auto md = env.debugSink().front().metadata();
-    EXPECT_EQUAL(201, md.get<std::int64_t>("param"));
+    EXPECT_EQUAL(237167, md.get<std::int64_t>("param"));
     EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));
     EXPECT_EQUAL("moav", md.get<std::string>("stattype"));
 }

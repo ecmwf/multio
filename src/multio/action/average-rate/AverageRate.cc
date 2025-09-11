@@ -24,7 +24,7 @@ namespace dm = multio::datamod;
 namespace {
 Param2ParamMap getMappings() {
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/config/average_rate_param_mappings.yml"
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/average_rate_param_mappings.yaml"
     }}};
 
     Param2ParamMap paramMappings;

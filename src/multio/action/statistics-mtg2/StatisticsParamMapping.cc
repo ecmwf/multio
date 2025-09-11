@@ -18,7 +18,7 @@ StatisticsParamMapping::StatisticsParamMapping(ParamTypeOfStatisticalProcessingT
 
 StatisticsParamMapping StatisticsParamMapping::makeStatisticsParamMapping() {
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/config/statistics_param_mappings.yml"
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/statistics_param_mappings.yaml"
     }}};
 
     ParamTypeOfStatisticalProcessingToParamMap paramMappings;

@@ -155,6 +155,7 @@ ecbuild_add_option( FEATURE MULTIO_CLIENT_MEMORY_PROFILE
 
 ### export package info
 set( MULTIO_CONFIG_DIR     share/multio/config )
+set (MULTIO_MAPPINGS_DIR   share/multio/mappings )
 set( MULTIOM_CONFIG_DIR    share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )

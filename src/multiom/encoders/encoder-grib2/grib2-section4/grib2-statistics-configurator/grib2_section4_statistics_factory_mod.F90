@@ -789,8 +789,7 @@ PP_ERROR_HANDLER
     CASE (ERRFLAG_KEY_NOT_PRESENT)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key is not present' )
     CASE (ERRFLAG_KEY_IS_NOT_INTEGER)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key is not integer' )
-
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown statistics configurator: "'//TRIM(ADJUSTL(CTIME_CONFIGURATOR_TYPE))//'"' )
     CASE (ERRFLAG_UNABLE_TO_READ_KEY)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error calling check key' )
     CASE (ERRFLAG_READ_ERROR)

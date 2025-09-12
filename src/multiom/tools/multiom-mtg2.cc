@@ -601,6 +601,20 @@ void handleMissingValue(codes_handle* h, MultiOMDict& parDict) {
     parDict.set("valueOfMissingValues", strMissingValue);
 }
 
+void handleStepRange(codes_handle* h, MultiOMDict& marsDict) {
+    // For some reason mars returns an empty string for step
+    if (hasKey(h, "endStep")) {
+        long endStep = getLong(h, "endStep");
+        marsDict.set("step", std::to_string(endStep));
+
+        long startStep = getLong(h, "startStep");
+        long stepRange = hasKey(h, "stepRange") ? getLong(h, "stepRange") : (endStep - startStep);
+        if (stepRange > 0) {
+            marsDict.set("timespan", std::to_string(stepRange));
+        }
+    }
+}
+
 void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOMDict& parDict) {
     getAndSet(marsKeys, marsDict, "stream");
     getAndSet(marsKeys, marsDict, "type");
@@ -663,18 +677,8 @@ void grib1ToGrib2(Map& marsKeys, codes_handle* h, MultiOMDict& marsDict, MultiOM
         marsDict.set("time", std::to_string(hh * 10000 + mm * 100 + ss));
     }
 
-    // For some reason mars returns an empty string for step
-    if (hasKey(h, "endStep")) {
-        long endStep = getLong(h, "endStep");
-        long startStep = getLong(h, "startStep");
-        marsDict.set("step", std::to_string(endStep));
+    handleStepRange(h, marsDict);
 
-        long stepRange = endStep - startStep;
-        if (stepRange > 0) {
-            // TODO to be renamed to timespan
-            marsDict.set("timespan", std::to_string(stepRange));
-        }
-    }
     // ... key truncation is not given officially ??
     getAndSet(h, marsDict, "J", "truncation");
 

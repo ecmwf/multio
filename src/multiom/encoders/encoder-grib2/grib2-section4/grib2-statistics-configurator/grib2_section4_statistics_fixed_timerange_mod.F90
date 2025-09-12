@@ -577,6 +577,8 @@ IMPLICIT NONE
   ! Allocate the time ranges
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfTimeRange', THIS%NUMBER_OF_TIME_RANGES_ )
 
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'hoursAfterDataCutoff' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'minutesAfterDataCutoff' )
 
   !> Preset everything that can be preset
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfStatisticalProcessing', THIS%TYPE_OF_STATISTICAL_PROCESS_ )

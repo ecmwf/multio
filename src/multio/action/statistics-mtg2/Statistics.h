@@ -20,7 +20,7 @@
 #include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/action/statistics-mtg2/StatisticsParamMapping.h"
+#include "multio/action/statistics-mtg2/mappings/StatisticsParamMapping.h"
 
 namespace eckit {
 class Configuration;

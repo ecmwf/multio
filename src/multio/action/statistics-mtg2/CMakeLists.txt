@@ -34,8 +34,8 @@ list( APPEND _statistics_sources
     operations/DeAccumulate.h
     operations/FixedWindowFluxAverage.h
     operations/StdDev.h
-    StatisticsParamMapping.cc
-    StatisticsParamMapping.h
+    mappings/StatisticsParamMapping.cc
+    mappings/StatisticsParamMapping.h
     TemporalStatistics.cc
     TemporalStatistics.h
     Statistics.cc

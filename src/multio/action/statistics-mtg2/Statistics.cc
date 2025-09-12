@@ -41,6 +41,7 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
+    operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
 std::string Statistics::generateRestartNameFromFlush(const message::Message& msg) const {
@@ -503,16 +504,28 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
             else {
-                auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
-                                                        operationNameToStatTypeOperation(opname)};
-
-                if (currentLoop == 2) {
-                    stattype.set(dm::StatType{currentStatType});
-                    dm::dumpEntry(dm::STATTYPE, stattype, md);
+                if (!opt_.disableSquashing() && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get(), opname)) {
+                    if (currentLoop > 2) {
+                        throw eckit::UserError(
+                            "Squashing is not implemented for fields with stattype, consider setting option 'disable-squashing'.",
+                            Here());
+                    }
+                    // Squash means we don't map (already done in previous loop), but extend the timespan
+                    const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                    dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
                 }
                 else {
-                    stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
-                    dm::dumpEntry(dm::STATTYPE, stattype, md);
+                    auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
+                                                            operationNameToStatTypeOperation(opname)};
+
+                    if (currentLoop == 2) {
+                        stattype.set(dm::StatType{currentStatType});
+                        dm::dumpEntry(dm::STATTYPE, stattype, md);
+                    }
+                    else {
+                        stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
+                        dm::dumpEntry(dm::STATTYPE, stattype, md);
+                    }
                 }
             }
         }

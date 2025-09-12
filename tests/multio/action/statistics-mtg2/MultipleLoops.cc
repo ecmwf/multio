@@ -91,7 +91,8 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
                 "operations": [ "average" ],
                 "options": {
                     "initial-condition-present": true,
-                    "disable-strict-mapping": true
+                    "disable-strict-mapping": true,
+                    "disable-squashing": true
                 }
             },
             {

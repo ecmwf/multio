@@ -35,6 +35,7 @@ private:
     std::optional<long> valueCountThreshold_;
 
     bool disableStrictMapping_;
+    bool disableSquashing_;
     std::vector<std::pair<std::string, std::string>> setMetadata_;
 
 private:
@@ -56,6 +57,7 @@ private:
                                            const eckit::LocalConfiguration& cfg);
     void parseValueCountThreshold(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseDisableStrictMapping(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseDisableSquashing(const eckit::LocalConfiguration& cfg);
     void parseSetMetadata(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
 
     void dumpOptions();
@@ -89,6 +91,7 @@ public:
     std::optional<long> valueCountThreshold() const;
 
     bool disableStrictMapping() const;
+    bool disableSquashing() const;
     const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
 };
 

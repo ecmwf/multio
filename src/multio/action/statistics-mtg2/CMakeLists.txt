@@ -36,6 +36,8 @@ list( APPEND _statistics_sources
     operations/StdDev.h
     mappings/StatisticsParamMapping.cc
     mappings/StatisticsParamMapping.h
+    mappings/StatisticsOperationMapping.cc
+    mappings/StatisticsOperationMapping.h
     TemporalStatistics.cc
     TemporalStatistics.h
     Statistics.cc

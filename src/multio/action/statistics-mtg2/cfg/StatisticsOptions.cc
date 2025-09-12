@@ -48,6 +48,7 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
         parseSolverResetAccumulatedFields(compConf, options);
         parseValueCountThreshold(compConf, options);
         parseDisableStrictMapping(compConf, options);
+        parseDisableSquashing(options);
         parseSetMetadata(compConf, options);
     }
 
@@ -243,6 +244,18 @@ void StatisticsOptions::parseDisableStrictMapping(const config::ComponentConfigu
     }
 }
 
+void StatisticsOptions::parseDisableSquashing(const eckit::LocalConfiguration& cfg) {
+    std::optional<bool> r;
+    r = util::parseBool(cfg, "disable-squashing", false);
+    if (r) {
+        disableSquashing_ = *r;
+    }
+    else {
+        usage();
+        throw eckit::SeriousBug{"Unable to read disable-squashing", Here()};
+    }
+}
+
 void StatisticsOptions::parseSetMetadata(const config::ComponentConfiguration& compConf,
                                          const eckit::LocalConfiguration& cfg) {
     if (!cfg.has("set-metadata")) {
@@ -326,6 +339,10 @@ std::optional<long> StatisticsOptions::valueCountThreshold() const {
 
 bool StatisticsOptions::disableStrictMapping() const {
     return disableStrictMapping_;
+}
+
+bool StatisticsOptions::disableSquashing() const {
+    return disableSquashing_;
 }
 
 const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {

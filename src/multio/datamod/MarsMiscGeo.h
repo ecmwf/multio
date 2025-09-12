@@ -91,7 +91,6 @@ struct MarsTime {
     EntryType_t<decltype(DATE)> date;
     EntryType_t<decltype(TIME)> time;
     EntryType_t<decltype(STEP)> step;
-    EntryType_t<decltype(TIMESPAN)> timespan;
 
     // Analysis
     EntryType_t<decltype(ANOFFSET)> anoffset;
@@ -106,7 +105,7 @@ struct MarsTime {
 
     static constexpr std::string_view record_name_ = "mars-time";
     static constexpr auto record_entries_
-        = std::make_tuple(DATE, TIME, STEP, TIMESPAN, ANOFFSET, HDATE, REFDATE, FCMONTH, FCPERIOD);
+        = std::make_tuple(DATE, TIME, STEP, ANOFFSET, HDATE, REFDATE, FCMONTH, FCPERIOD);
 };
 
 
@@ -123,11 +122,12 @@ struct MarsFieldId {
     EntryType_t<decltype(LEVTYPE)> levtype;
 
     // Additional statistical properties
+    EntryType_t<decltype(TIMESPAN)> timespan;
     EntryType_t<decltype(STATTYPE)> stattype;
 
 
     static constexpr std::string_view record_name_ = "mars-field-id";
-    static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE, STATTYPE);
+    static constexpr auto record_entries_ = std::make_tuple(PARAM, LEVTYPE, TIMESPAN, STATTYPE);
 };
 
 
@@ -206,7 +206,7 @@ struct multio::util::Print<multio::datamod::FullMarsRecord> : multio::datamod::P
 
 namespace multio::datamod {
 
-struct FullMarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncodingDetails> {
+struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, MarsTime> {
     static constexpr std::string_view record_name_ = "mars";
 
     static void applyDefaults(FullMarsRecord& mars) {
@@ -259,7 +259,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsTime, MarsField, MarsEncoding
 };
 
 //-----------------------------------------------------------------------------
-
 
 
 /// \defgroup datamod_models_misc Misc Keys

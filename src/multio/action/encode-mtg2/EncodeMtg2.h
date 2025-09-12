@@ -30,7 +30,7 @@ struct EncodeMtg2Options {
 
     static constexpr std::string_view record_name_ = "encode-mtg2";
     static constexpr auto record_entries_
-        = std::make_tuple(dm::entryDef("cached", &EncodeMtg2Options::cached).withDefault(false),
+        = std::make_tuple(dm::entryDef("cached", &EncodeMtg2Options::cached).withDefault(true),
                           dm::entryDef("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas).withDefault(false));
 };
 

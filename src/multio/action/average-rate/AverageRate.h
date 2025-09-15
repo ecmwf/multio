@@ -14,13 +14,52 @@
 
 #pragma once
 
+#include "eckit/exception/Exceptions.h"
+
 #include "multio/action/ChainedAction.h"
+
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/GribKeys.h"
 
 namespace multio::action::average_rate {
 
 namespace {
 using Param2ParamMap = std::unordered_map<std::int64_t, std::int64_t>;
 }
+
+namespace dm = multio::datamod;
+
+//---------------------------- Input Metadata Keys ----------------------------
+
+struct AverageRateKeys {
+    dm::EntryType_t<decltype(dm::PARAM)> param;
+    dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
+    dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
+    dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
+
+    static constexpr std::string_view record_name_ = "average-rate";
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::PARAM, dm::TIMESPAN.tagRequired(), dm::STATTYPE, dm::MissingValue);
+
+    static void validate(const AverageRateKeys& k) {
+        if (k.timespan.get().toSeconds() == 0) {
+            throw eckit::SeriousBug(
+                "The average-rate action cannot handle messages with timespan set to zero!",
+                Here()
+            );
+        }
+
+        if (k.stattype.isSet()) {
+            throw eckit::SeriousBug(
+                "The average-rate action cannot handle messages with stattype set!",
+                Here()
+            );
+        }
+    }
+};
+
+//-----------------------------------------------------------------------------
 
 class AverageRate : public ChainedAction {
 public:

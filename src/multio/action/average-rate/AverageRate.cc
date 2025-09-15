@@ -14,8 +14,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/Glossary.h"
-#include "multio/datamod/MarsMiscGeo.h"
 
 namespace multio::action::average_rate {
 
@@ -47,30 +45,17 @@ void AverageRate::executeImpl(message::Message msg) {
         return;
     }
 
-    const auto md = msg.metadata();
+    msg.acquire();
 
-    // Throw exception on non-statistics messages
-    if (!dm::parseEntry(dm::TIMESPAN, md).isSet()) {
-        std::ostringstream os;
-        os << "Action average-rate cannot process non-statistics messages : " << msg;
-        throw eckit::UserError(os.str(), Here());
-    }
-
-    // Throw exception on multi-loop statistics messages
-    if (dm::parseEntry(dm::STATTYPE, md).isSet()) {
-        std::ostringstream os;
-        os << "Action average-rate cannot process multi-loop statistics messages : " << msg;
-        throw eckit::UserError(os.str(), Here());
-    }
+    auto md = dm::readRecord<AverageRateKeys>(msg.metadata());
 
     // Find and apply the mapping for this param, throw exception if not available
-    const auto param = md.get<std::int64_t>(dm::legacy::Param);
-    if (auto search = paramMappings_.find(param); search != paramMappings_.end()) {
-        msg.acquire();
-        msg.modifyMetadata().set(dm::legacy::Param, search->second);
+    if (auto search = paramMappings_.find(md.param.get()); search != paramMappings_.end()) {
+        md.param.set(search->second);
+        dm::dumpRecord(md, msg.modifyMetadata());
     } else {
         std::ostringstream os;
-        os << "Action average-rate cannot find mapping from param " << param << " : " << msg;
+        os << "Action average-rate cannot find mapping from param " << md.param.get() << " : " << msg;
         throw eckit::UserError(os.str(), Here());
     }
 
@@ -85,20 +70,16 @@ void AverageRate::executeImpl(message::Message msg) {
 
 template <typename Precision>
 void AverageRate::compute(message::Message& msg) const {
+    auto md = dm::readRecord<AverageRateKeys>(msg.metadata());
+
     const size_t size = msg.payload().size() / sizeof(Precision);
     auto* data = static_cast<Precision*>(msg.payload().modifyData());
-    const auto& md = msg.metadata();
 
-    const auto timespan = dm::parseEntry(dm::TIMESPAN, md);
-    ASSERT(timespan.isSet());
-    const auto timespanInSeconds = timespan.get().toSeconds();
-    ASSERT(timespanInSeconds > 0);
-    const double c = 1.0 / timespanInSeconds;
+    const double c = 1.0 / md.timespan.get().toSeconds();
 
     // Compute with/without missing value
-    const auto missingValue = dm::parseEntry(dm::MissingValue, md);
-    if (missingValue.isSet()) {
-        const auto m = static_cast<Precision>(missingValue.get());
+    if (md.missingValue.isSet()) {
+        const auto m = static_cast<Precision>(md.missingValue.get());
         std::transform(data, data + size, data,
                        [c, m](Precision v) { return static_cast<Precision>(v == m ? m : v * c); });
     } else {

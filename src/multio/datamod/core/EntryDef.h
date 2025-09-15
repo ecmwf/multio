@@ -371,8 +371,19 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
 
     // Compile time modifiers
 
+    // Make the key-value pair required - meaning it cannot be missing after alter & validation
+    // Required is the default and this method should only be used to cancel out tagOptional(), for example, in action
+    // specific metadata records
+    constexpr auto tagRequired() const {
+        static_assert(tag_ != EntryTag::Required, "Definition is already required");
+        static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made required");
+        return EntryDef<ValueType_, Mapper_, EntryTag::Required, PointerAccessor, DefaultValueFunctor>{
+            Base::key_, accessor_, defaultFunctor_, Base::description_};
+    }
+
     // Make the key-value pair optional - meaning it can be missing after alter & validation
     constexpr auto tagOptional() const {
+        static_assert(tag_ != EntryTag::Optional, "Definition is already optional");
         static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made optional");
         return EntryDef<ValueType_, Mapper_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
             Base::key_, accessor_, defaultFunctor_, Base::description_};

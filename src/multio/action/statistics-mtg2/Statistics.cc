@@ -504,9 +504,9 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
             else {
-                if (!opt_.disableSquashing() && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get(), opname)) {
+                if (!opt_.disableSquashing() && (*it)->isComposable() && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get(), opname)) {
                     if (currentLoop > 2) {
-                        throw eckit::UserError(
+                        throw eckit::NotImplemented(
                             "Squashing is not implemented for fields with stattype, consider setting option 'disable-squashing'.",
                             Here());
                     }

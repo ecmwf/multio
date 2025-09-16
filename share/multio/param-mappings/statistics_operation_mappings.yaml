@@ -3069,3 +3069,10 @@
 - param: 267519
   typeOfStatisticalProcessing: 6
 
+# Manually added mappings
+- param: 49
+  typeOfStatisticalProcessing: 2
+- param: 201
+  typeOfStatisticalProcessing: 2
+- param: 202
+  typeOfStatisticalProcessing: 3

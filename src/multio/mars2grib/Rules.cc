@@ -549,8 +549,8 @@ auto paramPLRules() {
         return exclusiveRuleList(                                                                 //
             rule(matchParams(60, 75, 76, paramRange(129, 135), 203, 246, 247, 248, 157, 260290),  //
                  pointInTime()),                                                                  //
-            rule(matchParams(235100, paramRange(235129, 235133), 235135, 235157, 235246),         //
-                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))            //
+            rule(matchParams(235100, paramRange(235129, 235133), 235135, 235157, 235203, 235246),  //
+                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))             //
         );
     });
 }
@@ -559,7 +559,9 @@ auto paramPLRulesSH() {
     return plLevelRules([]() {
         return exclusiveRuleList(                                              //
             rule(matchParams(1, 2, paramRange(129, 135), 138, 152, 155, 157),  //
-                 pointInTime())                                                //
+                 pointInTime()),                                               //
+            rule(matchParams(235129, 235130, 235138, 235152, 235155, 263107),           //
+                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))  //
         );
     });
 }
@@ -574,7 +576,7 @@ auto paramPTRules() {
         rule(matchParams(53, 54, 60, 131, 132, 133, 138, 155, 203),                 //
              pointInTime(),                                                         //
              typeOfLevel(TOL::Theta)),                                              //
-        rule(matchParams(235203),                                                   //
+        rule(matchParams(235100, 235203),                                           //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::Theta)),                                              //
         rule(matchParams(237203),                                                   //
@@ -614,7 +616,10 @@ auto paramPVRulesSH() {
     return exclusiveRuleList(                       //
         rule(matchParams(3, 54, 129),               //
              pointInTime(),                         //
-             typeOfLevel(TOL::PotentialVorticity))  //
+             typeOfLevel(TOL::PotentialVorticity)), //
+        rule(matchParams(235098, 235269),                                           //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
+             typeOfLevel(TOL::PotentialVorticity))                                  //
     );
 }
 

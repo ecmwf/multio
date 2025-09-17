@@ -23,6 +23,8 @@ public:
             const StatisticsOptions& opt) :
         OperationWithData<T>{name, "instant", true, win, IOmanager, opt} {};
 
+    bool supportsSH() const override { return true; }
+
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         buf.copy(values_.data(), values_.size() * sizeof(T));

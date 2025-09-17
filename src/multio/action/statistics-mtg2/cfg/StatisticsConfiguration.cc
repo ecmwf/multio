@@ -81,22 +81,20 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
 };
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
-    // auto gridType = md.find("grid");  // New MTG2 name
-
     // TODO use whole validated keyset...
     if (const auto& grid = dm::parseEntry(dm::GRID, md); grid.isSet()) {
         gridType_ = grid.get();
         return;
     }
 
-    // gridType = md.find("truncation");
-    if (auto truncation = md.find("truncation"); truncation != md.end()) {
-        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics", Here());
+    // Truncation is always present when we are dealing with Spherical Harmonics
+    if (dm::parseEntry(dm::TRUNCATION, md).isSet()) {
+        return;
     }
-    else {
-        throw eckit::SeriousBug{"grid or truncation isn't present metadata not present", Here()};
-    }
-    return;
+
+    std::ostringstream os;
+    os << "Cannot find grid or truncation in metadata : " << md;
+    throw eckit::SeriousBug{os.str(), Here()};
 };
 
 void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {

@@ -23,6 +23,7 @@ public:
         OperationWithData<T>{name, "average", true, win, IOmanager, opt} {};
 
     bool isComposable() const override { return true; }
+    bool supportsSH() const override { return true; }
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;

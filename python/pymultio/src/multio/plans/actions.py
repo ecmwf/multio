@@ -135,6 +135,7 @@ class EncodeMTG(Action):
     type: Literal["encode-mtg2"] = Field("encode-mtg2", init=False)
     
     geo_from_atlas: bool = Field(False)
+    cached: bool = Field(True)
 
 
 class Sink(Action):

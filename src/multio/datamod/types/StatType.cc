@@ -128,22 +128,21 @@ std::string DumpType<StatType>::dump(StatType v) {
 }
 
 StatType ParseType<StatType>::parse(std::string_view val) {
-    auto throwUnknownValue = [&]() {
-        throw DataModellingException(
-            std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val), Here());
-    };
     switch (val.size()) {
         case 4:
             return StatType{ParseType<SingleStatType>::parse(val.substr(0, 4)), {}};
         case 9:
             if (val[4] != '_') {
-                throwUnknownValue();
+                throw DataModellingException(std::string("ParseType<StatType>::parse Unknown value for StatType: ")
+                                                 + std::string(val)
+                                                 + std::string(". Expected a '_' as forth character."),
+                                             Here());
             }
             return StatType{ParseType<SingleStatType>::parse(val.substr(0, 4)),
                             ParseType<SingleStatType>::parse(val.substr(5, 4))};
-        default:
-            throwUnknownValue();
     }
+    throw DataModellingException(
+        std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val), Here());
 }
 
 

@@ -276,83 +276,83 @@ auto paramSFCRules() {
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::NominalTop)),                                         //
         rule(matchParams(235020, 235021, 235031, paramRange(235033, 235038), paramRange(235041, 235043), 235051, 235052,
-                         235055, 235078, 235079, 235134, 235283),                     //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),    //
-             typeOfLevel(TOL::Surface)),                                              //
-        rule(matchParams(260683),                                                     //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Mode),       //
-             typeOfLevel(TOL::Surface)),                                              //
-        rule(matchParams(260682),                                                     //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Severity),   //
-             typeOfLevel(TOL::Surface)),                                              //
-        rule(matchParams(129172),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::HeightAboveGround)),                                    //
-        rule(matchParams(165, 166, 207, 228029, 228131, 228132, 260260),              //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),               //
-        rule(matchParams(167, 168, 174096, 228037, 260242),                           //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                 //
-        rule(matchParams(140245, 140249, 140233),                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::HeightAboveSeaAt10m), fixedLevel(10)),                  //
-        rule(matchParams(3075),                                                       //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::HighCloudLayer)),                                       //
-        rule(matchParams(3074),                                                       //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::MediumCloudLayer)),                                     //
-        rule(matchParams(3073),                                                       //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::LowCloudLayer)),                                        //
-        rule(matchParams(228014),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::IceLayerOnWater)),                                      //
-        rule(matchParams(228013),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::IceTopOnWater)),                                        //
-        rule(matchParams(228010),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::LakeBottom)),                                           //
-        rule(matchParams(151),                                                        //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::MeanSea)),                                              //
-        rule(matchParams(262118),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::DepthBelowSeaLayer)),                                   //
-        rule(matchParams(228231, 228232, 228233, 228234),                             //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::MixedLayerParcel)),                                     //
-        rule(matchParams(228008, 228009),                                             //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::MixingLayer)),                                          //
-        rule(matchParams(228235, 228236, 228237),                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::MostUnstableParcel)),                                   //
-        rule(matchParams(178, 179, 208, 209, 212),                                    //
-             timeRange(TimeRangeType::SinceBeginningOfForecast, TOSP::Accumulation),  //
-             typeOfLevel(TOL::NominalTop)),                                           //
-        rule(matchParams(235039, 235040),                                             //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),    //
-             typeOfLevel(TOL::NominalTop)),                                           //
-        rule(matchParams(228045),                                                     //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::Tropopause)),                                           //
-        rule(all(                                                                     //
+                         235055, 235078, 235079, 235134, 235283),                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
+             typeOfLevel(TOL::Surface)),                                                 //
+        rule(matchParams(260683),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Mode),          //
+             typeOfLevel(TOL::Surface)),                                                 //
+        rule(matchParams(260682),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Severity),      //
+             typeOfLevel(TOL::Surface)),                                                 //
+        rule(matchParams(129172),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::HeightAboveGround)),                                       //
+        rule(matchParams(165, 166, 207, 228029, 228131, 228132, 260260),                 //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                  //
+        rule(matchParams(167, 168, 174096, 228037, 260242),                              //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                    //
+        rule(matchParams(140245, 140249, 140233),                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::HeightAboveSeaAt10m), fixedLevel(10)),                     //
+        rule(matchParams(3075),                                                          //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::HighCloudLayer)),                                          //
+        rule(matchParams(3074),                                                          //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::MediumCloudLayer)),                                        //
+        rule(matchParams(3073),                                                          //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::LowCloudLayer)),                                           //
+        rule(matchParams(228014),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::IceLayerOnWater)),                                         //
+        rule(matchParams(228013),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::IceTopOnWater)),                                           //
+        rule(matchParams(228010),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::LakeBottom)),                                              //
+        rule(matchParams(151),                                                           //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::MeanSea)),                                                 //
+        rule(matchParams(262118),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::DepthBelowSeaLayer)),                                      //
+        rule(matchParams(228231, 228232, 228233, 228234),                                //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::MixedLayerParcel)),                                        //
+        rule(matchParams(228008, 228009),                                                //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::MixingLayer)),                                             //
+        rule(matchParams(228235, 228236, 228237),                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::MostUnstableParcel)),                                      //
+        rule(matchParams(178, 179, 208, 209, 212),                                       //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
+             typeOfLevel(TOL::NominalTop)),                                              //
+        rule(matchParams(235039, 235040),                                                //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
+             typeOfLevel(TOL::NominalTop)),                                              //
+        rule(matchParams(228045),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::Tropopause)),                                              //
+        rule(all(                                                                        //
                  matchParams(228080, 228081, 228082, paramRange(233032, 233035), 235062, 235063, 235064),
-                 matchChemical()),                                                    //
-             timeRange(TimeRangeType::SinceBeginningOfForecast, TOSP::Accumulation),  //
-             chemical(),                                                              //
-             typeOfLevel(TOL::Surface),                                               //
-             tablesConfig("custom"), localTablesVersion(0), tablesVersion(30)),       //
-        rule(matchParams(                                                             //
+                 matchChemical()),                                                       //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
+             chemical(),                                                                 //
+             typeOfLevel(TOL::Surface),                                                  //
+             tablesConfig("custom"), localTablesVersion(0), tablesVersion(30)),          //
+        rule(matchParams(                                                                //
                  8, 9, 20, 44, 45, 47, 50, 57, 58, paramRange(142, 147), 169, 175, 176, 177, 180, 181, 182, 189, 195,
                  196, 197, 205, 210, 211, 213, 228, 239, 240, 3062, 3099, paramRange(162100, 162113),
                  paramRange(222001, 222256), 228021, 228022, 228129, 228130, 228143, 228144, 228216, 228228, 228251,
                  231001, 231002, 231003, 231005, 231010, 231012, 231057, 231058, paramRange(233000, 233031),
                  260259),  //
-             timeRange(TimeRangeType::SinceBeginningOfForecast, TOSP::Accumulation),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),
              typeOfLevel(TOL::Surface)),   //
         rule(matchParams(228051, 228053),  //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Average),
@@ -477,13 +477,13 @@ auto paramHLRules() {
 //-----------------------------------------------------------------------------
 
 auto paramMLRules() {
-    return exclusiveRuleList(                                                         //
-        rule(matchParams(75, 76, 133, 203, 246, 247, 248, 260290),                    //
-             pointInTime(),                                                           //
-             typeOfLevel(TOL::Hybrid)),                                               //
-        rule(matchParams(paramRange(162100, 162113)),                                 //
-             timeRange(TimeRangeType::SinceBeginningOfForecast, TOSP::Accumulation),  //
-             typeOfLevel(TOL::Hybrid))                                                //
+    return exclusiveRuleList(                                                            //
+        rule(matchParams(75, 76, 133, 203, 246, 247, 248, 260290),                       //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::Hybrid)),                                                  //
+        rule(matchParams(paramRange(162100, 162113)),                                    //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
+             typeOfLevel(TOL::Hybrid))                                                   //
     );
 }
 
@@ -600,12 +600,9 @@ auto paramSOLRules() {
         rule(matchParams(262000, 262024),                                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SeaIceLayer)),                                        //
-        rule(matchParams(33, 74, 238, 228038),                                      //
+        rule(matchParams(33, 74, 238, 228038, 228141),                              //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SnowLayer)),                                          //
-        rule(matchParams(228141),                                                   //
-             pointInTime(),                                                         //
-             typeOfLevel(TOL::Snow)),                                               //
         rule(matchParams(260360, 260199, 183),                                      //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SoilLayer)),                                          //
@@ -614,7 +611,7 @@ auto paramSOLRules() {
              typeOfLevel(TOL::SoilLayer)),                                          //
         rule(matchParams(235078),                                                   //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
-             typeOfLevel(TOL::Snow))                                                //
+             typeOfLevel(TOL::SnowLayer))                                           //
     );
 }
 

@@ -17,8 +17,14 @@ std::vector<message::Metadata> aifsSingleParams() {
     std::vector<message::Metadata> res;
 
     // SFC params
-    for (auto param : std::vector<int>{{134, 151, 165, 166, 167, 168, 235, 141, 136, 143, 228}}) {
+    for (auto param : std::vector<int>{{134, 151, 165, 166, 167, 168, 235, 141, 136}}) {
         res.push_back({{"param", param}, {"levtype", "sfc"}});
+    }
+    
+    // SFC params stat
+    for (auto param : std::vector<int>{{143, 228}}) {
+        // TODO(pgeier) don't know if the timespan is right - added to fix test
+        res.push_back({{"param", param}, {"levtype", "sfc"}, {"timespan", "1h"}});
     }
 
     // PL params

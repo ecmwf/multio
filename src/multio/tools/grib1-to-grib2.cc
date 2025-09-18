@@ -247,7 +247,7 @@ void handleMissingValue(util::MioGribHandle& h, dm::MiscRecord& misc) {
     misc.missingValue.set(missingValue);
 }
 
-void handleStepRange(util::MioGribHandle& h, dm::MarsRecord& mars) {
+void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
     // For some reason mars returns an empty string for step
     if (h.hasKey("endStep")) {
         long endStep = h.getLong("endStep");

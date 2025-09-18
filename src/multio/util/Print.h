@@ -140,7 +140,7 @@ public:
     /// Adds a new line in long mode and does nothing in soft mode
     void softBreak() {
         if (repres_ == PrintRepres::Long) {
-            os_ << std::endl;
+            *this << std::endl;
         }
     }
 

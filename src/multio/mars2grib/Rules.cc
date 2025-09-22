@@ -354,9 +354,6 @@ auto paramSFCRules() {
         rule(matchParams(178, 179, 208, 209, 212),                                       //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
              typeOfLevel(TOL::NominalTop)),                                              //
-        rule(matchParams(235039, 235040),                                                //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
-             typeOfLevel(TOL::NominalTop)),                                              //
         rule(matchParams(228045),                                                        //
              pointInTime(),                                                              //
              typeOfLevel(TOL::Tropopause)),                                              //

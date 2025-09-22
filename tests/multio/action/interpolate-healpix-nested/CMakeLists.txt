@@ -34,17 +34,19 @@ foreach (_n
     set(PREFIX multio_tests_action_interpolate_reduced_gg_to_HEALPix_${_n}_nested)
 
     ecbuild_add_test(
-        TARGET        ${PREFIX}_original
-        TEST_REQUIRES ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest ${DATA_PREFIX}_get_data_interpolate_healpix
-        COMMAND       multio-feed
-        ARGS          ${CMAKE_CURRENT_BINARY_DIR}/MARS_reduced_gg.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/reduced_gg_to_HEALPix_${_n}_nested_original.yaml
+        TARGET          ${PREFIX}_original
+        TEST_REQUIRES   ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest ${DATA_PREFIX}_get_data_interpolate_healpix
+        COMMAND         multio-feed
+        ARGS            ${CMAKE_CURRENT_BINARY_DIR}/MARS_reduced_gg.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/reduced_gg_to_HEALPix_${_n}_nested_original.yaml
+        TEST_PROPERTIES TEST_PRIORITY 1  # This test is very slow and should start as early as possible!
     )
 
     ecbuild_add_test(
-        TARGET        ${PREFIX}_direct
-        TEST_REQUIRES ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest
-        COMMAND       multio-feed
-        ARGS          ${CMAKE_CURRENT_BINARY_DIR}/MARS_reduced_gg.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/reduced_gg_to_HEALPix_${_n}_nested_direct.yaml
+        TARGET          ${PREFIX}_direct
+        TEST_REQUIRES   ${DATA_PREFIX}_get_data_interpolate ${DATA_PREFIX}_get_data_healpix_ring2nest
+        COMMAND         multio-feed
+        ARGS            ${CMAKE_CURRENT_BINARY_DIR}/MARS_reduced_gg.grib --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/reduced_gg_to_HEALPix_${_n}_nested_direct.yaml
+        TEST_PROPERTIES TEST_PRIORITY 1  # This test is very slow and should start as early as possible!
     )
 
     ecbuild_add_test(

@@ -99,6 +99,9 @@ ecbuild_add_executable(
 
   TARGET multiom-dist-feed
 
+  CONDITION
+    HAVE_MPI_FORTRAN AND (NOT (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC"))
+
   SOURCES
     ${MULTIOM_TOOLS_DIR}/multiom_dist_feed_prog.F90
 

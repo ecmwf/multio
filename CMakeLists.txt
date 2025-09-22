@@ -80,7 +80,10 @@ if( HAVE_FORTRAN )
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
     ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fortran_compile_flags.cmake)
-    find_package(MPI REQUIRED COMPONENTS Fortran)
+
+    ecbuild_add_option( FEATURE MPI_FORTRAN
+                        DEFAULT ON
+                        REQUIRED_PACKAGES "NAME MPI COMPONENTS Fortran" )
 endif()
 
 

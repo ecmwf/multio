@@ -40,19 +40,16 @@ struct AverageRateKeys {
 
     static constexpr std::string_view record_name_ = "average-rate";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::PARAM, dm::TIMESPAN.tagRequired(), dm::STATTYPE, dm::MissingValue);
+        dm::PARAM,
+        dm::TIMESPAN.tagRequired(),
+        dm::STATTYPE.tagDisallowed(),
+        dm::MissingValue
+    );
 
     static void validate(const AverageRateKeys& k) {
         if (k.timespan.get().toSeconds() == 0) {
             throw eckit::SeriousBug(
                 "The average-rate action cannot handle messages with timespan set to zero!",
-                Here()
-            );
-        }
-
-        if (k.stattype.isSet()) {
-            throw eckit::SeriousBug(
-                "The average-rate action cannot handle messages with stattype set!",
                 Here()
             );
         }

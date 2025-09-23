@@ -282,7 +282,7 @@ auto paramSFCRules() {
         rule(matchParams(235020, 235021, paramRange(235029, 235031), paramRange(235033, 235038),              //
                          paramRange(235041, 235043), 235048, 235051, 235052, 235055, 235058,                  //
                          paramRange(235078, 235080), 235083, 235084, 235093, 235134, 235159, 235189, 235263,  //
-                         235283, 235326, 235339),                                                             //
+                         235283, 235339),                                                                     //
             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                             //
             typeOfLevel(TOL::Surface)),                                                                       //
         rule(matchParams(235108), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),

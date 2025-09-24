@@ -255,9 +255,7 @@ void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
 
         long startStep = h.getLong("startStep");
         long stepRange = h.hasKey("stepRange") ? h.getLong("stepRange") : (endStep - startStep);
-        if (stepRange > 0) {
-            mars.timespan.set(stepRange);
-        }
+        mars.timespan.set(stepRange);
     }
 }
 

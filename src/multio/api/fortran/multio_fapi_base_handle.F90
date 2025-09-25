@@ -44,6 +44,9 @@ implicit none
         procedure, public,  pass :: open_connections     => multio_base_handle_open_connections
         procedure, public,  pass :: close_connections    => multio_base_handle_close_connections
 
+        ! Block for checkpointing
+        procedure, public,  pass :: synchronize          => multio_base_handle_synchronize
+
     end type ! multio_base_handle
 
     ! Public symbols whitelist
@@ -402,5 +405,52 @@ contains
         ! Exit point
         return
     end function multio_base_handle_close_connections
+
+    !> @brief Block until a server-side processing is complete
+    !!
+    !! This function will ensure that all server-side processing is
+    !! complete and data are persisted on the filesystem before
+    !! returning. Its intended use is for checkpointing.
+    !!
+    !! @param [in,out] handle - Pointer to the handle object
+    !!
+    !! @return Error code indicating the operation's success
+    !!
+    !! @see multio_base_handle_close_connections
+    !!
+    function multio_base_handle_synchronize(handle) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        ! Variable references from the project
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_base_handle), intent(inout) :: handle
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        ! Private interface to the c API
+        interface
+            function c_multio_synchronize(handle) result(err) &
+                    bind(c, name='multio_synchronize')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr), value, intent(in) :: handle
+                integer(c_int) :: err
+            end function c_multio_synchronize
+        end interface
+        ! implementation
+        c_err = c_multio_synchronize(handle%c_ptr())
+        ! Setting return value
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_base_handle_synchronize
 
 end module multio_api_base_handle_mod

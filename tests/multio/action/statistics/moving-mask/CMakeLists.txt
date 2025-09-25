@@ -6,7 +6,7 @@ set(PREFIX multio_tests_action_statistics_moving_mask)
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_static_get_input_data
-    DIRNAME  multio/tests/actions/new-statistics
+    DIRNAME  multio/test-data/tests/actions/new-statistics
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         reduced_gg_pl_80_avg_grib2.tmpl
@@ -47,7 +47,7 @@ ecbuild_add_test(
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_input_data
-    DIRNAME  multio/tests/actions/statistics-moving-mask
+    DIRNAME  multio/test-data/tests/actions/statistics-moving-mask
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         Original_moving_mask.grib
@@ -81,7 +81,7 @@ foreach(_th 10d all any)
 
     ecbuild_get_test_multidata(
         TARGET   ${PREFIX}_${_op}_1m_${_th}_get_reference_data
-        DIRNAME  multio/tests/actions/statistics-moving-mask
+        DIRNAME  multio/test-data/tests/actions/statistics-moving-mask
         DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
         NAMES    Reference_${_op}_1m_${_th}.grib
     )

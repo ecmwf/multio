@@ -4,7 +4,7 @@ set(PREFIX ecom_extremesDT)
 ecbuild_get_test_multidata(
   EXTRACT
   TARGET ${PREFIX}_get_test_data
-  DIRNAME ecom/extremesDT/001
+  DIRNAME ecom/test-data/extremesDT/001
   DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
   NAMES
     "reference.tar.bz"
@@ -13,7 +13,7 @@ ecbuild_get_test_multidata(
 
 ecbuild_get_test_multidata(
   TARGET ${PREFIX}_get_test_cfg
-  DIRNAME ecom/extremesDT/001
+  DIRNAME ecom/test-data/extremesDT/001
   DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
   NAMES
     "output-manager-config.yaml"

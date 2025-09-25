@@ -13,7 +13,7 @@ file(MAKE_DIRECTORY ${TEST_IFS_TEMPLATES_PATH})
 ecbuild_get_test_multidata(
     EXTRACT
     TARGET multio_action_ifs_get_test_data
-    DIRNAME multio/tests/actions
+    DIRNAME multio/test-data/tests/actions
     DIRLOCAL ${TEST_IFS_TEMPLATES_PATH}
     NAMES ${_action_ifs_test_data} )
 

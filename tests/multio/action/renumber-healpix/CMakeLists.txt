@@ -5,7 +5,7 @@ set(PREFIX multio_tests_action_healpix_ring2nest)
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_HEALPix_remapping_data
-    DIRNAME  multio/tests/actions/healpix_ring2nest
+    DIRNAME  multio/test-data/tests/actions/healpix_ring2nest
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         "Feed_HEALPix_32_ring.grib"

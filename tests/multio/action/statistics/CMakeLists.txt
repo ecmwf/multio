@@ -51,7 +51,7 @@ endif( HAVE_MIR )
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/tests/actions/new-statistics
+    DIRNAME  multio/test-data/tests/actions/new-statistics
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES ${_statistics_test_data}
 )

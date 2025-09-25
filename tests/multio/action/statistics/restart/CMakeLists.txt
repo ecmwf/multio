@@ -23,7 +23,7 @@ list( APPEND _statistics_restart_test_data
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/tests/actions/statistics-restart
+    DIRNAME  multio/test-data/tests/actions/statistics-restart
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES ${_statistics_restart_test_data}
 )

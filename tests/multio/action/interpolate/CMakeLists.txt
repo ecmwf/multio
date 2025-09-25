@@ -4,7 +4,7 @@ set(PREFIX multio_tests_action_interpolate)
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/tests/actions/interpolate
+    DIRNAME  multio/test-data/tests/actions/interpolate
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         "MARS_reduced_gg.grib"
@@ -96,7 +96,7 @@ if ( HAVE_HEALPIX_EXAMPLES )
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_HEALPix_data
-    DIRNAME  multio/tests/actions/interpolate
+    DIRNAME  multio/test-data/tests/actions/interpolate
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         "Reference_reduced_gg_to_HEALPix_32.grib"

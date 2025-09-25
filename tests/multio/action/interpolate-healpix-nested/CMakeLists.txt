@@ -4,14 +4,14 @@ set(DATA_PREFIX multio_tests_action_interpolate_reduced_gg_to_HEALPix_nested)
 
 ecbuild_get_test_multidata(
     TARGET   ${DATA_PREFIX}_get_data_interpolate
-    DIRNAME  multio/tests/actions/interpolate
+    DIRNAME  multio/test-data/tests/actions/interpolate
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES    "MARS_reduced_gg.grib"
 )
 
 ecbuild_get_test_multidata(
     TARGET   ${DATA_PREFIX}_get_data_healpix_ring2nest
-    DIRNAME  multio/tests/actions/healpix_ring2nest
+    DIRNAME  multio/test-data/tests/actions/healpix_ring2nest
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES    "Reference_HEALPix_32_nested.grib"
              "Reference_HEALPix_1024_nested.grib"
@@ -19,7 +19,7 @@ ecbuild_get_test_multidata(
 
 ecbuild_get_test_multidata(
     TARGET   ${DATA_PREFIX}_get_data_interpolate_healpix
-    DIRNAME  multio/tests/actions/interpolate-healpix-nested
+    DIRNAME  multio/test-data/tests/actions/interpolate-healpix-nested
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES    "Reference_reduced_gg_to_HEALPix_32_nested.grib"
              "Reference_reduced_gg_to_HEALPix_1024_nested.grib"
@@ -84,7 +84,7 @@ ecbuild_add_test(
 
 ecbuild_get_test_multidata(
     TARGET   ${DATA_PREFIX}_get_data_fesom
-    DIRNAME  multio/tests/actions/interpolate-fesom
+    DIRNAME  multio/test-data/tests/actions/interpolate-fesom
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES
         "fesom_CORE2_ngrid_feed_o2d.grib"

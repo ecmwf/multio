@@ -128,7 +128,7 @@ list( APPEND _test_data
 )
 
 ecbuild_get_test_multidata( TARGET multio_get_test_data
-                            DIRNAME fdb5/tests/fdb
+                            DIRNAME fdb5/test-data/tests/fdb
                             NAMES ${_test_data} )
 
 ecbuild_add_test( TARGET test_multio_ifs_plans
@@ -186,7 +186,7 @@ list( APPEND _hammer_test_data
 )
 
 ecbuild_get_test_multidata( TARGET multio_hammer_get_test_data
-                            DIRNAME multio/tests/server
+                            DIRNAME multio/test-data/tests/server
                             NAMES ${_hammer_test_data} )
 
 ecbuild_add_test( ENABLED       OFF
@@ -211,7 +211,7 @@ list( APPEND _nemo_test_data
 )
 
 ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data
-                            DIRNAME multio/tests/server
+                            DIRNAME multio/test-data/tests/server
                             NAMES ${_nemo_test_data}
 )
 

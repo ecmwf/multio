@@ -14,7 +14,7 @@ list( APPEND _across_test_data
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/tests/across
+    DIRNAME  multio/test-data/tests/across
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES ${_across_test_data}
 )

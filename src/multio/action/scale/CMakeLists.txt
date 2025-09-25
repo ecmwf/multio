@@ -7,12 +7,6 @@ ecbuild_add_library(
     SOURCES
         Scale.cc
         Scale.h
-        Mapping.cc
-        Mapping.h
-        Scaling.cc
-        Scaling.h
-        MetadataUtils.cc
-        MetadataUtils.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

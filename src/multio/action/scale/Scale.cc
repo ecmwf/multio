@@ -10,70 +10,120 @@
 
 #include "multio/action/scale/Scale.h"
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
-
 
 #include "multio/LibMultio.h"
-#include "multio/config/ComponentConfiguration.h"
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
-
-#include "multio/action/scale/Mapping.h"
-#include "multio/action/scale/MetadataUtils.h"
-#include "multio/action/scale/Scaling.h"
 
 
 namespace multio::action::scale {
 
-Scale::Scale(const ComponentConfiguration& compConf) :
-    ChainedAction(compConf), scaling_{compConf}, mapping_{compConf}, paramsToScale_{} {
+const Mappings getMappings(const std::string& preset) {
+    if (preset != "local-to-wmo" && preset != "wmo-to-local") {
+        throw eckit::UserError("Preset " + preset + " does not exist!", Here());
+    }
 
-    const auto mappings = compConf.parsedConfig().has("mapping-definition")
-                            ? compConf.parsedConfig().getSubConfigurations("mapping-definition")
-                            : throw eckit::SeriousBug{"Scaling information not specified in plan", Here()};
+    // Load the mapping file
+    eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"
+    }}};
 
-    if (!mappings.empty()) {
-        for (const auto& mapping : mappings) {
-            auto matcher = mapping.getSubConfiguration("case");
-            paramsToScale_.insert(matcher.getString("param-is"));
+    // Read the mappings and put them into the map
+    // We use the same mapping file for local-to-wmo and wmo-to-local, the
+    // second is just the reverse mapping of the first!
+    Mappings mappings;
+    for (auto& mapping : mappingConf.getSubConfigurations()) {
+        const auto paramIn = mapping.getInt64("param-in");
+        const auto paramOut = mapping.getInt64("param-out");
+        const auto scaling = mapping.getDouble("scaling");
+        if (preset == "local-to-wmo") {
+            mappings[paramIn] = {paramOut, scaling};
+        }
+        else {
+            mappings[paramOut] = {paramIn, 1.0 / scaling};
         }
     }
+    return mappings;
 }
 
+Mappings getMappings(const eckit::LocalConfiguration& config) {
+    Mappings mappings;
+
+    // Read the preset mapping from a mappings file
+    if (config.has("preset-mappings")) {
+        ASSERT(config.isString("preset-mappings"));
+        mappings = getMappings(config.getString("preset-mappings"));
+    }
+
+    // Read any user defined mappings from the action configuration
+    if (config.has("custom-mappings")) {
+        ASSERT(config.isSubConfigurationList("custom-mappings"));
+        for (auto& mapping : config.getSubConfigurations("custom-mappings")) {
+            const auto paramIn = mapping.getInt64("param-in");
+            const auto paramOut = mapping.getInt64("param-out");
+            const auto scaling = mapping.getDouble("scaling");
+            ASSERT(mappings.find(paramIn) == mappings.end());
+            mappings[paramIn] = {paramOut, scaling};
+        }
+    }
+
+    if (mappings.empty()) {
+        throw eckit::UserError("No scale mapping was found, set 'preset' or 'mappings' in action configuration!", Here());
+    }
+    return mappings;
+}
+
+Scale::Scale(const ComponentConfiguration& compConf) :
+    ChainedAction(compConf), mappings_{getMappings(compConf.parsedConfig())} {}
+
 void Scale::executeImpl(message::Message msg) {
+    // Skip non-field messages
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(std::move(msg));
         return;
     }
 
-    std::string cparam = extractParam(msg.metadata());
+    auto md = dm::readRecord<ScaleMetadataKeys>(msg.metadata());
 
-    // Continue if no scaling definition was specified in the plan.
-    if (paramsToScale_.find(cparam) == paramsToScale_.end()) {
+    // Try to find a mapping for the incomming field
+    const auto paramIn = md.param.get();
+    const auto search = mappings_.find(paramIn);
+
+    // Skip if no mapping was found
+    if (search == mappings_.end()) {
         executeNext(std::move(msg));
         return;
     }
-    // Scale the message
+
+    const auto& mapping = search->second;
+
+    msg.acquire();  // We change the message after this line
+
+    // Map the param
+    md.param.set(mapping.paramOut);
+    dm::dumpRecord(md, msg.modifyMetadata());
+
+    // Scale the payload
     util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        ScaleMessage<Precision>(msg);  // Modify msg in place
+        auto* data = static_cast<Precision*>(msg.payload().modifyData());
+        const auto size = msg.payload().size() / sizeof(Precision);
+        if (md.missingValue.isSet()) {
+            const double missing = md.missingValue.get();
+            std::transform(data, data + size, data, [&](Precision value) {
+                return static_cast<Precision>(value == missing ? missing : value * mapping.scaling);
+            });
+        } else {
+            std::transform(data, data + size, data, [&](Precision value) {
+                return static_cast<Precision>(value * mapping.scaling);
+            });
+        }
     });
-    // pass on the modified message
+
     executeNext(std::move(msg));
-}
-
-template <typename Precision>
-void Scale::ScaleMessage(message::Message& msg) const {
-
-    LOG_DEBUG_LIB(LibMultio) << "Scale :: Metadata of the input message :: Apply Scaling " << std::endl
-                             << msg.metadata() << std::endl;
-    msg.acquire();
-
-    // Potentially work with msg = scaling_.applyScaling<Precision>(std::move(msg))
-    scaling_.applyScaling<Precision>(msg);
-
-    mapping_.applyMapping(msg.modifyMetadata());
 }
 
 void Scale::print(std::ostream& os) const {
@@ -81,10 +131,5 @@ void Scale::print(std::ostream& os) const {
 }
 
 static ActionBuilder<Scale> ScaleBuilder("scale");
-
-
-template void Scale::ScaleMessage<float>(message::Message&) const;
-template void Scale::ScaleMessage<double>(message::Message&) const;
-
 
 }  // namespace multio::action::scale

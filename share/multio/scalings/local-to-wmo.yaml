@@ -1,0 +1,214 @@
+# Scalings from local ECMWF units to WMO units
+# Source: https://jira.ecmwf.int/browse/DE-1223
+# Accessed on 2025-09-25
+
+- param-in:  8
+  param-out: 231010
+  scaling:   1000
+
+- param-in:  9
+  param-out: 231012
+  scaling:   1000
+
+- param-in:  141
+  param-out: 228141
+  scaling:   1000
+
+- param-in:  142
+  param-out: 3062
+  scaling:   1000
+
+- param-in:  143
+  param-out: 228143
+  scaling:   1000
+
+- param-in:  144
+  param-out: 228144
+  scaling:   1000
+
+- param-in:  164
+  param-out: 228164
+  scaling:   100
+
+- param-in:  182
+  param-out: 260259
+  scaling:   1000
+
+- param-in:  186
+  param-out: 3073
+  scaling:   100
+
+- param-in:  187
+  param-out: 3074
+  scaling:   100
+
+- param-in:  188
+  param-out: 3075
+  scaling:   100
+
+- param-in:  198
+  param-out: 160198
+  scaling:   1000
+
+- param-in:  205
+  param-out: 231002
+  scaling:   1000
+
+- param-in:  228
+  param-out: 228228
+  scaling:   1000
+
+- param-in:  239
+  param-out: 231057
+  scaling:   1000
+
+- param-in:  240
+  param-out: 231058
+  scaling:   1000
+
+- param-in:  228216
+  param-out: 231001
+  scaling:   1000
+
+
+# Required for ERA
+
+- param-in:  15
+  param-out: 210199
+  scaling:   100
+
+- param-in:  16
+  param-out: 210198
+  scaling:   100
+
+- param-in:  17
+  param-out: 210261
+  scaling:   100
+
+- param-in:  18
+  param-out: 210260
+  scaling:   100
+
+- param-in:  32
+  param-out: 228032
+  scaling:   100
+
+- param-in:  44
+  param-out: 231003
+  scaling:   1000
+
+- param-in:  45
+  param-out: 3099
+  scaling:   1000
+
+# - param-in:  174
+#   param-out: ???
+#   scaling:   100
+
+- param-in:  206
+  param-out: 260132
+  scaling:   1000
+
+- param-in:  243
+  param-out: 260509
+  scaling:   100
+
+- param-in:  210186
+  param-out: 210201
+  scaling:   100
+
+- param-in:  210187
+  param-out: 210202
+  scaling:   100
+
+- param-in:  210188
+  param-out: 210200
+  scaling:   100
+
+- param-in:  210189
+  param-out: 210263
+  scaling:   100
+
+- param-in:  210190
+  param-out: 210264
+  scaling:   100
+
+- param-in:  210191
+  param-out: 210262
+  scaling:   100
+
+- param-in:  228251
+  param-out: 231005
+  scaling:   1000
+
+
+# Time-mean parameters
+
+- param-in:  172008
+  param-out: 235020
+  scaling:   1000
+
+- param-in:  172009
+  param-out: 235021
+  scaling:   1000
+
+- param-in:  172044
+  param-out: 235023
+  scaling:   1000
+
+- param-in:  172045
+  param-out: 235024
+  scaling:   1000
+
+- param-in:  172142
+  param-out: 235029
+  scaling:   1000
+
+- param-in:  172143
+  param-out: 235030
+  scaling:   1000
+
+- param-in:  172144
+  param-out: 235031
+  scaling:   1000
+
+- param-in:  172182
+  param-out: 235043
+  scaling:   1000
+
+# New in ecCodes 2.38
+# - param-in:  172189
+#   param-out: 235340
+#   scaling:   ???
+
+- param-in:  172205
+  param-out: 235048
+  scaling:   1000
+
+- param-in:  172228
+  param-out: 235055
+  scaling:   1000
+
+- param-in:  235141
+  param-out: 235078
+  scaling:   1000
+
+# New in ecCodes 2.38
+- param-in:  235186
+  param-out: 235108
+  scaling:   100
+
+# New in ecCodes 2.38
+- param-in:  235187
+  param-out: 235109
+  scaling:   100
+
+# New in ecCodes 2.38
+- param-in:  235188
+  param-out: 235110
+  scaling:   100
+
+# New in ecCodes 2.38
+- param-in:  235243
+  param-out: 235263
+  scaling:   100

@@ -32,7 +32,7 @@ class Action(MultioBaseModel):
     Should not be instantiated directly, use one of the subclasses instead.
     """
 
-    type: str = Field(str, description="Action type")
+    type: Any = Field(..., description="Action type")
 
 class Null(Action):
     """Null Action.
@@ -116,7 +116,7 @@ class Mask(Action):
 
     type: Literal["mask"] = Field("mask", init=False)
     apply_bitmap: bool = Field(True)
-    missing_value: float = Field(None)  # Need to set to max
+    missing_value: float | None = Field(None)  # Need to set to max
     offset_value: float = Field(273.15)
 
 

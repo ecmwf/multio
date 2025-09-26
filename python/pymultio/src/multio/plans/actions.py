@@ -75,6 +75,13 @@ class StatisticsMTG(Action):
     output_frequency: str = Field(examples=["5h", "10d", "1w"])
 
 
+class Scale(Action):
+    """Scale Action."""
+
+    type: Literal["scale"] = Field("scale", init=False)
+    preset_mappings: Literal["local-to-wmo"] | None = Field(None)
+    custom_mappings: dict[str, str] | None = Field(None)
+
 class Transport(Action):
     """Transport Action"""
 
@@ -162,6 +169,6 @@ class SingleField(Action):
     type: Literal["single-field-sink"] = Field("single-field-sink", init=False)
 
 
-ACTIONS = Union[Select, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
+ACTIONS = Union[Select, Scale, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
 
-__all__ = ["ACTIONS", "Action", "Select", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]
+__all__ = ["ACTIONS", "Action", "Select", "Scale", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]

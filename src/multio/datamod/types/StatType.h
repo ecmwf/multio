@@ -50,15 +50,20 @@ struct SingleStatType {
 };
 
 
-struct StatType {
+class StatType {
+public:
     // Only constructor - will validate requirements on StatType
     StatType(SingleStatType first, std::optional<SingleStatType> second = {});
 
-    SingleStatType firstLevel;
-    std::optional<SingleStatType> secondLevel{};
+    SingleStatType firstLevel() const;
+    std::optional<SingleStatType> secondLevel() const;
 
     // Returns the number of levels (1 or 2)
     std::size_t levels() const;
+
+private:
+    SingleStatType firstLevel_;
+    std::optional<SingleStatType> secondLevel_{};
 };
 
 bool operator==(const StatType& lhs, const StatType& rhs) noexcept;
@@ -80,7 +85,7 @@ struct hash<multio::datamod::SingleStatType> {
 template <>
 struct hash<multio::datamod::StatType> {
     std::size_t operator()(const multio::datamod::StatType& o) const noexcept {
-        return multio::util::hashCombine(multio::util::hash(o.firstLevel), multio::util::hash(o.secondLevel));
+        return multio::util::hashCombine(multio::util::hash(o.firstLevel()), multio::util::hash(o.secondLevel()));
     }
 };
 }  // namespace std

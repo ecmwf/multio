@@ -1,0 +1,76 @@
+/*
+ * (C) Copyright 1996- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation nor
+ * does it submit to any jurisdiction.
+ */
+
+/// @author Kevin Nobel
+
+/// @date Aug 2025
+
+#pragma once
+
+#include "eckit/exception/Exceptions.h"
+
+#include "multio/action/ChainedAction.h"
+
+#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/GribKeys.h"
+
+namespace multio::action::average_rate {
+
+namespace {
+using Param2ParamMap = std::unordered_map<std::int64_t, std::int64_t>;
+}
+
+namespace dm = multio::datamod;
+
+//---------------------------- Input Metadata Keys ----------------------------
+
+struct AverageRateKeys {
+    dm::EntryType_t<decltype(dm::PARAM)> param;
+    dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
+    dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
+    dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
+
+    static constexpr std::string_view record_name_ = "average-rate";
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::PARAM,
+        dm::TIMESPAN.tagRequired(),
+        dm::STATTYPE.tagDisallowed(),
+        dm::MissingValue
+    );
+
+    static void validate(const AverageRateKeys& k) {
+        if (k.timespan.get().toSeconds() == 0) {
+            throw eckit::SeriousBug(
+                "The average-rate action cannot handle messages with timespan set to zero!",
+                Here()
+            );
+        }
+    }
+};
+
+//-----------------------------------------------------------------------------
+
+class AverageRate : public ChainedAction {
+public:
+    explicit AverageRate(const ComponentConfiguration& compConf);
+
+    void executeImpl(message::Message msg) override;
+
+private:
+    template <typename Precision>
+    void compute(message::Message& msg) const;
+
+    void print(std::ostream&) const override;
+
+    const Param2ParamMap paramMappings_;
+};
+
+}  // namespace multio::action::average_rate

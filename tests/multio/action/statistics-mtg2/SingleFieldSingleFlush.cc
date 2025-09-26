@@ -27,7 +27,10 @@ using multio::message::Message;
 using multio::message::Metadata;
 
 
-void testSingleFieldSingleFlush(std::string flushKind) {
+void testFieldAndFlush(std::string flushKind, int64_t steps=1) {
+    ASSERT(steps == 1 || steps == 2);
+    int64_t expect = flushKind == "last-step" && steps == 2 ? 2 : 1;
+
     const std::string plan = R"json({
         "name": "MULTIO_TEST",
         "actions" : [
@@ -47,14 +50,14 @@ void testSingleFieldSingleFlush(std::string flushKind) {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    {
+    for (int64_t step = 0; step < steps; ++step) {
         Metadata md{{
             {"param", 130},
             {"levtype", "sfc"},
             {"grid", "custom"},
             {"startDate", 20250425},
             {"startTime", 0000},
-            {"step", 0},
+            {"step", step},
             {"misc-precision", "double"}
         }};
         eckit::Buffer pl{};
@@ -65,74 +68,33 @@ void testSingleFieldSingleFlush(std::string flushKind) {
     {
         Metadata md{{
             {"flushKind", flushKind},
-            {"step", 0}
+            {"step", steps-1}
         }};
         eckit::Buffer pl{};
         Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, pl};
         EXPECT_NO_THROW(env.process(std::move(msg)));
-        EXPECT_EQUAL(env.debugSink().size(), 1);
-        EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
+        EXPECT_EQUAL(env.debugSink().size(), expect);
+        // First comes a field (but only on last-step), then the flush
+        if (expect == 2) {
+            EXPECT(env.debugSink().front().tag() == Message::Tag::Field);
+        }
+        EXPECT(env.debugSink().back().tag() == Message::Tag::Flush);
     }
 }
 
-CASE("single message single flush default") { testSingleFieldSingleFlush("default"); }
-CASE("single message single flush first-step") { testSingleFieldSingleFlush("first-step"); }
-CASE("single message single flush step-and-restart") { testSingleFieldSingleFlush("step-and-restart"); }
-CASE("single message single flush end-of-simulation") { testSingleFieldSingleFlush("end-of-simulation"); }
-CASE("single message single flush close-connection") { testSingleFieldSingleFlush("close-connection"); }
+CASE("single field single flush default") { testFieldAndFlush("default"); }
+CASE("single field single flush first-step") { testFieldAndFlush("first-step"); }
+CASE("single field single flush step-and-restart") { testFieldAndFlush("step-and-restart"); }
+CASE("single field single flush end-of-simulation") { testFieldAndFlush("end-of-simulation"); }
+CASE("single field single flush close-connection") { testFieldAndFlush("close-connection"); }
+CASE("single field single flush last-step") { testFieldAndFlush("last-step"); }
 
-
-void testSingleFieldSingleFlushLastStep() {
-    const std::string plan = R"json({
-        "name": "MULTIO_TEST",
-        "actions" : [
-            {
-                "type": "statistics-mtg2",
-                "output-frequency": "1d",
-                "operations": [ "average" ],
-                "options": {
-                     "initial-condition-present": "true"
-                }
-            },
-            {
-                "type": "debug-sink"
-            }
-        ]
-    })json";
-    auto env = MultioTestEnvironment(plan);
-    EXPECT_EQUAL(env.debugSink().size(), 0);
-
-    {
-        Metadata md{{
-            {"param", 130},
-            {"levtype", "sfc"},
-            {"grid", "custom"},
-            {"startDate", 20250425},
-            {"startTime", 0000},
-            {"step", 0},
-            {"misc-precision", "double"}
-        }};
-        eckit::Buffer pl{};
-        Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
-        EXPECT_NO_THROW(env.process(std::move(msg)));
-        EXPECT_EQUAL(env.debugSink().size(), 0);
-    }
-    {
-        Metadata md{{
-            {"flushKind", "last-step"},
-            {"step", 0}
-        }};
-        eckit::Buffer pl{};
-        Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, pl};
-        EXPECT_NO_THROW(env.process(std::move(msg)));
-        EXPECT_EQUAL(env.debugSink().size(), 2);
-        EXPECT(env.debugSink().front().tag() == Message::Tag::Field);
-        env.debugSink().pop();
-        EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
-    }
-}
-
-CASE("single field single flush last-step") { testSingleFieldSingleFlushLastStep(); }
+CASE("two fields single flush default") { testFieldAndFlush("default", 2); }
+CASE("two fields single flush first-step") { testFieldAndFlush("first-step", 2); }
+CASE("two fields single flush step-and-restart") { testFieldAndFlush("step-and-restart", 2); }
+CASE("two fields single flush end-of-simulation") { testFieldAndFlush("end-of-simulation", 2); }
+CASE("two fields single flush close-connection") { testFieldAndFlush("close-connection", 2); }
+CASE("two fields single flush last-step") { testFieldAndFlush("last-step", 2); }
 
 
 }  // multio::test::statistics_mtg2

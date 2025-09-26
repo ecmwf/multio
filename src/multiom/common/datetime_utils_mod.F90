@@ -76,6 +76,7 @@ PUBLIC :: ADD_SECONDS_TO_DATETIME
 
 ! Whitelist of public symbols (parameters)
 PUBLIC :: HOURS2SECONDS
+PUBLIC :: SECONDS2DAYS
 
 CONTAINS
 

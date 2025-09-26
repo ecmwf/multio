@@ -39,28 +39,28 @@ using mapper::StringToIntMapper;
 /// Global ID keys
 
 constexpr auto ORIGIN =
-    EntryDef<IntOrString>{"origin"}  
+    EntryDef<IntOrString>{"origin"}
         .withDefault("ecmf")
         .withAccessor([](auto&& v) { return &v.origin; });
 
 constexpr auto CLASS =
-    EntryDef<std::string>{"class"}  
+    EntryDef<std::string>{"class"}
         .withAccessor([](auto&& v) { return &v.klass; });
 
 constexpr auto STREAM =
-    EntryDef<std::string>{"stream"}  
+    EntryDef<std::string>{"stream"}
         .withAccessor([](auto&& v) { return &v.stream; });
 
 constexpr auto TYPE =
-    EntryDef<std::string>{"type"}  
+    EntryDef<std::string>{"type"}
         .withAccessor([](auto&& v) { return &v.type; });
 
 constexpr auto EXPVER =
-    EntryDef<IntOrString>{"expver"}  
+    EntryDef<IntOrString>{"expver"}
         .withAccessor([](auto&& v) { return &v.expver; });
 
 constexpr auto MODEL =
-    EntryDef<std::string>{"model"}  
+    EntryDef<std::string>{"model"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.model; });
 
@@ -68,68 +68,68 @@ constexpr auto MODEL =
 // Field id
 
 constexpr auto PARAM =
-    EntryDef<std::int64_t, mapper::ParamMapper>{"param"}  
+    EntryDef<std::int64_t, mapper::ParamMapper>{"param"}
         .withAccessor([](auto&& v) { return &v.param; });
 
 // Horizontal & vertial
 
 constexpr auto LEVTYPE =
-    EntryDef<LevType>{"levtype"}  
+    EntryDef<LevType>{"levtype"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.levtype; });
 
 constexpr auto LEVELIST =
-    EntryDef<std::int64_t, StringToIntMapper>{"levelist"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"levelist"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.levelist; });
 
 // Time
 
 constexpr auto DATE =
-    EntryDef<std::int64_t, StringToIntMapper>{"date"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"date"}
         .withAccessor([](auto&& v) { return &v.date; });
 
 constexpr auto TIME =
-    EntryDef<std::int64_t, StringToIntMapper>{"time"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"time"}
         .withAccessor([](auto&& v) { return &v.time; });
 
 constexpr auto STEP =
-    EntryDef<TimeDuration>{"step"}  
+    EntryDef<TimeDuration>{"step"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.step; });
 
 constexpr auto TIMESPAN =
-    EntryDef<TimeDuration>{"timespan"}  
+    EntryDef<TimeDuration>{"timespan"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.timespan; });
 
 constexpr auto STATTYPE =
-    EntryDef<StatType>{"stattype"}  
+    EntryDef<StatType>{"stattype"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.stattype; });
 
 constexpr auto ANOFFSET =
-    EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"anoffset"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.anoffset; });
 
 constexpr auto HDATE =
-    EntryDef<std::int64_t, StringToIntMapper>{"hdate"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"hdate"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.hdate; });
 
 constexpr auto REFDATE =
-    EntryDef<std::int64_t, StringToIntMapper>{"refdate"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"refdate"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.refdate; });
 
 constexpr auto FCMONTH =
-    EntryDef<std::int64_t, StringToIntMapper>{"fcmonth"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"fcmonth"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.fcmonth; });
 
 constexpr auto FCPERIOD =
-    EntryDef<std::int64_t, StringToIntMapper>{"fcperiod"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"fcperiod"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.fcperiod; });
 
@@ -137,24 +137,24 @@ constexpr auto FCPERIOD =
 // Ensemble
 
 constexpr auto NUMBER =
-    EntryDef<std::int64_t, StringToIntMapper>{"number"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"number"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.number; });
 
 // Satellite
 
 constexpr auto IDENT =
-    EntryDef<std::int64_t, StringToIntMapper>{"ident"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"ident"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.ident; });
 
 constexpr auto INSTRUMENT =
-    EntryDef<std::int64_t, StringToIntMapper>{"instrument"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"instrument"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.instrument; });
 
 constexpr auto CHANNEL =
-    EntryDef<std::int64_t, StringToIntMapper>{"channel"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"channel"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.channel; });
 
@@ -162,14 +162,14 @@ constexpr auto CHANNEL =
 // Chemical
 
 constexpr auto CHEM =
-    EntryDef<std::int64_t, StringToIntMapper>{"chem"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"chem"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.chem; });
 
 // Aerosol
 
 constexpr auto WAVELENGTH =
-    EntryDef<std::int64_t, StringToIntMapper>{"wavelength"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"wavelength"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.wavelength; });
 
@@ -177,12 +177,12 @@ constexpr auto WAVELENGTH =
 // Wave Spectra
 
 constexpr auto DIRECTION =
-    EntryDef<std::int64_t, StringToIntMapper>{"direction"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"direction"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.direction; });
 
 constexpr auto FREQUENCY =
-    EntryDef<std::int64_t, StringToIntMapper>{"frequency"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"frequency"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.frequency; });
 
@@ -190,12 +190,12 @@ constexpr auto FREQUENCY =
 // Seasonal
 
 constexpr auto METHOD =
-    EntryDef<std::int64_t, StringToIntMapper>{"method"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"method"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.method; });
 
 constexpr auto SYSTEM =
-    EntryDef<std::int64_t, StringToIntMapper>{"system"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"system"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.system; });
 
@@ -203,12 +203,12 @@ constexpr auto SYSTEM =
 // Sensitivity forecast
 
 constexpr auto ITERATION =
-    EntryDef<std::int64_t, StringToIntMapper>{"iteration"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"iteration"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.iteration; });
 
 constexpr auto DIAGNOSTIC =
-    EntryDef<std::int64_t, StringToIntMapper>{"diagnostic"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"diagnostic"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.diagnostic; });
 
@@ -216,32 +216,32 @@ constexpr auto DIAGNOSTIC =
 // DestinE
 
 constexpr auto DATASET =
-    EntryDef<std::string>{"dataset"}  
+    EntryDef<std::string>{"dataset"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.dataset; });
 
 constexpr auto RESOLUTION =
-    EntryDef<std::string>{"resolution"}  
+    EntryDef<std::string>{"resolution"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.resolution; });
 
 constexpr auto ACTIVITY =
-    EntryDef<std::string>{"activity"}  
+    EntryDef<std::string>{"activity"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.activity; });
 
 constexpr auto EXPERIMENT =
-    EntryDef<std::string>{"experiment"}  
+    EntryDef<std::string>{"experiment"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.experiment; });
 
 constexpr auto GENERATION =
-    EntryDef<std::int64_t, StringToIntMapper>{"generation"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"generation"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.generation; });
 
 constexpr auto REALIZATION =
-    EntryDef<std::int64_t, StringToIntMapper>{"realization"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"realization"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.realization; });
 
@@ -249,7 +249,7 @@ constexpr auto REALIZATION =
 // Postproc - output specifiec
 
 constexpr auto PACKING =
-    EntryDef<std::string>{"packing"}  
+    EntryDef<std::string>{"packing"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.packing; });
 
@@ -257,12 +257,12 @@ constexpr auto PACKING =
 // Grid
 
 constexpr auto GRID =
-    EntryDef<std::string>{"grid"}  
+    EntryDef<std::string>{"grid"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.grid; });
 
 constexpr auto TRUNCATION =
-    EntryDef<std::int64_t, StringToIntMapper>{"truncation"}  
+    EntryDef<std::int64_t, StringToIntMapper>{"truncation"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.truncation; });
 
@@ -270,7 +270,7 @@ constexpr auto TRUNCATION =
 // TODO pgeier this key has been modified and is used internally (with the encoder rules...) should not be handled as
 // official mars key
 constexpr auto REPRES
-    = EntryDef<Repres>{"repres"}  
+    = EntryDef<Repres>{"repres"}
           .tagDefaulted()
           .withAccessor([](auto&& v) { return &v.repres; })
           .withDescription(

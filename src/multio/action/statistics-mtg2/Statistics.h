@@ -20,7 +20,8 @@
 #include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/action/statistics-mtg2/StatisticsParamMapping.h"
+#include "multio/action/statistics-mtg2/mappings/StatisticsParamMapping.h"
+#include "multio/action/statistics-mtg2/mappings/StatisticsOperationMapping.h"
 
 namespace eckit {
 class Configuration;
@@ -55,6 +56,7 @@ private:
     const std::vector<std::string> operations_;
     std::string outputFrequency_;
     const StatisticsParamMapping paramMapping_;
+    const StatisticsOperationMapping operationMapping_;
     std::shared_ptr<StatisticsIO> IOmanager_;
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;

@@ -24,6 +24,7 @@ ecbuild_find_package( NAME eckit       VERSION  1.25     REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.10     REQUIRED )
 ecbuild_find_package( NAME atlas       VERSION  0.35     REQUIRED )
 
+
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
@@ -79,6 +80,10 @@ if( HAVE_FORTRAN )
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
     ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fortran_compile_flags.cmake)
+
+    ecbuild_add_option( FEATURE MPI_FORTRAN
+                        DEFAULT ON
+                        REQUIRED_PACKAGES "NAME MPI COMPONENTS Fortran" )
 endif()
 
 
@@ -150,8 +155,10 @@ ecbuild_add_option( FEATURE MULTIO_CLIENT_MEMORY_PROFILE
                     DEFAULT OFF
                     DESCRIPTION "Enable multio client memory profiling" )
 
+
 ### export package info
 set( MULTIO_CONFIG_DIR     share/multio/config )
+set (MULTIO_MAPPINGS_DIR   share/multio/mappings )
 set( MULTIOM_CONFIG_DIR    share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )

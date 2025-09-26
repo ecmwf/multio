@@ -95,6 +95,33 @@ ecbuild_add_executable(
 
 )
 
+ecbuild_add_executable(
+
+  TARGET multiom-dist-feed
+
+  CONDITION
+    HAVE_MPI_FORTRAN AND (NOT (CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC"))
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_dist_feed_prog.F90
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    MPI::MPI_Fortran
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
 
 
 ecbuild_add_executable(

@@ -50,6 +50,12 @@ public:
     decltype(auto) visit(Func&& func) {
         return std::visit(std::forward<Func>(func), static_cast<TimeDurationVariant&>(*this));
     }
+
+    std::int64_t toSeconds() const {
+        return visit([](auto&& duration) -> std::int64_t {
+            return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+        });
+    }
 };
 
 }  // namespace multio::datamod

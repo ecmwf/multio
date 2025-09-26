@@ -80,6 +80,8 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235287
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237287
   - typeOfStatisticalProcessing: 3
     paramOut: 238287
   - typeOfStatisticalProcessing: 6
@@ -252,6 +254,10 @@
     paramOut: 238138
   - typeOfStatisticalProcessing: 6
     paramOut: 239138
+- paramIn: 141
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235141
 - paramIn: 148
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -312,6 +318,10 @@
     paramOut: 238159
   - typeOfStatisticalProcessing: 6
     paramOut: 239159
+- paramIn: 164
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 228006
 - paramIn: 165
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -337,9 +347,9 @@
   - typeOfStatisticalProcessing: 0
     paramOut: 228004
   - typeOfStatisticalProcessing: 2
-    paramOut: 201
+    paramOut: 237167
   - typeOfStatisticalProcessing: 3
-    paramOut: 202
+    paramOut: 238167
   - typeOfStatisticalProcessing: 6
     paramOut: 239167
 - paramIn: 168
@@ -352,16 +362,18 @@
     paramOut: 238168
   - typeOfStatisticalProcessing: 6
     paramOut: 239168
-- paramIn: 173
+- paramIn: 186
   mappings:
   - typeOfStatisticalProcessing: 0
-    paramOut: 235244
-  - typeOfStatisticalProcessing: 2
-    paramOut: 237244
-  - typeOfStatisticalProcessing: 3
-    paramOut: 238244
-  - typeOfStatisticalProcessing: 6
-    paramOut: 239244
+    paramOut: 235186
+- paramIn: 187
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235187
+- paramIn: 188
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235188
 - paramIn: 203
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -450,6 +462,10 @@
     paramOut: 238238
   - typeOfStatisticalProcessing: 6
     paramOut: 239238
+- paramIn: 243
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235243
 - paramIn: 244
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -710,76 +726,6 @@
     paramOut: 144113
   - typeOfStatisticalProcessing: 6
     paramOut: 145113
-- paramIn: 140114
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141114
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143114
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144114
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145114
-- paramIn: 140115
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141115
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143115
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144115
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145115
-- paramIn: 140116
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141116
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143116
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144116
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145116
-- paramIn: 140117
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141117
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143117
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144117
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145117
-- paramIn: 140118
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141118
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143118
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144118
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145118
-- paramIn: 140119
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141119
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143119
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144119
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145119
-- paramIn: 140120
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 141120
-  - typeOfStatisticalProcessing: 2
-    paramOut: 143120
-  - typeOfStatisticalProcessing: 3
-    paramOut: 144120
-  - typeOfStatisticalProcessing: 6
-    paramOut: 145120
 - paramIn: 140121
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -1660,8 +1606,6 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235377
-  - typeOfStatisticalProcessing: 1
-    paramOut: 233035
   - typeOfStatisticalProcessing: 2
     paramOut: 237377
   - typeOfStatisticalProcessing: 3
@@ -1842,8 +1786,6 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235374
-  - typeOfStatisticalProcessing: 1
-    paramOut: 233032
   - typeOfStatisticalProcessing: 2
     paramOut: 237374
   - typeOfStatisticalProcessing: 3
@@ -1854,8 +1796,6 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235375
-  - typeOfStatisticalProcessing: 1
-    paramOut: 233033
   - typeOfStatisticalProcessing: 2
     paramOut: 237375
   - typeOfStatisticalProcessing: 3
@@ -1924,8 +1864,6 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235376
-  - typeOfStatisticalProcessing: 1
-    paramOut: 233034
   - typeOfStatisticalProcessing: 2
     paramOut: 237376
   - typeOfStatisticalProcessing: 3
@@ -2405,7 +2343,7 @@
   - typeOfStatisticalProcessing: 0
     paramOut: 235318
   - typeOfStatisticalProcessing: 2
-    paramOut: 49
+    paramOut: 237318
   - typeOfStatisticalProcessing: 3
     paramOut: 238318
   - typeOfStatisticalProcessing: 6
@@ -2444,6 +2382,8 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 235321
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237321
   - typeOfStatisticalProcessing: 3
     paramOut: 238321
   - typeOfStatisticalProcessing: 6
@@ -2490,6 +2430,8 @@
     paramOut: 239325
 - paramIn: 228050
   mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235326
   - typeOfStatisticalProcessing: 1
     paramOut: 231041
   - typeOfStatisticalProcessing: 2
@@ -2498,10 +2440,12 @@
     paramOut: 238326
   - typeOfStatisticalProcessing: 6
     paramOut: 239326
-- paramIn: 228083
+- paramIn: 228052
   mappings:
   - typeOfStatisticalProcessing: 0
-    paramOut: 235062
+    paramOut: 235383
+- paramIn: 228083
+  mappings:
   - typeOfStatisticalProcessing: 1
     paramOut: 228080
   - typeOfStatisticalProcessing: 2
@@ -2512,8 +2456,6 @@
     paramOut: 239062
 - paramIn: 228084
   mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235063
   - typeOfStatisticalProcessing: 1
     paramOut: 228081
   - typeOfStatisticalProcessing: 2
@@ -2524,8 +2466,6 @@
     paramOut: 239063
 - paramIn: 228085
   mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235064
   - typeOfStatisticalProcessing: 1
     paramOut: 228082
   - typeOfStatisticalProcessing: 2
@@ -2740,22 +2680,6 @@
     paramOut: 238336
   - typeOfStatisticalProcessing: 6
     paramOut: 239336
-- paramIn: 228239
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235131
-- paramIn: 228240
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235132
-- paramIn: 228246
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235131
-- paramIn: 228247
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235132
 - paramIn: 231004
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -2886,6 +2810,16 @@
     paramOut: 238392
   - typeOfStatisticalProcessing: 6
     paramOut: 239392
+- paramIn: 231072
+  mappings:
+  - typeOfStatisticalProcessing: 0
+    paramOut: 235405
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237405
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238405
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239405
 - paramIn: 240013
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -2964,6 +2898,12 @@
     paramOut: 238034
   - typeOfStatisticalProcessing: 6
     paramOut: 239034
+- paramIn: 260015
+  mappings:
+  - typeOfStatisticalProcessing: 100
+    paramOut: 260682
+  - typeOfStatisticalProcessing: 101
+    paramOut: 260683
 - paramIn: 260033
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -2983,9 +2923,9 @@
   - typeOfStatisticalProcessing: 1
     paramOut: 228228
   - typeOfStatisticalProcessing: 2
-    paramOut: 228226
+    paramOut: 237055
   - typeOfStatisticalProcessing: 3
-    paramOut: 228227
+    paramOut: 238055
   - typeOfStatisticalProcessing: 6
     paramOut: 239055
 - paramIn: 260049
@@ -3012,16 +2952,6 @@
     paramOut: 238029
   - typeOfStatisticalProcessing: 6
     paramOut: 239029
-- paramIn: 260057
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 235137
-  - typeOfStatisticalProcessing: 2
-    paramOut: 237137
-  - typeOfStatisticalProcessing: 3
-    paramOut: 238137
-  - typeOfStatisticalProcessing: 6
-    paramOut: 239137
 - paramIn: 260060
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -3366,10 +3296,6 @@
     paramOut: 238263
   - typeOfStatisticalProcessing: 6
     paramOut: 239263
-- paramIn: 260649
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 263006
 - paramIn: 260657
   mappings:
   - typeOfStatisticalProcessing: 0
@@ -4094,30 +4020,4 @@
   mappings:
   - typeOfStatisticalProcessing: 0
     paramOut: 263909
-- paramIn: 405000
-  mappings:
-  - typeOfStatisticalProcessing: 1
-    paramOut: 444000
-- paramIn: 406000
-  mappings:
-  - typeOfStatisticalProcessing: 1
-    paramOut: 445000
-- paramIn: 435000
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 435001
-  - typeOfStatisticalProcessing: 1
-    paramOut: 435002
-- paramIn: 436000
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 436001
-  - typeOfStatisticalProcessing: 1
-    paramOut: 436002
-- paramIn: 437000
-  mappings:
-  - typeOfStatisticalProcessing: 0
-    paramOut: 437001
-  - typeOfStatisticalProcessing: 1
-    paramOut: 437002
 

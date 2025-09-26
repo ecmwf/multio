@@ -182,6 +182,12 @@ auto fixSnowfallWaterEquivParam() {
 }
 
 
+auto fixSnowCover() {
+    return rule(all(matchParams(260289)),                               //
+                setMarsKey(dm::PARAM, 260038), SetScaleFactor{100.0});  //
+}
+
+
 //-----------------------------------------------------------------------------
 // Fix Timespan
 //-----------------------------------------------------------------------------
@@ -300,15 +306,16 @@ auto ruleWaveBitsPerValue() {
 //-----------------------------------------------------------------------------
 
 const RuleList& wmoUnitMapping() {
-    static auto wmo_ = ruleList(      //
-        fixCloudParam164(),           //
-        fixCloudParam186(),           //
-        fixCloudParam187(),           //
-        fixCloudParam188(),           //
-        fixConvectivePrecip143(),     //
-        fixTotalPrecip228(),          //
-        fixRunOffWaterParam205(),     //
-        fixSnowfallWaterEquivParam()  //
+    static auto wmo_ = ruleList(       //
+        fixCloudParam164(),            //
+        fixCloudParam186(),            //
+        fixCloudParam187(),            //
+        fixCloudParam188(),            //
+        fixConvectivePrecip143(),      //
+        fixTotalPrecip228(),           //
+        fixRunOffWaterParam205(),      //
+        fixSnowfallWaterEquivParam(),  //
+        fixSnowCover()                 //
     );
     return wmo_;
 }

@@ -1,0 +1,27 @@
+set(FILES
+    statistics_param_mappings.yaml
+    statistics_operation_mappings.yaml
+    average_rate_param_mappings.yaml
+)
+
+foreach (FILE IN LISTS FILES)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+    ${CMAKE_CURRENT_BINARY_DIR}/${FILE}
+    COPYONLY
+)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+    ${CMAKE_BINARY_DIR}/${MULTIO_MAPPINGS_DIR}/${FILE}
+    COPYONLY
+)
+
+install(
+    FILES       ${FILE}
+    DESTINATION ${MULTIO_MAPPINGS_DIR}
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
+endforeach()

@@ -90,19 +90,21 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    // Send one message with the input parameter ID
-    auto md = Metadata({
-        {"param", param},
-        {"levtype", "none"},
-        {"grid", "none"},
-        {"startDate", 20200721},
-        {"startTime", 0000},
-        {"step", 0},
-        {"misc-precision", "double"}
-    });
-    auto pl = eckit::Buffer();
-    auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
-    EXPECT_NO_THROW(env.process(std::move(msg)));
+    // Send step 0 and 1 message with the input parameter ID
+    for (int64_t step = 0; step <= 1; ++step) {
+        auto md = Metadata({
+            {"param", param},
+            {"levtype", "none"},
+            {"grid", "none"},
+            {"startDate", 20200721},
+            {"startTime", 0000},
+            {"step", step},
+            {"misc-precision", "double"}
+        });
+        auto pl = eckit::Buffer();
+        auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
+        EXPECT_NO_THROW(env.process(std::move(msg)));
+    }
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
     // Send a flush last-step to trigger emitting the statistics message

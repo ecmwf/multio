@@ -101,7 +101,7 @@ class MultioBaseModel(BaseModel):
         """
         Dump the model to a python dict
         """
-        return self.model_dump(serialize_as_any=True, by_alias=True)
+        return self.model_dump(serialize_as_any=True, by_alias=True, exclude_none=True)
 
     def dump_json(self) -> str:
         """

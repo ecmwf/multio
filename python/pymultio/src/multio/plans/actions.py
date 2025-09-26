@@ -32,7 +32,7 @@ class Action(MultioBaseModel):
     Should not be instantiated directly, use one of the subclasses instead.
     """
 
-    type: str = Field(str, description="Action type")
+    type: Any = Field(..., description="Action type")
 
 class Null(Action):
     """Null Action.
@@ -75,6 +75,13 @@ class StatisticsMTG(Action):
     output_frequency: str = Field(examples=["5h", "10d", "1w"])
 
 
+class Scale(Action):
+    """Scale Action."""
+
+    type: Literal["scale"] = Field("scale", init=False)
+    preset_mappings: Literal["local-to-wmo"] | None = Field(None)
+    custom_mappings: dict[str, str] | None = Field(None)
+
 class Transport(Action):
     """Transport Action"""
 
@@ -109,7 +116,7 @@ class Mask(Action):
 
     type: Literal["mask"] = Field("mask", init=False)
     apply_bitmap: bool = Field(True)
-    missing_value: float = Field(None)  # Need to set to max
+    missing_value: float | None = Field(None)  # Need to set to max
     offset_value: float = Field(273.15)
 
 
@@ -162,6 +169,6 @@ class SingleField(Action):
     type: Literal["single-field-sink"] = Field("single-field-sink", init=False)
 
 
-ACTIONS = Union[Select, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
+ACTIONS = Union[Select, Scale, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
 
-__all__ = ["ACTIONS", "Action", "Select", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]
+__all__ = ["ACTIONS", "Action", "Select", "Scale", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]

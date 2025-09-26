@@ -124,6 +124,7 @@ contains
         ! Local variables
         character(c_char), dimension(:), pointer :: tmp
         integer :: length
+        integer :: i
         ! Private interfaces
         interface
             pure function strlen( str ) result(len) &
@@ -137,9 +138,16 @@ contains
         end interface
         ! Private inerfaces
         length = strlen(cstr)
-        allocate(character(length) :: fstr)
-        call c_f_pointer(cstr, tmp, [length])
-        fstr = transfer(tmp(1:length), fstr)
+        if ( length .gt. 0 ) then
+          allocate(character(length) :: fstr)
+          call c_f_pointer(cstr, tmp, [length])
+          do i = 1, length
+            fstr(i:i) = tmp(i)
+          enddo
+          nullify(tmp)
+        else
+          fstr = 'Unknown error'
+        endif
         ! Exit point
         return
     end function fortranise_cstr

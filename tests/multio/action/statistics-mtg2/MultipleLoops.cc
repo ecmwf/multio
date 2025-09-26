@@ -43,8 +43,8 @@ CASE("Monthly average of daily high temperature") {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
                             {"grid", "none"},
-                            {"startDate", 19961001},
-                            {"startTime", 0000},
+                            {"date", 19961001},
+                            {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
 
@@ -107,8 +107,8 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
                             {"grid", "none"},
-                            {"startDate", 19961001},
-                            {"startTime", 0000},
+                            {"date", 19961001},
+                            {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
 

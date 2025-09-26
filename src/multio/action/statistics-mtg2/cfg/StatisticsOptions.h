@@ -21,7 +21,6 @@ private:
     bool readRestart_;
     bool writeRestart_;
     bool debugRestart_;
-    bool useDateTime_;
     bool clientSideStatistics_;
     std::string restartTime_;
 
@@ -39,7 +38,6 @@ private:
     std::vector<std::pair<std::string, std::string>> setMetadata_;
 
 private:
-    void parseUseDateTime(const eckit::LocalConfiguration& cfg);
     void parseCheckMissingValues(const eckit::LocalConfiguration& cfg);
     void parseTimeStep(const eckit::LocalConfiguration& cfg);
     void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
@@ -68,7 +66,6 @@ public:
 
     const std::string& logPrefix() const;
     const std::string& windowType() const;
-    bool useDateTime() const { return useDateTime_; };
 
     // Handle missing value
     const std::string& bitmapPresentKey() const;

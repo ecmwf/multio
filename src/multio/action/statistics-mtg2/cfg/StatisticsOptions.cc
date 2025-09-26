@@ -10,7 +10,6 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     readRestart_{false},
     writeRestart_{false},
     debugRestart_{false},
-    useDateTime_{false},
     clientSideStatistics_{false},
     restartTime_{"latest"},  // 00000000-000000
     restartPath_{"."},
@@ -32,7 +31,6 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     // Read the options
     if (compConf.parsedConfig().has("options")) {
         const auto& options = compConf.parsedConfig().getSubConfiguration("options");
-        parseUseDateTime(options);
         parseTimeStep(options);
         parseInitialConditionPresent(options);
         parseWriteRestart(options);
@@ -59,12 +57,6 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     return;
 };
 
-
-void StatisticsOptions::parseUseDateTime(const eckit::LocalConfiguration& cfg) {
-    // Distance in steps between two messages
-    useDateTime_ = cfg.getLong("use-current-time", false);
-    return;
-};
 
 void StatisticsOptions::parseTimeStep(const eckit::LocalConfiguration& cfg) {
     // How many seconds in a timestep

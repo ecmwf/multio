@@ -138,44 +138,27 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
 };
 
 void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
-    std::optional<std::int64_t> timeVal;
-    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::Time))) {
-        time_ = *timeVal;
-    }
-    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::StartTime))) {
-        time_ = *timeVal;
-    }
-    else {
-        throw eckit::SeriousBug{"Unable to find start time", Here()};
-    }
-    return;
+    // NOTE: Currently no support for messages without step (from analysis)!
+    ASSERT(md.getOpt<std::int64_t>(dm::legacy::Step).has_value());
+    const auto timeVal = md.getOpt<std::int64_t>(dm::legacy::Time);
+    ASSERT(timeVal.has_value());
+    time_ = *timeVal;
 };
 
 void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
-    std::optional<std::int64_t> dateVal;
-    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::Date))) {
-        date_ = *dateVal;
-    }
-    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::StartDate))) {
-        date_ = *dateVal;
-    }
-    else {
-        throw eckit::SeriousBug{"Unable to find start date", Here()};
-    }
-    return;
+    // NOTE: Currently no support for messages without step (from analysis)!
+    ASSERT(md.getOpt<std::int64_t>(dm::legacy::Step).has_value());
+    const auto dateVal = md.getOpt<std::int64_t>(dm::legacy::Date);
+    ASSERT(dateVal.has_value());
+    date_ = *dateVal;
 };
 
 
 void StatisticsConfiguration::readStep(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto step = md.getOpt<std::int64_t>(dm::legacy::EndStep); step) {
-        step_ = *step;
-        return;
-    }
-    if (auto step = md.getOpt<std::int64_t>(dm::legacy::Step); step) {
-        step_ = *step;
-        return;
-    }
-    throw eckit::SeriousBug{"Step metadata not present", Here()};
+    // NOTE: Currently no support for messages without step (from analysis)!
+    const auto stepVal = md.getOpt<std::int64_t>(dm::legacy::Step);
+    ASSERT(stepVal.has_value());
+    step_ = *stepVal;
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const StatisticsOptions& opt) {

@@ -203,14 +203,6 @@ const ConfigFile& MultioConfiguration::getConfigFile(const eckit::PathName& fnam
     return referencedConfigFiles_[key];
 }
 
-// TODO:
-// Currently we replace {~} with the configured through MULTIO_SERVER_CONFIG_PATH (which might be the basepath of
-// MULTIO_SERVER_CONFIG_FILE). All other names are looked up in the environment directly.
-//
-// Usually we would use eckit::Resource, however we have not adopted the usage of a multio home (i.e. /etc/multio) yet
-// and probably don't want to - alot of other users probably don't want to adopt this approach. Moreover to allow
-// looking environment variables or cli arguments, for eckit::Resource would enforce us to construct a string like
-// "var;$var;-var" which will be reparsed again instead of passing 3 arguments directly...
 std::string MultioConfiguration::replaceCurly(const std::string& s) const {
     return util::replaceCurly(s, [this](std::string_view replace) {
         if (replace == "~") {

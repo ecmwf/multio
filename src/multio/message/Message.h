@@ -24,13 +24,11 @@
 #include "multio/message/Peer.h"
 #include "multio/message/SharedMetadata.h"
 #include "multio/message/SharedPayload.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 #include <memory>
 #include <optional>
 #include <string>
-
-using multio::message::glossary;
 
 namespace eckit {
 class Stream;
@@ -42,7 +40,8 @@ class Message;
 
 namespace multio::message {
 
-// TODO: we may want to hash the payload (and the header?)
+namespace dm = multio::datamod;
+
 struct LogMessage;
 
 class Message {
@@ -233,8 +232,8 @@ message::Message convert_precision(message::Message&& msg) {
     eckit::Buffer buffer(N * sizeof(To));
 
     auto md = msg.metadata();
-    md.set<std::int64_t>(glossary().globalSize, buffer.size());
-    md.set(glossary().precision, std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
+    md.set<std::int64_t>(dm::legacy::GlobalSize, buffer.size());
+    md.set(dm::legacy::Precision, std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
 
     const auto* a = reinterpret_cast<const From*>(msg.payload().data());
     auto* b = reinterpret_cast<To*>(buffer.data());

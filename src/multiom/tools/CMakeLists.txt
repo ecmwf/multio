@@ -48,6 +48,31 @@ if(HAVE_MULTIO_BUILD_TOOLS)
 
 ecbuild_add_executable(
 
+  TARGET multiom-nested-rules-reader
+
+  SOURCES
+    ${MULTIOM_TOOLS_DIR}/multiom_nested_rules_reader_prog.F90
+
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  INCLUDES
+      $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
+
+  LIBS
+    fckit
+    eccodes
+    eccodes_f90
+    multio-fapi
+    multiom
+    multiom-tools-utils
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+ecbuild_add_executable(
+
   TARGET multiom-feed
 
   SOURCES
@@ -125,29 +150,3 @@ ecbuild_add_executable(
 )
 
 endif()
-
-
-ecbuild_add_executable(
-
-  TARGET
-      grib1-to-grib2
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2
-
-  SOURCES
-      multiom-mtg2.cc
-      ../../multio/tools/MultioTool.cc
-
-  NO_AS_NEEDED
-
-  LIBS
-      multio
-      multiom
-      atlas
-      eckit
-      fckit
-      metkit
-      eccodes
-      eccodes_f90
-)

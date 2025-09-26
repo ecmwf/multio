@@ -46,16 +46,24 @@ typename std::decay_t<Arg>::Base&& tryToVariantBase(Arg&& arg) noexcept {
     return static_cast<Base&&>(std::forward<Arg>(arg));
 }
 
-template <typename Arg,
-          std::enable_if_t<(HasVariantBaseType_v<std::decay_t<Arg>> && std::is_lvalue_reference_v<Arg>), bool> = true>
+// Use SFINAE instead `if constexpr` to avoid compiler warning of missing return type
+template <typename Arg, std::enable_if_t<(HasVariantBaseType_v<std::decay_t<Arg>> && std::is_lvalue_reference_v<Arg>
+                                          && std::is_const_v<std::remove_reference_t<Arg>>),
+                                         bool>
+                        = true>
 decltype(auto) tryToVariantBase(Arg&& arg) noexcept {
     using Base = typename std::decay_t<Arg>::Base;
-    if constexpr (std::is_const_v<std::remove_reference_t<Arg>>) {
-        return static_cast<Base const&>(arg);
-    }
-    else {
-        return static_cast<Base&>(arg);
-    }
+    return static_cast<Base const&>(arg);
+}
+
+// Use SFINAE instead `if constexpr` to avoid compiler warning of missing return type
+template <typename Arg, std::enable_if_t<(HasVariantBaseType_v<std::decay_t<Arg>> && std::is_lvalue_reference_v<Arg>
+                                          && !std::is_const_v<std::remove_reference_t<Arg>>),
+                                         bool>
+                        = true>
+decltype(auto) tryToVariantBase(Arg&& arg) noexcept {
+    using Base = typename std::decay_t<Arg>::Base;
+    return static_cast<Base&>(arg);
 }
 
 template <typename Arg, std::enable_if_t<(!HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
@@ -70,6 +78,25 @@ template <typename Func, typename... ValuesToVisit>
 decltype(auto) visit(Func&& f, ValuesToVisit&&... values) noexcept(
     noexcept(std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<ValuesToVisit>(values))...))) {
     return std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<ValuesToVisit>(values))...);
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+// visitOrForward performs a visit on variants and types derived from variant
+// If not the passed value is forwarded to the function.
+template <typename Func, typename Arg, std::enable_if_t<(IsVariant_v<std::decay_t<Arg>> || HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
+decltype(auto) visitOrForward(Func&& f,
+                              Arg&& value) noexcept(noexcept(std::visit(std::forward<Func>(f),
+                                                                        tryToVariantBase(std::forward<Arg>(value))))) {
+    return std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<Arg>(value)));
+}
+
+template <typename Func, typename Arg, std::enable_if_t<(!IsVariant_v<std::decay_t<Arg>> && !HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
+decltype(auto) visitOrForward(Func&& f,
+                              Arg&& value) noexcept(noexcept(std::forward<Func>(f)(std::forward<Arg>(value)))) {
+    return std::forward<Func>(f)(std::forward<Arg>(value));
 }
 
 

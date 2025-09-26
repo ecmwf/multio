@@ -33,7 +33,7 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Substitution.h"
@@ -41,20 +41,21 @@
 
 namespace multio::action::interpolate {
 
-using message::glossary;
+namespace dm = multio::datamod;
+
 using message::MetadataTypes;
 
 namespace {
 
 // Quick and dirty fix to avoid encoding problems with spherical harmonics
-const std::vector<typename MetadataTypes::KeyType> metadata_black_list{glossary().sphericalHarmonics,
-                                                                       glossary().complexPacking,
-                                                                       glossary().pentagonalResolutionParameterJ,
-                                                                       glossary().pentagonalResolutionParameterK,
-                                                                       glossary().pentagonalResolutionParameterM,
-                                                                       glossary().subSetJ,
-                                                                       glossary().subSetK,
-                                                                       glossary().subSetM};
+const std::vector<typename MetadataTypes::KeyType> metadata_black_list{dm::legacy::SphericalHarmonics,
+                                                                       dm::legacy::ComplexPacking,
+                                                                       dm::legacy::PentagonalResolutionParameterJ,
+                                                                       dm::legacy::PentagonalResolutionParameterK,
+                                                                       dm::legacy::PentagonalResolutionParameterM,
+                                                                       dm::legacy::SubSetJ,
+                                                                       dm::legacy::SubSetK,
+                                                                       dm::legacy::SubSetM};
 
 const std::vector<double> full_area{90.0, 0.0, -90.0, 360.0};
 
@@ -386,10 +387,10 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             }
         }
         else if (gridKind == "HEALPix" || gridKind == "HEALPix_nested") {
-            md.set(glossary().gridded, true);
-            md.set(glossary().gridType, "HEALPix");
-            md.set(glossary().nside, (std::int64_t)grid[0]);
-            md.set(glossary().orderingConvention, gridKind == "HEALPix_nested" ? "nested" : "ring");
+            md.set(dm::legacy::Gridded, true);
+            md.set(dm::legacy::GridType, "HEALPix");
+            md.set(dm::legacy::Nside, (std::int64_t)grid[0]);
+            md.set(dm::legacy::OrderingConvention, gridKind == "HEALPix_nested" ? "nested" : "ring");
 
             // If no interpolation matrix name is provided, generate one
             if (interpolationMatrix) {
@@ -424,11 +425,11 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     message::Metadata md;
     fill_out_metadata(msg.metadata(), md);
-    md.set(glossary().precision, "double");
+    md.set(dm::legacy::Precision, "double");
 
     mir::param::SimpleParametrisation inputPar;
     auto inp = getInputGrid(config, md);
-    fill_input(config, inputPar, size, msg.metadata().getOpt<std::string>(glossary().domain).value_or(""), inp);
+    fill_input(config, inputPar, size, msg.metadata().getOpt<std::string>(dm::legacy::Domain).value_or(""), inp);
     auto searchMissingValue = msg.metadata().find("missingValue");
     auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
     if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end() && searchBitmapPresent->second.get<bool>()) {
@@ -463,8 +464,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     if (outMetadata.has("missing_value")) {
         double v;
         outMetadata.get("missing_value", v);
-        md.set(glossary().missingValue, v);
-        md.set(glossary().bitmapPresent, true);
+        md.set(dm::legacy::MissingValue, v);
+        md.set(dm::legacy::BitmapPresent, true);
     }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));

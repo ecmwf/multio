@@ -439,7 +439,7 @@ IMPLICIT NONE
   CASE ( 'initialstep', 'initial-step' )
     ITERATOR = PAR_ITERATOR_INITIAL_STEP
 
-  CASE ( 'lengthoftimestepinseconds', 'length-of-time-step-in-seconds' )
+  CASE ( 'lengthoftimestepinseconds', 'length-of-time-step-in-seconds', 'timeincrementinseconds' )
     ITERATOR = PAR_ITERATOR_LENGTH_OF_TIME_STEP
 
   CASE ( 'lengthoftimerangeinseconds', 'length-of-time-range-in-seconds' )
@@ -451,10 +451,12 @@ IMPLICIT NONE
   CASE ( 'pv' )
     ITERATOR = PAR_ITERATOR_PV
 
-  CASE ( 'numberofmissingvalues', 'number-of-missing-values' )
+  ! number of missing values is only used to check if bitmap is given. With the migration we will only use bitmapPresent.
+  ! This is a hack but currently both values have the same meaning
+  CASE ( 'numberofmissingvalues', 'number-of-missing-values', 'bitmappresent' )
     ITERATOR = PAR_ITERATOR_NUMBER_OF_MISSING_VALUES
 
-  CASE ( 'valueofmissingvalues', 'value-of-missing-values' )
+  CASE ( 'valueofmissingvalues', 'value-of-missing-values', 'missingvalue' )
     ITERATOR = PAR_ITERATOR_VALUE_OF_MISSING_VALUES
 
   CASE ( 'typeofensembleforecast', 'type-of-ensemble-forecast' )

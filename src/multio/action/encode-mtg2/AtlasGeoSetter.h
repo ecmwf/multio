@@ -8,7 +8,6 @@
  * nor does it submit to any jurisdiction.
  */
 
-
 #pragma once
 
 // This functionality is supposed has been added to allow a fast migration for encoding AIFS output via python.
@@ -18,78 +17,34 @@
 // Code is copied from mtg2 tool
 
 #include <regex>
-#include <stdexcept>
 #include <string>
 
-#include "atlas/grid.h"
-#include "atlas/library.h"
-#include "atlas/parallel/mpi/mpi.h"
-
-#include "multio/action/encode-mtg2/EncodeMtg2.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/AtlasGeo.h"
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
-namespace multio::action::encode_mtg2::extract {
+namespace multio::action::extract {
 
-using message::Parametrization;
-
-atlas::Grid readGrid(const std::string& name) {
-    // atlas::mpi::Scope mpi_scope("self");
-    return atlas::Grid{name};
-}
-
-template <class GridType>
-GridType createGrid(const std::string& atlasNamedGrid) {
-    const atlas::Grid grid = readGrid(atlasNamedGrid);
-    auto structuredGrid = atlas::StructuredGrid(grid);
-    return GridType(structuredGrid);
-}
-
+namespace dm = multio::datamod;
 
 struct AtlasGeoSetter {
-    using GridTypeFunction = std::function<void(const std::string& prefix, const std::string& gridName)>;
+    using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
 
-    static void handleGG(const std::string& prefix, const std::string& gridName) {
-        message::Metadata md{{prefix, true}};
+    static void handleGG(const std::string& scope, const std::string& gridName) {
+        message::Metadata md{{scope, true}};
 
-        // std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
-        // bool isReducedGaussian = std::regex_match(gridName, reducedGaussianMatch);
+        auto geoGG = datamod::scopeRecord(dm::GeoGGRecord{}, scope);
 
-        // TODO use MarsKeySet in future...
-        const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridName);
+        dm::setKeysFromAtlas(geoGG, gridName);
 
-        // getAndSet(h, geom, "truncateDegrees", "truncate-degrees");
-        using namespace message::Mtg2;
-        md.set(prefix + std::string(gg::numberOfParallelsBetweenAPoleAndTheEquator), gaussianGrid.N());
-        // getAndSetIfNonZero(h, geom, "numberOfPointsAlongAMeridian", "number-of-points-along-a-meridian");
+        dm::dumpRecord(geoGG, md);
 
-        {
-            auto it = gaussianGrid.lonlat().begin();
-
-            md.set(prefix + std::string(gg::latitudeOfFirstGridPointInDegrees), (*it)[1]);
-            md.set(prefix + std::string(gg::longitudeOfFirstGridPointInDegrees), (*it)[0]);
-
-            it += gaussianGrid.size() - 1;
-            md.set(prefix + std::string(gg::latitudeOfLastGridPointInDegrees), (*it)[1]);
-
-            const auto equator = gaussianGrid.N();
-            const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
-            md.set(prefix + std::string(gg::longitudeOfLastGridPointInDegrees), maxLongitude);
-        }
-
-        {
-            auto tmp = gaussianGrid.nx();
-            std::vector<long> pl(tmp.size(), 0);
-            for (int i = 0; i < tmp.size(); ++i) {
-                pl[i] = long(tmp[i]);
-            }
-            md.set(prefix + std::string(gg::pl), std::move(pl));
-        }
         message::Parametrization::instance().update(md);
     }
 
-    static void handleGrid(const std::string& prefix, const std::string& gridName) {
+    static void handleGrid(const std::string& scope, const std::string& gridName) {
         const static std::vector<std::pair<std::string, GridTypeFunction>> gridMap{
             {"^\\s*[FON]\\d+\\s*$", &handleGG},
             // {"^\\s*L\\d+x\\d+\\s*$", &updateRegularLatLonGrid}
@@ -101,7 +56,7 @@ struct AtlasGeoSetter {
         });
 
         if (gridFunc != gridMap.cend()) {
-            gridFunc->second(prefix, gridName);
+            gridFunc->second(scope, gridName);
         }
         else {
             std::ostringstream oss;
@@ -113,4 +68,4 @@ struct AtlasGeoSetter {
 };
 
 
-}  // namespace multio::action::encode_mtg2::extract
+}  // namespace multio::action::extract

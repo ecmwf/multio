@@ -16,7 +16,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 
@@ -26,8 +25,6 @@
 
 
 namespace multio::action::scale {
-
-using message::glossary;
 
 Scale::Scale(const ComponentConfiguration& compConf) :
     ChainedAction(compConf), scaling_{compConf}, mapping_{compConf}, paramsToScale_{} {

@@ -9,12 +9,12 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Substitution.h"
 
 namespace multio::action::statistics {
 
-using message::glossary;
+namespace dm = multio::datamod;
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     opt_{opt},
@@ -70,7 +70,7 @@ const std::string& StatisticsConfiguration::key() const {
 };
 
 void StatisticsConfiguration::readPrecision(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto precision = md.getOpt<std::string>(glossary().precision); precision) {
+    if (auto precision = md.getOpt<std::string>(dm::legacy::Precision); precision) {
         precision_ = *precision;
     }
     else {
@@ -79,7 +79,7 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
 };
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto gridType = md.getOpt<std::string>(glossary().gridType); gridType) {
+    if (auto gridType = md.getOpt<std::string>(dm::legacy::GridType); gridType) {
         gridType_ = *gridType;
     }
     else {
@@ -88,10 +88,10 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
 };
 
 void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto levType = md.getOpt<std::string>(glossary().levtype); levType) {
+    if (auto levType = md.getOpt<std::string>(dm::legacy::Levtype); levType) {
         levType_ = *levType;
     }
-    else if (auto category = md.getOpt<std::string>(glossary().category); category) {
+    else if (auto category = md.getOpt<std::string>(dm::legacy::Category); category) {
         levType_ = *category;  // TODO this needs proper handling once category is changed to levtype
     }
     else {
@@ -100,10 +100,10 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto param = md.getOpt<std::string>(glossary().param); param) {
+    if (auto param = md.getOpt<std::string>(dm::legacy::Param); param) {
         param_ = *param;
     }
-    else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
+    else if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
         param_ = std::to_string(*paramId);
     }
     else {
@@ -113,10 +113,10 @@ void StatisticsConfiguration::readParam(const message::Metadata& md, const Stati
 
 
 void StatisticsConfiguration::readLevel(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto level = md.getOpt<std::int64_t>(glossary().level); level) {
+    if (auto level = md.getOpt<std::int64_t>(dm::legacy::Level); level) {
         level_ = *level;
     }
-    else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
+    else if (auto levelist = md.getOpt<std::int64_t>(dm::legacy::Levelist); levelist) {
         level_ = *levelist;
     }
     else {
@@ -126,10 +126,10 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
 
 void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> timeVal;
-    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().time))) {
+    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::Time))) {
         time_ = *timeVal;
     }
-    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().startTime))) {
+    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::StartTime))) {
         time_ = *timeVal;
     }
     else {
@@ -139,10 +139,10 @@ void StatisticsConfiguration::readStartTime(const message::Metadata& md, const S
 
 void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> dateVal;
-    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().date))) {
+    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::Date))) {
         date_ = *dateVal;
     }
-    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().startDate))) {
+    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::StartDate))) {
         date_ = *dateVal;
     }
     else {
@@ -152,11 +152,11 @@ void StatisticsConfiguration::readStartDate(const message::Metadata& md, const S
 
 
 void StatisticsConfiguration::readStep(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto step = md.getOpt<std::int64_t>(glossary().endStep); step) {
+    if (auto step = md.getOpt<std::int64_t>(dm::legacy::EndStep); step) {
         step_ = *step;
         return;
     }
-    if (auto step = md.getOpt<std::int64_t>(glossary().step); step) {
+    if (auto step = md.getOpt<std::int64_t>(dm::legacy::Step); step) {
         step_ = *step;
         return;
     }
@@ -164,17 +164,17 @@ void StatisticsConfiguration::readStep(const message::Metadata& md, const Statis
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const StatisticsOptions& opt) {
-    timeStep_ = md.getOpt<std::int64_t>(glossary().timeStep).value_or(timeStep_);
+    timeStep_ = md.getOpt<std::int64_t>(dm::legacy::TimeStep).value_or(timeStep_);
 };
 
 void StatisticsConfiguration::readStepFrequency(const message::Metadata& md, const StatisticsOptions& opt) {
-    stepFreq_ = md.getOpt<std::int64_t>(glossary().stepFrequency).value_or(stepFreq_);
+    stepFreq_ = md.getOpt<std::int64_t>(dm::legacy::StepFrequency).value_or(stepFreq_);
 };
 
 
 void StatisticsConfiguration::readMissingValue(const message::Metadata& md, const StatisticsOptions& opt) {
-    const auto missingVal = md.getOpt<double>(glossary().missingValue);
-    const auto bitMapPresent = md.getOpt<bool>(glossary().bitmapPresent);
+    const auto missingVal = md.getOpt<double>(dm::legacy::MissingValue);
+    const auto bitMapPresent = md.getOpt<bool>(dm::legacy::BitmapPresent);
     bitmapPresent_ = missingVal && bitMapPresent && *bitMapPresent;
     if (bitmapPresent_) {
         missingValue_ = *missingVal;

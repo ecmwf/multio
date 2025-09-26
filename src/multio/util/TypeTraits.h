@@ -8,15 +8,15 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
-
-/// @date July 2023
-
 
 #pragma once
 
+#include <chrono>
+#include <functional>
 #include <memory>  // unique_ptr
 #include <optional>
+#include <string>
+#include <tuple>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -25,10 +25,23 @@ namespace multio::util {
 
 //-----------------------------------------------------------------------------
 
+struct Identity {
+    template <typename T>
+    decltype(auto) operator()(T&& v) const noexcept {
+        return std::forward<T>(v);
+    }
+};
+
+
+//-----------------------------------------------------------------------------
+
 template <typename T>
 struct TypeTag {
     using type = T;
 };
+
+template <typename T>
+using Type_t = typename std::decay_t<T>::type;
 
 
 //-----------------------------------------------------------------------------
@@ -40,6 +53,13 @@ struct TypeList {
         return (false || ... || std::is_same_v<T, TI>);
     }
 };
+
+
+template <typename T>
+struct ToTypeList;
+
+template <typename T>
+using ToTypeList_t = typename ToTypeList<T>::type;
 
 
 //-------------------------------------
@@ -121,6 +141,29 @@ using TypeListContains = TypeListAny<TypeListContainsExpr<Type>::template Expr, 
 template <typename Type, typename TypeList>
 inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::value;
 
+
+//-----------------------------------------------------------------------------
+
+template <typename TL, typename Processed = TypeList<>>
+struct UniqueTypeList;
+
+template <typename... TP>
+struct UniqueTypeList<TypeList<>, TypeList<TP...>> {
+    using type = TypeList<TP...>;
+};
+
+
+template <typename TL, typename Processed = TypeList<>>
+using UniqueTypeList_t = typename UniqueTypeList<TL, Processed>::type;
+
+template <typename T1, typename... TX, typename... TP>
+struct UniqueTypeList<TypeList<T1, TX...>, TypeList<TP...>> {
+    using type = UniqueTypeList_t<TypeList<TX...>,                                             //
+                                  std::conditional_t<TypeListContains_v<T1, TypeList<TP...>>,  //
+                                                     TypeList<TP...>,                          //
+                                                     TypeList<TP..., T1>>>;
+};
+
 //-----------------------------------------------------------------------------
 
 // Sane overload resolution - used to initialize and assign values to a variant finding "best" matches.
@@ -167,8 +210,7 @@ struct SaneOverloadResolution<From, TI, TS...>
                          IgnoredOverloadForResolution<TI>> {
     using SaneOverloadResolution<From, TS...>::operator();
     using std::conditional_t<NotNarrowConstructible_v<From, TI>, BaseOverloadForResolution<TI>,
-                             IgnoredOverloadForResolution<TI>>::
-    operator();
+                             IgnoredOverloadForResolution<TI>>::operator();
 };
 
 
@@ -247,11 +289,10 @@ template <typename Func>
 struct ForwardUnwrappedUniquePtr {
     Func func_;
 
-
     template <typename... Args>
     decltype(auto) operator()(Args&&... args) && noexcept(
-        noexcept(std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
-        return std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
+        noexcept(std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
+        return std::forward<Func>(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
     }
 };
 
@@ -307,6 +348,75 @@ template <typename T>
 inline constexpr bool IsVariant_v = IsVariant<T>::value;
 
 
+template <typename... T>
+struct ToTypeList<std::variant<T...>> {
+    using type = TypeList<T...>;
+};
+
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsTuple {
+    static constexpr bool value = false;
+};
+template <typename... T>
+struct IsTuple<std::tuple<T...>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsTuple_v = IsTuple<T>::value;
+
+
+template <typename... T>
+struct ToTypeList<std::tuple<T...>> {
+    using type = TypeList<T...>;
+};
+
+
+// Apply a function for each element in a tuple
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    (func(std::get<I>(std::forward<Tup>(tup))), ...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+void forEach(Func&& func, Tup&& tup) {
+    forEach(std::forward<Func>(func), std::forward<Tup>(tup),
+            std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+template <typename Func, typename Tup, std::size_t... I,
+          std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup, std::index_sequence<I...>) {
+    // avoid std::apply to reduce compile-time complexity
+    return std::make_tuple(func(std::get<I>(std::forward<Tup>(tup)))...);
+}
+template <typename Func, typename Tup, std::enable_if_t<util::IsTuple_v<std::decay_t<Tup>>, bool> = true>
+decltype(auto) map(Func&& func, Tup&& tup) {
+    return map(std::forward<Func>(func), std::forward<Tup>(tup),
+               std::make_index_sequence<std::tuple_size_v<std::decay_t<Tup>>>());
+}
+
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsReferenceWrapper {
+    static constexpr bool value = false;
+};
+template <class T>
+struct IsReferenceWrapper<std::reference_wrapper<T>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsReferenceWrapper_v = IsReferenceWrapper<T>::value;
+
+
 //-----------------------------------------------------------------------------
 
 template <typename, class = void>
@@ -320,6 +430,7 @@ template <typename T>
 inline constexpr bool HasVariantBaseType_v = HasVariantBaseType<T>::value;
 
 //-----------------------------------------------------------------------------
+
 
 }  // namespace multio::util
 

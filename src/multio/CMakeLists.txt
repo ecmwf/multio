@@ -24,6 +24,7 @@ list( APPEND multio_library_srcs
 list( APPEND multio_util_srcs
     util/DateTime.cc
     util/DateTime.h
+    util/Hash.h
     util/Environment.cc
     util/Environment.h
     util/FailureHandling.cc
@@ -38,6 +39,11 @@ list( APPEND multio_util_srcs
     util/MioGribHandle.h
     util/MioGribHandle.cc
     util/Timing.h
+    util/PrehashedKey.h
+    util/TypeTraits.h
+    util/TypeToString.h
+    util/SampleMetadataGen.h
+    util/Print.h
 )
 
 if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
@@ -121,8 +127,6 @@ list( APPEND multio_message_srcs
     message/MetadataValue.cc
     message/MetadataTypes.h
     message/MetadataTypes.cc
-    message/Glossary.cc
-    message/Glossary.h
     message/MetadataException.cc
     message/MetadataException.h
     message/MetadataMatcher.cc
@@ -139,7 +143,38 @@ list( APPEND multio_message_srcs
     message/Peer.h
     message/MetadataMapping.cc
     message/MetadataMapping.h
-    message/PrehashedKey.h
+)
+
+list( APPEND multio_datamod_srcs
+    datamod/core/DataModellingException.cc
+    datamod/core/DataModellingException.h
+    datamod/core/Entry.h
+    datamod/core/EntryDef.h
+    datamod/core/Hash.h
+    datamod/core/Print.h
+    datamod/core/Compare.h
+    datamod/core/Record.h
+    datamod/core/NestedRecord.h
+    datamod/types/Repres.cc
+    datamod/types/Repres.h
+    datamod/types/TimeDuration.cc
+    datamod/types/TimeDuration.h
+    datamod/types/LevType.cc
+    datamod/types/LevType.h
+    datamod/types/StatType.cc
+    datamod/types/StatType.h
+    datamod/types/TypeOfLevel.cc
+    datamod/types/TypeOfLevel.h
+    datamod/types/TypeOfStatisticalProcessing.cc
+    datamod/types/TypeOfStatisticalProcessing.h
+    datamod/ContainerInterop.h
+    datamod/Mapper.cc
+    datamod/Mapper.h
+    datamod/AtlasGeo.h
+    datamod/MarsMiscGeo.h
+    datamod/MarsMiscGeo.cc
+    datamod/GribKeys.h
+    datamod/Glossary.h
 )
 
 list( APPEND multio_server_srcs
@@ -190,6 +225,7 @@ list( APPEND multio_transport_srcs
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_util_srcs}
+    ${multio_datamod_srcs}
     ${multio_config_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
@@ -235,6 +271,8 @@ add_subdirectory(maestro)
 add_subdirectory(action)
 # add_subdirectory(api)
 add_subdirectory(tools)
+
+add_subdirectory(mars2mars)
 
 if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
     install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}

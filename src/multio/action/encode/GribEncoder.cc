@@ -42,7 +42,6 @@
 
 namespace multio::action::encode {
 
-using message::glossary;
 using message::Message;
 using message::MetadataTypes;
 using message::Peer;
@@ -93,9 +92,9 @@ std::int64_t timeUnitCodes(util::TimeUnit u) {
 
 std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef, const message::Metadata& in) {
     static std::unordered_map<std::string, std::tuple<std::string, std::string>> REF_TO_DATETIME_KEYS{
-        {"start", {glossary().startDate, glossary().startTime}},
-        {"previous", {glossary().previousDate, glossary().previousTime}},
-        {"current", {glossary().currentDate, glossary().currentTime}},
+        {"start", {dm::legacy::StartDate, dm::legacy::StartTime}},
+        {"previous", {dm::legacy::PreviousDate, dm::legacy::PreviousTime}},
+        {"current", {dm::legacy::CurrentDate, dm::legacy::CurrentTime}},
     };
 
     auto search = REF_TO_DATETIME_KEYS.find(timeRef);
@@ -106,12 +105,12 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
 
 
 void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
-    const auto searchStartDate = in.find(glossary().startDate);
-    const auto searchStartTime = in.find(glossary().startTime);
-    const auto searchDataDate = in.find(glossary().dataDate);
-    const auto searchDataTime = in.find(glossary().dataTime);
-    const auto searchDate = in.find(glossary().date);
-    const auto searchTime = in.find(glossary().time);
+    const auto searchStartDate = in.find(dm::legacy::StartDate);
+    const auto searchStartTime = in.find(dm::legacy::StartTime);
+    const auto searchDataDate = in.find(dm::legacy::DataDate);
+    const auto searchDataTime = in.find(dm::legacy::DataTime);
+    const auto searchDate = in.find(dm::legacy::Date);
+    const auto searchTime = in.find(dm::legacy::Time);
 
     bool hasStartDateTime = (searchStartDate != in.end() && searchStartTime != in.end());
     bool hasDataDateTime = (searchDataDate != in.end() && searchDataTime != in.end());
@@ -144,28 +143,28 @@ void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
                                       eckit::Time(startTime.hour, startTime.minute, startTime.second));
 
         {
-            const auto searchStep = in.find(glossary().step);
-            const auto searchCurrentDate = in.find(glossary().currentDate);
-            const auto searchCurrentTime = in.find(glossary().currentTime);
+            const auto searchStep = in.find(dm::legacy::Step);
+            const auto searchCurrentDate = in.find(dm::legacy::CurrentDate);
+            const auto searchCurrentTime = in.find(dm::legacy::CurrentTime);
             if (searchStep != in.end() && (searchCurrentDate == in.end() || searchCurrentTime == in.end())) {
                 const std::int64_t& step = searchStep->second.get<std::int64_t>();
 
                 // IFS default step unit is hours
                 auto currentDateTime = startDateTime + (step * 3600);
 
-                in.set<std::int64_t>(glossary().currentDate, currentDateTime.date().yyyymmdd());
-                in.set<std::int64_t>(glossary().currentTime, currentDateTime.time().hhmmss());
+                in.set<std::int64_t>(dm::legacy::CurrentDate, currentDateTime.date().yyyymmdd());
+                in.set<std::int64_t>(dm::legacy::CurrentTime, currentDateTime.time().hhmmss());
             }
         }
 
 
-        const auto searchStepRange = in.find(glossary().stepRange);
-        const auto searchStartStep = in.find(glossary().startStep);
-        const auto searchEndStep = in.find(glossary().endStep);
-        const auto searchCurrentDate = in.find(glossary().currentDate);
-        const auto searchCurrentTime = in.find(glossary().currentTime);
-        const auto searchPreviousDate = in.find(glossary().previousDate);
-        const auto searchPreviousTime = in.find(glossary().previousTime);
+        const auto searchStepRange = in.find(dm::legacy::StepRange);
+        const auto searchStartStep = in.find(dm::legacy::StartStep);
+        const auto searchEndStep = in.find(dm::legacy::EndStep);
+        const auto searchCurrentDate = in.find(dm::legacy::CurrentDate);
+        const auto searchCurrentTime = in.find(dm::legacy::CurrentTime);
+        const auto searchPreviousDate = in.find(dm::legacy::PreviousDate);
+        const auto searchPreviousTime = in.find(dm::legacy::PreviousTime);
         if ((searchStepRange != in.end() || (searchStartStep != in.end() && searchEndStep != in.end()))
             && (searchCurrentDate == in.end() || searchCurrentTime == in.end() || searchPreviousDate == in.end()
                 || searchPreviousTime == in.end())) {
@@ -279,10 +278,10 @@ void setSoilLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, lon
 void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long level) {
     g.setValue("typeOfLevel", typeOfLevel);
 
-    g.setMissing(glossary().scaleFactorOfFirstFixedSurface);
-    g.setMissing(glossary().scaledValueOfFirstFixedSurface);
-    g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
-    g.setMissing(glossary().scaledValueOfSecondFixedSurface);
+    g.setMissing(dm::legacy::ScaleFactorOfFirstFixedSurface);
+    g.setMissing(dm::legacy::ScaledValueOfFirstFixedSurface);
+    g.setMissing(dm::legacy::ScaleFactorOfSecondFixedSurface);
+    g.setMissing(dm::legacy::ScaledValueOfSecondFixedSurface);
 }
 
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
@@ -305,49 +304,49 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    const auto gridType = lookUp<std::string>(md, glossary().gridType)();
-    const auto levtype = lookUp<std::string>(md, glossary().levtype)();
-    const auto gribEdition = lookUp<std::string>(md, glossary().gribEdition)().value_or("2");
+    const auto gridType = lookUp<std::string>(md, dm::legacy::GridType)();
+    const auto levtype = lookUp<std::string>(md, dm::legacy::Levtype)();
+    const auto gribEdition = lookUp<std::string>(md, dm::legacy::GribEdition)().value_or("2");
 
     if ((gribEdition == "2") && (gridType != "sh")) {
-        withFirstOf(valueSetter(g, glossary().setPackingType), lookUp<std::string>(md, glossary().setPackingType));
+        withFirstOf(valueSetter(g, dm::legacy::SetPackingType), lookUp<std::string>(md, dm::legacy::SetPackingType));
     }
 
-    auto localDefinitionNumber = lookUp<std::int64_t>(md, glossary().localDefinitionNumber)();
-    auto grib2LocalSectionNumber = lookUp<std::int64_t>(md, glossary().grib2LocalSectionNumber)();
+    auto localDefinitionNumber = lookUp<std::int64_t>(md, dm::legacy::LocalDefinitionNumber)();
+    auto grib2LocalSectionNumber = lookUp<std::int64_t>(md, dm::legacy::Grib2LocalSectionNumber)();
 
 
     if (gribEdition == "2") {
-        withFirstOf(valueSetter(g, glossary().subCentre), lookUp<std::int64_t>(md, glossary().subCentre));
-        withFirstOf(valueSetter(g, glossary().tablesVersion), lookUp<std::int64_t>(md, glossary().tablesVersion));
+        withFirstOf(valueSetter(g, dm::legacy::SubCentre), lookUp<std::int64_t>(md, dm::legacy::SubCentre));
+        withFirstOf(valueSetter(g, dm::legacy::TablesVersion), lookUp<std::int64_t>(md, dm::legacy::TablesVersion));
         if (localDefinitionNumber || grib2LocalSectionNumber) {
-            withFirstOf(valueSetter(g, glossary().localTablesVersion),
-                        lookUp<std::int64_t>(md, glossary().localTablesVersion));
-            g.setValue(glossary().setLocalDefinition, 1);
-            withFirstOf(valueSetter(g, glossary().localDefinitionNumber), localDefinitionNumber);
-            withFirstOf(valueSetter(g, glossary().grib2LocalSectionNumber), grib2LocalSectionNumber);
+            withFirstOf(valueSetter(g, dm::legacy::LocalTablesVersion),
+                        lookUp<std::int64_t>(md, dm::legacy::LocalTablesVersion));
+            g.setValue(dm::legacy::SetLocalDefinition, 1);
+            withFirstOf(valueSetter(g, dm::legacy::LocalDefinitionNumber), localDefinitionNumber);
+            withFirstOf(valueSetter(g, dm::legacy::Grib2LocalSectionNumber), grib2LocalSectionNumber);
 
-            if (auto extraLocalDef = lookUp<std::int64_t>(md, glossary().extraLocalSectionNumber)(); extraLocalDef) {
-                g.setValue(glossary().extraLocalSectionNumber, *extraLocalDef);
+            if (auto extraLocalDef = lookUp<std::int64_t>(md, dm::legacy::ExtraLocalSectionNumber)(); extraLocalDef) {
+                g.setValue(dm::legacy::ExtraLocalSectionNumber, *extraLocalDef);
             }
             else {
-                g.setValue(glossary().deleteExtraLocalSection, 1);
+                g.setValue(dm::legacy::DeleteExtraLocalSection, 1);
             }
         }
 
-        withFirstOf(valueSetter(g, glossary().productDefinitionTemplateNumber),
-                    lookUp<std::int64_t>(md, glossary().productDefinitionTemplateNumber));
+        withFirstOf(valueSetter(g, dm::legacy::ProductDefinitionTemplateNumber),
+                    lookUp<std::int64_t>(md, dm::legacy::ProductDefinitionTemplateNumber));
     }
 
-    const auto typeOfLevel = lookUp<std::string>(md, glossary().typeOfLevel)();
+    const auto typeOfLevel = lookUp<std::string>(md, dm::legacy::TypeOfLevel)();
     if (typeOfLevel) {
         if (auto searchTOLSetter = typeOfLevelSetters.find(*typeOfLevel); searchTOLSetter != typeOfLevelSetters.end()) {
-            const auto level = lookUp<std::int64_t>(md, glossary().level)();
-            const auto levelist = lookUp<std::int64_t>(md, glossary().levelist)();
+            const auto level = lookUp<std::int64_t>(md, dm::legacy::Level)();
+            const auto levelist = lookUp<std::int64_t>(md, dm::legacy::Levelist)();
 
             if (!level && !levelist) {
                 std::ostringstream oss;
-                oss << "setMarsKeys - field " << lookUp<std::string>(md, glossary().paramId)().value_or("???")
+                oss << "setMarsKeys - field " << lookUp<std::string>(md, dm::legacy::ParamId)().value_or("???")
                     << " with typeOfLevel " << *typeOfLevel << ", but no level information!";
                 std::cout << oss.str() << std::endl;
                 throw eckit::UserError(oss.str(), Here());
@@ -357,48 +356,48 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             searchTOLSetter->second(g, *typeOfLevel, lv);
         }
         else {
-            g.setValue(glossary().typeOfLevel, *typeOfLevel);
-            withFirstOf(valueSetter(g, glossary().level), lookUp<std::int64_t>(md, glossary().level),
-                        lookUp<std::int64_t>(md, glossary().levelist));
+            g.setValue(dm::legacy::TypeOfLevel, *typeOfLevel);
+            withFirstOf(valueSetter(g, dm::legacy::Level), lookUp<std::int64_t>(md, dm::legacy::Level),
+                        lookUp<std::int64_t>(md, dm::legacy::Levelist));
         }
     }
 
-    const auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, glossary().productionStatusOfProcessedData)();
+    const auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, dm::legacy::ProductionStatusOfProcessedData)();
     if (productionStatusOfProcessedData) {
-        g.setValue(glossary().productionStatusOfProcessedData, *productionStatusOfProcessedData);
+        g.setValue(dm::legacy::ProductionStatusOfProcessedData, *productionStatusOfProcessedData);
     }
 
     ret.paramId = firstOf(
-        lookUp<std::int64_t>(md, glossary().paramId),
-        lookUpTranslate<std::int64_t>(md, glossary().param));  // param might be a string, separated by . for GRIB1.
+        lookUp<std::int64_t>(md, dm::legacy::ParamId),
+        lookUpTranslate<std::int64_t>(md, dm::legacy::Param));  // param might be a string, separated by . for GRIB1.
                                                                // String to std::int64_t convertion should get it right
     if (ret.paramId) {
-        g.setValue(glossary().paramId, *ret.paramId);
+        g.setValue(dm::legacy::ParamId, *ret.paramId);
     }
-    withFirstOf(valueSetter(g, glossary().classKey), lookUp<std::string>(md, glossary().classKey),
+    withFirstOf(valueSetter(g, dm::legacy::ClassKey), lookUp<std::string>(md, dm::legacy::ClassKey),
                 lookUp<std::string>(md, "marsClass"));
-    withFirstOf(valueSetter(g, glossary().stream), lookUp<std::string>(md, glossary().stream),
+    withFirstOf(valueSetter(g, dm::legacy::Stream), lookUp<std::string>(md, dm::legacy::Stream),
                 lookUp<std::string>(md, "marsStream"));
-    withFirstOf(valueSetter(g, glossary().expver), lookUp<std::string>(md, glossary().expver),
+    withFirstOf(valueSetter(g, dm::legacy::Expver), lookUp<std::string>(md, dm::legacy::Expver),
                 lookUp<std::string>(md, "experimentVersionNumber"));
 
-    if (auto searchLevTypeWam = md.find(glossary().levtypeWam); searchLevTypeWam != md.end() && (gribEdition == "2")) {
-        g.setValue(glossary().typeOfFirstFixedSurface, 1);
-        g.setMissing(glossary().scaleFactorOfFirstFixedSurface);
-        g.setMissing(glossary().scaledValueOfFirstFixedSurface);
-        g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
-        g.setMissing(glossary().scaledValueOfSecondFixedSurface);
+    if (auto searchLevTypeWam = md.find(dm::legacy::LevtypeWam); searchLevTypeWam != md.end() && (gribEdition == "2")) {
+        g.setValue(dm::legacy::TypeOfFirstFixedSurface, 1);
+        g.setMissing(dm::legacy::ScaleFactorOfFirstFixedSurface);
+        g.setMissing(dm::legacy::ScaledValueOfFirstFixedSurface);
+        g.setMissing(dm::legacy::ScaleFactorOfSecondFixedSurface);
+        g.setMissing(dm::legacy::ScaledValueOfSecondFixedSurface);
     }
 
     if (gribEdition == "2") {
-        withFirstOf(valueSetter(g, glossary().subCentre), lookUp<std::int64_t>(md, glossary().subCentre));
-        withFirstOf(valueSetter(g, glossary().tablesVersion), lookUp<std::int64_t>(md, glossary().tablesVersion));
-        withFirstOf(valueSetter(g, glossary().localTablesVersion),
-                    lookUp<std::int64_t>(md, glossary().localTablesVersion));
-        withFirstOf(valueSetter(g, glossary().setLocalDefinition),
-                    lookUp<std::int64_t>(md, glossary().setLocalDefinition));
-        withFirstOf(valueSetter(g, glossary().grib2LocalSectionNumber),
-                    lookUp<std::int64_t>(md, glossary().grib2LocalSectionNumber));
+        withFirstOf(valueSetter(g, dm::legacy::SubCentre), lookUp<std::int64_t>(md, dm::legacy::SubCentre));
+        withFirstOf(valueSetter(g, dm::legacy::TablesVersion), lookUp<std::int64_t>(md, dm::legacy::TablesVersion));
+        withFirstOf(valueSetter(g, dm::legacy::LocalTablesVersion),
+                    lookUp<std::int64_t>(md, dm::legacy::LocalTablesVersion));
+        withFirstOf(valueSetter(g, dm::legacy::SetLocalDefinition),
+                    lookUp<std::int64_t>(md, dm::legacy::SetLocalDefinition));
+        withFirstOf(valueSetter(g, dm::legacy::Grib2LocalSectionNumber),
+                    lookUp<std::int64_t>(md, dm::legacy::Grib2LocalSectionNumber));
 
         if (productionStatusOfProcessedData) {
             if (*productionStatusOfProcessedData == 12) {
@@ -407,22 +406,22 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                     g.setValue("dataset", *dataset);
 
                     if (*dataset == "climate-dt") {
-                        withFirstOf(valueSetter(g, glossary().activity), lookUp<std::string>(md, glossary().activity));
-                        withFirstOf(valueSetter(g, glossary().experiment),
-                                    lookUp<std::string>(md, glossary().experiment));
-                        withFirstOf(valueSetter(g, glossary().generation),
-                                    lookUp<std::string>(md, glossary().generation));
-                        withFirstOf(valueSetter(g, glossary().model), lookUp<std::string>(md, glossary().model));
-                        withFirstOf(valueSetter(g, glossary().realization),
-                                    lookUp<std::string>(md, glossary().realization));
-                        withFirstOf(valueSetter(g, glossary().resolution),
-                                    lookUp<std::string>(md, glossary().resolution));
+                        withFirstOf(valueSetter(g, dm::legacy::Activity), lookUp<std::string>(md, dm::legacy::Activity));
+                        withFirstOf(valueSetter(g, dm::legacy::Experiment),
+                                    lookUp<std::string>(md, dm::legacy::Experiment));
+                        withFirstOf(valueSetter(g, dm::legacy::Generation),
+                                    lookUp<std::string>(md, dm::legacy::Generation));
+                        withFirstOf(valueSetter(g, dm::legacy::Model), lookUp<std::string>(md, dm::legacy::Model));
+                        withFirstOf(valueSetter(g, dm::legacy::Realization),
+                                    lookUp<std::string>(md, dm::legacy::Realization));
+                        withFirstOf(valueSetter(g, dm::legacy::Resolution),
+                                    lookUp<std::string>(md, dm::legacy::Resolution));
                     }
                 }
             }
 
             if (*productionStatusOfProcessedData == 2) {
-                const auto data_class = lookUp<std::string>(md, glossary().classKey)();
+                const auto data_class = lookUp<std::string>(md, dm::legacy::ClassKey)();
                 if (data_class == "ed") {
                     withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
                     withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
@@ -436,35 +435,35 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     }
 
 
-    withFirstOf(valueSetter(g, glossary().generatingProcessIdentifier),
-                lookUp<std::int64_t>(md, glossary().generatingProcessIdentifier));
+    withFirstOf(valueSetter(g, dm::legacy::GeneratingProcessIdentifier),
+                lookUp<std::int64_t>(md, dm::legacy::GeneratingProcessIdentifier));
 
-    withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, glossary().ensembleMember),
-                lookUp<std::int64_t>(md, glossary().ensembleMemberKC));
-    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, glossary().ensembleSize),
-                lookUp<std::int64_t>(md, glossary().ensembleSizeKC));
+    withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, dm::legacy::EnsembleMember),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleMemberKC));
+    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, dm::legacy::EnsembleSize),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleSizeKC));
 
-    withFirstOf(valueSetter(g, glossary().methodNumber), lookUp<std::int64_t>(md, glossary().methodNumber),
-                lookUp<std::int64_t>(md, glossary().methodNumberKC));
-    withFirstOf(valueSetter(g, glossary().systemNumber), lookUp<std::int64_t>(md, glossary().systemNumber),
-                lookUp<std::int64_t>(md, glossary().systemNumberKC));
+    withFirstOf(valueSetter(g, dm::legacy::MethodNumber), lookUp<std::int64_t>(md, dm::legacy::MethodNumber),
+                lookUp<std::int64_t>(md, dm::legacy::MethodNumberKC));
+    withFirstOf(valueSetter(g, dm::legacy::SystemNumber), lookUp<std::int64_t>(md, dm::legacy::SystemNumber),
+                lookUp<std::int64_t>(md, dm::legacy::SystemNumberKC));
 
 
-    withFirstOf(valueSetter(g, glossary().expver), lookUp<std::string>(md, glossary().expver),
-                lookUp<std::string>(md, glossary().experimentVersionNumber));
-    withFirstOf(valueSetter(g, glossary().perturbationNumber), lookUp<std::int64_t>(md, glossary().perturbationNumber),
-                lookUp<std::int64_t>(md, glossary().ensembleMember),
-                lookUp<std::int64_t>(md, glossary().ensembleMemberKC));
-    withFirstOf(valueSetter(g, glossary().numberOfForecastsInEnsemble),
-                lookUp<std::int64_t>(md, glossary().numberOfForecastsInEnsemble),
-                lookUp<std::int64_t>(md, glossary().ensembleSize), lookUp<std::int64_t>(md, glossary().ensembleSize),
-                lookUp<std::int64_t>(md, glossary().ensembleSizeKC));
-    withFirstOf(valueSetter(g, glossary().offsetToEndOf4DvarWindow),
-                lookUp<std::int64_t>(md, glossary().offsetToEndOf4DvarWindow),
-                lookUp<std::int64_t>(md, glossary().anoffset));
-    withFirstOf(valueSetter(g, glossary().lengthOf4DvarWindow),
-                lookUp<std::int64_t>(md, glossary().lengthOf4DvarWindow),
-                lookUp<std::int64_t>(md, glossary().anlength));
+    withFirstOf(valueSetter(g, dm::legacy::Expver), lookUp<std::string>(md, dm::legacy::Expver),
+                lookUp<std::string>(md, dm::legacy::ExperimentVersionNumber));
+    withFirstOf(valueSetter(g, dm::legacy::PerturbationNumber), lookUp<std::int64_t>(md, dm::legacy::PerturbationNumber),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleMember),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleMemberKC));
+    withFirstOf(valueSetter(g, dm::legacy::NumberOfForecastsInEnsemble),
+                lookUp<std::int64_t>(md, dm::legacy::NumberOfForecastsInEnsemble),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleSize), lookUp<std::int64_t>(md, dm::legacy::EnsembleSize),
+                lookUp<std::int64_t>(md, dm::legacy::EnsembleSizeKC));
+    withFirstOf(valueSetter(g, dm::legacy::OffsetToEndOf4DvarWindow),
+                lookUp<std::int64_t>(md, dm::legacy::OffsetToEndOf4DvarWindow),
+                lookUp<std::int64_t>(md, dm::legacy::Anoffset));
+    withFirstOf(valueSetter(g, dm::legacy::LengthOf4DvarWindow),
+                lookUp<std::int64_t>(md, dm::legacy::LengthOf4DvarWindow),
+                lookUp<std::int64_t>(md, dm::legacy::Anlength));
 
     // Metadata for ensemble forecast
     withFirstOf(valueSetter(g, "oceanAtmosphereCoupling"), lookUp<std::int64_t>(md, "oceanAtmosphereCoupling"));
@@ -475,38 +474,38 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "climateDateFrom"), lookUp<std::int64_t>(md, "climateDateFrom"));
     withFirstOf(valueSetter(g, "climateDateTo"), lookUp<std::int64_t>(md, "climateDateTo"));
 
-    withFirstOf(valueSetter(g, glossary().componentIndex), lookUp<std::int64_t>(md, glossary().componentIndex));
-    withFirstOf(valueSetter(g, glossary().numberOfComponents), lookUp<std::int64_t>(md, glossary().numberOfComponents));
-    withFirstOf(valueSetter(g, glossary().modelErrorType), lookUp<std::int64_t>(md, glossary().modelErrorType));
-    withFirstOf(valueSetter(g, glossary().iterationNumber), lookUp<std::int64_t>(md, glossary().iterationNumber));
-    withFirstOf(valueSetter(g, glossary().totalNumberOfIterations),
-                lookUp<std::int64_t>(md, glossary().totalNumberOfIterations));
+    withFirstOf(valueSetter(g, dm::legacy::ComponentIndex), lookUp<std::int64_t>(md, dm::legacy::ComponentIndex));
+    withFirstOf(valueSetter(g, dm::legacy::NumberOfComponents), lookUp<std::int64_t>(md, dm::legacy::NumberOfComponents));
+    withFirstOf(valueSetter(g, dm::legacy::ModelErrorType), lookUp<std::int64_t>(md, dm::legacy::ModelErrorType));
+    withFirstOf(valueSetter(g, dm::legacy::IterationNumber), lookUp<std::int64_t>(md, dm::legacy::IterationNumber));
+    withFirstOf(valueSetter(g, dm::legacy::TotalNumberOfIterations),
+                lookUp<std::int64_t>(md, dm::legacy::TotalNumberOfIterations));
 
-    ret.type = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
+    ret.type = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType));
     if (ret.type) {
-        g.setValue(glossary().type, *ret.type);
+        g.setValue(dm::legacy::Type, *ret.type);
     }
 
     // Additional parameters passed through for spherical harmonics
     if (gridType) {
         if (*gridType == "sh") {
-            withFirstOf(valueSetter(g, glossary().complexPacking), lookUp<std::int64_t>(md, glossary().complexPacking));
-            withFirstOf(valueSetter(g, glossary().pentagonalResolutionParameterJ),
-                        lookUp<std::int64_t>(md, glossary().pentagonalResolutionParameterJ),
-                        lookUp<std::int64_t>(md, glossary().j));
-            withFirstOf(valueSetter(g, glossary().pentagonalResolutionParameterK),
-                        lookUp<std::int64_t>(md, glossary().pentagonalResolutionParameterK),
-                        lookUp<std::int64_t>(md, glossary().k));
-            withFirstOf(valueSetter(g, glossary().pentagonalResolutionParameterM),
-                        lookUp<std::int64_t>(md, glossary().pentagonalResolutionParameterM),
-                        lookUp<std::int64_t>(md, glossary().m));
+            withFirstOf(valueSetter(g, dm::legacy::ComplexPacking), lookUp<std::int64_t>(md, dm::legacy::ComplexPacking));
+            withFirstOf(valueSetter(g, dm::legacy::PentagonalResolutionParameterJ),
+                        lookUp<std::int64_t>(md, dm::legacy::PentagonalResolutionParameterJ),
+                        lookUp<std::int64_t>(md, dm::legacy::J));
+            withFirstOf(valueSetter(g, dm::legacy::PentagonalResolutionParameterK),
+                        lookUp<std::int64_t>(md, dm::legacy::PentagonalResolutionParameterK),
+                        lookUp<std::int64_t>(md, dm::legacy::K));
+            withFirstOf(valueSetter(g, dm::legacy::PentagonalResolutionParameterM),
+                        lookUp<std::int64_t>(md, dm::legacy::PentagonalResolutionParameterM),
+                        lookUp<std::int64_t>(md, dm::legacy::M));
 
-            withFirstOf(valueSetter(g, glossary().subSetJ), lookUp<std::int64_t>(md, glossary().subSetJ),
-                        lookUp<std::int64_t>(md, glossary().js));
-            withFirstOf(valueSetter(g, glossary().subSetK), lookUp<std::int64_t>(md, glossary().subSetK),
-                        lookUp<std::int64_t>(md, glossary().ks));
-            withFirstOf(valueSetter(g, glossary().subSetM), lookUp<std::int64_t>(md, glossary().subSetM),
-                        lookUp<std::int64_t>(md, glossary().ms));
+            withFirstOf(valueSetter(g, dm::legacy::SubSetJ), lookUp<std::int64_t>(md, dm::legacy::SubSetJ),
+                        lookUp<std::int64_t>(md, dm::legacy::Js));
+            withFirstOf(valueSetter(g, dm::legacy::SubSetK), lookUp<std::int64_t>(md, dm::legacy::SubSetK),
+                        lookUp<std::int64_t>(md, dm::legacy::Ks));
+            withFirstOf(valueSetter(g, dm::legacy::SubSetM), lookUp<std::int64_t>(md, dm::legacy::SubSetM),
+                        lookUp<std::int64_t>(md, dm::legacy::Ms));
         }
         else if (*gridType == "regular_ll") {
             std::optional<std::int64_t> ni;
@@ -523,11 +522,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             std::optional<double> longitudeOfLastGridPointInDegrees;
             std::optional<double> iDirectionIncrementInDegrees;
             std::optional<double> jDirectionIncrementInDegrees;
-            if ((ni = lookUp<std::int64_t>(md, glossary().ni)()) && (nj = lookUp<std::int64_t>(md, glossary().nj)())
-                && (north = lookUp<double>(md, glossary().north)()) && (south = lookUp<double>(md, glossary().south)())
-                && (west = lookUp<double>(md, glossary().west)()) && (east = lookUp<double>(md, glossary().east)())
-                && (westEastInc = lookUp<double>(md, glossary().westEastIncrement)())
-                && (southNorthInc = lookUp<double>(md, glossary().southNorthIncrement)())) {
+            if ((ni = lookUp<std::int64_t>(md, dm::legacy::Ni)()) && (nj = lookUp<std::int64_t>(md, dm::legacy::Nj)())
+                && (north = lookUp<double>(md, dm::legacy::North)()) && (south = lookUp<double>(md, dm::legacy::South)())
+                && (west = lookUp<double>(md, dm::legacy::West)()) && (east = lookUp<double>(md, dm::legacy::East)())
+                && (westEastInc = lookUp<double>(md, dm::legacy::WestEastIncrement)())
+                && (southNorthInc = lookUp<double>(md, dm::legacy::SouthNorthIncrement)())) {
                 std::int64_t scale = 0;
                 if (gribEdition == "1") {
                     scale = 1000;
@@ -544,35 +543,35 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                 g.setValue("iDirectionIncrement", scale * *westEastInc);
                 g.setValue("jDirectionIncrement", scale * *southNorthInc);
             }
-            else if ((ni = lookUp<std::int64_t>(md, glossary().ni)())
-                     && (nj = lookUp<std::int64_t>(md, glossary().nj)())
+            else if ((ni = lookUp<std::int64_t>(md, dm::legacy::Ni)())
+                     && (nj = lookUp<std::int64_t>(md, dm::legacy::Nj)())
                      && (latitudeOfFirstGridPointInDegrees
-                         = lookUp<double>(md, glossary().latitudeOfFirstGridPointInDegrees)())
+                         = lookUp<double>(md, dm::legacy::LatitudeOfFirstGridPointInDegrees)())
                      && (latitudeOfLastGridPointInDegrees
-                         = lookUp<double>(md, glossary().latitudeOfLastGridPointInDegrees)())
+                         = lookUp<double>(md, dm::legacy::LatitudeOfLastGridPointInDegrees)())
                      && (longitudeOfFirstGridPointInDegrees
-                         = lookUp<double>(md, glossary().longitudeOfFirstGridPointInDegrees)())
+                         = lookUp<double>(md, dm::legacy::LongitudeOfFirstGridPointInDegrees)())
                      && (longitudeOfLastGridPointInDegrees
-                         = lookUp<double>(md, glossary().longitudeOfLastGridPointInDegrees)())
-                     && (iDirectionIncrementInDegrees = lookUp<double>(md, glossary().iDirectionIncrementInDegrees)())
+                         = lookUp<double>(md, dm::legacy::LongitudeOfLastGridPointInDegrees)())
+                     && (iDirectionIncrementInDegrees = lookUp<double>(md, dm::legacy::IDirectionIncrementInDegrees)())
                      && (jDirectionIncrementInDegrees
-                         = lookUp<double>(md, glossary().jDirectionIncrementInDegrees)())) {
+                         = lookUp<double>(md, dm::legacy::JDirectionIncrementInDegrees)())) {
                 g.setValue("Ni", *ni);
                 g.setValue("Nj", *nj);
-                g.setValue(glossary().latitudeOfFirstGridPointInDegrees, *latitudeOfFirstGridPointInDegrees);
-                g.setValue(glossary().longitudeOfFirstGridPointInDegrees, *longitudeOfFirstGridPointInDegrees);
-                g.setValue(glossary().latitudeOfLastGridPointInDegrees, *latitudeOfLastGridPointInDegrees);
-                g.setValue(glossary().longitudeOfLastGridPointInDegrees, *longitudeOfLastGridPointInDegrees);
-                g.setValue(glossary().iDirectionIncrementInDegrees, *iDirectionIncrementInDegrees);
-                g.setValue(glossary().jDirectionIncrementInDegrees, *jDirectionIncrementInDegrees);
+                g.setValue(dm::legacy::LatitudeOfFirstGridPointInDegrees, *latitudeOfFirstGridPointInDegrees);
+                g.setValue(dm::legacy::LongitudeOfFirstGridPointInDegrees, *longitudeOfFirstGridPointInDegrees);
+                g.setValue(dm::legacy::LatitudeOfLastGridPointInDegrees, *latitudeOfLastGridPointInDegrees);
+                g.setValue(dm::legacy::LongitudeOfLastGridPointInDegrees, *longitudeOfLastGridPointInDegrees);
+                g.setValue(dm::legacy::IDirectionIncrementInDegrees, *iDirectionIncrementInDegrees);
+                g.setValue(dm::legacy::JDirectionIncrementInDegrees, *jDirectionIncrementInDegrees);
             }
         }
         else if (eckit::StringTools::lower(*gridType) == "healpix") {
-            withFirstOf(valueSetter(g, "Nside"), lookUp<std::int64_t>(md, glossary().nside));
+            withFirstOf(valueSetter(g, "Nside"), lookUp<std::int64_t>(md, dm::legacy::Nside));
             double logp = 45.0;
             // Note: Pedro told to use always this to avoid problems with milli and micro degrees
             g.setValue("longitudeOfFirstGridPointInDegrees", 45.0);
-            withFirstOf(valueSetter(g, "orderingConvention"), lookUp<std::string>(md, glossary().orderingConvention));
+            withFirstOf(valueSetter(g, "orderingConvention"), lookUp<std::string>(md, dm::legacy::OrderingConvention));
         }
     }
 
@@ -611,9 +610,9 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Metadata& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
 
-    withFirstOf(valueSetter(g, glossary().missingValue), lookUp<double>(md, glossary().missingValue));
-    withFirstOf(valueSetter(g, glossary().bitmapPresent), lookUp<bool>(md, glossary().bitmapPresent));
-    withFirstOf(valueSetter(g, glossary().bitsPerValue), lookUp<std::int64_t>(md, glossary().bitsPerValue));
+    withFirstOf(valueSetter(g, dm::legacy::MissingValue), lookUp<double>(md, dm::legacy::MissingValue));
+    withFirstOf(valueSetter(g, dm::legacy::BitmapPresent), lookUp<bool>(md, dm::legacy::BitmapPresent));
+    withFirstOf(valueSetter(g, dm::legacy::BitsPerValue), lookUp<std::int64_t>(md, dm::legacy::BitsPerValue));
 }
 
 std::string getTimeReference(GribEncoder& g, const message::Metadata& md, const QueriedMarsKeys& queriedMarsFields,
@@ -688,8 +687,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     g.setValue("minute", refDateTime.time.minute);
     g.setValue("second", refDateTime.time.second);
 
-    auto currentDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(glossary().currentDate)),
-                                               util::toTimeInts(md.get<std::int64_t>(glossary().currentTime))});
+    auto currentDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(dm::legacy::CurrentDate)),
+                                               util::toTimeInts(md.get<std::int64_t>(dm::legacy::CurrentTime))});
 
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {
@@ -705,8 +704,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         }
     }
     else if (gribEdition == "2") {
-        auto previousDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(glossary().previousDate)),
-                                                    util::toTimeInts(md.get<std::int64_t>(glossary().previousTime))});
+        auto previousDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(dm::legacy::PreviousDate)),
+                                                    util::toTimeInts(md.get<std::int64_t>(dm::legacy::PreviousTime))});
 
         // Now just deal with GRIB2
         g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
@@ -786,10 +785,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         //                         (*significanceOfReferenceTime == 2)) ? 255 : 1)));
         g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : 255));
 
-        if (const auto timeIncrement = md.getOpt<std::int64_t>(glossary().timeIncrement); timeIncrement) {
+        if (const auto timeIncrement = md.getOpt<std::int64_t>(dm::legacy::TimeIncrement); timeIncrement) {
             if (*timeIncrement != 0) {
                 withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
-                            lookUp<std::int64_t>(md, glossary().indicatorOfUnitForTimeIncrement));
+                            lookUp<std::int64_t>(md, dm::legacy::IndicatorOfUnitForTimeIncrement));
                 g.setValue("timeIncrement", *timeIncrement);
             }
             else {
@@ -797,7 +796,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
                 g.setValue("timeIncrement", 0);
             }
         }
-        else if (const auto sampleIntervalInSeconds = md.getOpt<std::int64_t>(glossary().sampleIntervalInSeconds);
+        else if (const auto sampleIntervalInSeconds = md.getOpt<std::int64_t>(dm::legacy::SampleIntervalInSeconds);
                  sampleIntervalInSeconds) {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
             g.setValue("timeIncrement", *sampleIntervalInSeconds);
@@ -805,7 +804,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         else {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
             withFirstOf(valueSetter(g, "timeIncrement"),
-                        lookUp<std::int64_t>(md, glossary().timeStep)());  // Nemo is currently sending timeStep
+                        lookUp<std::int64_t>(md, dm::legacy::TimeStep)());  // Nemo is currently sending timeStep
         }
     }
     else {
@@ -813,8 +812,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     }
 
 
-    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().dateOfAnalysis));
-    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().timeOfAnalysis)).value_or(0);
+    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, dm::legacy::DateOfAnalysis));
+    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, dm::legacy::TimeOfAnalysis)).value_or(0);
     if (dateOfAnalysis) {
         auto analysisDateTime
             = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
@@ -843,28 +842,28 @@ namespace {}
 void GribEncoder::setOceanMetadata(message::Metadata& md) {
     auto queriedMarsFields = setMarsKeys(*this, md);
     if (queriedMarsFields.type) {
-        setValue(glossary().typeOfGeneratingProcess, type_of_generating_process.at(*queriedMarsFields.type));
+        setValue(dm::legacy::TypeOfGeneratingProcess, type_of_generating_process.at(*queriedMarsFields.type));
     }
 
     setDateAndStatisticalFields(*this, md, queriedMarsFields);
     setEncodingSpecificFields(*this, md);
 
     // Setting parameter ID
-    auto paramInt = md.get<std::int64_t>(glossary().paramId);
+    auto paramInt = md.get<std::int64_t>(dm::legacy::ParamId);
     if (paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
-        setValue(glossary().paramId, paramInt + 4000);
+        setValue(dm::legacy::ParamId, paramInt + 4000);
     }
     else {
-        const auto operation = md.getOpt<std::string>(glossary().operation);
+        const auto operation = md.getOpt<std::string>(dm::legacy::Operation);
         const auto paramIdIncrement = operation ? ops_to_code.at(*operation) : 0;
-        setValue(glossary().paramId, paramInt + paramIdIncrement);
+        setValue(dm::legacy::ParamId, paramInt + paramIdIncrement);
     }
 
-    const auto& typeOfLevel = md.get<std::string>(glossary().typeOfLevel);
-    setValue(glossary().typeOfLevel, typeOfLevel);
+    const auto& typeOfLevel = md.get<std::string>(dm::legacy::TypeOfLevel);
+    setValue(dm::legacy::TypeOfLevel, typeOfLevel);
     if (typeOfLevel == "oceanModelLayer") {
-        auto level = md.get<std::int64_t>(glossary().level);
+        auto level = md.get<std::int64_t>(dm::legacy::Level);
         ASSERT(level > 0);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
@@ -882,16 +881,16 @@ void GribEncoder::setOceanMetadata(message::Metadata& md) {
 
 
     std::string gridType;
-    const auto searchGridType = md.find(glossary().gridType);
+    const auto searchGridType = md.find(dm::legacy::GridType);
     if (searchGridType != md.end() && searchGridType->second.get<std::string>() == "unstructured_grid") {
         if (auto searchGridType = md.find("unstructuredGridType"); searchGridType != md.end()) {
-            setValue(glossary().unstructuredGridType, searchGridType->second.template get<std::string>());
+            setValue(dm::legacy::UnstructuredGridType, searchGridType->second.template get<std::string>());
         }
         else {
-            setValue(glossary().unstructuredGridType, getUnstructuredGridType(config_));
+            setValue(dm::legacy::UnstructuredGridType, getUnstructuredGridType(config_));
         }
 
-        if (auto searchGridSubtype = md.find(glossary().unstructuredGridSubtype); searchGridSubtype != md.end()) {
+        if (auto searchGridSubtype = md.find(dm::legacy::UnstructuredGridSubtype); searchGridSubtype != md.end()) {
             setValue("unstructuredGridSubtype", searchGridSubtype->second.template get<std::string>());
         }
 
@@ -915,27 +914,27 @@ void GribEncoder::setOceanMetadata(message::Metadata& md) {
 void GribEncoder::setOceanCoordMetadata(message::Metadata& md) {
     setMarsKeys(*this, md);
 
-    setValue(glossary().date, md.get<std::int64_t>(glossary().startDate));
+    setValue(dm::legacy::Date, md.get<std::int64_t>(dm::legacy::StartDate));
 
     // Setting parameter ID
-    auto paramInt = md.get<std::int64_t>(glossary().paramId);
-    setValue(glossary().paramId, paramInt);
+    auto paramInt = md.get<std::int64_t>(dm::legacy::ParamId);
+    setValue(dm::legacy::ParamId, paramInt);
 
-    setValue(glossary().typeOfLevel, md.get<std::string>(glossary().typeOfLevel));
+    setValue(dm::legacy::TypeOfLevel, md.get<std::string>(dm::legacy::TypeOfLevel));
 
     // Set ocean grid information
-    setValue(glossary().unstructuredGridType, getUnstructuredGridType(config_));
+    setValue(dm::legacy::UnstructuredGridType, getUnstructuredGridType(config_));
 
     const auto& gridSubtype
         = md.get<std::string>("gridSubtype");  // TO BE REMOVED IN THE FUTURE - should be named unstructuredGridType
-    setValue(glossary().unstructuredGridSubtype, gridSubtype.substr(0, 1));
+    setValue(dm::legacy::UnstructuredGridSubtype, gridSubtype.substr(0, 1));
 
-    const auto& gridUID = md.get<std::string>(glossary().uuidOfHGrid);
-    setValue(glossary().uuidOfHGrid, gridUID);
+    const auto& gridUID = md.get<std::string>(dm::legacy::UuidOfHGrid);
+    setValue(dm::legacy::UuidOfHGrid, gridUID);
 
     // Set encoding for missing value support
-    setValue(glossary().bitmapPresent, false);
-    setValue(glossary().bitsPerValue, md.get<std::int64_t>(glossary().bitsPerValue));
+    setValue(dm::legacy::BitmapPresent, false);
+    setValue(dm::legacy::BitsPerValue, md.get<std::int64_t>(dm::legacy::BitsPerValue));
 }
 
 

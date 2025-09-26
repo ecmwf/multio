@@ -6,6 +6,8 @@ ecbuild_add_library(
     SOURCES
         EncodeMtg2.cc
         EncodeMtg2.h
+        EncodeMtg2Exception.cc
+        EncodeMtg2Exception.h
         AtlasGeoSetter.h
 
     PRIVATE_INCLUDES
@@ -15,7 +17,8 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        multiom-encoders
+        multio-mars2grib
+        multio-mars2mars
         eccodes
         atlas
 )

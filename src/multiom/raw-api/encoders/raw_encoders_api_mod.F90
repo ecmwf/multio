@@ -1,0 +1,1407 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'raw_encoders_api_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'RAW_ENCODERS_API_MOD'
+MODULE RAW_ENCODERS_API_MOD
+
+IMPLICIT NONE
+
+!> Default visibility of the module
+PRIVATE
+
+! Whitelist of public symbols (encoder management)
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_OPEN
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_CLOSE
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_PREPARE
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_ALLOCATE
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_PRESET
+PUBLIC :: MULTIO_GRIB2_RAW_ENCODER_RUNTIME
+
+CONTAINS
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_OPEN'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_OPEN( &
+& C_OPTIONS_P, C_ENCODER_CFG_P, C_ENCODER_MTG2_PP) &
+! & C_OPTIONS_P, C_ENCODER_CFG_P, C_ENCODER_MTG2_PP, C_ENCODER_TYPE_P, LEN ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_open') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_SIZE_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,                  ONLY: JPIB_K
+  USE :: HOOKS_MOD,                          ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD,                  ONLY: TOLOWER
+  USE :: RAW_ENCODER_WRAPPER_MOD,            ONLY: INIT_RAW_ENCODER
+  ! USE :: RAW_ENCODER_WRAPPER_MOD,            ONLY: RAW_ENCODER_NAME_E
+  USE :: API_OPTIONS_DICTIONARY_UTILS_MOD,   ONLY: API_OPTIONS_T
+  USE :: API_OPTIONS_DICTIONARY_WRAPPER_MOD, ONLY: GET_API_OPTIONS_DICTIONARY
+  USE :: API_GENERAL_UTILS_MOD,              ONLY: COPY_CPTR_TO_F_STRING
+  USE :: API_GENERAL_UTILS_MOD,              ONLY: DEREFERENCE_DOUBLE_C_POINTER
+  USE :: YAML_CORE_UTILS_MOD,                ONLY: YAML_CONFIGURATION_T
+  USE :: YAML_CORE_UTILS_MOD,                ONLY: YAML_NEW_CONFIGURATION_FROM_CPTR
+  USE :: GRIB_ENCODER_OPTIONS_MOD,           ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: API_SHARED_DATA_MOD,                ONLY: EXTRACT_OPTIONS_DICTIONARY
+  USE :: API_SHARED_DATA_MOD,                ONLY: OPT_DICT_TYPE_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),         VALUE, INTENT(IN) :: C_OPTIONS_P
+  TYPE(C_PTR),         VALUE, INTENT(IN) :: C_ENCODER_CFG_P
+  TYPE(C_PTR),         VALUE, INTENT(IN) :: C_ENCODER_MTG2_PP
+  ! TYPE(C_PTR),         VALUE, INTENT(IN) :: C_ENCODER_TYPE_P
+  ! INTEGER(KIND=C_INT), VALUE, INTENT(IN) :: LEN
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(YAML_CONFIGURATION_T) :: F_ENCODER_CFG
+  TYPE(C_PTR), DIMENSION(:), POINTER :: C_ENCODER_MTG2_P
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_DICT
+  TYPE(API_OPTIONS_T), POINTER :: F_API_OPTIONS
+  CHARACTER(LEN=64) :: F_ENCODER_TYPE_LOWERCASE
+  TYPE(GRIB_ENCODER_OPTIONS_T) :: F_ENCODER_OPTIONS
+  LOGICAL :: HAS_OPTIONS
+  TYPE(HOOKS_T) :: HOOKS
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEREFERENCE_DOUBLE_POINTER=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_OPTIONS_INFO=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENCODER_TYPE=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_FCKIT_CONFIGURATION=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_ENCODER=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_OPT_DICTIONARY=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_DICTIONARY=9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Get the encoder pointer
+  C_ENCODER_MTG2_P => NULL()
+  PP_TRYCALL(ERRFLAG_DEREFERENCE_DOUBLE_POINTER) DEREFERENCE_DOUBLE_C_POINTER( &
+&     C_ENCODER_MTG2_PP, 1_JPIB_K, C_ENCODER_MTG2_P, HOOKS )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(C_ENCODER_MTG2_P(1)), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
+
+  !> Check if the options are present
+  HAS_OPTIONS = C_ASSOCIATED( C_OPTIONS_P )
+
+  IF ( HAS_OPTIONS ) THEN
+
+    !> Get th fortran handle from the c handle
+    F_API_OPTIONS => NULL()
+    CALL C_F_POINTER( C_OPTIONS_P, F_DICT, [2] )
+    SELECT CASE (F_DICT(1))
+
+    CASE ( OPT_DICT_TYPE_E )
+
+      !> Extract dictionary
+      PP_TRYCALL(ERRFLAG_EXTRACT_OPT_DICTIONARY) EXTRACT_OPTIONS_DICTIONARY( F_DICT, F_API_OPTIONS, HOOKS )
+
+      !> Create the encoder options from API_OPTIONS_T
+      F_ENCODER_OPTIONS%PRINT_WHOLE_ERROR_STACK = F_API_OPTIONS%PRINT_WHOLE_ERROR_STACK
+      F_ENCODER_OPTIONS%PRINT_DICTIONARIES = F_API_OPTIONS%PRINT_DICTIONARIES
+
+    CASE DEFAULT
+
+      PP_DEBUG_CRITICAL_THROW( ERRFLAG_WRONG_DICTIONARY )
+
+    END SELECT
+
+  ENDIF
+
+  !> Convert encoder configuration to an fckit configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CREATE_FCKIT_CONFIGURATION) YAML_NEW_CONFIGURATION_FROM_CPTR( &
+&   C_ENCODER_CFG_P, F_ENCODER_CFG, HOOKS )
+
+!$omp critical(API_ENCODER_OPEN)
+
+    !> Create the encoder
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_EXTRACT_ENCODER) INIT_RAW_ENCODER( &
+&        C_ENCODER_MTG2_P(1), F_ENCODER_CFG, F_ENCODER_OPTIONS, HOOKS )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2_P(1)), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+
+!$omp end critical(API_ENCODER_OPEN)
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_DEREFERENCE_DOUBLE_POINTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to dereference double pointer' )
+    CASE (ERRFLAG_ENCODER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder already associated' )
+    CASE (ERRFLAG_UNABLE_TO_GET_OPTIONS_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get options info' )
+    CASE (ERRFLAG_UNABLE_TO_READ_ENCODER_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read encoder type' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract encoder' )
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_EXTRACT_OPT_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract options dictionary' )
+    CASE (ERRFLAG_WRONG_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong dictionary type' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is important when c is calling this function.
+    ! It opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'"', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_OPEN
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_CLOSE'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_CLOSE( C_ENCODER_MTG2 ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_close') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: RAW_ENCODER_IDX_E
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: FREE_RAW_ENCODER
+  USE :: API_F_C_WRAPPER_MOD,               ONLY: F_C_GET_INFO_WRAPPER
+  USE :: API_GENERAL_UTILS_MOD,             ONLY: DEREFERENCE_DOUBLE_C_POINTER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR), VALUE, INTENT(IN) :: C_ENCODER_MTG2
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(C_PTR), DIMENSION(:), POINTER :: TMP
+  TYPE(HOOKS_T) :: HOOKS
+  INTEGER(KIND=JPIB_K) :: OBJ_ID
+  INTEGER(KIND=JPIB_K) :: OBJ_SIZE
+  INTEGER(KIND=JPIB_K) :: BUF_SIZE
+  INTEGER(KIND=JPIB_K) :: HASH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DEREFERENCE_DOUBLE_POINTER=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_INFO=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_FREE_ENCODER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_ENCODER_ID=5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+!$omp critical(API_ENCODER_MAP_REMOVE)
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+
+  !> Get the encoder pointer
+  TMP => NULL()
+  PP_TRYCALL(ERRFLAG_DEREFERENCE_DOUBLE_POINTER) DEREFERENCE_DOUBLE_C_POINTER( &
+&   C_ENCODER_MTG2, 1_JPIB_K, TMP, HOOKS )
+
+  !> Extract info from the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_INFO) F_C_GET_INFO_WRAPPER( TMP(1), &
+&   OBJ_ID, OBJ_SIZE, BUF_SIZE, HASH, HOOKS, VERIFY_CHECKSUM=.FALSE. )
+
+  !> Get th fortran handle from the c handle
+  SELECT CASE ( OBJ_ID )
+  CASE (RAW_ENCODER_IDX_E)
+
+    !> Free the encoder
+    PP_TRYCALL(ERRFLAG_UNABLE_FREE_ENCODER) FREE_RAW_ENCODER( TMP(1), HOOKS )
+    TMP(1) = C_NULL_PTR
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_ENCODER_ID )
+
+  END SELECT
+
+!$omp end critical(API_ENCODER_MAP_REMOVE)
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    CHARACTER(LEN=32) :: CTMP
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_DEREFERENCE_DOUBLE_POINTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to dereference double pointer' )
+    CASE (ERRFLAG_UNABLE_TO_GET_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get info' )
+    CASE (ERRFLAG_UNABLE_FREE_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to free encoder' )
+    CASE (ERRFLAG_INVALID_ENCODER_ID)
+      CTMP = REPEAT(' ', 32)
+      WRITE(CTMP,*) OBJ_ID
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid encoder ID: '//TRIM(ADJUSTL(CTMP)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is importent when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_CLOSE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_PREPARE'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_PREPARE( C_ENCODER_MTG2_P, &
+& C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, C_GRIB_SAMPLE_P ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_prepare') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_GET_INFO_WRAPPER
+
+  ! Cached encoder wrapper
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: RAW_ENCODER_IDX_E
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: ENCODE_PREPARE_RAW_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_ENCODER_MTG2_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_MARS_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PAR_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GEO_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GRIB_SAMPLE_P
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(HOOKS_T) :: HOOKS
+
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: F_MARS_DICT_P
+  TYPE(PARAMETRIZATION_T), POINTER :: F_PAR_DICT_P
+  CLASS(REPRES_A),         POINTER :: F_GEO_DICT_P
+
+  INTEGER(KIND=JPIB_K) :: OBJ_ID
+  INTEGER(KIND=JPIB_K) :: OBJ_SIZE
+  INTEGER(KIND=JPIB_K) :: BUF_SIZE
+  INTEGER(KIND=JPIB_K) :: HASH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_NOT_ASSOCIATED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SAMPLE_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARIES=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_INFO=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ENCODE=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_ENCODER_ID=9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2_P), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_MARS_DICT_P),    ERRFLAG_MARS_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_PAR_DICT_P),     ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GEO_DICT_P),     ERRFLAG_GEOMETRY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GRIB_SAMPLE_P),  ERRFLAG_SAMPLE_NOT_ASSOCIATED )
+
+  !> Initialization of the dictionaries
+  F_MARS_DICT_P => NULL()
+  F_PAR_DICT_P => NULL()
+  F_GEO_DICT_P => NULL()
+
+  ! Get the dictionaries
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARIES) EXTRACT_DICTIONARIES( &
+&   C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, &
+&   F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, HOOKS )
+
+  !> Extract info from the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_INFO) F_C_GET_INFO_WRAPPER( C_ENCODER_MTG2_P, &
+&  OBJ_ID, OBJ_SIZE, BUF_SIZE, HASH, HOOKS, VERIFY_CHECKSUM=.FALSE. )
+
+  !> Get th fortran handle from the c handle
+  SELECT CASE ( OBJ_ID )
+  CASE (RAW_ENCODER_IDX_E)
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE) ENCODE_PREPARE_RAW_ENCODER( &
+&     C_ENCODER_MTG2_P, F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, &
+&     C_GRIB_SAMPLE_P, HOOKS )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_ENCODER_ID )
+
+  END SELECT
+
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_MARS_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS dictionary not associated' )
+    CASE (ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Parametrization dictionary not associated' )
+    CASE (ERRFLAG_GEOMETRY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Geometry dictionary not associated' )
+    CASE (ERRFLAG_SAMPLE_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Grib sample not associated' )
+    CASE (ERRFLAG_EXTRACT_DICTIONARIES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract dictionaries' )
+    CASE (ERRFLAG_UNABLE_TO_GET_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get info' )
+    CASE (ERRFLAG_UNABLE_TO_ENCODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to encode' )
+    CASE (ERRFLAG_INVALID_ENCODER_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid encoder ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is important when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_PREPARE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_ALLOCATE'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_ALLOCATE( C_ENCODER_MTG2_P, &
+& C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, C_GRIB_SAMPLE_P ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_allocate') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_GET_INFO_WRAPPER
+
+  ! Cached encoder wrapper
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: RAW_ENCODER_IDX_E
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: ENCODE_ALLOCATE_RAW_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_ENCODER_MTG2_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_MARS_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PAR_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GEO_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GRIB_SAMPLE_P
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(HOOKS_T) :: HOOKS
+
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: F_MARS_DICT_P
+  TYPE(PARAMETRIZATION_T), POINTER :: F_PAR_DICT_P
+  CLASS(REPRES_A), POINTER :: F_GEO_DICT_P
+
+  INTEGER(KIND=JPIB_K) :: OBJ_ID
+  INTEGER(KIND=JPIB_K) :: OBJ_SIZE
+  INTEGER(KIND=JPIB_K) :: BUF_SIZE
+  INTEGER(KIND=JPIB_K) :: HASH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_NOT_ASSOCIATED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SAMPLE_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARIES=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_INFO=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ENCODE=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_ENCODER_ID=9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2_P), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_MARS_DICT_P),    ERRFLAG_MARS_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_PAR_DICT_P),     ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GEO_DICT_P),     ERRFLAG_GEOMETRY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GRIB_SAMPLE_P),  ERRFLAG_SAMPLE_NOT_ASSOCIATED )
+
+  !> Initialization of the dictionaries
+  F_MARS_DICT_P => NULL()
+  F_PAR_DICT_P => NULL()
+  F_GEO_DICT_P => NULL()
+
+  ! Get the dictionaries
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARIES) EXTRACT_DICTIONARIES( &
+&   C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, &
+&   F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, HOOKS )
+
+  !> Extract info from the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_INFO) F_C_GET_INFO_WRAPPER( C_ENCODER_MTG2_P, &
+&  OBJ_ID, OBJ_SIZE, BUF_SIZE, HASH, HOOKS, VERIFY_CHECKSUM=.FALSE. )
+
+  !> Get th fortran handle from the c handle
+  SELECT CASE ( OBJ_ID )
+  CASE (RAW_ENCODER_IDX_E)
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE) ENCODE_ALLOCATE_RAW_ENCODER( &
+&     C_ENCODER_MTG2_P, F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, &
+&     C_GRIB_SAMPLE_P, HOOKS )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_ENCODER_ID )
+
+  END SELECT
+
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_MARS_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS dictionary not associated' )
+    CASE (ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Parametrization dictionary not associated' )
+    CASE (ERRFLAG_GEOMETRY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Geometry dictionary not associated' )
+    CASE (ERRFLAG_SAMPLE_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Grib sample not associated' )
+    CASE (ERRFLAG_EXTRACT_DICTIONARIES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract dictionaries' )
+    CASE (ERRFLAG_UNABLE_TO_GET_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get info' )
+    CASE (ERRFLAG_UNABLE_TO_ENCODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to encode' )
+    CASE (ERRFLAG_INVALID_ENCODER_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid encoder ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is important when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_ALLOCATE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_PRESET'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_PRESET( C_ENCODER_MTG2_P, &
+& C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, C_GRIB_SAMPLE_P ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_preset') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_GET_INFO_WRAPPER
+
+  ! Cached encoder wrapper
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: RAW_ENCODER_IDX_E
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: ENCODE_PRESET_RAW_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_ENCODER_MTG2_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_MARS_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PAR_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GEO_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GRIB_SAMPLE_P
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(HOOKS_T) :: HOOKS
+
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: F_MARS_DICT_P
+  TYPE(PARAMETRIZATION_T), POINTER :: F_PAR_DICT_P
+  CLASS(REPRES_A), POINTER :: F_GEO_DICT_P
+
+  INTEGER(KIND=JPIB_K) :: OBJ_ID
+  INTEGER(KIND=JPIB_K) :: OBJ_SIZE
+  INTEGER(KIND=JPIB_K) :: BUF_SIZE
+  INTEGER(KIND=JPIB_K) :: HASH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_NOT_ASSOCIATED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SAMPLE_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARIES=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_INFO=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ENCODE=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_ENCODER_ID=9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2_P), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_MARS_DICT_P),    ERRFLAG_MARS_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_PAR_DICT_P),     ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GEO_DICT_P),     ERRFLAG_GEOMETRY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GRIB_SAMPLE_P),  ERRFLAG_SAMPLE_NOT_ASSOCIATED )
+
+  !> Initialization of the dictionaries
+  F_MARS_DICT_P => NULL()
+  F_PAR_DICT_P => NULL()
+  F_GEO_DICT_P => NULL()
+
+  ! Get the dictionaries
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARIES) EXTRACT_DICTIONARIES( &
+&   C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, &
+&   F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, HOOKS )
+
+  !> Extract info from the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_INFO) F_C_GET_INFO_WRAPPER( C_ENCODER_MTG2_P, &
+&  OBJ_ID, OBJ_SIZE, BUF_SIZE, HASH, HOOKS, VERIFY_CHECKSUM=.FALSE. )
+
+  !> Get th fortran handle from the c handle
+  SELECT CASE ( OBJ_ID )
+  CASE (RAW_ENCODER_IDX_E)
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE) ENCODE_PRESET_RAW_ENCODER( &
+&     C_ENCODER_MTG2_P, F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, &
+&     C_GRIB_SAMPLE_P, HOOKS )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_ENCODER_ID )
+
+  END SELECT
+
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_MARS_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS dictionary not associated' )
+    CASE (ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Parametrization dictionary not associated' )
+    CASE (ERRFLAG_GEOMETRY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Geometry dictionary not associated' )
+    CASE (ERRFLAG_SAMPLE_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Grib sample not associated' )
+    CASE (ERRFLAG_EXTRACT_DICTIONARIES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract dictionaries' )
+    CASE (ERRFLAG_UNABLE_TO_GET_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get info' )
+    CASE (ERRFLAG_UNABLE_TO_ENCODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to encode' )
+    CASE (ERRFLAG_INVALID_ENCODER_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid encoder ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is important when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_PRESET
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_RAW_ENCODER_RUNTIME'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_RAW_ENCODER_RUNTIME( C_ENCODER_MTG2_P, &
+& C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, C_GRIB_SAMPLE_P ) &
+ BIND(C,NAME='multio_grib2_raw_encoder_runtime') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_GET_INFO_WRAPPER
+
+  ! Cached encoder wrapper
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: RAW_ENCODER_IDX_E
+  USE :: RAW_ENCODER_WRAPPER_MOD, ONLY: ENCODE_RUNTIME_RAW_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_ENCODER_MTG2_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_MARS_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_PAR_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GEO_DICT_P
+  TYPE(C_PTR),  VALUE, INTENT(IN) :: C_GRIB_SAMPLE_P
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  TYPE(HOOKS_T) :: HOOKS
+
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: F_MARS_DICT_P
+  TYPE(PARAMETRIZATION_T), POINTER :: F_PAR_DICT_P
+  CLASS(REPRES_A), POINTER :: F_GEO_DICT_P
+
+  INTEGER(KIND=JPIB_K) :: OBJ_ID
+  INTEGER(KIND=JPIB_K) :: OBJ_SIZE
+  INTEGER(KIND=JPIB_K) :: BUF_SIZE
+  INTEGER(KIND=JPIB_K) :: HASH
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_NOT_ASSOCIATED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SAMPLE_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_DICTIONARIES=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_INFO=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ENCODE=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_ENCODER_ID=9_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_ENCODER_MTG2_P), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_MARS_DICT_P),    ERRFLAG_MARS_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_PAR_DICT_P),     ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GEO_DICT_P),     ERRFLAG_GEOMETRY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GRIB_SAMPLE_P),  ERRFLAG_SAMPLE_NOT_ASSOCIATED )
+
+  !> Initialization of the dictionaries
+  F_MARS_DICT_P => NULL()
+  F_PAR_DICT_P => NULL()
+  F_GEO_DICT_P => NULL()
+
+  ! Get the dictionaries
+  PP_TRYCALL(ERRFLAG_EXTRACT_DICTIONARIES) EXTRACT_DICTIONARIES( &
+&   C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, &
+&   F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, HOOKS )
+
+  !> Extract info from the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_INFO) F_C_GET_INFO_WRAPPER( C_ENCODER_MTG2_P, &
+&  OBJ_ID, OBJ_SIZE, BUF_SIZE, HASH, HOOKS, VERIFY_CHECKSUM=.FALSE. )
+
+  !> Get th fortran handle from the c handle
+  SELECT CASE ( OBJ_ID )
+  CASE (RAW_ENCODER_IDX_E)
+
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_ENCODE) ENCODE_RUNTIME_RAW_ENCODER( &
+&     C_ENCODER_MTG2_P, F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, &
+&     C_GRIB_SAMPLE_P, HOOKS )
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_ENCODER_ID )
+
+  END SELECT
+
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_MARS_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS dictionary not associated' )
+    CASE (ERRFLAG_PARAMETRIZATION_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Parametrization dictionary not associated' )
+    CASE (ERRFLAG_GEOMETRY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Geometry dictionary not associated' )
+    CASE (ERRFLAG_SAMPLE_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Grib sample not associated' )
+    CASE (ERRFLAG_EXTRACT_DICTIONARIES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract dictionaries' )
+    CASE (ERRFLAG_UNABLE_TO_GET_INFO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get info' )
+    CASE (ERRFLAG_UNABLE_TO_ENCODE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to encode' )
+    CASE (ERRFLAG_INVALID_ENCODER_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid encoder ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is important when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_RAW_ENCODER_RUNTIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'EXTRACT_DICTIONARIES'
+PP_THREAD_SAFE FUNCTION EXTRACT_DICTIONARIES( &
+& C_MARS_DICT_P, C_PAR_DICT_P, C_GEO_DICT_P, &
+& F_MARS_DICT_P, F_PAR_DICT_P, F_GEO_DICT_P, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_MARS_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_PAR_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_MARS_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_PAR_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_HEALPIX_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_REDUCED_GG_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_REGULAR_GG_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_SH_DICTIONARY
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: REPRESENTATIONS_MOD, ONLY: HEALPIX_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REDUCED_GG_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REGULAR_GG_T
+  USE :: REPRESENTATIONS_MOD, ONLY: SH_T
+  USE :: REPRESENTATIONS_MOD, ONLY: REPRES_A
+  USE :: API_SHARED_DATA_MOD, ONLY: HEALPIX_DICT_TYPE_E
+  USE :: API_SHARED_DATA_MOD, ONLY: REDUCED_GG_DICT_TYPE_E
+  USE :: API_SHARED_DATA_MOD, ONLY: REGULAR_GG_DICT_TYPE_E
+  USE :: API_SHARED_DATA_MOD, ONLY: SH_DICT_TYPE_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(C_PTR), VALUE,               INTENT(IN)    :: C_MARS_DICT_P
+  TYPE(C_PTR), VALUE,               INTENT(IN)    :: C_PAR_DICT_P
+  TYPE(C_PTR), VALUE,               INTENT(IN)    :: C_GEO_DICT_P
+  TYPE(FORTRAN_MESSAGE_T), POINTER, INTENT(OUT)   :: F_MARS_DICT_P
+  TYPE(PARAMETRIZATION_T), POINTER, INTENT(OUT)   :: F_PAR_DICT_P
+  CLASS(REPRES_A),         POINTER, INTENT(OUT)   :: F_GEO_DICT_P
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_MARS_DICT_W
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_PAR_DICT_W
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_GEO_DICT_W
+  TYPE(HEALPIX_T), POINTER :: F_HEALPIX_P
+  TYPE(REDUCED_GG_T), POINTER :: F_REDUCED_GG_P
+  TYPE(REGULAR_GG_T), POINTER :: F_REGULAR_GG_P
+  TYPE(SH_T), POINTER :: F_SH_P
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_MARS_DICTIONARY=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_PARAMETRIZATION_DICTIONARY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_GEOMETRY_DICTIONARY=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_HEALPIX_DICTIONARY=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_REDUCED_GG_DICTIONARY=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_REGULAR_GG_DICTIONARY=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_SH_DICTIONARY=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_GEOMETRY_DICTIONARY=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CMARS_DICT_NOT_ASSOCIATED=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CPAR_DICT_NOT_ASSOCIATED=10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CGEO_DICT_NOT_ASSOCIATED=11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FMARS_DICT_NOT_ASSOCIATED=12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FPAR_DICT_NOT_ASSOCIATED=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FGEO_DICT_NOT_ASSOCIATED=14_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variables
+  F_MARS_DICT_P => NULL()
+  F_PAR_DICT_P => NULL()
+  F_GEO_DICT_P => NULL()
+
+  ! Initialization of the local variables
+  F_HEALPIX_P => NULL()
+  F_REDUCED_GG_P => NULL()
+  F_REGULAR_GG_P => NULL()
+  F_SH_P => NULL()
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_MARS_DICT_P), ERRFLAG_CMARS_DICT_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_PAR_DICT_P), ERRFLAG_CPAR_DICT_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(C_GEO_DICT_P), ERRFLAG_CGEO_DICT_NOT_ASSOCIATED )
+
+  !> Get mars dictionary handle from the c pointer
+  F_MARS_DICT_W => NULL()
+  CALL C_F_POINTER( C_MARS_DICT_P, F_MARS_DICT_W, [2] )
+  PP_DEBUG_CRITICAL_COND_THROW(.NOT.ASSOCIATED(F_MARS_DICT_W), ERRFLAG_EXTRACT_MARS_DICTIONARY )
+  PP_TRYCALL(ERRFLAG_EXTRACT_MARS_DICTIONARY) EXTRACT_MARS_DICTIONARY( F_MARS_DICT_W, F_MARS_DICT_P, HOOKS )
+
+  !> Get parametrization dictionary handle from the c pointer
+  F_PAR_DICT_W => NULL()
+  CALL C_F_POINTER( C_PAR_DICT_P, F_PAR_DICT_W, [2] )
+  PP_DEBUG_CRITICAL_COND_THROW(.NOT.ASSOCIATED(F_PAR_DICT_W), ERRFLAG_EXTRACT_PARAMETRIZATION_DICTIONARY )
+  PP_TRYCALL(ERRFLAG_EXTRACT_PARAMETRIZATION_DICTIONARY) EXTRACT_PAR_DICTIONARY( F_PAR_DICT_W, F_PAR_DICT_P, HOOKS )
+
+  !> Get parametrization dictionary handle from the c pointer
+  F_GEO_DICT_W => NULL()
+  CALL C_F_POINTER( C_GEO_DICT_P, F_GEO_DICT_W, [2] )
+  PP_DEBUG_CRITICAL_COND_THROW(.NOT.ASSOCIATED(F_GEO_DICT_W), ERRFLAG_EXTRACT_GEOMETRY_DICTIONARY )
+
+
+  !> Associate the geometry dictionary
+  SELECT CASE ( F_GEO_DICT_W(1) )
+
+  CASE ( HEALPIX_DICT_TYPE_E )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_HEALPIX_DICTIONARY) EXTRACT_HEALPIX_DICTIONARY( F_GEO_DICT_W, F_HEALPIX_P, HOOKS )
+    F_GEO_DICT_P => F_HEALPIX_P
+
+  CASE ( REDUCED_GG_DICT_TYPE_E )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_REDUCED_GG_DICTIONARY) EXTRACT_REDUCED_GG_DICTIONARY( F_GEO_DICT_W, F_REDUCED_GG_P, HOOKS )
+    F_GEO_DICT_P => F_REDUCED_GG_P
+
+  CASE ( REGULAR_GG_DICT_TYPE_E )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_REGULAR_GG_DICTIONARY) EXTRACT_REGULAR_GG_DICTIONARY( F_GEO_DICT_W, F_REGULAR_GG_P, HOOKS )
+    F_GEO_DICT_P => F_REGULAR_GG_P
+
+  CASE ( SH_DICT_TYPE_E )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_SH_DICTIONARY) EXTRACT_SH_DICTIONARY( F_GEO_DICT_W, F_SH_P, HOOKS )
+    F_GEO_DICT_P => F_SH_P
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_GEOMETRY_DICTIONARY )
+
+  END SELECT
+
+  !> Check output variables
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_MARS_DICT_P), ERRFLAG_FMARS_DICT_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_PAR_DICT_P), ERRFLAG_FPAR_DICT_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_GEO_DICT_P), ERRFLAG_FGEO_DICT_NOT_ASSOCIATED )
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_EXTRACT_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract MARS dictionary' )
+    CASE (ERRFLAG_EXTRACT_PARAMETRIZATION_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract parametrization dictionary' )
+    CASE (ERRFLAG_EXTRACT_GEOMETRY_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract geometry dictionary' )
+    CASE (ERRFLAG_EXTRACT_HEALPIX_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract healpix dictionary' )
+    CASE (ERRFLAG_EXTRACT_REDUCED_GG_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract reduced gg dictionary' )
+    CASE (ERRFLAG_EXTRACT_REGULAR_GG_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract regular gg dictionary' )
+    CASE (ERRFLAG_EXTRACT_SH_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract spherical harmonics dictionary' )
+    CASE (ERRFLAG_UNKNOWN_GEOMETRY_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown geometry dictionary type' )
+    CASE (ERRFLAG_CMARS_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'C_MARS_DICT_P not associated' )
+    CASE (ERRFLAG_CPAR_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'C_PAR_DICT_P not associated' )
+    CASE (ERRFLAG_CGEO_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'C_GEO_DICT_P not associated' )
+    CASE (ERRFLAG_FMARS_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'F_MARS_P not associated' )
+    CASE (ERRFLAG_FPAR_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'F_PAR_P not associated' )
+    CASE (ERRFLAG_FGEO_DICT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'F_GEO_P not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION EXTRACT_DICTIONARIES
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+END MODULE RAW_ENCODERS_API_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

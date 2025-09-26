@@ -1,7 +1,7 @@
 #include "StatisticsParamMapping.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -10,8 +10,7 @@
 
 namespace multio::action::statistics_mtg2 {
 
-
-using message::glossary;
+namespace dm = multio::datamod;
 
 
 StatisticsParamMapping::StatisticsParamMapping(ParamTypeOfStatisticalProcessingToParamMap paramMappings) :
@@ -42,10 +41,10 @@ std::optional<std::int64_t> StatisticsParamMapping::getMapping(std::int64_t para
 }
 
 void StatisticsParamMapping::applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing, bool strict) const {
-    if (auto paramOld = metadata.getOpt<std::int64_t>(glossary().param); paramOld) {
+    if (auto paramOld = metadata.getOpt<std::int64_t>(dm::legacy::Param); paramOld) {
         auto paramNew = getMapping(*paramOld, typeOfStatisticalProcessing);
         if (paramNew.has_value()) {
-            metadata.set(glossary().param, *paramNew);
+            metadata.set(dm::legacy::Param, *paramNew);
             return;
         }
         if (!strict) {

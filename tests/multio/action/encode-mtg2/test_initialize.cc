@@ -1,4 +1,3 @@
-
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"

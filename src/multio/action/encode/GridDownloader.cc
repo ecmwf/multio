@@ -24,7 +24,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
-#include "multio/message/Glossary.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/util/Environment.h"
 #include "multio/util/Substitution.h"
 
@@ -82,7 +82,6 @@ AtlasInstance& AtlasInstance::instance() {
     return singleton;
 };
 
-using message::glossary;
 
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
@@ -142,11 +141,11 @@ void GridDownloader::populateUIDCache(const config::ComponentConfiguration& comp
 
 void GridDownloader::initTemplateMetadata() {
     templateMetadata_.set("step", 0);
-    templateMetadata_.set(glossary().typeOfLevel, "oceanSurface");
-    templateMetadata_.set(glossary().level, 0);
+    templateMetadata_.set(dm::legacy::TypeOfLevel, "oceanSurface");
+    templateMetadata_.set(dm::legacy::Level, 0);
     templateMetadata_.set("category", "ocean-grid-coordinate");
-    templateMetadata_.set(glossary().bitsPerValue, 16);
-    templateMetadata_.set(glossary().precision, "double");
+    templateMetadata_.set(dm::legacy::BitsPerValue, 16);
+    templateMetadata_.set(dm::legacy::Precision, "double");
 }
 
 multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gridSize,
@@ -154,9 +153,9 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
                                                                        const std::string& gridUID, int paramId) {
     multio::message::Metadata md(templateMetadata_);
 
-    md.set<std::int64_t>(glossary().globalSize, gridSize);
-    md.set(glossary().unstructuredGridSubtype, unstructuredGridSubtype);
-    md.set(glossary().uuidOfHGrid, gridUID);
+    md.set<std::int64_t>(dm::legacy::GlobalSize, gridSize);
+    md.set(dm::legacy::UnstructuredGridSubtype, unstructuredGridSubtype);
+    md.set(dm::legacy::UuidOfHGrid, gridUID);
 
     md.set("param", paramId);
 
@@ -216,8 +215,8 @@ multio::message::Message GridDownloader::encodeMessage(multio::message::Message&
     multio::message::Message msg{message};
     msg.header().acquireMetadata();
 
-    msg.modifyMetadata().set(glossary().startDate, startDate);
-    msg.modifyMetadata().set(glossary().startTime, startTime);
+    msg.modifyMetadata().set(dm::legacy::StartDate, startDate);
+    msg.modifyMetadata().set(dm::legacy::StartTime, startTime);
 
     return encoder_->encodeOceanCoordinates(std::move(msg), message::Metadata{});
 }

@@ -19,7 +19,9 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
 
@@ -28,7 +30,7 @@
 
 namespace multio::action::statistics_mtg2 {
 
-using message::glossary;
+namespace dm = multio::datamod;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -46,10 +48,10 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
 
     // Restart flush directly provides the folderName
     auto restartDateTime = msg.metadata().getOpt<std::string>("restartDateTime");
-    auto step = msg.metadata().getOpt<std::int64_t>(glossary().step);
-    auto timeStep = msg.metadata().getOpt<std::int64_t>(glossary().timeStep);
-    auto date = msg.metadata().getOpt<std::int64_t>(glossary().date);
-    auto time = msg.metadata().getOpt<std::int64_t>(glossary().time);
+    auto step = msg.metadata().getOpt<std::int64_t>(dm::legacy::Step);
+    auto timeStep = msg.metadata().getOpt<std::int64_t>(dm::legacy::TimeStep);
+    auto date = msg.metadata().getOpt<std::int64_t>(dm::legacy::Date);
+    auto time = msg.metadata().getOpt<std::int64_t>(dm::legacy::Time);
 
     if (restartDateTime) {
         folderName = *restartDateTime;
@@ -159,20 +161,24 @@ void Statistics::DumpTemporalStatistics() {
     return;
 }
 
-enum class FlushKind: std::size_t{
-    Default,FirstStep,StepAndRestart, LastStep, EndOfSimulation, CloseConnection
+enum class FlushKind : std::size_t
+{
+    Default,
+    FirstStep,
+    StepAndRestart,
+    LastStep,
+    EndOfSimulation,
+    CloseConnection
 };
 
-FlushKind parseFlushKind(const std::string & str) {
-    static const std::unordered_map <std::string,FlushKind> map{
-        { "first-step", FlushKind::FirstStep},
-        { "default", FlushKind::Default},
-        { "step-and-restart", FlushKind::StepAndRestart},
-        { "last-step", FlushKind::LastStep },
-        { "end-of-simulation", FlushKind::EndOfSimulation},
-        { "close-connection", FlushKind::CloseConnection}
-    };
-    if(auto search = map.find(str); search != map.end()){
+FlushKind parseFlushKind(const std::string& str) {
+    static const std::unordered_map<std::string, FlushKind> map{{"first-step", FlushKind::FirstStep},
+                                                                {"default", FlushKind::Default},
+                                                                {"step-and-restart", FlushKind::StepAndRestart},
+                                                                {"last-step", FlushKind::LastStep},
+                                                                {"end-of-simulation", FlushKind::EndOfSimulation},
+                                                                {"close-connection", FlushKind::CloseConnection}};
+    if (auto search = map.find(str); search != map.end()) {
         return search->second;
     }
     throw message::MetadataException(std::string("Unknown FlushKind: ") + str, Here());
@@ -180,15 +186,10 @@ FlushKind parseFlushKind(const std::string & str) {
 
 
 FlushKind parseFlushKind(std::int64_t val) {
-    static const std::unordered_map <std::int64_t,FlushKind> map{
-        { 0, FlushKind::FirstStep},
-        { 1, FlushKind::Default},
-        { 2, FlushKind::StepAndRestart},
-        { 3, FlushKind::LastStep },
-        { 4, FlushKind::EndOfSimulation},
-        { 5, FlushKind::CloseConnection}
-    };
-    if(auto search = map.find(val); search != map.end()){
+    static const std::unordered_map<std::int64_t, FlushKind> map{
+        {0, FlushKind::FirstStep}, {1, FlushKind::Default},         {2, FlushKind::StepAndRestart},
+        {3, FlushKind::LastStep},  {4, FlushKind::EndOfSimulation}, {5, FlushKind::CloseConnection}};
+    if (auto search = map.find(val); search != map.end()) {
         return search->second;
     }
     throw message::MetadataException(std::string("Unknown FlushKind: ") + std::to_string(val), Here());
@@ -199,18 +200,13 @@ FlushKind parseFlushKind(const message::Message& msg) {
         throw message::MetadataException("Message is not a flush.", Here());
     }
     FlushKind flushKind{FlushKind::Default};
-    if(auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()){
-        search->second.visit(eckit::Overloaded{
-            [&](const std::string & str){
-                flushKind = parseFlushKind(str);
-            },
-            [&](const std::int64_t val){
-                flushKind = parseFlushKind(val);
-            },
-            [&](const auto &){
-                throw message::MetadataException("FlushKind needs to be either string or integer.", Here());
-            }
-        });
+    if (auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()) {
+        search->second.visit(eckit::Overloaded{[&](const std::string& str) { flushKind = parseFlushKind(str); },
+                                               [&](const std::int64_t val) { flushKind = parseFlushKind(val); },
+                                               [&](const auto&) {
+                                                   throw message::MetadataException(
+                                                       "FlushKind needs to be either string or integer.", Here());
+                                               }});
     }
     return flushKind;
 }
@@ -316,8 +312,8 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // }
     auto md = inputMetadata;
 
-    md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
-    md.set(glossary().startTime, win.epochPoint().time().hhmmss());
+    md.set(dm::legacy::StartDate, win.epochPoint().date().yyyymmdd());
+    md.set(dm::legacy::StartTime, win.epochPoint().time().hhmmss());
 
     return md;
 }
@@ -431,8 +427,7 @@ void Statistics::emitAllStatistics(message::Peer source, message::Peer destinati
 }
 
 
-void Statistics::emitStatistics(TemporalStatistics& ts,
-                                message::Peer source, message::Peer destination) {
+void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
     for (auto it = ts.begin(); it != ts.end(); ++it) {
         eckit::Buffer payload;
         payload.resize((*it)->byte_size());
@@ -443,8 +438,10 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
 
         const std::int64_t step = ts.win().currPointInSteps();
         const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
-        md.set(glossary().step, step);
-        multio::message::Mtg2::mars::timespan.set(md, timespan);
+        md.set(dm::legacy::Step, step);
+
+        // TODO refactor - use KeySet instead of single keys
+        dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
 
         std::string opname = (*it)->operation();
         paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
@@ -454,15 +451,8 @@ void Statistics::emitStatistics(TemporalStatistics& ts,
 
         (*it)->compute(payload, cfg);
         executeNext(
-            message::Message{
-                message::Message::Header{
-                    message::Message::Tag::Field,
-                    source, destination,
-                    std::move(md)
-                },
-                std::move(payload)
-            }
-        );
+            message::Message{message::Message::Header{message::Message::Tag::Field, source, destination, std::move(md)},
+                             std::move(payload)});
     }
 }
 

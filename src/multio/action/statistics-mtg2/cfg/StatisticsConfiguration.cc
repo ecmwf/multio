@@ -9,14 +9,17 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/Glossary.h"
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/Glossary.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/util/Substitution.h"
 
 namespace multio::action::statistics_mtg2 {
 
-using message::glossary;
+namespace dm = multio::datamod;
 
-StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src, const StatisticsOptions& opt) :
+StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src,
+                                                 const StatisticsOptions& opt) :
     opt_{opt},
     date_{0},
     time_{0},
@@ -68,7 +71,7 @@ const std::string& StatisticsConfiguration::key() const {
 };
 
 void StatisticsConfiguration::readPrecision(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto precision = md.getOpt<std::string>(glossary().precision); precision) {
+    if (auto precision = md.getOpt<std::string>(dm::legacy::Precision); precision) {
         precision_ = *precision;
     }
     else {
@@ -79,15 +82,16 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
 
 void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
     // auto gridType = md.find("grid");  // New MTG2 name
-    using namespace message::Mtg2;
 
-    if( auto grid = md.find(mars::grid); grid != md.end()) {
-        gridType_ = mars::grid.get(grid->second);
+    // TODO use whole validated keyset...
+    if (const auto& grid = dm::parseEntry(dm::GRID, md); grid.isSet()) {
+        gridType_ = grid.get();
         return;
     }
+
     // gridType = md.find("truncation");
-    if( auto truncation = md.find("truncation"); truncation != md.end() ) {
-        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics",Here());
+    if (auto truncation = md.find("truncation"); truncation != md.end()) {
+        throw message::MetadataException("Statitics action currently doesn't work for spherical harmonics", Here());
     }
     else {
         throw eckit::SeriousBug{"grid or truncation isn't present metadata not present", Here()};
@@ -96,23 +100,24 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
 };
 
 void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto levType = md.getOpt<std::string>(glossary().levtype); levType) {
+    if (auto levType = md.getOpt<std::string>(dm::legacy::Levtype); levType) {
         levType_ = *levType;
     }
     else {
-        throw message::MetadataException("Levtype missing in metadata",Here());
+        throw message::MetadataException("Levtype missing in metadata", Here());
     }
     // if none of the above metadata options are present the default levtype is kept
     return;
 };
 
 void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
-    using namespace message::Mtg2;
 
-    if (auto param = md.find(mars::param);param!=md.end()) {
-        param_ = std::to_string(mars::param.get(param->second));
+    // TODO use whole validated keyset...
+    if (const auto& grid = dm::parseEntry(dm::PARAM, md); grid.isSet()) {
+        param_ = std::to_string(grid.get());
     }
-    else if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
+
+    else if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
         param_ = std::to_string(*paramId);
     }
     else {
@@ -123,10 +128,10 @@ void StatisticsConfiguration::readParam(const message::Metadata& md, const Stati
 
 
 void StatisticsConfiguration::readLevel(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto level = md.getOpt<std::int64_t>(glossary().level); level) {
+    if (auto level = md.getOpt<std::int64_t>(dm::legacy::Level); level) {
         level_ = *level;
     }
-    else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
+    else if (auto levelist = md.getOpt<std::int64_t>(dm::legacy::Levelist); levelist) {
         level_ = *levelist;
     }
     // if none of the above metadata options are present the default levtype is kept
@@ -136,10 +141,10 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
 
 void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> timeVal;
-    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().time))) {
+    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::Time))) {
         time_ = *timeVal;
     }
-    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().startTime))) {
+    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(dm::legacy::StartTime))) {
         time_ = *timeVal;
     }
     else {
@@ -150,10 +155,10 @@ void StatisticsConfiguration::readStartTime(const message::Metadata& md, const S
 
 void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> dateVal;
-    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().date))) {
+    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::Date))) {
         date_ = *dateVal;
     }
-    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().startDate))) {
+    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(dm::legacy::StartDate))) {
         date_ = *dateVal;
     }
     else {
@@ -164,11 +169,11 @@ void StatisticsConfiguration::readStartDate(const message::Metadata& md, const S
 
 
 void StatisticsConfiguration::readStep(const message::Metadata& md, const StatisticsOptions& opt) {
-    if (auto step = md.getOpt<std::int64_t>(glossary().endStep); step) {
+    if (auto step = md.getOpt<std::int64_t>(dm::legacy::EndStep); step) {
         step_ = *step;
         return;
     }
-    if (auto step = md.getOpt<std::int64_t>(glossary().step); step) {
+    if (auto step = md.getOpt<std::int64_t>(dm::legacy::Step); step) {
         step_ = *step;
         return;
     }
@@ -176,14 +181,14 @@ void StatisticsConfiguration::readStep(const message::Metadata& md, const Statis
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const StatisticsOptions& opt) {
-    timeStep_ = md.getOpt<std::int64_t>(glossary().timeStep).value_or(timeStep_);
+    timeStep_ = md.getOpt<std::int64_t>(dm::legacy::TimeStep).value_or(timeStep_);
     return;
 };
 
 
 void StatisticsConfiguration::readMissingValue(const message::Metadata& md, const StatisticsOptions& opt) {
-    const auto missingVal = md.getOpt<double>(glossary().missingValue);
-    const auto bitMapPresent = md.getOpt<bool>(glossary().bitmapPresent);
+    const auto missingVal = md.getOpt<double>(dm::legacy::MissingValue);
+    const auto bitMapPresent = md.getOpt<bool>(dm::legacy::BitmapPresent);
     bitmapPresent_ = missingVal && bitMapPresent && *bitMapPresent;
     if (bitmapPresent_) {
         missingValue_ = *missingVal;
@@ -193,7 +198,8 @@ void StatisticsConfiguration::readMissingValue(const message::Metadata& md, cons
 
 void StatisticsConfiguration::generateKey(const message::Metadata& md, const message::Peer& src) {
     std::ostringstream os;
-    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src.group() << "_" << src.id();
+    os << param_ << "-" << level_ << "-" << levType_ << "-" << gridType_ << "-" << precision_ << "-" << src.group()
+       << "_" << src.id();
     key_ = os.str();
 };
 

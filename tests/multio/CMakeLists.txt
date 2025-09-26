@@ -53,6 +53,7 @@ ecbuild_add_test( TARGET    test_multio_metadata
                   SOURCES   test_multio_metadata.cc
                   LIBS      multio )
 
+
 ecbuild_add_test( TARGET    test_multio_metadata_parametrization
                   TEST_REQUIRES test_multio_metadata
                   SOURCES   test_multio_metadata_parametrization.cc
@@ -70,6 +71,22 @@ ecbuild_add_test( TARGET    test_multio_select
                   LIBS      multio )
 
 
+# Test Data modelling
+
+ecbuild_add_test( TARGET    test_multio_datamod
+                  TEST_REQUIRES test_multio_metadata
+                  SOURCES   test_multio_datamod.cc
+                  LIBS      multio )
+
+ecbuild_add_test( TARGET    test_multio_datamod_containers
+                  TEST_REQUIRES test_multio_metadata
+                  SOURCES   test_multio_datamod_containers.cc
+                  LIBS      multio )
+
+ecbuild_add_test( TARGET    test_multio_datamod_models
+                  TEST_REQUIRES test_multio_metadata
+                  SOURCES   test_multio_datamod_models.cc
+                  LIBS      multio )
 
 # Test ring buffer
 

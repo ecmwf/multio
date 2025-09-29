@@ -59,8 +59,8 @@ CASE("simple checkpoint and restart") {
             Metadata md{{{"param", 130},
                          {"levtype", "sfc"},
                          {"grid", "custom"},
-                         {"startDate", 20250430},
-                         {"startTime", 0000},
+                         {"date", 20250430},
+                         {"time", 0000},
                          {"step", step},
                          {"misc-precision", "double"}}};
             eckit::Buffer pl{&val, sizeof(double)};
@@ -122,8 +122,8 @@ CASE("simple checkpoint and restart") {
             Metadata md{{{"param", 130},
                          {"levtype", "sfc"},
                          {"grid", "custom"},
-                         {"startDate", 20250430},
-                         {"startTime", 0000},
+                         {"date", 20250430},
+                         {"time", 0000},
                          {"step", step},
                          {"misc-precision", "double"}}};
             eckit::Buffer pl{&val, sizeof(double)};

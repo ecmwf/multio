@@ -55,8 +55,8 @@ void testFieldAndFlush(std::string flushKind, int64_t steps=1) {
             {"param", 130},
             {"levtype", "sfc"},
             {"grid", "custom"},
-            {"startDate", 20250425},
-            {"startTime", 0000},
+            {"date", 20250425},
+            {"time", 0000},
             {"step", step},
             {"misc-precision", "double"}
         }};

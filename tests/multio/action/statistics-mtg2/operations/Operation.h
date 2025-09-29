@@ -154,8 +154,8 @@ private:
             {"param", 130},
             {"levtype", "sfc"},
             {"grid", "custom"},
-            {"startDate", 20200721},
-            {"startTime", 0000},
+            {"date", 20200721},
+            {"time", 0000},
             {"step", step},
             {"misc-precision", std::is_same_v<ElemType, float> ? "single" : "double"}
         });

@@ -96,8 +96,8 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
             {"param", param},
             {"levtype", "none"},
             {"grid", "none"},
-            {"startDate", 20200721},
-            {"startTime", 0000},
+            {"date", 20200721},
+            {"time", 0000},
             {"step", step},
             {"misc-precision", "double"}
         });

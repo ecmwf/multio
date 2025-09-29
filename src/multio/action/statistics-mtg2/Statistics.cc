@@ -115,10 +115,6 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
 void Statistics::CreateMainRestartDirectory(const std::string& restartFolderName, bool is_master) {
 
     // Create the main restart directory
-    // TODO: if statistics are client side opt_.clientSideStatistics() then
-    // the restart directory should be created with appended the mpi-rank of
-    // processor that is creating the directory and all following login should
-    // be skipped since every processor will create its own directory.
     IOmanager_->setDateTime(restartFolderName);
 
     // Only master create the directory

@@ -269,9 +269,6 @@ struct EntryParser<eckit::Configuration> {
         if (c.isIntegralList(key)) {
             return std::forward<Func>(func)(util::TypeTag<std::vector<double>>{});
         }
-        // if (c.isList(key)) {
-        //     // Not supported
-        // }
         if (c.isString(key)) {
             return std::forward<Func>(func)(util::TypeTag<std::string>{});
         }
@@ -280,6 +277,9 @@ struct EntryParser<eckit::Configuration> {
         }
         if (c.isSubConfiguration(key)) {
             return std::forward<Func>(func)(util::TypeTag<eckit::LocalConfiguration>{});
+        }
+        if (c.isSubConfigurationList(key)) {
+            return std::forward<Func>(func)(util::TypeTag<std::vector<eckit::LocalConfiguration>>{});
         }
 
         return std::forward<Func>(func)();

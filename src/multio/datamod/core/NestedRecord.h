@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
@@ -54,6 +56,26 @@ struct RecordMapper {
     static Container dumpTo(Val&& v) {
         return dumpRecord<Container>(std::forward<Val>(v));
     }
+};
+
+
+template <typename RecordType>
+struct RecordMapper<std::vector<RecordType>> {
+    // Parse record from other record or implemented container
+    template <
+        typename OtherRec,
+        std::enable_if_t<IsRecord_v<OtherRec> || EntryParserIsSpecialized_v<OtherRec>, bool>
+        = true>
+    static std::vector<RecordType> parse(const std::vector<OtherRec>& vec) {
+        std::vector<RecordType> res;
+        res.reserve(vec.size());
+        for (const auto& v : vec) {
+            res.push_back(readRecordByValue<RecordType>(v));
+        }
+        return res;
+    }
+
+    // Dumping of vector is not implemented
 };
 
 

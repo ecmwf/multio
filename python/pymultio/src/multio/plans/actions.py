@@ -79,7 +79,7 @@ class Scale(Action):
     """Scale Action."""
 
     type: Literal["scale"] = Field("scale", init=False)
-    preset_mappings: Literal["local-to-wmo"] | None = Field(None)
+    preset_mappings: Literal["local-to-wmo", "wmo-to-local"] | None = Field(None)
     custom_mappings: dict[str, str] | None = Field(None)
 
 class Transport(Action):

@@ -21,7 +21,7 @@ from typing_extensions import Annotated
 from .sinks import SINKS
 from .base import MultioBaseModel
 
-SinksType = Annotated[SINKS, Field(discriminator="type", title="Sinks")]
+SinksType = Annotated[*SINKS, Field(discriminator="type", title="Sinks")]
 
 
 class Action(MultioBaseModel):

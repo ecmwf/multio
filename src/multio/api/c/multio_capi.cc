@@ -152,6 +152,7 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
     catch (FailureAwareException& e) {
         std::ostringstream oss;
         oss << "Caught a nested exception on C-C++ API boundary: " << e.what() << e.location();
+        multio::util::printException(oss,e);
 
         MultioErrorValues error = getNestedErrorValue(e);
         g_failure_info.lastErrorString = oss.str();
@@ -759,6 +760,7 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
+
             ASSERT(mio != nullptr);
             ASSERT(md != nullptr);
             ASSERT(data != nullptr);

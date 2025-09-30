@@ -75,12 +75,18 @@ class StatisticsMTG(Action):
     output_frequency: str = Field(examples=["5h", "10d", "1w"])
 
 
+class ScaleMapping(MultioBaseModel):
+    """Scale Mapping"""
+    param_in: int
+    param_out: int
+    scaling: float
+
 class Scale(Action):
     """Scale Action."""
 
     type: Literal["scale"] = Field("scale", init=False)
     preset_mappings: Literal["local-to-wmo", "wmo-to-local"] | None = Field(None)
-    custom_mappings: dict[str, str] | None = Field(None)
+    custom_mappings: list[ScaleMapping] | None = Field(None)
 
 class Transport(Action):
     """Transport Action"""

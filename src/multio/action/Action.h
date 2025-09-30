@@ -25,6 +25,7 @@
 #include "ActionStatistics.h"
 #include "eckit/memory/NonCopyable.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/datamod/core/EntryParser.h"
 #include "multio/message/Message.h"
 #include "multio/util/FailureHandling.h"
 
@@ -129,5 +130,17 @@ public:
 };
 
 //--------------------------------------------------------------------------------------------------
+
+template <typename ParsedConfig>
+ParsedConfig parseConfig(const ComponentConfiguration& compConf) {
+    multio::datamod::ParseOptions opts;
+    opts.allowAdditionalKeys = false;
+
+    auto conf = compConf.parsedConfig();
+    conf.remove("type");
+    conf.remove("next");
+
+    return multio::datamod::readRecordByValue<ParsedConfig>(conf, opts);
+}
 
 }  // namespace multio::action

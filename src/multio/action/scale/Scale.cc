@@ -20,18 +20,6 @@
 
 namespace multio::action::scale {
 
-ScaleConfig parseConfig(const ComponentConfiguration& compConf) {
-    dm::ParseOptions opts;
-    opts.allowAdditionalKeys = false;
-
-    // TODO(pgeier) Fix after refactoring action - need to remove keys "type" and "next"
-    auto conf = compConf.parsedConfig();
-    conf.remove("type");
-    conf.remove("next");
-
-    return dm::readRecordByValue<ScaleConfig>(conf, opts);
-}
-
 const std::vector<ScaleMappingConfig> getPresetMappings(const Preset& preset) {
     // Load the mapping file
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
@@ -71,7 +59,7 @@ Mappings getMappings(const ScaleConfig& config) {
 }
 
 Scale::Scale(const ComponentConfiguration& compConf) :
-    ChainedAction(compConf), mappings_{getMappings(parseConfig(compConf))} {}
+    ChainedAction(compConf), mappings_{getMappings(parseConfig<ScaleConfig>(compConf))} {}
 
 void Scale::executeImpl(message::Message msg) {
     // Skip non-field messages

@@ -11,7 +11,7 @@ list( APPEND _mars2grib_test_data
 
 ecbuild_get_test_multidata(
     EXTRACT TARGET   ${PREFIX}_get_data
-    DIRNAME  multio/mars2grib
+    DIRNAME  multio/test-data/mars2grib
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES ${_mars2grib_test_data}
 )

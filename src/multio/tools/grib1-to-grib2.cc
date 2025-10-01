@@ -247,7 +247,7 @@ void handleMissingValue(util::MioGribHandle& h, dm::MiscRecord& misc) {
     misc.missingValue.set(missingValue);
 }
 
-void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
+void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
     // For some reason mars returns an empty string for step
     if (h.hasKey("endStep")) {
         long endStep = h.getLong("endStep");
@@ -255,13 +255,22 @@ void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
 
         long startStep = h.getLong("startStep");
         long stepRange = h.hasKey("stepRange") ? h.getLong("stepRange") : (endStep - startStep);
-        mars.timespan.set(stepRange);
+        long startToEndStep = endStep - startStep;
+
+        if ((stepRange != startToEndStep) && (verbosity >= 2)) {
+            std::cout << "Inconsistent stepRange read from source file:" << std::endl
+                      << "  stepRange = " << stepRange << std::endl
+                      << "  startToEndStep = " << startToEndStep << std::endl;
+        }
+
+        mars.timespan.set(startToEndStep);
     }
 }
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
+                             int verbosity) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -323,7 +332,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         mars.time.set(hh * 10000 + mm * 100 + ss);
     }
 
-    handleStepRange(h, mars);
+    handleStepRange(h, mars, verbosity);
 
     // ... key truncation is not given officially ??
     if (h.hasKey("J")) {
@@ -991,7 +1000,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
 
-            auto geo = extract::mapGrib1ToGrib2(marsKeys, inputHandle, mars, misc);
+            auto geo = extract::mapGrib1ToGrib2(marsKeys, inputHandle, mars, misc, verbosity_);
 
 
             if (overwritePacking_) {

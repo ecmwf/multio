@@ -237,7 +237,7 @@ constexpr auto BitsPerValue =
         .withAccessor([](auto&& v) { return &v.bitsPerValue; });
 
 constexpr auto LaplacianOperator =
-    EntryDef<std::int64_t>{"laplacianOperator"}  
+    EntryDef<double>{"laplacianOperator"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.laplacianOperator; });
 

@@ -26,7 +26,6 @@ private:
     std::string levType_;
     std::string gridType_;
     std::string precision_;
-    std::string logPrefix_;
 
     // Handle missing values
     bool bitmapPresent_;
@@ -109,7 +108,6 @@ public:
     std::string levType() const;
     std::string gridType() const;
     std::string precision() const;
-    std::string logPrefix() const;
 
     // Handle missing values
     bool bitmapPresent() const;

@@ -117,7 +117,7 @@ SynopticCollection::SynopticCollection(const std::string& operation, const messa
     filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}  //,
 //    statistics_{make_operations(op_[2], msg, filter_->size(), IOmanager, win, cfg)}
 {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection standard constructor "
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** SynopticCollection standard constructor "
                                        << std::endl;
 };
 
@@ -132,7 +132,7 @@ SynopticCollection::SynopticCollection(const std::string& operation, const std::
     filter_{op_[0] == op_[1] ? make_filter(op_[1], cfg) : make_filter(op_[1], filterConf.at(op_[0]), cfg)}  //,
 //    statistics_{load_operations(op_[2], precision, filter_->size(), IOmanager, win, cfg)}
 {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection load constructor " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** SynopticCollection load constructor " << std::endl;
 };
 
 
@@ -144,7 +144,7 @@ size_t SynopticCollection::size() const {
 
 
 void SynopticCollection::resetWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection::updateWindow " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** SynopticCollection::updateWindow " << std::endl;
     for (auto& stat : statistics_) {
         // TODO: Just set to zero all the data of the window
         // stat.resetWindow();
@@ -161,7 +161,7 @@ void SynopticCollection::resetWindow(const message::Message& msg, const Statisti
 
 
 void SynopticCollection::updateData(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection::updateData " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** SynopticCollection::updateData " << std::endl;
     size_t key;
     if (filter_->match(msg, cfg, key)) {
         // TODO: add profiling code
@@ -181,7 +181,7 @@ void SynopticCollection::fillMetadata(size_t idx, message::Metadata& metadata) c
 
 
 void SynopticCollection::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** SynopticCollection::dump " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** SynopticCollection::dump " << std::endl;
     std::ostringstream os;
     size_t cnt = 0;
     for (auto& stat : statistics_) {

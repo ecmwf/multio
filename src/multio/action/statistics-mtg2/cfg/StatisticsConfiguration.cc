@@ -32,8 +32,7 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     precision_{"none"},
     bitmapPresent_{false},
     missingValue_{std::numeric_limits<double>::quiet_NaN()},
-    key_{"unknown"},
-    logPrefix_{opt_.logPrefix()} {
+    key_{"unknown"} {
 
     // Associate local procedure pointers
     computeEpoch_ = std::bind(&StatisticsConfiguration::computeEpoch, this);
@@ -265,11 +264,6 @@ bool StatisticsConfiguration::bitmapPresent() const {
 
 double StatisticsConfiguration::missingValue() const {
     return missingValue_;
-};
-
-
-std::string StatisticsConfiguration::logPrefix() const {
-    return logPrefix_;
 };
 
 

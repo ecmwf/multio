@@ -37,7 +37,7 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     needRestart_{false},
     lastDateTime_{""},
-    opt_{compConf},
+    opt_{compConf.parsedConfig().getSubConfiguration("options")},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},

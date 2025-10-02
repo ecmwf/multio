@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include "eckit/config/LocalConfiguration.h"
@@ -15,68 +16,46 @@ namespace multio::action::statistics_mtg2 {
  */
 class StatisticsOptions {
 private:
-    // Default values for configurations
-    long timeStep_;
-    bool solverSendInitStep_;
-    bool readRestart_;
-    bool writeRestart_;
-    bool debugRestart_;
-    std::string restartTime_;
+    const std::int64_t timeStep_;
+    const bool solverSendInitStep_;
 
-    std::string restartPath_;
-    std::string restartPrefix_;
-    std::string restartLib_;
-    std::string logPrefix_;
-    std::string windowType_;
-    std::string accumulatedFieldsResetFreqency_;
+    const bool readRestart_;
+    const bool writeRestart_;
+    const bool debugRestart_;
+    const std::string restartTime_;
+    const std::string restartPath_;
+    const std::string restartPrefix_;
+    const std::string restartLib_;
 
-    std::optional<long> valueCountThreshold_;
+    const std::string logPrefix_;
+    const std::string windowType_;
+    const std::string accumulatedFieldsResetFreqency_;
 
-    bool disableStrictMapping_;
-    bool disableSquashing_;
-    std::vector<std::pair<std::string, std::string>> setMetadata_;
+    const std::optional<long> valueCountThreshold_;
 
-private:
-    void parseTimeStep(const eckit::LocalConfiguration& cfg);
-    void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
-    void parseWriteRestart(const eckit::LocalConfiguration& cfg);
-    void parseDebugRestart(const eckit::LocalConfiguration& cfg);
-    void parseReadRestart(const eckit::LocalConfiguration& cfg);
-    void parseRestartPath(const eckit::LocalConfiguration& cfg);
-    void parseRestartPrefix(const eckit::LocalConfiguration& cfg);
-    void parseRestartTime(const eckit::LocalConfiguration& cfg);
-    void parseRestartLib(const eckit::LocalConfiguration& cfg);
-    void parseLogPrefix(const eckit::LocalConfiguration& cfg);
-    void parseWindowType(const eckit::LocalConfiguration& cfg);
-    void parseSolverResetAccumulatedFields(const eckit::LocalConfiguration& cfg);
-    void parseValueCountThreshold(const eckit::LocalConfiguration& cfg);
-    void parseDisableStrictMapping(const eckit::LocalConfiguration& cfg);
-    void parseDisableSquashing(const eckit::LocalConfiguration& cfg);
-    void parseSetMetadata(const eckit::LocalConfiguration& cfg);
-
-    void dumpOptions();
-    void usage();
+    const bool disableStrictMapping_;
+    const bool disableSquashing_;
+    const std::vector<std::pair<std::string, std::string>> setMetadata_;
 
 public:
-    StatisticsOptions(const config::ComponentConfiguration& compConf);
+    StatisticsOptions(const eckit::LocalConfiguration& cfg);
 
-    const std::string& logPrefix() const;
-    const std::string& windowType() const;
-
-    // Default values
     long timeStep() const;
-    bool solver_send_initial_condition() const;
+    bool solver_send_initial_condition() const;  // TODO: rename
+
     bool readRestart() const;
     bool writeRestart() const;
     bool debugRestart() const;
-
     const std::string& restartTime() const;
     const std::string& restartPath() const;
     const std::string& restartPrefix() const;
     const std::string& restartLib() const;
+
+    const std::string& logPrefix() const;
+    const std::string& windowType() const;
     const std::string& solverResetAccumulatedFields() const;
 
-    std::optional<long> valueCountThreshold() const;
+    std::optional<std::int64_t> valueCountThreshold() const;
 
     bool disableStrictMapping() const;
     bool disableSquashing() const;

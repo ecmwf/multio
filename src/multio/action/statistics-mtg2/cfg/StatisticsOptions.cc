@@ -88,7 +88,7 @@ std::string parseWindowType(const eckit::LocalConfiguration& cfg) {
     return windowType;
 }
 
-std::string parseSolverResetAccumulatedFields(const eckit::LocalConfiguration& cfg) {
+std::string parseSolverResetAccumulatedFieldsEvery(const eckit::LocalConfiguration& cfg) {
     // Used in the deaccumulate action to not deaccumulate twice
     const auto accumulatedFieldsResetFreqency = cfg.getString("solver-reset-accumulate-fields-every", "month");
     if (accumulatedFieldsResetFreqency != "hour" && accumulatedFieldsResetFreqency != "day"
@@ -149,7 +149,7 @@ std::vector<std::pair<std::string, std::string>> parseSetMetadata(const eckit::L
 
 StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     timeStep_{parseTimeStep(cfg)},
-    solverSendInitStep_{parseInitialConditionPresent(cfg)},  // TODO: rename var
+    initialConditionPresent_{parseInitialConditionPresent(cfg)},
     readRestart_{parseReadRestart(cfg)},
     writeRestart_{parseWriteRestart(cfg)},
     debugRestart_{parseDebugRestart(cfg)},
@@ -159,7 +159,7 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     restartLib_{parseRestartLib(cfg)},
     logPrefix_{parseRestartPrefix(cfg)},
     windowType_{parseWindowType(cfg)},
-    accumulatedFieldsResetFreqency_{parseSolverResetAccumulatedFields(cfg)},  // TODO: rename var
+    solverResetAccumulatedFieldsEvery_{parseSolverResetAccumulatedFieldsEvery(cfg)},
     valueCountThreshold_{parseValueCountThreshold(cfg)},
     disableStrictMapping_{parseDisableStrictMapping(cfg)},
     disableSquashing_{parseDisableSquashing(cfg)},
@@ -169,8 +169,8 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
 std::int64_t StatisticsOptions::timeStep() const {
     return timeStep_;
 }
-bool StatisticsOptions::solver_send_initial_condition() const {
-    return solverSendInitStep_;
+bool StatisticsOptions::initialConditionPresent() const {
+    return initialConditionPresent_;
 }
 
 bool StatisticsOptions::readRestart() const {
@@ -201,8 +201,8 @@ const std::string& StatisticsOptions::logPrefix() const {
 const std::string& StatisticsOptions::windowType() const {
     return windowType_;
 }
-const std::string& StatisticsOptions::solverResetAccumulatedFields() const {
-    return accumulatedFieldsResetFreqency_;
+const std::string& StatisticsOptions::solverResetAccumulatedFieldsEvery() const {
+    return solverResetAccumulatedFieldsEvery_;
 }
 
 std::optional<long> StatisticsOptions::valueCountThreshold() const {

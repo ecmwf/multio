@@ -17,7 +17,7 @@ namespace multio::action::statistics_mtg2 {
 class StatisticsOptions {
 private:
     const std::int64_t timeStep_;
-    const bool solverSendInitStep_;
+    const bool initialConditionPresent_;
 
     const bool readRestart_;
     const bool writeRestart_;
@@ -29,7 +29,7 @@ private:
 
     const std::string logPrefix_;
     const std::string windowType_;
-    const std::string accumulatedFieldsResetFreqency_;
+    const std::string solverResetAccumulatedFieldsEvery_;
 
     const std::optional<long> valueCountThreshold_;
 
@@ -41,7 +41,7 @@ public:
     StatisticsOptions(const eckit::LocalConfiguration& cfg);
 
     long timeStep() const;
-    bool solver_send_initial_condition() const;  // TODO: rename
+    bool initialConditionPresent() const;
 
     bool readRestart() const;
     bool writeRestart() const;
@@ -53,7 +53,7 @@ public:
 
     const std::string& logPrefix() const;
     const std::string& windowType() const;
-    const std::string& solverResetAccumulatedFields() const;
+    const std::string& solverResetAccumulatedFieldsEvery() const;
 
     std::optional<std::int64_t> valueCountThreshold() const;
 

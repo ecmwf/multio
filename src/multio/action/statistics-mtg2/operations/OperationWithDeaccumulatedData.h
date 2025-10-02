@@ -179,25 +179,24 @@ private:
     const std::string restartFileName() const { return name_ + "_" + (sizeof(T) == 4 ? "single" : "double"); };
 
     bool solverResetAccumulatedFields(const message::Message& msg, const StatisticsConfiguration& cfg) {
-
-        if (cfg.options().solverResetAccumulatedFields() == "hour") {
+        if (cfg.options().solverResetAccumulatedFieldsEvery() == "hour") {
             return isBeginningOfHour(msg, cfg);
         }
-        if (cfg.options().solverResetAccumulatedFields() == "day") {
+        if (cfg.options().solverResetAccumulatedFieldsEvery() == "day") {
             return isBeginningOfDay(msg, cfg);
         }
-        if (cfg.options().solverResetAccumulatedFields() == "month") {
+        if (cfg.options().solverResetAccumulatedFieldsEvery() == "month") {
             return isBeginningOfMonth(msg, cfg);
         }
-        if (cfg.options().solverResetAccumulatedFields() == "year") {
+        if (cfg.options().solverResetAccumulatedFieldsEvery() == "year") {
             return isBeginningOfYear(msg, cfg);
         }
-        if (cfg.options().solverResetAccumulatedFields() == "never") {
+        if (cfg.options().solverResetAccumulatedFieldsEvery() == "never") {
             return false;
         }
 
         std::ostringstream os;
-        os << "Invalid reset period of accumulated fields :: " << cfg.options().solverResetAccumulatedFields()
+        os << "Invalid reset period of accumulated fields :: " << cfg.options().solverResetAccumulatedFieldsEvery()
            << std::endl;
         throw eckit::UserError(os.str(), Here());
     }

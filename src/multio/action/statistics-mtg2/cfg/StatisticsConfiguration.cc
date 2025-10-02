@@ -124,12 +124,9 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     gridType_{readGridType(md)},
     precision_{readPrecision(md)},
     missingValue_{readMissingValue(md)},
-    key_{generateKey(src)} {
-    // Associate local procedure pointers
-    computeEpoch_ = std::bind(&StatisticsConfiguration::computeEpoch, this);
-    computeCurr_ = std::bind(&StatisticsConfiguration::computeCurr, this);
-    computeWinStart_ = std::bind(&StatisticsConfiguration::computeWinStart, this);
-}
+    key_{generateKey(src)},
+    epoch_{computeEpoch()},
+    curr_{computeCurr()} {}
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     StatisticsConfiguration(msg.metadata(), msg.source(), opt) {};
@@ -142,57 +139,16 @@ std::string StatisticsConfiguration::generateKey(const message::Peer& src) const
     return os.str();
 }
 
-
-eckit::DateTime StatisticsConfiguration::epoch() const {
-    epoch_ = computeEpoch_();
-    return epoch_;
-}
-
-eckit::DateTime StatisticsConfiguration::curr() const {
-    curr_ = computeCurr_();
-    return curr_;
-}
-
-eckit::DateTime StatisticsConfiguration::winStart() const {
-    winStart_ = computeWinStart_();
-    return winStart_;
-}
-
-
 eckit::DateTime StatisticsConfiguration::computeEpoch() const {
-    eckit::Date startDate{date_};
-    auto hour = time_ / 10000;
-    auto minute = (time_ % 10000) / 100;
-    epoch_ = eckit::DateTime{startDate, eckit::Time{hour, minute, 0}};
-    computeEpoch_ = std::bind(&StatisticsConfiguration::getEpoch, this);
-    return epoch_;
-};
-
-eckit::DateTime StatisticsConfiguration::getEpoch() const {
-    return epoch_;
+    eckit::Date date{date_};
+    const auto hour = time_ / 10000;
+    const auto minute = (time_ % 10000) / 100;
+    return eckit::DateTime{date, eckit::Time{hour, minute, 0}};
 }
 
 
 eckit::DateTime StatisticsConfiguration::computeCurr() const {
-    curr_ = epoch() + static_cast<eckit::Second>(std::max((step_), 0L) * timeStep_);
-    computeCurr_ = std::bind(&StatisticsConfiguration::getCurr, this);
-    return curr_;
-}
-
-eckit::DateTime StatisticsConfiguration::getCurr() const {
-    return curr_;
-}
-
-
-eckit::DateTime StatisticsConfiguration::computeWinStart() const {
-    ASSERT(opt_.solver_send_initial_condition());
-    winStart_ = curr();
-    computeWinStart_ = std::bind(&StatisticsConfiguration::getWinStart, this);
-    return winStart_;
-}
-
-eckit::DateTime StatisticsConfiguration::getWinStart() const {
-    return winStart_;
+    return epoch() + static_cast<eckit::Second>(std::max(step_, 0L) * timeStep_);
 }
 
 
@@ -241,6 +197,13 @@ double StatisticsConfiguration::missingValue() const {
 
 const std::string& StatisticsConfiguration::key() const {
     return key_;
+}
+
+eckit::DateTime StatisticsConfiguration::epoch() const {
+    return epoch_;
+}
+eckit::DateTime StatisticsConfiguration::curr() const {
+    return curr_;
 }
 
 }  // namespace multio::action::statistics_mtg2

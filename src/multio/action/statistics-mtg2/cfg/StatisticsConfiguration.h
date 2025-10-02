@@ -34,24 +34,15 @@ private:
     const std::string key_;
 
     // Timing utils
-    mutable eckit::DateTime epoch_;
-    mutable eckit::DateTime curr_;
-    mutable eckit::DateTime winStart_;
-
-    mutable std::function<eckit::DateTime()> computeEpoch_;
-    mutable std::function<eckit::DateTime()> computeCurr_;
-    mutable std::function<eckit::DateTime()> computeWinStart_;
+    const eckit::DateTime epoch_;
+    const eckit::DateTime curr_;
 
     // ---------------------------------------------------------------------------------------------
 
-    eckit::DateTime computeEpoch() const;
-    eckit::DateTime getEpoch() const;
-    eckit::DateTime computeCurr() const;
-    eckit::DateTime getCurr() const;
-    eckit::DateTime computeWinStart() const;
-    eckit::DateTime getWinStart() const;
-
     std::string generateKey(const message::Peer& src) const;
+
+    eckit::DateTime computeEpoch() const;
+    eckit::DateTime computeCurr() const;
 
 
 public:
@@ -79,7 +70,6 @@ public:
 
     eckit::DateTime epoch() const;
     eckit::DateTime curr() const;
-    eckit::DateTime winStart() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

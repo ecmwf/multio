@@ -59,8 +59,8 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
     eckit::DateTime epochPoint{cfg.epoch()};
-    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
-    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.curr())};
+    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.curr())};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
     long windowType = 0;
     if (cfg.options().windowType() == "forward-offset") {

@@ -153,19 +153,19 @@ const StatisticsOptions& StatisticsConfiguration::options() const {
     return opt_;
 }
 
-long StatisticsConfiguration::date() const {
+std::int64_t StatisticsConfiguration::date() const {
     return date_;
 }
-long StatisticsConfiguration::time() const {
+std::int64_t StatisticsConfiguration::time() const {
     return time_;
 }
-long StatisticsConfiguration::level() const {
+std::int64_t StatisticsConfiguration::level() const {
     return level_;
 }
-long StatisticsConfiguration::timeStep() const {
+std::int64_t StatisticsConfiguration::timeStep() const {
     return timeStep_;
 }
-long StatisticsConfiguration::step() const {
+std::int64_t StatisticsConfiguration::step() const {
     return step_;
 }
 

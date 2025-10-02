@@ -29,7 +29,7 @@ private:
     const std::string windowType_;
     const std::string solverResetAccumulatedFieldsEvery_;
 
-    const std::optional<long> valueCountThreshold_;
+    const std::optional<std::int64_t> valueCountThreshold_;
 
     const bool disableStrictMapping_;
     const bool disableSquashing_;
@@ -38,7 +38,7 @@ private:
 public:
     StatisticsOptions(const eckit::LocalConfiguration& cfg);
 
-    long timeStep() const;
+    std::int64_t timeStep() const;
     bool initialConditionPresent() const;
 
     bool readRestart() const;

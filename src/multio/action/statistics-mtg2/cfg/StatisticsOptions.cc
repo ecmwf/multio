@@ -208,7 +208,7 @@ const std::string& StatisticsOptions::solverResetAccumulatedFieldsEvery() const 
     return solverResetAccumulatedFieldsEvery_;
 }
 
-std::optional<long> StatisticsOptions::valueCountThreshold() const {
+std::optional<std::int64_t> StatisticsOptions::valueCountThreshold() const {
     return valueCountThreshold_;
 }
 

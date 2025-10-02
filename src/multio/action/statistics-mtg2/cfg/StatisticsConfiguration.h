@@ -55,10 +55,10 @@ public:
     std::int64_t timeStep() const;
     std::int64_t step() const;
 
-    std::string param() const;
-    std::string levType() const;
-    std::string gridType() const;
-    std::string precision() const;
+    const std::string& param() const;
+    const std::string& levType() const;
+    const std::string& gridType() const;
+    const std::string& precision() const;
 
     // Handle missing values
     bool bitmapPresent() const;
@@ -66,8 +66,8 @@ public:
 
     const std::string& key() const;
 
-    eckit::DateTime epoch() const;
-    eckit::DateTime curr() const;
+    const eckit::DateTime& epoch() const;
+    const eckit::DateTime& curr() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

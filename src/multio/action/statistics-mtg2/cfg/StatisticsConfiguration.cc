@@ -169,16 +169,16 @@ long StatisticsConfiguration::step() const {
     return step_;
 }
 
-std::string StatisticsConfiguration::param() const {
+const std::string& StatisticsConfiguration::param() const {
     return param_;
 }
-std::string StatisticsConfiguration::levType() const {
+const std::string& StatisticsConfiguration::levType() const {
     return levType_;
 }
-std::string StatisticsConfiguration::gridType() const {
+const std::string& StatisticsConfiguration::gridType() const {
     return gridType_;
 }
-std::string StatisticsConfiguration::precision() const {
+const std::string& StatisticsConfiguration::precision() const {
     return precision_;
 }
 
@@ -196,10 +196,10 @@ const std::string& StatisticsConfiguration::key() const {
     return key_;
 }
 
-eckit::DateTime StatisticsConfiguration::epoch() const {
+const eckit::DateTime& StatisticsConfiguration::epoch() const {
     return epoch_;
 }
-eckit::DateTime StatisticsConfiguration::curr() const {
+const eckit::DateTime& StatisticsConfiguration::curr() const {
     return curr_;
 }
 

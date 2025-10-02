@@ -1,6 +1,9 @@
+#include "StatisticsOptions.h"
 
-#include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+
+#include "eckit/filesystem/PathName.h"
+#include "multio/util/Substitution.h"
 
 namespace multio::action::statistics_mtg2 {
 

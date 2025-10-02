@@ -1,10 +1,8 @@
 #pragma once
 
-#include "eckit/config/LocalConfiguration.h"
+#include "StatisticsOptions.h"
+
 #include "eckit/types/DateTime.h"
-#include "multio/action/Action.h"
-#include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
 namespace multio::action::statistics_mtg2 {

@@ -1,20 +1,17 @@
-#include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
+#include "StatisticsConfiguration.h"
 
 #include <limits.h>
 #include <unistd.h>
+
 #include <cstdint>
-#include <iomanip>
 #include <optional>
 #include <string>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/filesystem/PathName.h"
 
-#include "multio/LibMultio.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/Glossary.h"
-#include "multio/datamod/MarsMiscGeo.h"
-#include "multio/util/Substitution.h"
+#include "multio/datamod/MarsKeys.h"
 
 namespace multio::action::statistics_mtg2 {
 

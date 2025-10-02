@@ -1,12 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "eckit/config/LocalConfiguration.h"
-#include "multio/action/Action.h"
-#include "multio/config/ComponentConfiguration.h"
-#include "multio/message/Message.h"
 
 
 namespace multio::action::statistics_mtg2 {

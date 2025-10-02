@@ -35,17 +35,17 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
         parseWriteRestart(options);
         parseDebugRestart(options);
         parseReadRestart(options);
-        parseRestartPath(compConf, options);
-        parseRestartPrefix(compConf, options);
+        parseRestartPath(options);
+        parseRestartPrefix(options);
         parseRestartLib(options);
-        parseRestartTime(compConf, options);
-        parseLogPrefix(compConf, options);
-        parseWindowType(compConf, options);
-        parseSolverResetAccumulatedFields(compConf, options);
-        parseValueCountThreshold(compConf, options);
-        parseDisableStrictMapping(compConf, options);
+        parseRestartTime(options);
+        parseLogPrefix(options);
+        parseWindowType(options);
+        parseSolverResetAccumulatedFields(options);
+        parseValueCountThreshold(options);
+        parseDisableStrictMapping(options);
         parseDisableSquashing(options);
-        parseSetMetadata(compConf, options);
+        parseSetMetadata(options);
     }
 
 
@@ -117,8 +117,7 @@ void StatisticsOptions::parseReadRestart(const eckit::LocalConfiguration& cfg) {
 };
 
 
-void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& compConf,
-                                         const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseRestartPath(const eckit::LocalConfiguration& cfg) {
     // Read the path used to restart statistics
     // Default value is "."
     restartPath_ = cfg.getString("restart-path", ".");
@@ -132,8 +131,7 @@ void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& c
 };
 
 
-void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& compConf,
-                                         const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseRestartTime(const eckit::LocalConfiguration& cfg) {
     // Read the path used to restart statistics
     // Default value is "latest"
     restartTime_ = cfg.getString("restart-time", "latest");
@@ -141,8 +139,7 @@ void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& c
 };
 
 
-void StatisticsOptions::parseRestartPrefix(const config::ComponentConfiguration& compConf,
-                                           const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseRestartPrefix(const eckit::LocalConfiguration& cfg) {
     // Prefix used for the restart file names in order
     // to make the file name unique across different plans
     restartPrefix_ = cfg.getString("restart-prefix", "StatisticsDump");
@@ -155,14 +152,12 @@ void StatisticsOptions::parseRestartLib(const eckit::LocalConfiguration& cfg) {
 };
 
 
-void StatisticsOptions::parseLogPrefix(const config::ComponentConfiguration& compConf,
-                                       const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseLogPrefix(const eckit::LocalConfiguration& cfg) {
     logPrefix_ = cfg.getString("log-prefix", "Plan");
     return;
 };
 
-void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& compConf,
-                                        const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseWindowType(const eckit::LocalConfiguration& cfg) {
     windowType_ = cfg.getString("window-type", "forward-offset");
     if (windowType_ != "forward-offset" && windowType_ != "backward-offset") {
         std::ostringstream os;
@@ -172,8 +167,7 @@ void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& co
     return;
 };
 
-void StatisticsOptions::parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
-                                                          const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseSolverResetAccumulatedFields(const eckit::LocalConfiguration& cfg) {
     // Used in the deaccumulate action to not deaccumulate twice
     accumulatedFieldsResetFreqency_ = cfg.getString("solver-reset-accumulate-fields-every", "month");
 
@@ -187,8 +181,7 @@ void StatisticsOptions::parseSolverResetAccumulatedFields(const config::Componen
     return;
 };
 
-void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfiguration& compConf,
-                                                 const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseValueCountThreshold(const eckit::LocalConfiguration& cfg) {
     long threshold = cfg.getLong("value-count-threshold", -1);
 
     if (threshold == -1) {
@@ -205,8 +198,7 @@ void StatisticsOptions::parseValueCountThreshold(const config::ComponentConfigur
     throw eckit::UserError(os.str(), Here());
 }
 
-void StatisticsOptions::parseDisableStrictMapping(const config::ComponentConfiguration& compConf,
-                                                  const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseDisableStrictMapping(const eckit::LocalConfiguration& cfg) {
     std::optional<bool> r;
     r = util::parseBool(cfg, "disable-strict-mapping", false);
     if (r) {
@@ -230,8 +222,7 @@ void StatisticsOptions::parseDisableSquashing(const eckit::LocalConfiguration& c
     }
 }
 
-void StatisticsOptions::parseSetMetadata(const config::ComponentConfiguration& compConf,
-                                         const eckit::LocalConfiguration& cfg) {
+void StatisticsOptions::parseSetMetadata(const eckit::LocalConfiguration& cfg) {
     if (!cfg.has("set-metadata")) {
         return;
     }

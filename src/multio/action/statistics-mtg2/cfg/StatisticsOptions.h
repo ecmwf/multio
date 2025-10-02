@@ -42,18 +42,17 @@ private:
     void parseWriteRestart(const eckit::LocalConfiguration& cfg);
     void parseDebugRestart(const eckit::LocalConfiguration& cfg);
     void parseReadRestart(const eckit::LocalConfiguration& cfg);
-    void parseRestartPath(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
-    void parseRestartPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
-    void parseRestartTime(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseRestartPath(const eckit::LocalConfiguration& cfg);
+    void parseRestartPrefix(const eckit::LocalConfiguration& cfg);
+    void parseRestartTime(const eckit::LocalConfiguration& cfg);
     void parseRestartLib(const eckit::LocalConfiguration& cfg);
-    void parseLogPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
-    void parseWindowType(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
-    void parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
-                                           const eckit::LocalConfiguration& cfg);
-    void parseValueCountThreshold(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
-    void parseDisableStrictMapping(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseLogPrefix(const eckit::LocalConfiguration& cfg);
+    void parseWindowType(const eckit::LocalConfiguration& cfg);
+    void parseSolverResetAccumulatedFields(const eckit::LocalConfiguration& cfg);
+    void parseValueCountThreshold(const eckit::LocalConfiguration& cfg);
+    void parseDisableStrictMapping(const eckit::LocalConfiguration& cfg);
     void parseDisableSquashing(const eckit::LocalConfiguration& cfg);
-    void parseSetMetadata(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseSetMetadata(const eckit::LocalConfiguration& cfg);
 
     void dumpOptions();
     void usage();

@@ -33,26 +33,14 @@ private:
     // Unique key used for statistics map
     const std::string key_;
 
-
     // Timing utils
     mutable eckit::DateTime epoch_;
     mutable eckit::DateTime curr_;
     mutable eckit::DateTime winStart_;
 
-    mutable bool beginningOfHour_;
-    mutable bool beginningOfDay_;
-    mutable bool beginningOfMonth_;
-    mutable bool beginningOfYear_;
-
     mutable std::function<eckit::DateTime()> computeEpoch_;
     mutable std::function<eckit::DateTime()> computeCurr_;
     mutable std::function<eckit::DateTime()> computeWinStart_;
-
-    mutable std::function<bool()> computeBeginningOfHour_;
-    mutable std::function<bool()> computeBeginningOfDay_;
-    mutable std::function<bool()> computeBeginningOfMonth_;
-    mutable std::function<bool()> computeBeginningOfYear_;
-
 
     // ---------------------------------------------------------------------------------------------
 
@@ -62,15 +50,6 @@ private:
     eckit::DateTime getCurr() const;
     eckit::DateTime computeWinStart() const;
     eckit::DateTime getWinStart() const;
-
-    bool computeBeginningOfHour() const;
-    bool isBeginningOfHour() const;
-    bool computeBeginningOfDay() const;
-    bool isBeginningOfDay() const;
-    bool computeBeginningOfMonth() const;
-    bool isBeginningOfMonth() const;
-    bool computeBeginningOfYear() const;
-    bool isBeginningOfYear() const;
 
     std::string generateKey(const message::Peer& src) const;
 
@@ -101,11 +80,6 @@ public:
     eckit::DateTime epoch() const;
     eckit::DateTime curr() const;
     eckit::DateTime winStart() const;
-
-    bool beginningOfHour() const;
-    bool beginningOfDay() const;
-    bool beginningOfMonth() const;
-    bool beginningOfYear() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

@@ -129,10 +129,6 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     computeEpoch_ = std::bind(&StatisticsConfiguration::computeEpoch, this);
     computeCurr_ = std::bind(&StatisticsConfiguration::computeCurr, this);
     computeWinStart_ = std::bind(&StatisticsConfiguration::computeWinStart, this);
-    computeBeginningOfHour_ = std::bind(&StatisticsConfiguration::computeBeginningOfHour, this);
-    computeBeginningOfDay_ = std::bind(&StatisticsConfiguration::computeBeginningOfDay, this);
-    computeBeginningOfMonth_ = std::bind(&StatisticsConfiguration::computeBeginningOfMonth, this);
-    computeBeginningOfYear_ = std::bind(&StatisticsConfiguration::computeBeginningOfYear, this);
 }
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
@@ -160,26 +156,6 @@ eckit::DateTime StatisticsConfiguration::curr() const {
 eckit::DateTime StatisticsConfiguration::winStart() const {
     winStart_ = computeWinStart_();
     return winStart_;
-}
-
-bool StatisticsConfiguration::beginningOfHour() const {
-    auto ret = computeBeginningOfHour_();
-    return ret;
-}
-
-bool StatisticsConfiguration::beginningOfDay() const {
-    auto ret = computeBeginningOfDay_();
-    return ret;
-}
-
-bool StatisticsConfiguration::beginningOfMonth() const {
-    auto ret = computeBeginningOfMonth_();
-    return ret;
-}
-
-bool StatisticsConfiguration::beginningOfYear() const {
-    auto ret = computeBeginningOfYear_();
-    return ret;
 }
 
 
@@ -220,64 +196,6 @@ eckit::DateTime StatisticsConfiguration::getWinStart() const {
 }
 
 
-bool StatisticsConfiguration::computeBeginningOfHour() const {
-    eckit::DateTime now = curr();
-    long min = now.time().minutes();
-    long sec = now.time().seconds();
-    beginningOfHour_ = (min == 0 && sec == 0);
-    computeBeginningOfHour_ = std::bind(&StatisticsConfiguration::isBeginningOfHour, this);
-    return beginningOfHour_;
-}
-
-bool StatisticsConfiguration::isBeginningOfHour() const {
-    return beginningOfHour_;
-}
-
-bool StatisticsConfiguration::computeBeginningOfDay() const {
-    eckit::DateTime now = curr();
-    long hour = now.time().hours();
-    long min = now.time().minutes();
-    long sec = now.time().seconds();
-    beginningOfDay_ = (hour == 0 && min == 0 && sec == 0);
-    computeBeginningOfDay_ = std::bind(&StatisticsConfiguration::isBeginningOfDay, this);
-    return beginningOfDay_;
-}
-
-bool StatisticsConfiguration::isBeginningOfDay() const {
-    return beginningOfDay_;
-}
-
-bool StatisticsConfiguration::computeBeginningOfMonth() const {
-    eckit::DateTime now = curr();
-    long day = now.date().day();
-    long hour = now.time().hours();
-    long min = now.time().minutes();
-    long sec = now.time().seconds();
-    beginningOfMonth_ = (day == 1 && hour == 0 && min == 0 && sec == 0);
-    computeBeginningOfMonth_ = std::bind(&StatisticsConfiguration::isBeginningOfMonth, this);
-    return beginningOfMonth_;
-}
-
-bool StatisticsConfiguration::isBeginningOfMonth() const {
-    return beginningOfMonth_;
-}
-
-bool StatisticsConfiguration::computeBeginningOfYear() const {
-    eckit::DateTime now = curr();
-    long month = now.date().month();
-    long day = now.date().day();
-    long hour = now.time().hours();
-    long min = now.time().minutes();
-    long sec = now.time().seconds();
-    beginningOfYear_ = (month == 1 && day == 1 && hour == 0 && min == 0 && sec == 0);
-    computeBeginningOfYear_ = std::bind(&StatisticsConfiguration::isBeginningOfYear, this);
-    return beginningOfYear_;
-}
-
-bool StatisticsConfiguration::isBeginningOfYear() const {
-    return beginningOfYear_;
-}
-
 const StatisticsOptions& StatisticsConfiguration::options() const {
     return opt_;
 }
@@ -314,7 +232,6 @@ std::string StatisticsConfiguration::precision() const {
 bool StatisticsConfiguration::bitmapPresent() const {
     return missingValue_.has_value();
 }
-
 double StatisticsConfiguration::missingValue() const {
     if (missingValue_) {
         return *missingValue_;

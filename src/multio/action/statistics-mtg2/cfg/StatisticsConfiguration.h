@@ -16,30 +16,27 @@ private:
     const StatisticsOptions& opt_;
 
     // Metadata to be extracted from the message
-    long date_;
-    long time_;
-    long level_;
-    long timeStep_;
-    long step_;
+    const std::int64_t date_;
+    const std::int64_t time_;
+    const std::int64_t level_;
+    const std::int64_t timeStep_;
+    const std::int64_t step_;
 
-    std::string param_;
-    std::string levType_;
-    std::string gridType_;
-    std::string precision_;
+    const std::string param_;
+    const std::string levType_;
+    const std::string gridType_;
+    const std::string precision_;
 
     // Handle missing values
-    bool bitmapPresent_;
-    double missingValue_;
+    const std::optional<double> missingValue_;
 
     // Unique key used for statistics map
-    std::string key_;
+    const std::string key_;
 
 
     // Timing utils
     mutable eckit::DateTime epoch_;
-    mutable eckit::DateTime prev_;
     mutable eckit::DateTime curr_;
-    mutable eckit::DateTime next_;
     mutable eckit::DateTime winStart_;
 
     mutable bool beginningOfHour_;
@@ -48,9 +45,7 @@ private:
     mutable bool beginningOfYear_;
 
     mutable std::function<eckit::DateTime()> computeEpoch_;
-    mutable std::function<eckit::DateTime()> computePrev_;
     mutable std::function<eckit::DateTime()> computeCurr_;
-    mutable std::function<eckit::DateTime()> computeNext_;
     mutable std::function<eckit::DateTime()> computeWinStart_;
 
     mutable std::function<bool()> computeBeginningOfHour_;
@@ -77,18 +72,7 @@ private:
     bool computeBeginningOfYear() const;
     bool isBeginningOfYear() const;
 
-    void generateKey(const message::Metadata& md, const message::Peer& src);
-
-    void readPrecision(const message::Metadata& md);
-    void readGridType(const message::Metadata& md);
-    void readLevType(const message::Metadata& md);
-    void readLevel(const message::Metadata& md);
-    void readParam(const message::Metadata& md);
-    void readStartTime(const message::Metadata& md);
-    void readStartDate(const message::Metadata& md);
-    void readStep(const message::Metadata& md);
-    void readTimeStep(const message::Metadata& md);
-    void readMissingValue(const message::Metadata& md);
+    std::string generateKey(const message::Peer& src) const;
 
 
 public:
@@ -96,13 +80,12 @@ public:
     StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt);
 
     const StatisticsOptions& options() const;
-    const std::string& key() const;
 
-    long date() const;
-    long time() const;
-    long level() const;
-    long timeStep() const;
-    long step() const;
+    std::int64_t date() const;
+    std::int64_t time() const;
+    std::int64_t level() const;
+    std::int64_t timeStep() const;
+    std::int64_t step() const;
 
     std::string param() const;
     std::string levType() const;
@@ -113,6 +96,7 @@ public:
     bool bitmapPresent() const;
     double missingValue() const;
 
+    const std::string& key() const;
 
     eckit::DateTime epoch() const;
     eckit::DateTime curr() const;

@@ -192,7 +192,7 @@ double StatisticsConfiguration::missingValue() const {
     if (missingValue_) {
         return *missingValue_;
     }
-    return std::numeric_limits<double>::quiet_NaN();  // TODO: Remove fake value
+    throw eckit::SeriousBug("Missing value is undefined!", Here());
 }
 
 const std::string& StatisticsConfiguration::key() const {

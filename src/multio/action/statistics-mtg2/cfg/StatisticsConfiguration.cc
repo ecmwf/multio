@@ -45,16 +45,16 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     computeBeginningOfYear_ = std::bind(&StatisticsConfiguration::computeBeginningOfYear, this);
 
     // Read the metadata
-    readStartDate(md, opt);
-    readStartTime(md, opt);
-    readStep(md, opt);
-    readTimeStep(md, opt);
-    readLevel(md, opt);
-    readParam(md, opt);
-    readLevType(md, opt);
-    readGridType(md, opt);
-    readPrecision(md, opt);
-    readMissingValue(md, opt);
+    readStartDate(md);
+    readStartTime(md);
+    readStep(md);
+    readTimeStep(md);
+    readLevel(md);
+    readParam(md);
+    readLevType(md);
+    readGridType(md);
+    readPrecision(md);
+    readMissingValue(md);
 
     // Generate Key
     generateKey(md, src);
@@ -70,7 +70,7 @@ const std::string& StatisticsConfiguration::key() const {
     return key_;
 };
 
-void StatisticsConfiguration::readPrecision(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readPrecision(const message::Metadata& md) {
     if (auto precision = md.getOpt<std::string>(dm::legacy::Precision); precision) {
         precision_ = *precision;
     }
@@ -80,7 +80,7 @@ void StatisticsConfiguration::readPrecision(const message::Metadata& md, const S
     return;
 };
 
-void StatisticsConfiguration::readGridType(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readGridType(const message::Metadata& md) {
     // TODO use whole validated keyset...
     if (const auto& grid = dm::parseEntry(dm::GRID, md); grid.isSet()) {
         gridType_ = grid.get();
@@ -97,7 +97,7 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
     throw eckit::SeriousBug{os.str(), Here()};
 };
 
-void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readLevType(const message::Metadata& md) {
     if (auto levType = md.getOpt<std::string>(dm::legacy::Levtype); levType) {
         levType_ = *levType;
     }
@@ -108,7 +108,7 @@ void StatisticsConfiguration::readLevType(const message::Metadata& md, const Sta
     return;
 };
 
-void StatisticsConfiguration::readParam(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readParam(const message::Metadata& md) {
 
     // TODO use whole validated keyset...
     if (const auto& grid = dm::parseEntry(dm::PARAM, md); grid.isSet()) {
@@ -125,7 +125,7 @@ void StatisticsConfiguration::readParam(const message::Metadata& md, const Stati
 };
 
 
-void StatisticsConfiguration::readLevel(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readLevel(const message::Metadata& md) {
     if (auto level = md.getOpt<std::int64_t>(dm::legacy::Level); level) {
         level_ = *level;
     }
@@ -137,7 +137,7 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
     return;
 };
 
-void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readStartTime(const message::Metadata& md) {
     // NOTE: Currently no support for messages without step (from analysis)!
     ASSERT(md.getOpt<std::int64_t>(dm::legacy::Step).has_value());
     const auto timeVal = md.getOpt<std::int64_t>(dm::legacy::Time);
@@ -145,7 +145,7 @@ void StatisticsConfiguration::readStartTime(const message::Metadata& md, const S
     time_ = *timeVal;
 };
 
-void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readStartDate(const message::Metadata& md) {
     // NOTE: Currently no support for messages without step (from analysis)!
     ASSERT(md.getOpt<std::int64_t>(dm::legacy::Step).has_value());
     const auto dateVal = md.getOpt<std::int64_t>(dm::legacy::Date);
@@ -154,20 +154,20 @@ void StatisticsConfiguration::readStartDate(const message::Metadata& md, const S
 };
 
 
-void StatisticsConfiguration::readStep(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readStep(const message::Metadata& md) {
     // NOTE: Currently no support for messages without step (from analysis)!
     const auto stepVal = md.getOpt<std::int64_t>(dm::legacy::Step);
     ASSERT(stepVal.has_value());
     step_ = *stepVal;
 };
 
-void StatisticsConfiguration::readTimeStep(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readTimeStep(const message::Metadata& md) {
     timeStep_ = md.getOpt<std::int64_t>(dm::legacy::TimeStep).value_or(timeStep_);
     return;
 };
 
 
-void StatisticsConfiguration::readMissingValue(const message::Metadata& md, const StatisticsOptions& opt) {
+void StatisticsConfiguration::readMissingValue(const message::Metadata& md) {
     const auto missingVal = md.getOpt<double>(dm::legacy::MissingValue);
     const auto bitMapPresent = md.getOpt<bool>(dm::legacy::BitmapPresent);
     bitmapPresent_ = missingVal && bitMapPresent && *bitMapPresent;

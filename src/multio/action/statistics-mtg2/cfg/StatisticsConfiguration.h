@@ -80,16 +80,16 @@ private:
 
     void generateKey(const message::Metadata& md, const message::Peer& src);
 
-    void readPrecision(const message::Metadata& md, const StatisticsOptions& opt);
-    void readGridType(const message::Metadata& md, const StatisticsOptions& opt);
-    void readLevType(const message::Metadata& md, const StatisticsOptions& opt);
-    void readLevel(const message::Metadata& md, const StatisticsOptions& opt);
-    void readParam(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStartTime(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStartDate(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStep(const message::Metadata& md, const StatisticsOptions& opt);
-    void readTimeStep(const message::Metadata& md, const StatisticsOptions& opt);
-    void readMissingValue(const message::Metadata& md, const StatisticsOptions& opt);
+    void readPrecision(const message::Metadata& md);
+    void readGridType(const message::Metadata& md);
+    void readLevType(const message::Metadata& md);
+    void readLevel(const message::Metadata& md);
+    void readParam(const message::Metadata& md);
+    void readStartTime(const message::Metadata& md);
+    void readStartDate(const message::Metadata& md);
+    void readStep(const message::Metadata& md);
+    void readTimeStep(const message::Metadata& md);
+    void readMissingValue(const message::Metadata& md);
 
 
 public:

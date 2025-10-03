@@ -247,23 +247,38 @@ void handleMissingValue(util::MioGribHandle& h, dm::MiscRecord& misc) {
     misc.missingValue.set(missingValue);
 }
 
+std::optional<std::pair<long, long>> parseRange(const std::string& s) {
+    static const std::regex re(R"(^\s*([+-]?\d+)\s*-\s*([+-]?\d+)\s*$)");
+    std::smatch m;
+    if (not std::regex_match(s, m, re)) {
+        return std::nullopt;
+    }
+
+    auto start = std::stol(m[1].str());
+    auto end = std::stol(m[2].str());
+    return std::make_pair(start, end);
+}
+
 void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
     // For some reason mars returns an empty string for step
     if (h.hasKey("endStep")) {
-        long endStep = h.getLong("endStep");
+        auto endStep = h.getLong("endStep");
         mars.step.set(endStep);
 
-        long startStep = h.getLong("startStep");
-        long stepRange = h.hasKey("stepRange") ? h.getLong("stepRange") : (endStep - startStep);
-        long startToEndStep = endStep - startStep;
-
-        if ((stepRange != startToEndStep) && (verbosity >= 2)) {
-            std::cout << "Inconsistent stepRange read from source file:" << std::endl
-                      << "  stepRange = " << stepRange << std::endl
-                      << "  startToEndStep = " << startToEndStep << std::endl;
+        auto stepRangeStr = h.getString("stepRange");
+        if (verbosity > 1) {
+            std::cout << "stepRange = " << stepRangeStr << std::endl;
         }
 
-        mars.timespan.set(startToEndStep);
+        long stepRange;
+        if (auto r = parseRange(stepRangeStr)) {
+            stepRange = r->second - r->first;
+        }
+        else {
+            stepRange = h.hasKey("stepRange") ? h.getLong("stepRange") : endStep;
+        }
+
+        mars.timespan.set(stepRange);
     }
 }
 

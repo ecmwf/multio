@@ -417,10 +417,23 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
 
     // TODO pgeier waveDirections/waveFrequencies may be renamed to the GRIB name
     if (h.hasKey("scaledValuesOfWaveDirections")) {
-        misc.waveDirections.set(h.getDoubleArray("scaledValuesOfWaveDirections"));
+        const double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
+        auto waveDirections = h.getDoubleArray("scaledValuesOfWaveDirections");
+        auto directionScalingFactor = h.getDouble("directionScalingFactor");
+        std::for_each(begin(waveDirections), end(waveDirections), [directionScalingFactor](double& val) {
+            val /= directionScalingFactor * rad2deg;
+        });
+        misc.scaleFactorOfWaveDirections.set(3); // Seems to have no effect
+        misc.waveDirections.set(waveDirections);
     }
     if (h.hasKey("scaledValuesOfWaveFrequencies")) {
-        misc.waveFrequencies.set(h.getDoubleArray("scaledValuesOfWaveFrequencies"));
+        auto waveFrequencies = h.getDoubleArray("scaledValuesOfWaveFrequencies");
+        auto frequencyScalingFactor = h.getDouble("frequencyScalingFactor");
+        std::for_each(begin(waveFrequencies), end(waveFrequencies), [frequencyScalingFactor](double& val) {
+            val /= frequencyScalingFactor;
+        });
+        misc.scaleFactorOfWaveFrequencies.set(6); // Probably has no effect, either
+        misc.waveFrequencies.set(waveFrequencies);
     }
 
     misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries, h);

@@ -423,7 +423,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         std::for_each(begin(waveDirections), end(waveDirections), [directionScalingFactor](double& val) {
             val /= directionScalingFactor * rad2deg;
         });
-        misc.scaleFactorOfWaveDirections.set(3); // Seems to have no effect
+        misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
         misc.waveDirections.set(waveDirections);
     }
     if (h.hasKey("scaledValuesOfWaveFrequencies")) {
@@ -432,7 +432,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         std::for_each(begin(waveFrequencies), end(waveFrequencies), [frequencyScalingFactor](double& val) {
             val /= frequencyScalingFactor;
         });
-        misc.scaleFactorOfWaveFrequencies.set(6); // Probably has no effect, either
+        misc.scaleFactorOfWaveFrequencies.set(std::log10(frequencyScalingFactor));
         misc.waveFrequencies.set(waveFrequencies);
     }
 

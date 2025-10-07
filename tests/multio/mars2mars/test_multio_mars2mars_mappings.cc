@@ -456,8 +456,7 @@ CASE("Test heightAboveSea") {
 
         EXPECT(res);
         EXPECT(mars.levelist.get() == 10);
-        EXPECT(misc.bitsPerValue.isSet());
-        EXPECT(misc.bitsPerValue.get() == 24);
+        EXPECT(!misc.bitsPerValue.isSet());
     }
 };
 

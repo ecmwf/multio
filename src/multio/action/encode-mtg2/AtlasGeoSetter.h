@@ -22,6 +22,7 @@
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/Record.h"
+#include "multio/datamod/types/Repres.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
@@ -44,25 +45,32 @@ struct AtlasGeoSetter {
         message::Parametrization::instance().update(md);
     }
 
+    static void handleLL(const std::string& scope, const std::string& gridName) {
+        message::Metadata md{{scope, true}};
+
+        auto geoLL = datamod::scopeRecord(dm::GeoLLRecord{}, scope);
+
+        dm::setKeysFromAtlas(geoLL, gridName);
+
+        dm::dumpRecord(geoLL, md);
+
+        message::Parametrization::instance().update(md);
+    }
+
     static void handleGrid(const std::string& scope, const std::string& gridName) {
-        const static std::vector<std::pair<std::string, GridTypeFunction>> gridMap{
-            {"^\\s*[FON]\\d+\\s*$", &handleGG},
-            // {"^\\s*L\\d+x\\d+\\s*$", &updateRegularLatLonGrid}
-        };
-
-        const auto gridFunc = std::find_if(gridMap.cbegin(), gridMap.cend(), [&gridName](const auto& item) {
-            std::regex r{item.first};
-            return std::regex_match(gridName, r);
-        });
-
-        if (gridFunc != gridMap.cend()) {
-            gridFunc->second(scope, gridName);
-        }
-        else {
-            std::ostringstream oss;
-            oss << "GeoFromAtlas: No grid function specified for grid " << gridName << std::endl;
-            throw multio::message::MetadataException(oss.str(), Here());
-            // TODO throw
+        // TODO(pgeier) Use gridType instead of repres in follow up PR
+        auto repres = dm::represFromGrid(gridName);
+        switch (repres) {
+            case dm::Repres::GG:
+                handleGG(scope, gridName);
+                break;
+            case dm::Repres::LL:
+                handleLL(scope, gridName);
+                break;
+            default:
+                std::ostringstream oss;
+                oss << "GeoFromAtlas: No grid function specified for grid " << gridName << std::endl;
+                throw multio::message::MetadataException(oss.str(), Here());
         }
     }
 };

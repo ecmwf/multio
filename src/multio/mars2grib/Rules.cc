@@ -180,9 +180,8 @@ auto makeGridRule(dm::Repres repres, std::int64_t num) {
                 Setter([=](SectionsConf& c) { c.grid.ensureInit().modify().templateNumber.set(num); }));
 }
 
-
 auto gridRules() {
-    return exclusiveRuleList(makeGridRule(dm::Repres::GG, 40));
+    return exclusiveRuleList(makeGridRule(dm::Repres::GG, 40), makeGridRule(dm::Repres::LL, 0));
 }
 auto gridRuleSH() {
     return exclusiveRuleList(makeGridRule(dm::Repres::SH, 50));
@@ -544,9 +543,9 @@ auto plLevelRules(MkTail&& mkTail) {
 
 auto paramPLRules() {
     return plLevelRules([]() {
-        return exclusiveRuleList(                                                                 //
-            rule(matchParams(60, 75, 76, paramRange(129, 135), 203, 246, 247, 248, 157, 260290),  //
-                 pointInTime()),                                                                  //
+        return exclusiveRuleList(                                                                  //
+            rule(matchParams(60, 75, 76, paramRange(129, 135), 203, 246, 247, 248, 157, 260290),   //
+                 pointInTime()),                                                                   //
             rule(matchParams(235100, paramRange(235129, 235133), 235135, 235157, 235203, 235246),  //
                  timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))             //
         );
@@ -555,9 +554,9 @@ auto paramPLRules() {
 
 auto paramPLRulesSH() {
     return plLevelRules([]() {
-        return exclusiveRuleList(                                              //
-            rule(matchParams(1, 2, paramRange(129, 135), 138, 152, 155, 157),  //
-                 pointInTime()),                                               //
+        return exclusiveRuleList(                                                       //
+            rule(matchParams(1, 2, paramRange(129, 135), 138, 152, 155, 157),           //
+                 pointInTime()),                                                        //
             rule(matchParams(235129, 235130, 235138, 235152, 235155, 263107),           //
                  timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))  //
         );
@@ -611,10 +610,10 @@ auto paramPVRules() {
 }
 
 auto paramPVRulesSH() {
-    return exclusiveRuleList(                       //
-        rule(matchParams(3, 54, 129),               //
-             pointInTime(),                         //
-             typeOfLevel(TOL::PotentialVorticity)), //
+    return exclusiveRuleList(                                                       //
+        rule(matchParams(3, 54, 129),                                               //
+             pointInTime(),                                                         //
+             typeOfLevel(TOL::PotentialVorticity)),                                 //
         rule(matchParams(235098, 235269),                                           //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::PotentialVorticity))                                  //

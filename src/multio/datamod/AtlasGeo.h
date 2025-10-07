@@ -82,10 +82,47 @@ struct SetKeysFromAtlas<GeoGGRecord> {
             }
             geoGG.pl.set(std::move(pl));
         }
-        
+
         // Explicitly validate after manual setting
         applyRecordDefaults(geoGG);
         validateRecord(geoGG);
+    }
+};
+
+
+template <>
+struct SetKeysFromAtlas<GeoLLRecord> {
+    void operator()(GeoLLRecord& geoLL, const std::string& gridName) const {
+        const auto regularLLGrid = createGrid<atlas::RegularLonLatGrid>(gridName);
+        geoLL.numberOfPointsAlongAParallel.set(regularLLGrid.nx());
+        geoLL.numberOfPointsAlongAMeridian.set(regularLLGrid.ny());
+
+        ASSERT(regularLLGrid.size() >= 2);
+        {
+            auto it = regularLLGrid.atlas::Grid::lonlat().begin();
+
+            geoLL.latitudeOfFirstGridPointInDegrees.set((*it)[1]);
+            geoLL.longitudeOfFirstGridPointInDegrees.set((*it)[0]);
+
+
+            it += regularLLGrid.size() - 1;
+            geoLL.latitudeOfLastGridPointInDegrees.set((*it)[1]);
+            geoLL.longitudeOfLastGridPointInDegrees.set((*it)[0]);
+        }
+
+        // Example: (358.5 - 0)/(240 -1) = 1.5
+        geoLL.iDirectionIncrementInDegrees.set(
+            (geoLL.longitudeOfLastGridPointInDegrees.get() - geoLL.longitudeOfFirstGridPointInDegrees.get())
+            / (geoLL.numberOfPointsAlongAParallel.get() - 1));
+
+        // Example: (90.0 - (-90.0))/(121 -1) = 1.5
+        geoLL.jDirectionIncrementInDegrees.set(
+            (geoLL.latitudeOfFirstGridPointInDegrees.get() - geoLL.latitudeOfLastGridPointInDegrees.get())
+            / (geoLL.numberOfPointsAlongAMeridian.get() - 1));
+
+        // Explicitly validate after manual setting
+        applyRecordDefaults(geoLL);
+        validateRecord(geoLL);
     }
 };
 
@@ -108,7 +145,7 @@ inline ScopedGeometry makeGeometry(const FullMarsRecord& mars) {
 }
 
 inline Geometry makeUnscopedGeometry(const FullMarsRecord& mars) {
-    return std::visit([](auto&& geo) -> Geometry { return unscopeRecord(std::move(geo));}, makeGeometry(mars));
+    return std::visit([](auto&& geo) -> Geometry { return unscopeRecord(std::move(geo)); }, makeGeometry(mars));
 }
 
 }  // namespace multio::datamod

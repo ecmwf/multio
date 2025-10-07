@@ -96,10 +96,27 @@ constexpr auto LongitudeOfLastGridPointInDegrees =
     EntryDef<double>{"longitudeOfLastGridPointInDegrees"}  
         .withAccessor([](auto&& v) { return &v.longitudeOfLastGridPointInDegrees; });
 
+constexpr auto IDirectionIncrementInDegrees =
+    EntryDef<double>{"iDirectionIncrementInDegrees"}  
+        .withAccessor([](auto&& v) { return &v.iDirectionIncrementInDegrees; });
+
+constexpr auto JDirectionIncrementInDegrees =
+    EntryDef<double>{"jDirectionIncrementInDegrees"}  
+        .withAccessor([](auto&& v) { return &v.jDirectionIncrementInDegrees; });
+
+
 constexpr auto Pl =
     EntryDef<std::vector<std::int64_t>>{"pl"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.pl; });
+        
+        
+// Section 3 - LL
+
+constexpr auto NumberOfPointsAlongAParallel =
+    EntryDef<std::int64_t>{"numberOfPointsAlongAParallel"}  
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAParallel; });
 
 
 // Section 3 - SH
@@ -263,7 +280,7 @@ struct VerticalGribKeys {
 
     static constexpr std::string_view record_name_ = "vertical";
     static constexpr auto record_entries_ = std::make_tuple(PVPresent, Pv);
-    
+
     static void applyDefaults(VerticalGribKeys& v) {
         if (v.pv.isSet()) {
             v.pvPresent.set(true);

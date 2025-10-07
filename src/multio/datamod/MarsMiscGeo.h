@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "multio/datamod/Glossary.h"
 #include "multio/datamod/GribKeys.h"
 #include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/core/Compare.h"
@@ -419,11 +420,23 @@ struct GeoSHRecord {
 // Geometry keys - ll
 //-----------------------------------------------------------------------------
 
-// TBD
-
 struct GeoLLRecord {
+    EntryType_t<decltype(NumberOfPointsAlongAParallel)> numberOfPointsAlongAParallel;
+    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
+
+    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
+    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
+    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
+    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
+
+    EntryType_t<decltype(IDirectionIncrementInDegrees)> iDirectionIncrementInDegrees;
+    EntryType_t<decltype(JDirectionIncrementInDegrees)> jDirectionIncrementInDegrees;
+
     static constexpr std::string_view record_name_ = "geo-ll";
-    static constexpr auto record_entries_ = std::make_tuple();
+    static constexpr auto record_entries_ = std::make_tuple(
+        NumberOfPointsAlongAParallel, NumberOfPointsAlongAMeridian, LatitudeOfFirstGridPointInDegrees,
+        LongitudeOfFirstGridPointInDegrees, LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees,
+        IDirectionIncrementInDegrees, JDirectionIncrementInDegrees);
 };
 
 //-----------------------------------------------------------------------------

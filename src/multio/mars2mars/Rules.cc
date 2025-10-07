@@ -156,7 +156,7 @@ auto fixHeightAboveGround10m() {
 
 auto fixHeightAboveSea() {
     return rule(all(matchParams(140233, 140245, 140249)),                         //
-                setMarsKey(dm::LEVELIST, 10), setMiscKey(dm::BitsPerValue, 24));  //
+                setMarsKey(dm::LEVELIST, 10));  //
 }
 
 

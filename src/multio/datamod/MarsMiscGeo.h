@@ -318,6 +318,16 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
 
 // Pv defined in GribKeys
 
+constexpr auto ScaleFactorOfWaveDirections =               //
+    EntryDef<std::int64_t>{"scaleFactorOfWaveDirections"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveDirections; });
+
+constexpr auto ScaleFactorOfWaveFrequencies =               //
+    EntryDef<std::int64_t>{"scaleFactorOfWaveFrequencies"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveFrequencies; });
+
 constexpr auto WaveDirections =                      //
     EntryDef<std::vector<double>>{"waveDirections"}  //
         .tagOptional()
@@ -348,6 +358,8 @@ struct MiscRecord {
     EntryType_t<decltype(ScaleFactorOfCentralWaveNumber)> scaleFactorOfCentralWaveNumber;
     EntryType_t<decltype(ScaledValueOfCentralWaveNumber)> scaledValueOfCentralWaveNumber;
     EntryType_t<decltype(Pv)> pv;
+    EntryType_t<decltype(ScaleFactorOfWaveDirections)> scaleFactorOfWaveDirections;
+    EntryType_t<decltype(ScaleFactorOfWaveFrequencies)> scaleFactorOfWaveFrequencies;
     EntryType_t<decltype(WaveDirections)> waveDirections;
     EntryType_t<decltype(WaveFrequencies)> waveFrequencies;
     EntryType_t<decltype(BitsPerValue)> bitsPerValue;
@@ -359,7 +371,8 @@ struct MiscRecord {
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedData, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
-        Pv, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator);
+        Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
+        LaplacianOperator);
 };
 
 

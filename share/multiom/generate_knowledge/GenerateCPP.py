@@ -90,11 +90,6 @@ struct Print<{namespace}::{enumName}> {{
     }}
 }};
 
-template <>
-struct TypeToString<{namespace}::{enumName}> {{
-    std::string operator()() const {{ return "{namespace}::{enumName}"; }};
-}};
-
 }}  // namespace multio::util
 
 
@@ -180,10 +175,6 @@ namespace multio::util {{
 template<>
 struct Print<{namespace}::{pdtCatName}>: multio::datamod::PrintRecord {{}};
 
-template <>
-struct TypeToString<{namespace}::{pdtCatName}> {{
-    std::string operator()() const {{ return "{namespace}::{pdtCatName}"; }};
-}};
 }}
 """
 
@@ -336,7 +327,6 @@ def generateCPP(
 
 #include "multio/util/Hash.h"
 #include "multio/util/TypeTraits.h"
-#include "multio/util/TypeToString.h"
 #include "multio/util/Print.h"
 
 #include "multio/datamod/core/EntryDef.h"

@@ -24,9 +24,9 @@
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Definitions to describe key-value pairs
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /// \defgroup datamod_core_entrydef EntryDef
 /// \ingroup datamod_core
@@ -102,9 +102,9 @@ namespace multio::datamod {
 // Forward declaration
 enum class EntryTag : std::uint64_t
 {
-    Required,    // Strictly required and can not be defaulted or conditionally depending on other keys
-    Defaulted,   // Can be missing after reading from container but then may be defaulted through a custom alter function
-    Optional,    // Can be missing after validation
+    Required,   // Strictly required and can not be defaulted or conditionally depending on other keys
+    Defaulted,  // Can be missing after reading from container but then may be defaulted through a custom alter function
+    Optional,   // Can be missing after validation
     Disallowed,  // Must be missing after validation
 };
 
@@ -235,10 +235,7 @@ struct BaseEntryDef {
 
     const std::optional<std::string_view>& description() const noexcept { return description_; }
 
-    std::string keyInfo() const {
-        return std::string(key()) + std::string(" (") + util::typeToString<ValueType>() + std::string(", ")
-             + toString(tag) + std::string{")"};
-    }
+    std::string keyInfo() const { return std::string(key()) + std::string(" (") + toString(tag) + std::string{")"}; }
 
     // Functions to create Entries
 
@@ -461,7 +458,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
 };
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 struct IsBaseEntryDefinition : std::false_type {};
@@ -475,7 +472,7 @@ inline constexpr bool IsBaseEntryDefinition_v = IsBaseEntryDefinition<T>::value;
 // template <typename T>
 // concept BaseEntryDefinitionType = IsBaseEntryDefinition<std::remove_cvref_t<T>>::value;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 struct IsEntryDefinition : std::false_type {};
@@ -489,7 +486,7 @@ inline constexpr bool IsEntryDefinition_v = IsEntryDefinition<T>::value;
 // template <typename T>
 // concept EntryDefinitionType = IsEntryDefinition<std::remove_cvref_t<T>>::value;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 using EntryType_t = typename std::decay_t<T>::EntryType;
@@ -497,7 +494,7 @@ using EntryType_t = typename std::decay_t<T>::EntryType;
 template <typename T>
 using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /// Implicit EntryDefs are the usual way how to use "reflections" to model data structures.
 /// However, given that in ECMWF MARS and GRIB keys are are often used key by key, there is a need
@@ -508,7 +505,7 @@ using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
 template <typename T, typename M>
 struct PointerToMemberAccessor {
-    M T::*member;
+    M T::* member;
 
     template <typename U>
     decltype(auto) operator()(U&& obj) const {
@@ -518,7 +515,7 @@ struct PointerToMemberAccessor {
 };
 
 template <typename T, typename M>
-constexpr auto entryDef(std::string_view key, M T::*member) {
+constexpr auto entryDef(std::string_view key, M T::* member) {
     static_assert(IsEntry_v<M>);
     using ValueType = typename M::ValueType;
     using Mapper = typename M::Mapper;
@@ -527,7 +524,7 @@ constexpr auto entryDef(std::string_view key, M T::*member) {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // NOTE: This may be removed once the metadata is cleaned up again. We probably will use nested metadata instead of
 // having prefixes (too cumbersome)
@@ -644,6 +641,6 @@ ScopedEntryDef<EntryDef_> scopedEntryDef(const EntryDef_& entryDef, const std::s
 template <typename EntryDef_>
 struct IsEntryDefinition<ScopedEntryDef<EntryDef_>> : std::true_type {};
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio::datamod

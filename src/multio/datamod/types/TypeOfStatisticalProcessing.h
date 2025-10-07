@@ -12,12 +12,11 @@
 
 #include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // TypeOfStatisticalProcessing defined with official integer representation in GRIB 4.10 code table
 // https://codes.ecmwf.int/grib/format/grib2/ctables/4/10/
@@ -52,10 +51,6 @@ struct Print<datamod::TypeOfStatisticalProcessing> {
     static void print(PrintStream&, const datamod::TypeOfStatisticalProcessing&);
 };
 
-template <>
-struct TypeToString<datamod::TypeOfStatisticalProcessing> {
-    std::string operator()() const { return "datamod::TypeOfStatisticalProcessing"; };
-};
 }  // namespace multio::util
 
 
@@ -81,4 +76,3 @@ struct ParseType<TypeOfStatisticalProcessing> {
 
 
 }  // namespace multio::datamod
-

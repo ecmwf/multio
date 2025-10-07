@@ -13,14 +13,13 @@
 #include "multio/datamod/core/TypeParserDumper.h"
 
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 
 #include <string>
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // To be renamed and kept internal -
 enum class Repres : std::size_t
@@ -42,11 +41,6 @@ struct Print<datamod::Repres> {
     static void print(PrintStream& ps, const datamod::Repres& v);
 };
 
-template <>
-struct TypeToString<datamod::Repres> {
-    std::string operator()() const { return "datamod::Repres"; };
-};
-
 }  // namespace multio::util
 
 namespace multio::datamod {
@@ -66,4 +60,3 @@ struct ParseType<Repres> {
 Repres represFromGrid(const std::string& grid);
 
 }  // namespace multio::datamod
-

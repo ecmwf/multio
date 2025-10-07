@@ -170,4 +170,3 @@ void util::Print<datamod::StatType>::print(PrintStream& ps, const datamod::StatT
 }
 
 }  // namespace multio::util
-

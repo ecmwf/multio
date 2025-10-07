@@ -123,13 +123,6 @@ ecbuild_add_test( TARGET      test_multio_fapi_general
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
-# Test maestro
-
-ecbuild_add_test( TARGET    test_multio_maestro
-                  SOURCES   test_multio_maestro.cc
-                  CONDITION HAVE_MAESTRO
-                  LIBS      multio-maestro )
-
 if(HAVE_MULTIO_BUILD_TOOLS)
 
 # Test api
@@ -379,5 +372,10 @@ endif (eckit_HAVE_MPI)
 add_subdirectory(config)
 
 add_subdirectory(action)
+
+# Test Maestro
+if (HAVE_MAESTRO)
+add_subdirectory(maestro)
+endif( HAVE_MAESTRO)
 
 endif (HAVE_MULTIO_BUILD_TOOLS)

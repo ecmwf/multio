@@ -1,10 +1,8 @@
 #pragma once
 
-#include "eckit/config/LocalConfiguration.h"
+#include "StatisticsOptions.h"
+
 #include "eckit/types/DateTime.h"
-#include "multio/action/Action.h"
-#include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
 namespace multio::action::statistics_mtg2 {
@@ -16,80 +14,33 @@ private:
     const StatisticsOptions& opt_;
 
     // Metadata to be extracted from the message
-    long date_;
-    long time_;
-    long level_;
-    long timeStep_;
-    long step_;
+    const std::int64_t date_;
+    const std::int64_t time_;
+    const std::int64_t level_;
+    const std::int64_t timeStep_;
+    const std::int64_t step_;
 
-    std::string param_;
-    std::string levType_;
-    std::string gridType_;
-    std::string precision_;
-    std::string logPrefix_;
+    const std::string param_;
+    const std::string levType_;
+    const std::string gridType_;
+    const std::string precision_;
 
     // Handle missing values
-    bool bitmapPresent_;
-    double missingValue_;
+    const std::optional<double> missingValue_;
 
     // Unique key used for statistics map
-    std::string key_;
-
+    const std::string key_;
 
     // Timing utils
-    mutable eckit::DateTime epoch_;
-    mutable eckit::DateTime prev_;
-    mutable eckit::DateTime curr_;
-    mutable eckit::DateTime next_;
-    mutable eckit::DateTime winStart_;
-
-    mutable bool beginningOfHour_;
-    mutable bool beginningOfDay_;
-    mutable bool beginningOfMonth_;
-    mutable bool beginningOfYear_;
-
-    mutable std::function<eckit::DateTime()> computeEpoch_;
-    mutable std::function<eckit::DateTime()> computePrev_;
-    mutable std::function<eckit::DateTime()> computeCurr_;
-    mutable std::function<eckit::DateTime()> computeNext_;
-    mutable std::function<eckit::DateTime()> computeWinStart_;
-
-    mutable std::function<bool()> computeBeginningOfHour_;
-    mutable std::function<bool()> computeBeginningOfDay_;
-    mutable std::function<bool()> computeBeginningOfMonth_;
-    mutable std::function<bool()> computeBeginningOfYear_;
-
+    const eckit::DateTime epoch_;
+    const eckit::DateTime curr_;
 
     // ---------------------------------------------------------------------------------------------
 
+    std::string generateKey(const message::Peer& src) const;
+
     eckit::DateTime computeEpoch() const;
-    eckit::DateTime getEpoch() const;
     eckit::DateTime computeCurr() const;
-    eckit::DateTime getCurr() const;
-    eckit::DateTime computeWinStart() const;
-    eckit::DateTime getWinStart() const;
-
-    bool computeBeginningOfHour() const;
-    bool isBeginningOfHour() const;
-    bool computeBeginningOfDay() const;
-    bool isBeginningOfDay() const;
-    bool computeBeginningOfMonth() const;
-    bool isBeginningOfMonth() const;
-    bool computeBeginningOfYear() const;
-    bool isBeginningOfYear() const;
-
-    void generateKey(const message::Metadata& md, const message::Peer& src);
-
-    void readPrecision(const message::Metadata& md, const StatisticsOptions& opt);
-    void readGridType(const message::Metadata& md, const StatisticsOptions& opt);
-    void readLevType(const message::Metadata& md, const StatisticsOptions& opt);
-    void readLevel(const message::Metadata& md, const StatisticsOptions& opt);
-    void readParam(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStartTime(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStartDate(const message::Metadata& md, const StatisticsOptions& opt);
-    void readStep(const message::Metadata& md, const StatisticsOptions& opt);
-    void readTimeStep(const message::Metadata& md, const StatisticsOptions& opt);
-    void readMissingValue(const message::Metadata& md, const StatisticsOptions& opt);
 
 
 public:
@@ -97,33 +48,26 @@ public:
     StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt);
 
     const StatisticsOptions& options() const;
-    const std::string& key() const;
 
-    long date() const;
-    long time() const;
-    long level() const;
-    long timeStep() const;
-    long step() const;
+    std::int64_t date() const;
+    std::int64_t time() const;
+    std::int64_t level() const;
+    std::int64_t timeStep() const;
+    std::int64_t step() const;
 
-    std::string param() const;
-    std::string levType() const;
-    std::string gridType() const;
-    std::string precision() const;
-    std::string logPrefix() const;
+    const std::string& param() const;
+    const std::string& levType() const;
+    const std::string& gridType() const;
+    const std::string& precision() const;
 
     // Handle missing values
     bool bitmapPresent() const;
     double missingValue() const;
 
+    const std::string& key() const;
 
-    eckit::DateTime epoch() const;
-    eckit::DateTime curr() const;
-    eckit::DateTime winStart() const;
-
-    bool beginningOfHour() const;
-    bool beginningOfDay() const;
-    bool beginningOfMonth() const;
-    bool beginningOfYear() const;
+    const eckit::DateTime& epoch() const;
+    const eckit::DateTime& curr() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

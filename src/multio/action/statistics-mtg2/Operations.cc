@@ -28,7 +28,7 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
         std::vector<std::unique_ptr<Operation>> stats;
         for (const auto& op : opNames) {
             stats.push_back(make_operation<Precision>(op, msg.size(), IOmanager, win, cfg));
-            if (cfg.options().solver_send_initial_condition()) {
+            if (cfg.options().initialConditionPresent()) {
                 stats.back()->init(msg.payload().data(), msg.size(), msg, cfg);
             }
             else {

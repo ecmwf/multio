@@ -37,7 +37,7 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     needRestart_{false},
     lastDateTime_{""},
-    opt_{compConf},
+    opt_{compConf.parsedConfig().getSubConfiguration("options")},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
@@ -387,7 +387,7 @@ void Statistics::executeImpl(message::Message msg) {
     // This can happen when the solver is sending the initial condition
     // and and the same point is already present in the restart
     auto& ts = *(stat->second);
-    if (cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition()) {
+    if (cfg.curr() == ts.cwin().currPoint() && opt_.initialConditionPresent()) {
         return;
     }
 

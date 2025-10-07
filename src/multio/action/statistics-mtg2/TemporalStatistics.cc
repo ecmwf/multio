@@ -71,7 +71,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
 }
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Data" << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << cfg.options().logPrefix() << " *** Update Data" << std::endl;
     window_.updateData(currentDateTime(msg, cfg));
     for (auto& stat : statistics_) {
         // Truncation is always present when we are dealing with Spherical Harmonics
@@ -86,7 +86,7 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
 }
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << cfg.options().logPrefix() << " *** Update Window " << std::endl;
     window_.updateWindow(window_.endPoint(), periodUpdater_->updateWinEndTime(window_.endPoint()));
     for (auto& stat : statistics_) {
         stat->updateWindow(msg.payload().data(), msg.size(), msg, cfg);
@@ -96,7 +96,7 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
 }
 
 bool TemporalStatistics::isOutsideWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check outside Window " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** Check outside Window " << std::endl;
     return !window_.isWithin(currentDateTime(msg, cfg));
 }
 

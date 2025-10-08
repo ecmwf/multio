@@ -71,10 +71,9 @@ namespace multio::datamod {
 ///   * `EntryTag::Defaulted` - has a direct default value or it`s default value may be depended on other entries -
 ///      that means it may be set through the `applyRecord(RecordType&)` specialization.
 ///   * `EntryTag::Optional` to declare an entry is optional.
-///   * or `EntryTag::Disallowed` to declare an entry is not allowed to be present.
 ///
-/// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is throw if the entry definition is not tagged
-/// optional or if a disallowed entry is set.
+/// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is thrown if the entry definition is not
+/// tagged optional.
 ///
 /// ```
 /// // Make an optional entry
@@ -92,20 +91,17 @@ namespace multio::datamod {
 ///     .withAccessor([](auto&& v){ return &v.myEntry; })
 ///     .withDefault([](){ return  "lalelu"; });
 ///
-/// // You may also retag existing entry definitions, for example to make optional entries required again, or to make
-/// // entries disallowed
+/// // You may also retag existing entry definitions, to make optional entries required again.
 /// myOptionalEntry.tagRequired();
-/// myOptionalEntry.tagDisallowed();
 /// ```
 ///
 
 // Forward declaration
 enum class EntryTag : std::uint64_t
 {
-    Required,   // Strictly required and can not be defaulted or conditionally depending on other keys
-    Defaulted,  // Can be missing after reading from container but then may be defaulted through a custom alter function
-    Optional,   // Can be missing after validation
-    Disallowed,  // Must be missing after validation
+    Required,    // Strictly required and can not be defaulted or conditionally depending on other keys
+    Defaulted,   // Can be missing after reading from container but then may be defaulted through a custom alter function
+    Optional,    // Can be missing after validation
 };
 
 template <typename EntryTag_, std::enable_if_t<std::is_same_v<EntryTag_, EntryTag>, bool> = true>
@@ -117,8 +113,6 @@ std::string toString(EntryTag_ t) {
             return "defaulted";
         case EntryTag::Optional:
             return "optional";
-        case EntryTag::Disallowed:
-            return "disallowed";
     }
     throw DataModellingException("Cannot convert EntryTag to string", Here());
 }
@@ -288,12 +282,7 @@ struct BaseEntryDef {
     // Validate an entry
     void validate(const EntryType& v) const {
         // Only optional tagged keys can be missing
-        if constexpr (tag == EntryTag::Disallowed) {
-            if (v.isSet()) {
-                throw DataModellingException(std::string("Set disallowed key: ") + this->keyInfo(), Here());
-            }
-        }
-        else if constexpr (tag != EntryTag::Optional) {
+        if constexpr (tag != EntryTag::Optional) {
             if (!v.isSet()) {
                 throw DataModellingException(std::string("Unset required key: ") + this->keyInfo(), Here());
             }
@@ -410,14 +399,6 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
         static_assert(tag_ != EntryTag::Optional, "Definition is already optional");
         static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made optional");
         return EntryDef<ValueType_, Mapper_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
-            Base::key_, accessor_, defaultFunctor_, Base::description_};
-    }
-
-    // Make the key-value pair optional - meaning it can be missing after alter & validation
-    constexpr auto tagDisallowed() const {
-        static_assert(tag_ != EntryTag::Disallowed, "Definition is already disallowed");
-        static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made disallowed");
-        return EntryDef<ValueType_, Mapper_, EntryTag::Disallowed, PointerAccessor, DefaultValueFunctor>{
             Base::key_, accessor_, defaultFunctor_, Base::description_};
     }
 

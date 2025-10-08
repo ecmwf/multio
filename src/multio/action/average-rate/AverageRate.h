@@ -42,7 +42,7 @@ struct AverageRateKeys {
     static constexpr auto record_entries_ = std::make_tuple(
         dm::PARAM,
         dm::TIMESPAN.tagRequired(),
-        dm::STATTYPE.tagDisallowed(),
+        dm::STATTYPE,
         dm::MissingValue
     );
 
@@ -50,6 +50,13 @@ struct AverageRateKeys {
         if (k.timespan.get().toSeconds() == 0) {
             throw eckit::SeriousBug(
                 "The average-rate action cannot handle messages with timespan set to zero!",
+                Here()
+            );
+        }
+
+        if (k.stattype.isSet()) {
+            throw eckit::SeriousBug(
+                "The average-rate action cannot handle messages with stattype set!",
                 Here()
             );
         }

@@ -88,6 +88,14 @@ ecbuild_add_test( TARGET    test_multio_datamod_models
                   SOURCES   test_multio_datamod_models.cc
                   LIBS      multio )
 
+
+# Test Config Parser
+
+ecbuild_add_test( TARGET    test_multio_config_parser
+                  SOURCES   test_multio_config_parser.cc
+                  LIBS      multio )
+
+
 # Test ring buffer
 
 ecbuild_add_test( TARGET    test_multio_ringbuffer

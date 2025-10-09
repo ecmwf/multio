@@ -124,7 +124,9 @@ add_subdirectory(restart)
 
 #
 # add moving mask tests
+if ( eccodes_HAVE_AEC )
 add_subdirectory(moving-mask)
+endif ( eccodes_HAVE_AEC )
 
 ecbuild_add_test(
     TARGET ${PREFIX}_difference

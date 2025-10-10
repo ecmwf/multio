@@ -174,4 +174,3 @@ void util::Print<datamod::TypeOfStatisticalProcessing>::print(PrintStream& ps,
 }
 
 }  // namespace multio
-

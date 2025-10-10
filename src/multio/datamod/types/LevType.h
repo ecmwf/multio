@@ -13,13 +13,11 @@
 #include "multio/datamod/core/TypeParserDumper.h"
 
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
-
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 // To be renamed and kept internal -
@@ -55,11 +53,6 @@ struct Print<datamod::LevType> {
     static void print(PrintStream& ps, const datamod::LevType& v);
 };
 
-template <>
-struct TypeToString<datamod::LevType> {
-    std::string operator()() const { return "datamod::LevType"; };
-};
-
 }  // namespace multio::util
 
 namespace multio::datamod {
@@ -77,4 +70,3 @@ struct ParseType<LevType> {
 
 
 }  // namespace multio::datamod
-

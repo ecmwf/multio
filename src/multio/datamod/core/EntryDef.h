@@ -24,9 +24,9 @@
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Definitions to describe key-value pairs
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /// \defgroup datamod_core_entrydef EntryDef
 /// \ingroup datamod_core
@@ -71,10 +71,9 @@ namespace multio::datamod {
 ///   * `EntryTag::Defaulted` - has a direct default value or it`s default value may be depended on other entries -
 ///      that means it may be set through the `applyRecord(RecordType&)` specialization.
 ///   * `EntryTag::Optional` to declare an entry is optional.
-///   * or `EntryTag::Disallowed` to declare an entry is not allowed to be present.
 ///
-/// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is throw if the entry definition is not tagged
-/// optional or if a disallowed entry is set.
+/// When calling `EntryDef.validate(Entry)`, an `DataModellingException` is thrown if the entry definition is not
+/// tagged optional.
 ///
 /// ```
 /// // Make an optional entry
@@ -92,10 +91,8 @@ namespace multio::datamod {
 ///     .withAccessor([](auto&& v){ return &v.myEntry; })
 ///     .withDefault([](){ return  "lalelu"; });
 ///
-/// // You may also retag existing entry definitions, for example to make optional entries required again, or to make
-/// // entries disallowed
+/// // You may also retag existing entry definitions, to make optional entries required again.
 /// myOptionalEntry.tagRequired();
-/// myOptionalEntry.tagDisallowed();
 /// ```
 ///
 
@@ -105,7 +102,6 @@ enum class EntryTag : std::uint64_t
     Required,    // Strictly required and can not be defaulted or conditionally depending on other keys
     Defaulted,   // Can be missing after reading from container but then may be defaulted through a custom alter function
     Optional,    // Can be missing after validation
-    Disallowed,  // Must be missing after validation
 };
 
 template <typename EntryTag_, std::enable_if_t<std::is_same_v<EntryTag_, EntryTag>, bool> = true>
@@ -117,8 +113,6 @@ std::string toString(EntryTag_ t) {
             return "defaulted";
         case EntryTag::Optional:
             return "optional";
-        case EntryTag::Disallowed:
-            return "disallowed";
     }
     throw DataModellingException("Cannot convert EntryTag to string", Here());
 }
@@ -235,10 +229,7 @@ struct BaseEntryDef {
 
     const std::optional<std::string_view>& description() const noexcept { return description_; }
 
-    std::string keyInfo() const {
-        return std::string(key()) + std::string(" (") + util::typeToString<ValueType>() + std::string(", ")
-             + toString(tag) + std::string{")"};
-    }
+    std::string keyInfo() const { return std::string(key()) + std::string(" (") + toString(tag) + std::string{")"}; }
 
     // Functions to create Entries
 
@@ -291,12 +282,7 @@ struct BaseEntryDef {
     // Validate an entry
     void validate(const EntryType& v) const {
         // Only optional tagged keys can be missing
-        if constexpr (tag == EntryTag::Disallowed) {
-            if (v.isSet()) {
-                throw DataModellingException(std::string("Set disallowed key: ") + this->keyInfo(), Here());
-            }
-        }
-        else if constexpr (tag != EntryTag::Optional) {
+        if constexpr (tag != EntryTag::Optional) {
             if (!v.isSet()) {
                 throw DataModellingException(std::string("Unset required key: ") + this->keyInfo(), Here());
             }
@@ -416,14 +402,6 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
             Base::key_, accessor_, defaultFunctor_, Base::description_};
     }
 
-    // Make the key-value pair optional - meaning it can be missing after alter & validation
-    constexpr auto tagDisallowed() const {
-        static_assert(tag_ != EntryTag::Disallowed, "Definition is already disallowed");
-        static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made disallowed");
-        return EntryDef<ValueType_, Mapper_, EntryTag::Disallowed, PointerAccessor, DefaultValueFunctor>{
-            Base::key_, accessor_, defaultFunctor_, Base::description_};
-    }
-
     // Make the key-value pair defaulted and set a functon that generates a default value
     template <typename NewDefValFtor,
               std::enable_if_t<!std::is_convertible_v<NewDefValFtor, ValueType>
@@ -461,7 +439,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
 };
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 struct IsBaseEntryDefinition : std::false_type {};
@@ -475,7 +453,7 @@ inline constexpr bool IsBaseEntryDefinition_v = IsBaseEntryDefinition<T>::value;
 // template <typename T>
 // concept BaseEntryDefinitionType = IsBaseEntryDefinition<std::remove_cvref_t<T>>::value;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 struct IsEntryDefinition : std::false_type {};
@@ -489,7 +467,7 @@ inline constexpr bool IsEntryDefinition_v = IsEntryDefinition<T>::value;
 // template <typename T>
 // concept EntryDefinitionType = IsEntryDefinition<std::remove_cvref_t<T>>::value;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 using EntryType_t = typename std::decay_t<T>::EntryType;
@@ -497,7 +475,7 @@ using EntryType_t = typename std::decay_t<T>::EntryType;
 template <typename T>
 using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /// Implicit EntryDefs are the usual way how to use "reflections" to model data structures.
 /// However, given that in ECMWF MARS and GRIB keys are are often used key by key, there is a need
@@ -508,7 +486,7 @@ using EntryValueType_t = typename std::decay_t<T>::ValueType;
 
 template <typename T, typename M>
 struct PointerToMemberAccessor {
-    M T::*member;
+    M T::* member;
 
     template <typename U>
     decltype(auto) operator()(U&& obj) const {
@@ -518,7 +496,7 @@ struct PointerToMemberAccessor {
 };
 
 template <typename T, typename M>
-constexpr auto entryDef(std::string_view key, M T::*member) {
+constexpr auto entryDef(std::string_view key, M T::* member) {
     static_assert(IsEntry_v<M>);
     using ValueType = typename M::ValueType;
     using Mapper = typename M::Mapper;
@@ -527,7 +505,7 @@ constexpr auto entryDef(std::string_view key, M T::*member) {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // NOTE: This may be removed once the metadata is cleaned up again. We probably will use nested metadata instead of
 // having prefixes (too cumbersome)
@@ -644,6 +622,6 @@ ScopedEntryDef<EntryDef_> scopedEntryDef(const EntryDef_& entryDef, const std::s
 template <typename EntryDef_>
 struct IsEntryDefinition<ScopedEntryDef<EntryDef_>> : std::true_type {};
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio::datamod

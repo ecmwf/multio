@@ -12,12 +12,11 @@
 
 #include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 enum class TypeOfLevel : std::size_t
@@ -132,10 +131,6 @@ struct Print<datamod::TypeOfLevel> {
     static void print(PrintStream&, const datamod::TypeOfLevel&);
 };
 
-template <>
-struct TypeToString<datamod::TypeOfLevel> {
-    std::string operator()() const { return "datamod::TypeOfLevel"; };
-};
 }  // namespace multio::util
 
 namespace multio::datamod {
@@ -154,4 +149,3 @@ struct ParseType<TypeOfLevel> {
 
 
 }  // namespace multio::datamod
-

@@ -38,9 +38,9 @@ namespace dm = multio::datamod;
 
 namespace mars2grib {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section0
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct IndicatorSection {
     dm::Entry<std::int64_t> templateNumber;
@@ -50,9 +50,9 @@ struct IndicatorSection {
         = std::make_tuple(dm::entryDef("template-number", &IndicatorSection::templateNumber).withDefault(0));
 };
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section1
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct OriginConfigurator {
     dm::Entry<std::string> type;
@@ -107,9 +107,9 @@ struct IdentificationSection {
         dm::nestedEntryDef(&IdentificationSection::referenceTime), dm::nestedEntryDef(&IdentificationSection::tables));
 };
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section2 Local use
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct LocalUseSection {
     dm::Entry<std::int64_t> templateNumber;
@@ -119,9 +119,9 @@ struct LocalUseSection {
         = std::make_tuple(dm::entryDef("template-number", &LocalUseSection::templateNumber).withDefault(0));
 };
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section3 Grid
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct GridSection {
     dm::Entry<std::int64_t> templateNumber;
@@ -131,9 +131,9 @@ struct GridSection {
         = std::make_tuple(dm::entryDef("template-number", &GridSection::templateNumber).withDefault(0));
 };
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section4 Product definition
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct ParamConfigurator {
     dm::Entry<std::string> type;
@@ -317,9 +317,9 @@ struct ProductSection {
 };
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Section5 Data representation
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct DataRepresSection {
     dm::Entry<std::int64_t> templateNumber;
@@ -331,9 +331,9 @@ struct DataRepresSection {
         );
 };
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // All sections
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct SectionsConf {
     dm::Entry<std::string> type;
@@ -405,91 +405,6 @@ template <>
 struct Print<multio::mars2grib::DataRepresSection> : datamod::PrintRecord {};
 template <>
 struct Print<multio::mars2grib::SectionsConf> : datamod::PrintRecord {};
-
-template <>
-struct TypeToString<multio::mars2grib::IndicatorSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::IndicatorSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::OriginConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::OriginConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::DataTypeConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::DataTypeConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ReferenceTimeConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::ReferenceTimeConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::TablesConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::TablesConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::IdentificationSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::IdentificationSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::LocalUseSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::LocalUseSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::GridSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::GridSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ParamConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::ParamConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::PointInTimeConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::PointInTimeConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::TimeRangeConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::TimeRangeConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ProcessConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::ProcessConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ModelConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::ModelConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::RandomPatternsConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::RandomPatternsConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::SatelliteConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::SatelliteConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ChemConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::ChemConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::DirFreqConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::DirFreqConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::PeriodConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::PeriodConfigurator"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::ProductSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::ProductSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::DataRepresSection> {
-    std::string operator()() const { return std::string("mars2grib::sections::DataRepresSection"); };
-};
-template <>
-struct TypeToString<multio::mars2grib::SectionsConf> {
-    std::string operator()() const { return std::string("mars2grib::sections::SectionsConf"); };
-};
 
 }  // namespace util
 

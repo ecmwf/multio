@@ -127,4 +127,3 @@ void util::Print<datamod::LevType>::print(PrintStream& ps, const datamod::LevTyp
 }
 
 }  // namespace multio::util
-

@@ -14,7 +14,6 @@
 
 #include "multio/util/Hash.h"
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 
 #include <chrono>
 #include <string>
@@ -23,7 +22,7 @@
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 using IntOrString = std::variant<std::int64_t, std::string>;
 
@@ -70,19 +69,13 @@ struct variant_alternative<I, multio::datamod::TimeDuration>
     : variant_alternative<I, multio::datamod::TimeDurationVariant> {};
 }  // namespace std
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 namespace multio::util {
 
 template <>
 struct Print<datamod::TimeDuration> {
     static void print(PrintStream& ps, const datamod::TimeDuration& v);
-};
-
-
-template <>
-struct TypeToString<datamod::TimeDuration> {
-    std::string operator()() const { return "datamod::TimeDuration"; };
 };
 
 }  // namespace multio::util

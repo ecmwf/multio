@@ -15,12 +15,11 @@
 
 #include "multio/util/Hash.h"
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 
 
 namespace multio::datamod {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 enum class StatTypeDuration : std::size_t
@@ -98,11 +97,6 @@ struct Print<datamod::StatType> {
     static void print(PrintStream& ps, const datamod::StatType& v);
 };
 
-template <>
-struct TypeToString<datamod::StatType> {
-    std::string operator()() const { return "datamod::StatType"; };
-};
-
 }  // namespace multio::util
 
 namespace multio::datamod {
@@ -156,4 +150,3 @@ struct ParseType<StatType> {
 
 
 }  // namespace multio::datamod
-

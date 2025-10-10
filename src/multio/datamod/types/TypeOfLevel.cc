@@ -335,4 +335,3 @@ void util::Print<datamod::TypeOfLevel>::print(PrintStream& ps, const datamod::Ty
 }
 
 }  // namespace multio
-

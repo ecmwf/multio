@@ -120,9 +120,7 @@ dm::Geometry handleRegularLLAtlas(util::MioGribHandle& h, dm::FullMarsRecord& ma
     mars.repres.set(dm::Repres::LL);
     mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
     dm::setKeysFromAtlas(geoLL, mars.grid.get());
-    
-    util::PrintStream ps(std::cout);
-    ps << geoLL  << std::endl;
+
     return geoLL;
 }
 
@@ -136,12 +134,6 @@ dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType,
         // {"regular_ll", &handleLL}, // Works as well
         {"sh", &handleSH},
     };
-    // const static std::unordered_map<std::string, GridTypeFunction> gridMap{
-    //     {"reduced_gg", &handleReducedGGAtlas},
-    //     // {"regular_ll", &handleRegularLLAtlas},
-    //     {"regular_ll", &handleLL},
-    //     {"sh", &handleSH},
-    // };
 
     const auto gridTypeFunc = gridMap.find(gridType);
     if (gridTypeFunc == gridMap.cend()) {

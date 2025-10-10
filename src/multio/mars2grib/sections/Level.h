@@ -28,10 +28,12 @@ struct LevelConfigurator {
 
 
 // Determines the level and whether a level has to be set for a typeOfLevel
-std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&, const dm::MiscRecord&);
+std::optional<LEVELIST_t> levelForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&,
+                                              const dm::MiscRecord&);
 
 // Determines the level and whether a level has to be set for a typeOfLevel
-dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&, const dm::MiscRecord&);
+dm::HorizontalGribKeys horizontalForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&,
+                                                const dm::MiscRecord&);
 
 std::optional<dm::VerticalGribKeys> verticalForTypeOfLevel(const LevelConfigurator&, const dm::FullMarsRecord&,
                                                            const dm::MiscRecord&);
@@ -44,7 +46,8 @@ public:
     void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                   const dm::Geometry&) const override;
     // Calls set level
-    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const override;
+    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+                const dm::Geometry&) const override;
 
     // Calls set level
     void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
@@ -72,10 +75,5 @@ private:
 namespace multio::util {
 template <>
 struct Print<multio::mars2grib::sections::LevelConfigurator> : multio::datamod::PrintRecord {};
-
-template <>
-struct TypeToString<multio::mars2grib::sections::LevelConfigurator> {
-    std::string operator()() const { return std::string("mars2grib::sections::LevelConfigurator"); };
-};
 
 }  // namespace multio::util

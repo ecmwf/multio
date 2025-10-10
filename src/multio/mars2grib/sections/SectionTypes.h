@@ -10,16 +10,8 @@
 
 #pragma once
 
-#include "multio/datamod/core/TypeParserDumper.h"
-#include "multio/util/Hash.h"
-#include "multio/util/MioGribHandle.h"
-#include "multio/util/TypeToString.h"
-#include "multio/util/TypeTraits.h"
-#include "multio/util/VariantHelpers.h"
-
-#include <chrono>
-#include <sstream>
 #include <string>
+#include "multio/datamod/core/TypeParserDumper.h"
 
 
 namespace multio::mars2grib::sections {
@@ -39,13 +31,6 @@ std::ostream& operator<<(std::ostream&, const TimeRangeType&);
 
 }  // namespace multio::mars2grib::sections
 
-
-namespace multio::util {
-template <>
-struct TypeToString<mars2grib::sections::TimeRangeType> {
-    std::string operator()() const { return "datamod::TimeRangeType"; };
-};
-}  // namespace multio::util
 
 namespace multio::datamod {
 

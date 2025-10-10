@@ -41,7 +41,6 @@
 
 #include "multio/util/Hash.h"
 #include "multio/util/Print.h"
-#include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 
 #include "multio/datamod/core/Compare.h"
@@ -116,11 +115,6 @@ struct Print<multio::mars2grib::rules::TimeExtent> {
     }
 };
 
-template <>
-struct TypeToString<multio::mars2grib::rules::TimeExtent> {
-    std::string operator()() const { return "multio::mars2grib::rules::TimeExtent"; };
-};
-
 }  // namespace multio::util
 
 
@@ -129,8 +123,8 @@ namespace multio::mars2grib::rules {
 enum class TimeFormat : std::uint64_t
 {
     None = 0,
-    WithReferencePeriod,
     LocalTime,
+    WithReferencePeriod,
 };
 
 }
@@ -144,10 +138,10 @@ struct DumpType<multio::mars2grib::rules::TimeFormat> {
         switch (v) {
             case TimeFormat::None:
                 return "None";
-            case TimeFormat::WithReferencePeriod:
-                return "withReferencePeriod";
             case TimeFormat::LocalTime:
                 return "localTime";
+            case TimeFormat::WithReferencePeriod:
+                return "withReferencePeriod";
             default:
                 throw multio::mars2grib::Mars2GribException(
                     "DumpType<TimeFormat>::dump: Unexpected value for TimeFormat", Here());
@@ -162,17 +156,17 @@ struct ParseType<multio::mars2grib::rules::TimeFormat> {
         if (s == "None") {
             return TimeFormat::None;
         }
-        if (s == "withReferencePeriod") {
-            return TimeFormat::WithReferencePeriod;
-        }
         if (s == "localTime") {
             return TimeFormat::LocalTime;
+        }
+        if (s == "withReferencePeriod") {
+            return TimeFormat::WithReferencePeriod;
         }
         throw multio::mars2grib::Mars2GribException{
             std::string(
                 "ParseType<TimeFormat>::parse("
                 ") + s + std::string("
-                "): Value for timeFormat does not match on of the following [None, withReferencePeriod, localTime]"),
+                "): Value for timeFormat does not match on of the following [None, localTime, withReferencePeriod]"),
             Here()};
     }
 };
@@ -189,11 +183,6 @@ struct Print<multio::mars2grib::rules::TimeFormat> {
     }
 };
 
-template <>
-struct TypeToString<multio::mars2grib::rules::TimeFormat> {
-    std::string operator()() const { return "multio::mars2grib::rules::TimeFormat"; };
-};
-
 }  // namespace multio::util
 
 
@@ -202,11 +191,11 @@ namespace multio::mars2grib::rules {
 enum class SpatialExtent : std::uint64_t
 {
     None = 0,
-    ClusterStatRectangular,
-    ClusterStatCircular,
-    GeneralisedTile,
     RandomPatterns,
+    GeneralisedTile,
+    ClusterStatCircular,
     FocalStatistics,
+    ClusterStatRectangular,
 };
 
 }
@@ -220,16 +209,16 @@ struct DumpType<multio::mars2grib::rules::SpatialExtent> {
         switch (v) {
             case SpatialExtent::None:
                 return "None";
-            case SpatialExtent::ClusterStatRectangular:
-                return "clusterStatRectangular";
+            case SpatialExtent::RandomPatterns:
+                return "randomPatterns";
             case SpatialExtent::ClusterStatCircular:
                 return "clusterStatCircular";
             case SpatialExtent::GeneralisedTile:
                 return "generalisedTile";
-            case SpatialExtent::RandomPatterns:
-                return "randomPatterns";
             case SpatialExtent::FocalStatistics:
                 return "focalStatistics";
+            case SpatialExtent::ClusterStatRectangular:
+                return "clusterStatRectangular";
             default:
                 throw multio::mars2grib::Mars2GribException(
                     "DumpType<SpatialExtent>::dump: Unexpected value for SpatialExtent", Here());
@@ -244,8 +233,8 @@ struct ParseType<multio::mars2grib::rules::SpatialExtent> {
         if (s == "None") {
             return SpatialExtent::None;
         }
-        if (s == "clusterStatRectangular") {
-            return SpatialExtent::ClusterStatRectangular;
+        if (s == "randomPatterns") {
+            return SpatialExtent::RandomPatterns;
         }
         if (s == "clusterStatCircular") {
             return SpatialExtent::ClusterStatCircular;
@@ -253,17 +242,17 @@ struct ParseType<multio::mars2grib::rules::SpatialExtent> {
         if (s == "generalisedTile") {
             return SpatialExtent::GeneralisedTile;
         }
-        if (s == "randomPatterns") {
-            return SpatialExtent::RandomPatterns;
-        }
         if (s == "focalStatistics") {
             return SpatialExtent::FocalStatistics;
+        }
+        if (s == "clusterStatRectangular") {
+            return SpatialExtent::ClusterStatRectangular;
         }
         throw multio::mars2grib::Mars2GribException{
             std::string("ParseType<SpatialExtent>::parse("
                         ") + s + std::string("
-                        "): Value for spatialExtent does not match on of the following [None, clusterStatRectangular, "
-                        "clusterStatCircular, generalisedTile, randomPatterns, focalStatistics]"),
+                        "): Value for spatialExtent does not match on of the following [None, randomPatterns, "
+                        "clusterStatCircular, generalisedTile, focalStatistics, clusterStatRectangular]"),
             Here()};
     }
 };
@@ -280,11 +269,6 @@ struct Print<multio::mars2grib::rules::SpatialExtent> {
     }
 };
 
-template <>
-struct TypeToString<multio::mars2grib::rules::SpatialExtent> {
-    std::string operator()() const { return "multio::mars2grib::rules::SpatialExtent"; };
-};
-
 }  // namespace multio::util
 
 
@@ -293,12 +277,12 @@ namespace multio::mars2grib::rules {
 enum class ProcessType : std::uint64_t
 {
     None = 0,
-    Categorial,
-    Quantile,
-    Reforecast,
-    DerivedForecast,
-    Probability,
     Percentile,
+    Quantile,
+    Probability,
+    Reforecast,
+    Categorial,
+    DerivedForecast,
 };
 
 }
@@ -312,18 +296,18 @@ struct DumpType<multio::mars2grib::rules::ProcessType> {
         switch (v) {
             case ProcessType::None:
                 return "None";
-            case ProcessType::Categorial:
-                return "categorial";
-            case ProcessType::Reforecast:
-                return "reforecast";
-            case ProcessType::Quantile:
-                return "quantile";
-            case ProcessType::DerivedForecast:
-                return "derivedForecast";
-            case ProcessType::Probability:
-                return "probability";
             case ProcessType::Percentile:
                 return "percentile";
+            case ProcessType::Quantile:
+                return "quantile";
+            case ProcessType::Probability:
+                return "probability";
+            case ProcessType::Reforecast:
+                return "reforecast";
+            case ProcessType::Categorial:
+                return "categorial";
+            case ProcessType::DerivedForecast:
+                return "derivedForecast";
             default:
                 throw multio::mars2grib::Mars2GribException(
                     "DumpType<ProcessType>::dump: Unexpected value for ProcessType", Here());
@@ -338,29 +322,29 @@ struct ParseType<multio::mars2grib::rules::ProcessType> {
         if (s == "None") {
             return ProcessType::None;
         }
-        if (s == "categorial") {
-            return ProcessType::Categorial;
-        }
-        if (s == "reforecast") {
-            return ProcessType::Reforecast;
+        if (s == "percentile") {
+            return ProcessType::Percentile;
         }
         if (s == "quantile") {
             return ProcessType::Quantile;
         }
-        if (s == "derivedForecast") {
-            return ProcessType::DerivedForecast;
-        }
         if (s == "probability") {
             return ProcessType::Probability;
         }
-        if (s == "percentile") {
-            return ProcessType::Percentile;
+        if (s == "reforecast") {
+            return ProcessType::Reforecast;
+        }
+        if (s == "categorial") {
+            return ProcessType::Categorial;
+        }
+        if (s == "derivedForecast") {
+            return ProcessType::DerivedForecast;
         }
         throw multio::mars2grib::Mars2GribException{
             std::string("ParseType<ProcessType>::parse("
                         ") + s + std::string("
-                        "): Value for processType does not match on of the following [None, categorial, reforecast, "
-                        "quantile, derivedForecast, probability, percentile]"),
+                        "): Value for processType does not match on of the following [None, percentile, quantile, "
+                        "probability, reforecast, categorial, derivedForecast]"),
             Here()};
     }
 };
@@ -375,11 +359,6 @@ struct Print<multio::mars2grib::rules::ProcessType> {
     static void print(PrintStream& ps, const multio::mars2grib::rules::ProcessType& t) {
         util::print(ps, multio::datamod::TypeDumper<multio::mars2grib::rules::ProcessType>::dump(t));
     }
-};
-
-template <>
-struct TypeToString<multio::mars2grib::rules::ProcessType> {
-    std::string operator()() const { return "multio::mars2grib::rules::ProcessType"; };
 };
 
 }  // namespace multio::util
@@ -450,11 +429,6 @@ struct Print<multio::mars2grib::rules::ProcessSubType> {
     }
 };
 
-template <>
-struct TypeToString<multio::mars2grib::rules::ProcessSubType> {
-    std::string operator()() const { return "multio::mars2grib::rules::ProcessSubType"; };
-};
-
 }  // namespace multio::util
 
 
@@ -463,19 +437,19 @@ namespace multio::mars2grib::rules {
 enum class ProductCategory : std::uint64_t
 {
     None = 0,
-    Satellite,
-    Radar,
-    Partitioned,
-    Hovmoeller,
-    CrossSect,
-    SpatialStatisticalProcessing,
-    PostProcess,
-    Chemical,
-    Optical,
-    Wave,
     Aerosol,
     CcittIA5,
+    CrossSect,
+    Radar,
+    SpatialStatisticalProcessing,
+    Wave,
+    PostProcess,
+    Chemical,
+    Partitioned,
+    Hovmoeller,
+    Optical,
     SpatioTemporalTile,
+    Satellite,
 };
 
 }
@@ -487,34 +461,34 @@ struct DumpType<multio::mars2grib::rules::ProductCategory> {
     static std::string dump(multio::mars2grib::rules::ProductCategory v) {
         using namespace multio::mars2grib::rules;
         switch (v) {
-            case ProductCategory::Satellite:
-                return "satellite";
             case ProductCategory::None:
                 return "None";
-            case ProductCategory::Radar:
-                return "radar";
-            case ProductCategory::Partitioned:
-                return "partitioned";
-            case ProductCategory::Hovmoeller:
-                return "hovmoeller";
-            case ProductCategory::CrossSect:
-                return "crossSect";
-            case ProductCategory::SpatialStatisticalProcessing:
-                return "spatialStatisticalProcessing";
-            case ProductCategory::PostProcess:
-                return "postProcess";
-            case ProductCategory::Chemical:
-                return "chemical";
-            case ProductCategory::Optical:
-                return "optical";
-            case ProductCategory::Wave:
-                return "wave";
             case ProductCategory::Aerosol:
                 return "aerosol";
             case ProductCategory::CcittIA5:
                 return "ccittIA5";
+            case ProductCategory::CrossSect:
+                return "crossSect";
+            case ProductCategory::Radar:
+                return "radar";
+            case ProductCategory::SpatialStatisticalProcessing:
+                return "spatialStatisticalProcessing";
+            case ProductCategory::Wave:
+                return "wave";
+            case ProductCategory::PostProcess:
+                return "postProcess";
+            case ProductCategory::Chemical:
+                return "chemical";
+            case ProductCategory::Partitioned:
+                return "partitioned";
+            case ProductCategory::Hovmoeller:
+                return "hovmoeller";
+            case ProductCategory::Optical:
+                return "optical";
             case ProductCategory::SpatioTemporalTile:
                 return "spatioTemporalTile";
+            case ProductCategory::Satellite:
+                return "satellite";
             default:
                 throw multio::mars2grib::Mars2GribException(
                     "DumpType<ProductCategory>::dump: Unexpected value for ProductCategory", Here());
@@ -526,38 +500,8 @@ template <>
 struct ParseType<multio::mars2grib::rules::ProductCategory> {
     static multio::mars2grib::rules::ProductCategory parse(const std::string& s) {
         using namespace multio::mars2grib::rules;
-        if (s == "satellite") {
-            return ProductCategory::Satellite;
-        }
         if (s == "None") {
             return ProductCategory::None;
-        }
-        if (s == "radar") {
-            return ProductCategory::Radar;
-        }
-        if (s == "partitioned") {
-            return ProductCategory::Partitioned;
-        }
-        if (s == "hovmoeller") {
-            return ProductCategory::Hovmoeller;
-        }
-        if (s == "crossSect") {
-            return ProductCategory::CrossSect;
-        }
-        if (s == "spatialStatisticalProcessing") {
-            return ProductCategory::SpatialStatisticalProcessing;
-        }
-        if (s == "postProcess") {
-            return ProductCategory::PostProcess;
-        }
-        if (s == "chemical") {
-            return ProductCategory::Chemical;
-        }
-        if (s == "optical") {
-            return ProductCategory::Optical;
-        }
-        if (s == "wave") {
-            return ProductCategory::Wave;
         }
         if (s == "aerosol") {
             return ProductCategory::Aerosol;
@@ -565,15 +509,45 @@ struct ParseType<multio::mars2grib::rules::ProductCategory> {
         if (s == "ccittIA5") {
             return ProductCategory::CcittIA5;
         }
+        if (s == "crossSect") {
+            return ProductCategory::CrossSect;
+        }
+        if (s == "radar") {
+            return ProductCategory::Radar;
+        }
+        if (s == "spatialStatisticalProcessing") {
+            return ProductCategory::SpatialStatisticalProcessing;
+        }
+        if (s == "wave") {
+            return ProductCategory::Wave;
+        }
+        if (s == "postProcess") {
+            return ProductCategory::PostProcess;
+        }
+        if (s == "chemical") {
+            return ProductCategory::Chemical;
+        }
+        if (s == "partitioned") {
+            return ProductCategory::Partitioned;
+        }
+        if (s == "hovmoeller") {
+            return ProductCategory::Hovmoeller;
+        }
+        if (s == "optical") {
+            return ProductCategory::Optical;
+        }
         if (s == "spatioTemporalTile") {
             return ProductCategory::SpatioTemporalTile;
+        }
+        if (s == "satellite") {
+            return ProductCategory::Satellite;
         }
         throw multio::mars2grib::Mars2GribException{
             std::string("ParseType<ProductCategory>::parse("
                         ") + s + std::string("
-                        "): Value for productCategory does not match on of the following [satellite, None, radar, "
-                        "partitioned, hovmoeller, crossSect, spatialStatisticalProcessing, postProcess, chemical, "
-                        "optical, wave, aerosol, ccittIA5, spatioTemporalTile]"),
+                        "): Value for productCategory does not match on of the following [None, aerosol, ccittIA5, "
+                        "crossSect, radar, spatialStatisticalProcessing, wave, postProcess, chemical, partitioned, "
+                        "hovmoeller, optical, spatioTemporalTile, satellite]"),
             Here()};
     }
 };
@@ -590,11 +564,6 @@ struct Print<multio::mars2grib::rules::ProductCategory> {
     }
 };
 
-template <>
-struct TypeToString<multio::mars2grib::rules::ProductCategory> {
-    std::string operator()() const { return "multio::mars2grib::rules::ProductCategory"; };
-};
-
 }  // namespace multio::util
 
 
@@ -604,15 +573,15 @@ enum class ProductSubCategory : std::uint64_t
 {
     None = 0,
     SpectraFormula,
-    OpticalSourceSink,
-    PeriodRange,
-    StatisticalOverLatLong,
-    SourceSink,
     QualityValue,
-    Distribution,
+    PeriodRange,
     SpectraList,
-    Optical,
+    SourceSink,
+    StatisticalOverLatLong,
     RadioNuclide,
+    OpticalSourceSink,
+    Distribution,
+    Optical,
 };
 
 }
@@ -628,24 +597,24 @@ struct DumpType<multio::mars2grib::rules::ProductSubCategory> {
                 return "None";
             case ProductSubCategory::SpectraFormula:
                 return "spectraFormula";
-            case ProductSubCategory::OpticalSourceSink:
-                return "opticalSourceSink";
-            case ProductSubCategory::PeriodRange:
-                return "periodRange";
-            case ProductSubCategory::StatisticalOverLatLong:
-                return "statisticalOverLatLong";
-            case ProductSubCategory::SourceSink:
-                return "sourceSink";
             case ProductSubCategory::QualityValue:
                 return "qualityValue";
-            case ProductSubCategory::Distribution:
-                return "distribution";
+            case ProductSubCategory::PeriodRange:
+                return "periodRange";
             case ProductSubCategory::SpectraList:
                 return "spectraList";
-            case ProductSubCategory::Optical:
-                return "optical";
+            case ProductSubCategory::SourceSink:
+                return "sourceSink";
+            case ProductSubCategory::StatisticalOverLatLong:
+                return "statisticalOverLatLong";
             case ProductSubCategory::RadioNuclide:
                 return "radioNuclide";
+            case ProductSubCategory::OpticalSourceSink:
+                return "opticalSourceSink";
+            case ProductSubCategory::Distribution:
+                return "distribution";
+            case ProductSubCategory::Optical:
+                return "optical";
             default:
                 throw multio::mars2grib::Mars2GribException(
                     "DumpType<ProductSubCategory>::dump: Unexpected value for ProductSubCategory", Here());
@@ -663,39 +632,39 @@ struct ParseType<multio::mars2grib::rules::ProductSubCategory> {
         if (s == "spectraFormula") {
             return ProductSubCategory::SpectraFormula;
         }
-        if (s == "opticalSourceSink") {
-            return ProductSubCategory::OpticalSourceSink;
+        if (s == "qualityValue") {
+            return ProductSubCategory::QualityValue;
         }
         if (s == "periodRange") {
             return ProductSubCategory::PeriodRange;
         }
-        if (s == "statisticalOverLatLong") {
-            return ProductSubCategory::StatisticalOverLatLong;
+        if (s == "spectraList") {
+            return ProductSubCategory::SpectraList;
         }
         if (s == "sourceSink") {
             return ProductSubCategory::SourceSink;
         }
-        if (s == "qualityValue") {
-            return ProductSubCategory::QualityValue;
+        if (s == "statisticalOverLatLong") {
+            return ProductSubCategory::StatisticalOverLatLong;
+        }
+        if (s == "radioNuclide") {
+            return ProductSubCategory::RadioNuclide;
+        }
+        if (s == "opticalSourceSink") {
+            return ProductSubCategory::OpticalSourceSink;
         }
         if (s == "distribution") {
             return ProductSubCategory::Distribution;
         }
-        if (s == "spectraList") {
-            return ProductSubCategory::SpectraList;
-        }
         if (s == "optical") {
             return ProductSubCategory::Optical;
-        }
-        if (s == "radioNuclide") {
-            return ProductSubCategory::RadioNuclide;
         }
         throw multio::mars2grib::Mars2GribException{
             std::string("ParseType<ProductSubCategory>::parse("
                         ") + s + std::string("
                         "): Value for productSubCategory does not match on of the following [None, spectraFormula, "
-                        "opticalSourceSink, periodRange, statisticalOverLatLong, sourceSink, qualityValue, "
-                        "distribution, spectraList, optical, radioNuclide]"),
+                        "qualityValue, periodRange, spectraList, sourceSink, statisticalOverLatLong, radioNuclide, "
+                        "opticalSourceSink, distribution, optical]"),
             Here()};
     }
 };
@@ -710,11 +679,6 @@ struct Print<multio::mars2grib::rules::ProductSubCategory> {
     static void print(PrintStream& ps, const multio::mars2grib::rules::ProductSubCategory& t) {
         util::print(ps, multio::datamod::TypeDumper<multio::mars2grib::rules::ProductSubCategory>::dump(t));
     }
-};
-
-template <>
-struct TypeToString<multio::mars2grib::rules::ProductSubCategory> {
-    std::string operator()() const { return "multio::mars2grib::rules::ProductSubCategory"; };
 };
 
 }  // namespace multio::util
@@ -785,10 +749,6 @@ namespace multio::util {
 template <>
 struct Print<multio::mars2grib::rules::PDTCat> : multio::datamod::PrintRecord {};
 
-template <>
-struct TypeToString<multio::mars2grib::rules::PDTCat> {
-    std::string operator()() const { return "multio::mars2grib::rules::PDTCat"; };
-};
 }  // namespace multio::util
 
 
@@ -819,8 +779,11 @@ struct InferPdt {
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               8},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Hovmoeller, ProductSubCategory::None},
-              1101},
+                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::None},
+              46},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::SourceSink},
+              82},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::CrossSect, ProductSubCategory::None},
               1001},
@@ -831,23 +794,20 @@ struct InferPdt {
                      ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::None},
               42},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::Distribution},
+              67},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::SourceSink},
               78},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
               126},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::Distribution},
-              67},
+                     ProcessSubType::None, ProductCategory::Hovmoeller, ProductSubCategory::None},
+              1101},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::Optical, ProductSubCategory::None},
               110},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::None},
-              46},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::SourceSink},
-              82},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::SpatioTemporalTile, ProductSubCategory::None},
               62},
@@ -858,8 +818,11 @@ struct InferPdt {
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               11},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Satellite, ProductSubCategory::None},
-              34},
+                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::None},
+              85},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::SourceSink},
+              84},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::PostProcess, ProductSubCategory::None},
               73},
@@ -867,51 +830,44 @@ struct InferPdt {
                      ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::None},
               43},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::Distribution},
+              68},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::SourceSink},
               79},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
               127},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::Distribution},
-              68},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::Optical, ProductSubCategory::None},
               111},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::None},
-              85},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::SourceSink},
-              84},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::SpatioTemporalTile, ProductSubCategory::None},
               63},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Categorial,
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Satellite, ProductSubCategory::None},
+              34},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Percentile,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              91},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Reforecast,
-                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
-              61},
+              10},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Quantile,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               87},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::DerivedForecast,
-                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
-              12},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Probability,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               9},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Probability,
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               120},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Percentile,
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Reforecast,
+                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
+              61},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::Categorial,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              10},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::ClusterStatRectangular,
-                     ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
-                     ProductSubCategory::None},
-              13},
+              91},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::None, ProcessType::DerivedForecast,
+                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
+              12},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::ClusterStatCircular,
                      ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
                      ProductSubCategory::None},
@@ -925,23 +881,10 @@ struct InferPdt {
              {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::FocalStatistics, ProcessType::Probability,
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               122},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              105},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
-              106},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None,
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::None, SpatialExtent::ClusterStatRectangular,
                      ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
                      ProductSubCategory::None},
-              107},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None,
-                     ProcessType::Probability, ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              112},
-             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::FocalStatistics,
-                     ProcessType::Probability, ProcessSubType::Ensemble, ProductCategory::None,
-                     ProductSubCategory::None},
-              123},
+              13},
              {PDTCat{TimeExtent::TimeRange, TimeFormat::LocalTime, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               95},
@@ -954,18 +897,32 @@ struct InferPdt {
              {PDTCat{TimeExtent::TimeRange, TimeFormat::LocalTime, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::PostProcess, ProductSubCategory::None},
               98},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
+              105},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
+              106},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None,
+                     ProcessType::Probability, ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
+              112},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::None,
+                     ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
+                     ProductSubCategory::None},
+              107},
+             {PDTCat{TimeExtent::TimeRange, TimeFormat::WithReferencePeriod, SpatialExtent::FocalStatistics,
+                     ProcessType::Probability, ProcessSubType::Ensemble, ProductCategory::None,
+                     ProductSubCategory::None},
+              123},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               0},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Partitioned, ProductSubCategory::None},
-              53},
+                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::Optical},
+              48},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Hovmoeller, ProductSubCategory::None},
-              1100},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Satellite, ProductSubCategory::None},
-              32},
+                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::OpticalSourceSink},
+              80},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::CrossSect, ProductSubCategory::None},
               1000},
@@ -976,24 +933,6 @@ struct InferPdt {
                      ProcessSubType::None, ProductCategory::SpatialStatisticalProcessing, ProductSubCategory::None},
               15},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::PostProcess, ProductSubCategory::None},
-              70},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::None},
-              40},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::SourceSink},
-              76},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
-              124},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::Distribution},
-              57},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Optical, ProductSubCategory::None},
-              108},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::Wave, ProductSubCategory::SpectraFormula},
               101},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
@@ -1003,14 +942,35 @@ struct InferPdt {
                      ProcessSubType::None, ProductCategory::Wave, ProductSubCategory::PeriodRange},
               103},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::OpticalSourceSink},
-              80},
+                     ProcessSubType::None, ProductCategory::PostProcess, ProductSubCategory::None},
+              70},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::None, ProductCategory::Aerosol, ProductSubCategory::Optical},
-              48},
+                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::None},
+              40},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::Distribution},
+              57},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::SourceSink},
+              76},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
+              124},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Partitioned, ProductSubCategory::None},
+              53},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Hovmoeller, ProductSubCategory::None},
+              1100},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Optical, ProductSubCategory::None},
+              108},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::SpatioTemporalTile, ProductSubCategory::None},
               55},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::None, ProductCategory::Satellite, ProductSubCategory::None},
+              32},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::LargeEnsemble, ProductCategory::None, ProductSubCategory::None},
               117},
@@ -1018,29 +978,14 @@ struct InferPdt {
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               1},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Partitioned, ProductSubCategory::None},
-              54},
+                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::None},
+              45},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Satellite, ProductSubCategory::None},
-              33},
+                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::Optical},
+              49},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::PostProcess, ProductSubCategory::None},
-              71},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::None},
-              41},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::SourceSink},
-              77},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
-              125},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::Distribution},
-              58},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Optical, ProductSubCategory::None},
-              109},
+                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::OpticalSourceSink},
+              81},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::Wave, ProductSubCategory::SpectraFormula},
               102},
@@ -1051,42 +996,56 @@ struct InferPdt {
                      ProcessSubType::Ensemble, ProductCategory::Wave, ProductSubCategory::PeriodRange},
               104},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::None},
-              45},
+                     ProcessSubType::Ensemble, ProductCategory::PostProcess, ProductSubCategory::None},
+              71},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::OpticalSourceSink},
-              81},
+                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::None},
+              41},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
-                     ProcessSubType::Ensemble, ProductCategory::Aerosol, ProductSubCategory::Optical},
-              49},
+                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::Distribution},
+              58},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::SourceSink},
+              77},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Chemical, ProductSubCategory::RadioNuclide},
+              125},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Partitioned, ProductSubCategory::None},
+              54},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Optical, ProductSubCategory::None},
+              109},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::SpatioTemporalTile, ProductSubCategory::None},
               59},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Categorial,
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::None,
+                     ProcessSubType::Ensemble, ProductCategory::Satellite, ProductSubCategory::None},
+              33},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Percentile,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              51},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Reforecast,
-                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
-              60},
+              6},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Quantile,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               86},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::DerivedForecast,
-                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
-              2},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Probability,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               5},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Probability,
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               119},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Percentile,
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Reforecast,
+                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
+              60},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::Categorial,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
-              6},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::ClusterStatRectangular,
-                     ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
-                     ProductSubCategory::None},
-              3},
+              51},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::None, ProcessType::DerivedForecast,
+                     ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
+              2},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::RandomPatterns, ProcessType::None,
+                     ProcessSubType::LargeEnsemble, ProductCategory::None, ProductSubCategory::None},
+              143},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::ClusterStatCircular,
                      ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
                      ProductSubCategory::None},
@@ -1097,13 +1056,14 @@ struct InferPdt {
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::GeneralisedTile, ProcessType::None,
                      ProcessSubType::Ensemble, ProductCategory::None, ProductSubCategory::None},
               115},
-             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::RandomPatterns, ProcessType::None,
-                     ProcessSubType::LargeEnsemble, ProductCategory::None, ProductSubCategory::None},
-              143},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::FocalStatistics,
                      ProcessType::Probability, ProcessSubType::Ensemble, ProductCategory::None,
                      ProductSubCategory::None},
               121},
+             {PDTCat{TimeExtent::PointInTime, TimeFormat::None, SpatialExtent::ClusterStatRectangular,
+                     ProcessType::DerivedForecast, ProcessSubType::Ensemble, ProductCategory::None,
+                     ProductSubCategory::None},
+              3},
              {PDTCat{TimeExtent::PointInTime, TimeFormat::LocalTime, SpatialExtent::None, ProcessType::None,
                      ProcessSubType::None, ProductCategory::None, ProductSubCategory::None},
               88},

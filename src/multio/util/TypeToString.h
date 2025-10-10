@@ -10,22 +10,17 @@
 
 #pragma once
 
-#include <chrono>
-#include <functional>
-#include <memory>  
+#include <memory>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <type_traits>
-#include <variant>
 #include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/filesystem/PathName.h"
 
 namespace multio::util {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // Helper to stringify types
 // Instead of using a constexpr string_view, a call operator is used at runtime.
@@ -39,22 +34,8 @@ struct TypeToString;
 
 template <typename T>
 std::string typeToString() {
-    return TypeToString<T>{}();
+    return TypeToString<std::decay_t<T>>{}();
 }
-
-template <typename T>
-struct TypeToString<const T> {
-    std::string operator()() const { return std::string("const ") + typeToString<std::remove_cv_t<T>>(); };
-};
-
-template <typename T>
-struct TypeToString<T&> {
-    std::string operator()() const { return typeToString<std::remove_reference_t<T>>() + std::string("&"); };
-};
-template <typename T>
-struct TypeToString<T&&> {
-    std::string operator()() const { return typeToString<std::remove_reference_t<T>>() + std::string("&&"); };
-};
 
 
 template <>
@@ -111,38 +92,14 @@ struct TypeToString<std::uint8_t> {
     std::string operator()() const { return "std::uint8_t"; };
 };
 
-
 template <typename T>
 struct TypeToString<std::optional<T>> {
     std::string operator()() const { return std::string("std::optional<") + typeToString<T>() + std::string(">"); };
 };
 
-// TODO handle allocator to string?...
 template <typename T, typename Alloc>
 struct TypeToString<std::vector<T, Alloc>> {
     std::string operator()() const { return std::string("std::vector<") + typeToString<T>() + std::string(">"); };
-};
-
-
-template <typename... T>
-struct TypeToString<std::tuple<T...>> {
-    std::string operator()() const {
-        return std::string("std::tuple<") + ((typeToString<T>() + std::string(", ")) + ... + std::string(">"));
-    };
-};
-
-template <typename... T>
-struct TypeToString<std::variant<T...>> {
-    std::string operator()() const {
-        return std::string("std::variant<") + ((typeToString<T>() + std::string(", ")) + ... + std::string(">"));
-    };
-};
-
-template <typename T>
-struct TypeToString<std::reference_wrapper<T>> {
-    std::string operator()() const {
-        return std::string("std::reference_wrapper<") + typeToString<T>() + std::string(">");
-    };
 };
 
 template <typename T, typename Deleter>
@@ -152,33 +109,13 @@ struct TypeToString<std::unique_ptr<T, Deleter>> {
     };
 };
 
-template <typename T>
-struct TypeToString<std::shared_ptr<T>> {
-    std::string operator()() const { return std::string("std::shared_ptr<") + typeToString<T>() + std::string(">"); };
-};
-
-template <>
-struct TypeToString<std::chrono::hours> {
-    std::string operator()() const { return std::string("std::chrono::hours"); };
-};
-
-template <>
-struct TypeToString<std::chrono::seconds> {
-    std::string operator()() const { return std::string("std::chrono::seconds"); };
-};
-
 template <>
 struct TypeToString<eckit::LocalConfiguration> {
     std::string operator()() const { return std::string("eckit::LocalConfiguration"); };
 };
 
-template <>
-struct TypeToString<eckit::PathName> {
-    std::string operator()() const { return std::string("eckit::PathName"); };
-};
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 }  // namespace multio::util
-

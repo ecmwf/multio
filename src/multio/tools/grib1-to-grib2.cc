@@ -70,7 +70,7 @@ public:
 KeySet iterateMarsNamespace(const eckit::message::Message& msg) {
     KeySet ks;
     KeySetSetter setter{ks};
-    msg.getMetadata(setter, {eckit::message::ValueRepresentation::Native, eckit::Optional<std::string>{"mars"}});
+    msg.getMetadata(setter, {eckit::message::ValueRepresentation::Native, std::optional<std::string>{"mars"}});
     return ks;
 }
 
@@ -420,18 +420,16 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         const double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
         auto waveDirections = h.getDoubleArray("scaledValuesOfWaveDirections");
         auto directionScalingFactor = h.getDouble("directionScalingFactor");
-        std::for_each(begin(waveDirections), end(waveDirections), [directionScalingFactor](double& val) {
-            val /= directionScalingFactor * rad2deg;
-        });
+        std::for_each(begin(waveDirections), end(waveDirections),
+                      [directionScalingFactor](double& val) { val /= directionScalingFactor * rad2deg; });
         misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
         misc.waveDirections.set(waveDirections);
     }
     if (h.hasKey("scaledValuesOfWaveFrequencies")) {
         auto waveFrequencies = h.getDoubleArray("scaledValuesOfWaveFrequencies");
         auto frequencyScalingFactor = h.getDouble("frequencyScalingFactor");
-        std::for_each(begin(waveFrequencies), end(waveFrequencies), [frequencyScalingFactor](double& val) {
-            val /= frequencyScalingFactor;
-        });
+        std::for_each(begin(waveFrequencies), end(waveFrequencies),
+                      [frequencyScalingFactor](double& val) { val /= frequencyScalingFactor; });
         misc.scaleFactorOfWaveFrequencies.set(std::log10(frequencyScalingFactor));
         misc.waveFrequencies.set(waveFrequencies);
     }

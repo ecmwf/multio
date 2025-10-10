@@ -99,17 +99,39 @@ dm::Geometry handleSH(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::Misc
 }
 
 dm::Geometry handleLL(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    // TODO pgeier implement with details
     mars.repres.set(dm::Repres::LL);
-    return dm::readRecord<dm::GeoLLRecord>(h);
+    mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
+    dm::GeoLLRecord res;
+    res.numberOfPointsAlongAParallel.set(h.getLong("Ni"));
+    res.numberOfPointsAlongAMeridian.set(h.getLong("Nj"));
+    res.latitudeOfFirstGridPointInDegrees.set(h.getDouble("latitudeOfFirstGridPointInDegrees"));
+    res.longitudeOfFirstGridPointInDegrees.set(h.getDouble("longitudeOfFirstGridPointInDegrees"));
+    res.latitudeOfLastGridPointInDegrees.set(h.getDouble("latitudeOfLastGridPointInDegrees"));
+    res.longitudeOfLastGridPointInDegrees.set(h.getDouble("longitudeOfLastGridPointInDegrees"));
+    res.iDirectionIncrementInDegrees.set(h.getDouble("iDirectionIncrementInDegrees"));
+    res.jDirectionIncrementInDegrees.set(h.getDouble("jDirectionIncrementInDegrees"));
+    dm::applyRecordDefaults(res);
+    dm::validateRecord(res);
+    return res;
 }
 
+dm::Geometry handleRegularLLAtlas(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+    dm::GeoLLRecord geoLL;
+    mars.repres.set(dm::Repres::LL);
+    mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
+    dm::setKeysFromAtlas(geoLL, mars.grid.get());
+
+    return geoLL;
+}
+
+// TODO(pgeier) Add option to the tool to specific if geometry should be infered by atlas
 dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
                             dm::MiscRecord& misc) {
-    // TODO pgeier add HealPpx
+    // TODO(pgeier) add HealPpx
     const static std::unordered_map<std::string, GridTypeFunction> gridMap{
         {"reduced_gg", &handleReducedGGAtlas},
-        {"regular_ll", &handleLL},
+        {"regular_ll", &handleRegularLLAtlas},
+        // {"regular_ll", &handleLL}, // Works as well
         {"sh", &handleSH},
     };
 
@@ -382,7 +404,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
-    if (h.hasKey("number")) {
+    if (h.hasKey("number") && h.hasKey("numberOfForecastsInEnsemble")) {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
         long number = h.getLong("number");
 
@@ -1091,7 +1113,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             if (verbosity_ > 0) {
                 util::PrintStream ps{std::cout};
 
-                ps << "Converted ";
+                ps << "Converted " << std::endl;;
                 {
                     util::IndentGuard g{ps};
                     ps << mars << std::endl;

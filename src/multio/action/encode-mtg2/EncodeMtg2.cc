@@ -48,7 +48,7 @@ EncodeMtg2Options parseOpts(const ComponentConfiguration& compConf) {
     /// ParsedOptions{.allowAdditionalKeys=false}
     dm::ParseOptions opts;
     opts.allowAdditionalKeys = false;
-    
+
     // TODO(pgeier) Fix after refactoring action - need to remove keys "type" and "next"
     auto conf = compConf.parsedConfig();
     conf.remove("type");

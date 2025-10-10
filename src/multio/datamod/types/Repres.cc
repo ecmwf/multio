@@ -47,6 +47,8 @@ Repres represFromGrid(const std::string& grid) {
             else {
                 return Repres::LL;
             }
+        case 'L':
+            return Repres::LL;
         default:
             throw DataModellingException(std::string("represFromGrid: invalid grid: ") + grid, Here());
     }

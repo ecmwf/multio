@@ -241,9 +241,9 @@ IMPLICIT NONE
   CASE( TYPE_EA_E )
     ! Errors in analysis
     SORT = 0_JPIB_K
-  ! CASE( TYPE_CM_E )
-  !   ! Cluster means
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_CM_E )
+    ! Cluster means
+    SORT = 1_JPIB_K
   ! CASE( TYPE_CS_E )
   !   ! Cluster std deviations
   !   SORT = 1_JPIB_K
@@ -331,9 +331,9 @@ IMPLICIT NONE
   CASE( TYPE_WES_E )
     ! Weighted ensemble standard deviation
     SORT = 1_JPIB_K
-  ! CASE( TYPE_CR_E )
-  !   ! Cluster representative
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_CR_E )
+    ! Cluster representative
+    SORT = 1_JPIB_K
   CASE( TYPE_SES_E )
     ! Scaled ensemble standard deviation
     SORT = 1_JPIB_K

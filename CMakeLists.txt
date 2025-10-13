@@ -83,7 +83,7 @@ if( HAVE_FORTRAN )
 
     ecbuild_add_option( FEATURE MPI_FORTRAN
                         DEFAULT ON
-                        REQUIRED_PACKAGES "NAME MPI COMPONENTS Fortran" )
+                        REQUIRED_PACKAGES "MPI COMPONENTS Fortran" )
 endif()
 
 

@@ -47,7 +47,6 @@ bool StatisticsOperationMapping::hasOperation(Param param, TypeOfStatisticalProc
 
 // TODO: Create an ENUM TypeOfStatisticalProcessing with appropriate conversions to and from strings and integers
 bool StatisticsOperationMapping::hasOperation(Param param, std::string operation) const {
-    std::cout << "operation=" << operation;
     if (operation == "average")            { return hasOperation(param, 0); }
     if (operation == "accumulate")         { return hasOperation(param, 1); }
     if (operation == "maximum")            { return hasOperation(param, 2); }

@@ -2,6 +2,7 @@ build:
   python: "3.10"
   modules:
     - ninja
+    - qhull
   dependencies:
     - ecmwf/ecbuild@develop
     - ecmwf/eccodes@develop
@@ -14,6 +15,7 @@ build:
     - ecmwf/mir@develop
     - ecmwf/multio@develop
   dependency_cmake_options:
+    - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
     - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
     - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
   parallel: 64

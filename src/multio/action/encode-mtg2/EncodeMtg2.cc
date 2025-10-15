@@ -34,7 +34,8 @@ using message::Peer;
 
 mars2grib::RawOptions mapOpts(EncodeMtg2Options opts) {
     mars2grib::RawOptions ret;
-    ret.cached = opts.cached;
+    ret.enableCache = opts.cached;
+    ret.enableReadbackTest = opts.readbackTest;
     return ret;
 };
 

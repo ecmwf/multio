@@ -25,10 +25,12 @@ namespace cf = multio::util::config;
 struct EncodeMtg2Options {
     bool cached = true;
     bool geoFromAtlas = false;
+    bool readbackTest = false;
 
     static constexpr auto fields_
         = std::make_tuple(cf::optionalEntry("cached", &EncodeMtg2Options::cached),
-                          cf::optionalEntry("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas));
+                          cf::optionalEntry("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas),
+                          cf::optionalEntry("readback-test", &EncodeMtg2Options::readbackTest));
 };
 
 //----------------------------------------------------------------------------------------------------------------------

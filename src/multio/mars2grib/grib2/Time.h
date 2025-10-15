@@ -14,6 +14,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/types/Grib2TimeDurationUnit.h"
 #include "multio/datamod/types/TimeDuration.h"
 
 // Level config
@@ -66,7 +67,7 @@ struct RefDateTimeKeys {
 struct InitForecastTimeKeys {
     dm::Entry<std::int64_t> hoursAfterDataCutoff;    // Set to missing
     dm::Entry<std::int64_t> minutesAfterDataCutoff;  // Set to missing
-    dm::Entry<std::string>
+    dm::Entry<dm::Grib2TimeDurationUnit>
         indicatorOfUnitForForecastTime;  // Initialized to "h" - needs to be refactored for subhourly steps...
 
     static constexpr std::string_view record_name_ = "init-forecast-time-keys";
@@ -74,7 +75,7 @@ struct InitForecastTimeKeys {
         entryDef("hoursAfterDataCutoff", &InitForecastTimeKeys::hoursAfterDataCutoff).tagOptional(),  //
         entryDef("minutesAfterDataCutoff", &InitForecastTimeKeys::minutesAfterDataCutoff).tagOptional(),
         entryDef("indicatorOfUnitForForecastTime", &InitForecastTimeKeys::indicatorOfUnitForForecastTime)
-            .withDefault("h"));
+            .withDefault(dm::Grib2TimeDurationUnit::Hour));
 };
 
 
@@ -102,9 +103,9 @@ struct TimeRangeKeys {
     // Vector for now - can be optimized later
     dm::Entry<std::vector<dm::TypeOfStatisticalProcessing>> typeOfStatisticalProcessing;
     dm::Entry<std::vector<std::int64_t>> typeOfTimeIncrement;
-    dm::Entry<std::vector<std::string>> indicatorOfUnitForTimeRange;
+    dm::Entry<std::vector<dm::Grib2TimeDurationUnit>> indicatorOfUnitForTimeRange;
     dm::Entry<std::vector<std::int64_t>> lengthOfTimeRange;
-    dm::Entry<std::vector<std::string>> indicatorOfUnitForTimeIncrement;
+    dm::Entry<std::vector<dm::Grib2TimeDurationUnit>> indicatorOfUnitForTimeIncrement;
     dm::Entry<std::vector<std::int64_t>> timeIncrement;
 
     static constexpr std::string_view record_name_ = "time-range-end-keys";
@@ -134,3 +135,16 @@ std::optional<TimeRangeKeys> setTimeRange(const dm::FullMarsRecord&, const dm::M
 
 
 }  // namespace multio::mars2grib::grib2
+
+namespace multio::util {
+template <>
+struct Print<multio::mars2grib::grib2::DateTimeKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::RefDateTimeKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::InitForecastTimeKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::PointInTimeKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::TimeRangeKeys> : multio::datamod::PrintRecord {};
+};  // namespace multio::util

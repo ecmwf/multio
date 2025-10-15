@@ -24,6 +24,7 @@
 #include "multio/mars2grib/generated/InferPDT.h"
 #include "multio/mars2grib/grib2/Geometry.h"
 #include "multio/mars2grib/grib2/Time.h"
+#include "multio/mars2grib/grib2/Utils.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 
 #include "multio/util/Print.h"
@@ -57,8 +58,40 @@ std::unique_ptr<metkit::codes::CodesHandle> defaultSample() {
 }
 
 
-void prepareSample(metkit::codes::CodesHandle& sample, const dm::FullMarsRecord& marsKeys) {
+void testReadback(metkit::codes::CodesHandle& sample, const Grib2Layout& layout, const dm::Geometry& geo) {
+    // TODO(pgeier) localTablesVersion not always matching after cloning
+    // grib2::testReadback(sample, layout.structure);
 
+    // TODO(pgeier) truncateDegree is changing after cloning
+    std::visit([&](const auto& g) { grib2::testReadback(sample, g); }, geo);
+
+    if (layout.initForecastTime) {
+        grib2::testReadback(sample, *layout.initForecastTime);
+    }
+    if (layout.vertical) {
+        grib2::testReadback(sample, *layout.vertical);
+    }
+    if (layout.satellite) {
+        grib2::testReadback(sample, *layout.satellite);
+    }
+    if (layout.dirFreqArrays) {
+        grib2::testReadback(sample, *layout.dirFreqArrays);
+    }
+
+
+    // TODO(pgeier) enable once implemented
+    // if (layout.dirFreqMars) {
+    //     grib2::testReadback(sample, *layout.dirFreqMars);
+    // }
+    // if (layout.pointInTime) {
+    //     grib2::testReadback(sample, *layout.pointInTime);
+    // }
+    // if (layout.timeRange) {
+    //     grib2::testReadback(sample, *layout.timeRange);
+    // }
+}
+
+void prepareSample(metkit::codes::CodesHandle& sample, const dm::FullMarsRecord& marsKeys) {
     if (marsKeys.truncation.isSet()) {
         sample.set("numberOfDataPoints", 6);
         sample.set("numberOfValues", 6);
@@ -77,40 +110,37 @@ void prepareSample(metkit::codes::CodesHandle& sample, const dm::FullMarsRecord&
 }
 
 
-void allocateSample(metkit::codes::CodesHandle& sample, const Grib2Layout& layout, const dm::Geometry& geo) {
-    dm::DumpOptions dumpOpts;
-    dumpOpts.removeMissingKeys = true;
-
+void allocateSample(metkit::codes::CodesHandle& sample, const Grib2Layout& layout, const dm::Geometry& geo,
+                    const EncoderOptions& opts) {
     // Set grib structure
-    dm::dumpRecord(layout.structure, sample, dumpOpts);
+    grib2::writeKeys(layout.structure, sample, opts.enableReadbackTest);
 
     // Set Geometry
-    grib2::writeGeometry(geo, sample);
+    grib2::writeGeometry(geo, sample, opts.enableReadbackTest);
 
     // Initial time keys
     if (layout.initForecastTime) {
-        dm::dumpRecord(*layout.initForecastTime, sample, dumpOpts);
+        grib2::writeKeys(*layout.initForecastTime, sample, opts.enableReadbackTest);
     }
 
     // Set verticals
     if (layout.vertical) {
-        dm::dumpRecord(*layout.vertical, sample, dumpOpts);
+        grib2::writeKeys(*layout.vertical, sample, opts.enableReadbackTest);
     }
 
     // TODO(pgeier) to be moved to preset
     if (layout.satellite) {
-        dm::dumpRecord(*layout.satellite, sample, dumpOpts);
+        grib2::writeKeys(*layout.satellite, sample, opts.enableReadbackTest);
     }
 
     if (layout.dirFreqArrays) {
-        dm::dumpRecord(*layout.dirFreqArrays, sample, dumpOpts);
+        grib2::writeKeys(*layout.dirFreqArrays, sample, opts.enableReadbackTest);
     }
 }
 
-void presetSample(metkit::codes::CodesHandle& sample, Grib2Layout& layout) {}
+void presetSample(metkit::codes::CodesHandle& sample, Grib2Layout& layout, const EncoderOptions& opts) {}
 
-void finalizeSample(metkit::codes::CodesHandle& sample, Grib2Layout& layout) {
-
+void finalizeSample(metkit::codes::CodesHandle& sample, Grib2Layout& layout, const EncoderOptions& opts) {
     if (layout.pointInTime) {
         // TODO(pgeier)
     }
@@ -122,11 +152,13 @@ void finalizeSample(metkit::codes::CodesHandle& sample, Grib2Layout& layout) {
 }  // namespace
 
 
-Encoder::Encoder(bool cache) :
-    cache_{cache ? std::optional<Encoder::Cache>{Encoder::Cache{}} : std::optional<Encoder::Cache>{}} {};
+Encoder::Encoder(EncoderOptions opts) :
+    opts_{opts},
+    cache_{opts.enableCache ? std::optional<Encoder::Cache>{Encoder::Cache{}} : std::optional<Encoder::Cache>{}} {};
 
 PreparedEncoder prepareEncoder(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
-                               const MultIOMDict& mars, const MultIOMDict& misc, const dm::Geometry& geo) {
+                               const MultIOMDict& mars, const MultIOMDict& misc, const dm::Geometry& geo,
+                               const EncoderOptions& opts) {
     // Searching for rule...
     auto [sections, layout] = rules::buildEncoderConf(marsKeys, miscKeys);
     auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
@@ -177,16 +209,20 @@ PreparedEncoder prepareEncoder(const dm::FullMarsRecord& marsKeys, const dm::Mis
     sample = sample->clone();  // Safe reload
 
     // Migrated calls
-    allocateSample(*sample.get(), layout, geo);
+    allocateSample(*sample.get(), layout, geo, opts);
     sample = sample->clone();  // Safe reload
 
-    // presetSample(*sample.get(), layout);
+    // presetSample(*sample.get(), layout, opts);
     // sample = sample->duplicate(); // Safe reload
 
     // TODO(pgeier) Remove - internally not used anymore
     MultIOMDict geom{MultIOMDictKind::ReducedGG};
     // TODO(pgeier) legocy calls
     sample = encoder.allocateAndPreset(std::move(sample), mars, misc, geom);
+
+    if (opts.enableReadbackTest) {
+        testReadback(*sample.get(), layout, geo);
+    }
 
     return PreparedEncoder({std::move(sections), std::move(encoder), std::move(sample)});
 }
@@ -203,7 +239,8 @@ PreparedEncoder& Encoder::makeOrGetEntry(const dm::FullMarsRecord& marsKeys, con
     }
 
     // Move encoder and prepared sample to cache
-    return cache_->emplace(std::move(cacheKeySet), prepareEncoder(marsKeys, miscKeys, mars, misc, geo)).first->second;
+    return cache_->emplace(std::move(cacheKeySet), prepareEncoder(marsKeys, miscKeys, mars, misc, geo, opts_))
+        .first->second;
 }
 
 
@@ -217,7 +254,7 @@ std::unique_ptr<metkit::codes::CodesHandle> Encoder::getHandle(const dm::FullMar
         return entry.encoder.runtime(entry.preparedSample->clone(), mars, misc, geom);
     }
     else {
-        PreparedEncoder entry = prepareEncoder(marsKeys, miscKeys, mars, misc, geo);
+        PreparedEncoder entry = prepareEncoder(marsKeys, miscKeys, mars, misc, geo, opts_);
         // TODO(pgeier) remove... fake
         MultIOMDict geom{MultIOMDictKind::ReducedGG};
         return entry.encoder.runtime(std::move(entry.preparedSample), mars, misc, geom);

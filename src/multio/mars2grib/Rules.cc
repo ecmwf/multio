@@ -227,7 +227,6 @@ auto localUse(std::int64_t num) {
         c.localUse.ensureInit().modify().templateNumber.set(num);
 
         // New structure
-        gl.structure.setLocalDefinition.set(1);
         gl.structure.localDefinitionNumber.set(num);
         if (num > 1000) {
             gl.structure.localDefinitionNumber.set(num - 1000);

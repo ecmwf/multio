@@ -46,6 +46,13 @@ struct Grib2Structure {
     // Section 4
     dm::Entry<std::int64_t> dataRepresentationTemplateNumber;
 
+
+    static void applyDefaults(Grib2Structure& s) {
+        if (s.localDefinitionNumber.isSet()) {
+            s.setLocalDefinition.set(1);
+        }
+    }
+
     static constexpr std::string_view record_name_ = "grib2-struture";
     static constexpr auto record_entries_ = std::make_tuple(
         dm::entryDef("tablesVersion", &Grib2Structure::tablesVersion),
@@ -86,5 +93,10 @@ struct Grib2Layout {
 
 
 }  // namespace mars2grib
+
+namespace util {
+template <>
+struct Print<multio::mars2grib::Grib2Structure> : multio::datamod::PrintRecord {};
+};  // namespace util
 
 }  // namespace multio

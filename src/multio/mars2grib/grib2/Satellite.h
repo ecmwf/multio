@@ -14,6 +14,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Print.h"
 
 // Level config
 namespace multio::mars2grib::grib2 {
@@ -43,3 +44,10 @@ struct SatelliteKeys {
 SatelliteKeys setSatellite(const dm::FullMarsRecord&, const dm::MiscRecord&);
 
 }  // namespace multio::mars2grib::grib2
+
+
+namespace multio::util {
+template <>
+struct Print<multio::mars2grib::grib2::SatelliteKeys> : multio::datamod::PrintRecord {};
+};  // namespace multio::util
+

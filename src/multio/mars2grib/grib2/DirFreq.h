@@ -14,6 +14,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Print.h"
 
 // Level config
 namespace multio::mars2grib::grib2 {
@@ -61,3 +62,11 @@ struct DirFreqMarsKeys {
 DirFreqMarsKeys setDirFreqMars(const dm::FullMarsRecord&);
 
 }  // namespace multio::mars2grib::grib2
+
+namespace multio::util {
+template <>
+struct Print<multio::mars2grib::grib2::DirFreqArrayKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::DirFreqMarsKeys> : multio::datamod::PrintRecord {};
+};  // namespace multio::util
+

@@ -14,6 +14,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/core/Print.h"
 #include "multio/datamod/types/TypeOfLevel.h"
 
 // Level config
@@ -35,7 +36,7 @@ struct VerticalKeys {
     dm::Entry<bool> pvPresent;
     dm::Entry<std::vector<double>> pv;
 
-    static constexpr std::string_view record_name_ = "vertical";
+    static constexpr std::string_view record_name_ = "vertical-keys";
     static constexpr auto record_entries_ = std::make_tuple(            //
         entryDef("PVPresent", &VerticalKeys::pvPresent).tagOptional(),  //
         entryDef("pv", &VerticalKeys::pv).tagOptional());
@@ -49,3 +50,10 @@ std::optional<VerticalKeys> setVertical(dm::TypeOfLevel, const dm::FullMarsRecor
 
 
 }  // namespace multio::mars2grib::grib2
+
+namespace multio::util {
+template <>
+struct Print<multio::mars2grib::grib2::LevelKeys> : multio::datamod::PrintRecord {};
+template <>
+struct Print<multio::mars2grib::grib2::VerticalKeys> : multio::datamod::PrintRecord {};
+};  // namespace multio::util

@@ -20,7 +20,7 @@ namespace multio::mars2grib::grib2 {
 
 namespace dm = multio::datamod;
 
-void writeGeometry(const dm::Geometry&, metkit::codes::CodesHandle& handle);
+void writeGeometry(const dm::Geometry&, metkit::codes::CodesHandle& handle, bool readbackTest = false);
 
 
 }  // namespace multio::mars2grib::grib2

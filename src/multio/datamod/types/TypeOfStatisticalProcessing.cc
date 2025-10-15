@@ -51,11 +51,9 @@ std::string DumpType<TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcess
             return "mode";
         case TypeOfStatisticalProcessing::IndexProcessing:
             return "index-processing";
-        default:
-            throw DataModellingException(
-                "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing",
-                Here());
     }
+    throw DataModellingException(
+        "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing", Here());
 }
 
 std::int64_t DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle>::dump(TypeOfStatisticalProcessing v) {
@@ -94,11 +92,9 @@ std::int64_t DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle>::
             return static_cast<std::int64_t>(TypeOfStatisticalProcessing::Mode);
         case TypeOfStatisticalProcessing::IndexProcessing:
             return static_cast<std::int64_t>(TypeOfStatisticalProcessing::IndexProcessing);
-        default:
-            throw DataModellingException(
-                "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing",
-                Here());
     }
+    throw DataModellingException(
+        "DumpType<TypeOfStatisticalProcessing>::dump: Unexpected value for TypeOfStatisticalProcessing", Here());
 }
 
 TypeOfStatisticalProcessing ParseType<TypeOfStatisticalProcessing>::parse(const std::string& val) {

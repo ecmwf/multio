@@ -14,6 +14,7 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 
+#include "multio/datamod/types/Grib2TimeDurationUnit.h"
 #include "multio/datamod/types/LevType.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 #include "multio/mars2grib/MarsCachedKeys.h"
@@ -114,6 +115,38 @@ CASE("Test parsing/dumping typeOfStatisticalProcessing") {
     // clang-format on
 
     EXPECT_THROWS(ParseType<dm::TypeOfStatisticalProcessing>::parse("noop"));
+}
+
+CASE("Test parsing/dumping Grib2TimeDurationUnit") {
+    using namespace dm;
+
+    // clang-format off
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("m")) == "m" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("h")) == "h" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("D")) == "D" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("M")) == "M" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("Y")) == "Y" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("10Y")) == "10Y" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("30Y")) == "30Y" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("C")) == "C" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("3h")) == "3h" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("6h")) == "6h" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("12h")) == "12h" ));
+    EXPECT((DumpType<dm::Grib2TimeDurationUnit>::dump(ParseType<dm::Grib2TimeDurationUnit>::parse("s")) == "s" ));
+
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Minute)) == Grib2TimeDurationUnit::Minute));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Hour)) == Grib2TimeDurationUnit::Hour));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Day)) == Grib2TimeDurationUnit::Day));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Month)) == Grib2TimeDurationUnit::Month));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Year)) == Grib2TimeDurationUnit::Year));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Years10)) == Grib2TimeDurationUnit::Years10));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Years30)) == Grib2TimeDurationUnit::Years30));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Years100)) == Grib2TimeDurationUnit::Years100));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Hours3)) == Grib2TimeDurationUnit::Hours3));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Hours6)) == Grib2TimeDurationUnit::Hours6));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Hours12)) == Grib2TimeDurationUnit::Hours12));
+    EXPECT((ParseType<dm::Grib2TimeDurationUnit>::parse(DumpType<dm::Grib2TimeDurationUnit>::dump(Grib2TimeDurationUnit::Second)) == Grib2TimeDurationUnit::Second));
+    // clang-format on
 }
 
 CASE("Test reading time durationkeys from metadata") {

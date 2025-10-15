@@ -7,9 +7,9 @@ namespace multio::mars2grib {
 
 namespace dm = multio::datamod;
 
-RawOptions convertOptions(Options opts) {
+RawOptions toRawOptions(Options opts) {
     RawOptions ret;
-    ret.cached = opts.cached;
+    ret.enableCache = opts.enableCache;
     return ret;
 };
 
@@ -152,7 +152,7 @@ void GeometryValues::set(const std::string& key, std::reference_wrapper<const st
 }
 
 
-Mars2Grib::Mars2Grib(Options options) : rawApi_{convertOptions(options)} {};
+Mars2Grib::Mars2Grib(Options options) : rawApi_{toRawOptions(options)} {};
 
 
 std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,

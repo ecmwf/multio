@@ -172,6 +172,8 @@ list( APPEND multio_datamod_srcs
     datamod/types/TypeOfStatisticalProcessing.h
     datamod/types/TypeOfProcessedData.cc
     datamod/types/TypeOfProcessedData.h
+    datamod/types/Grib2TimeDurationUnit.cc
+    datamod/types/Grib2TimeDurationUnit.h
     datamod/ContainerInterop.h
     datamod/Mapper.cc
     datamod/Mapper.h

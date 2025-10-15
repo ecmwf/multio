@@ -38,9 +38,14 @@ PreparedEncoder prepareEncoder(const dm::FullMarsRecord& marsKeys, const MultIOM
 
 using PrehashedMarsKeys = util::PrehashedKey<MarsCacheRecord>;
 
+struct EncoderOptions {
+    bool enableCache{true};
+    bool enableReadbackTest{false};
+};
+
 class Encoder {
 public:
-    Encoder(bool cached = true);
+    Encoder(EncoderOptions = EncoderOptions{});
     Encoder(const Encoder&) = default;
     Encoder(Encoder&&) = default;
     Encoder& operator=(const Encoder&) = default;
@@ -65,6 +70,7 @@ private:
                                     const dm::Geometry& geoDict);
 
     using Cache = std::unordered_map<PrehashedMarsKeys, PreparedEncoder>;
+    EncoderOptions opts_;
     std::optional<Cache> cache_{};
 };
 

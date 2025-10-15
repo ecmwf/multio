@@ -31,71 +31,73 @@
 
 namespace multio::test {
 
+namespace {
 namespace dm = multio::datamod;
 
-CASE("Test rules gen matchers") {
-    using namespace multio::mars2grib::rules;
-    using namespace multio::mars2grib::matcher;
-    using namespace multio::mars2grib;
+using namespace multio::mars2grib::rules;
+using namespace multio::mars2grib::matcher;
+using namespace multio::mars2grib;
 
-    static auto ruleSet = exclusiveRuleList(
-        // Branch for grids
-        chainedRuleList(
-            rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),
-            rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}},
-                 Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout&) {
-                     c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(
-                         TimeExtent::PointInTime);
-                     c.product.ensureInit().modify().level.ensureInit().modify().type.set(
-                         dm::TypeOfLevel::HeightAboveGround);
-                 }))),
+static auto ruleSet = exclusiveRuleList(
+    // Branch for grids
+    chainedRuleList(
+        rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),
+        rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}},
+             Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout&) {
+                 c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(TimeExtent::PointInTime);
+                 c.product.ensureInit().modify().level.ensureInit().modify().type.set(
+                     dm::TypeOfLevel::HeightAboveGround);
+             }))),
 
-        // Branch for spherical harmonics
-        chainedRuleList(
-            rule(all(Has{&dm::FullMarsRecord::truncation}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}))),
+    // Branch for spherical harmonics
+    chainedRuleList(
+        rule(all(Has{&dm::FullMarsRecord::truncation}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}))),
 
-        // Branch for abstract level
-        chainedRuleList(rule(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})));
+    // Branch for abstract level
+    chainedRuleList(rule(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})));
+}  // namespace
 
-    {
-        dm::FullMarsRecord mars{};
-        dm::MiscRecord misc{};
-        LegacySectionsConf sections;
-        Grib2Layout layout;
+CASE("Test rules gen matchers [1]") {
+    dm::FullMarsRecord mars{};
+    dm::MiscRecord misc{};
+    LegacySectionsConf sections;
+    Grib2Layout layout;
 
-        // Nothing should match the outer rule, which is allowed to not match
-        EXPECT(ruleSet(mars, misc, sections, layout) != true);
-    }
+    // Nothing should match the outer rule, which is allowed to not match
+    EXPECT(ruleSet(mars, misc, sections, layout) != true);
+};
 
-    {
-        auto md = util::sample_gen::mkMd();
-        md.set("param", 1);
 
-        auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-        dm::MiscRecord misc{};
-        LegacySectionsConf sections;
-        Grib2Layout layout;
+CASE("Test rules gen matchers [2]") {
+    auto md = util::sample_gen::mkMd();
+    md.set("param", 1);
 
-        EXPECT(ruleSet(mars, misc, sections, layout));
-        EXPECT((sections.product.get().level.get().type.get()) == dm::TypeOfLevel::HeightAboveGround);
-        EXPECT(((sections.product.get().pdtCat.get().timeExtent.get()) == TimeExtent::PointInTime));
-        EXPECT((layout.level->typeOfLevel.get() == dm::TypeOfLevel::HeightAboveGround));
-        EXPECT(((layout.pdtCat.timeExtent.get()) == TimeExtent::PointInTime));
-    }
+    auto mars = dm::readRecord<dm::FullMarsRecord>(md);
+    dm::MiscRecord misc{};
+    LegacySectionsConf sections;
+    Grib2Layout layout;
+    
+    EXPECT(ruleSet(mars, misc, sections, layout));
+    
+    EXPECT((sections.product.get().level.get().type.get()) == dm::TypeOfLevel::HeightAboveGround);
+    EXPECT(((sections.product.get().pdtCat.get().timeExtent.get()) == TimeExtent::PointInTime));
+    EXPECT((layout.level->typeOfLevel.get() == dm::TypeOfLevel::HeightAboveGround));
+    EXPECT(((layout.pdtCat.timeExtent.get()) == TimeExtent::PointInTime));
+};
 
-    {
-        auto md = util::sample_gen::mkMd();
-        md.set("param", 42);  // Not included in rule
 
-        auto mars = dm::readRecord<dm::FullMarsRecord>(md);
-        dm::MiscRecord misc{};
-        LegacySectionsConf sections;
-        Grib2Layout layout;
+CASE("Test rules gen matchers [2]") {
+    auto md = util::sample_gen::mkMd();
+    md.set("param", 42);  // Not included in rule
 
-        // First rule matches because grid is given, but then no param matches - the rule is not fully determined and
-        // throws
-        EXPECT_THROWS(ruleSet(mars, misc, sections, layout));
-    }
+    auto mars = dm::readRecord<dm::FullMarsRecord>(md);
+    dm::MiscRecord misc{};
+    LegacySectionsConf sections;
+    Grib2Layout layout;
+
+    // First rule matches because grid is given, but then no param matches - the rule is not fully determined and
+    // throws
+    EXPECT_THROWS(ruleSet(mars, misc, sections, layout));
 };
 
 

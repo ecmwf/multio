@@ -158,21 +158,21 @@ ecbuild_add_test( TARGET test_multio_ifs_plans
 ecbuild_add_test( TARGET test_multio_ifs_io
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
-                  TEST_REQUIRES multio_get_test_data
+                  TEST_REQUIRES multio_get_test_data test_multio_ifs_plans
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_subtoc
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
-                  TEST_REQUIRES multio_get_test_data
+                  TEST_REQUIRES multio_get_test_data test_multio_ifs_io
                   ARGS ${_test_data} --test-subtoc
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_legacy_interface
                   CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
                   COMMAND $<TARGET_FILE:multio-legacy>
-                  TEST_REQUIRES multio_get_test_data
+                  TEST_REQUIRES multio_get_test_data test_multio_subtoc
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
@@ -186,17 +186,21 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
                   ARGS --transport=thread --nbclients=5 --nbservers=3
                   ENVIRONMENT "${_test_environment}" )
 
+ecbuild_add_test( TARGET test_multio_hammer_tcp
+                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
+                  ARGS $<TARGET_FILE:multio-hammer>
+                  TEST_REQUIRES test_multio_hammer_thread 
+                  ENVIRONMENT "${_test_environment}" )
+
 ecbuild_add_test( TARGET      test_multio_hammer_mpi
                   CONDITION   eckit_HAVE_MPI
                   COMMAND     $<TARGET_FILE:multio-hammer>
                   ARGS        --transport=mpi --nbclients=5 --nbservers=3
                   MPI         8
+                  TEST_PROPERTIES RESOURCE_LOCK mpi
+                  TEST_REQUIRES test_multio_hammer_tcp 
                   ENVIRONMENT "${_test_environment}" )
 
-ecbuild_add_test( TARGET test_multio_hammer_tcp
-                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
-                  ARGS $<TARGET_FILE:multio-hammer>
-                  ENVIRONMENT "${_test_environment}" )
 
 list( APPEND _hammer_test_data
   "single-field.grib"
@@ -212,7 +216,6 @@ ecbuild_add_test( ENABLED       OFF
                   COMMAND       $<TARGET_FILE:multio-hammer>
                   TEST_REQUIRES multio_hammer_get_test_data
                   ARGS          ${_hammer_test_data} --transport=none
-                  MPI           1
                   ENVIRONMENT   "${_test_environment}" )
 
 

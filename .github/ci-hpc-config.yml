@@ -31,7 +31,6 @@ intel_mpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -62,7 +61,6 @@ hpcx_openmpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -93,7 +91,6 @@ openmpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -119,6 +116,5 @@ mpi_off:
         - ecmwf/mir@develop
       parallel: 64
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions

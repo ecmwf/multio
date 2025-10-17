@@ -12,8 +12,8 @@
 
 #include <type_traits>
 #include "eckit/config/LocalConfiguration.h"
-#include "metkit/codes/CodesDecoder.h"
 
+#include "metkit/codes/api/CodesAPI.h"
 #include "multio/datamod/core/DataModellingException.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/EntryDumper.h"
@@ -24,7 +24,6 @@
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
 
-#include "multio/util/MioGribHandle.h"
 #include "multio/util/TypeToString.h"
 #include "multio/util/TypeTraits.h"
 
@@ -404,11 +403,11 @@ struct EntryDumper<eckit::LocalConfiguration> {
 
 
 //-----------------------------------------------------------------------------
-// Reading from MioGribHandle
+// Reading from CodesHandle
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryParser<util::MioGribHandle> {
+struct EntryParser<metkit::codes::CodesHandle> {
 
     static void throwRequiredKeyDefinedButMissing(const std::string& keyInfo) {
         std::ostringstream oss;
@@ -430,7 +429,7 @@ struct EntryParser<util::MioGribHandle> {
 
 
     template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
-    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const util::MioGribHandle& handle,
+    static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const metkit::codes::CodesHandle& handle,
                                            const ParseOptions&) {
         using TP = typename EntryDef_::ParserDumper;
         using ValueType = typename EntryDef_::ValueType;
@@ -452,88 +451,36 @@ struct EntryParser<util::MioGribHandle> {
             return {};
         }
 
-        // Eccodes types interface is - basic types are string, double, long and bytes. Bytes can be weird to
-        // handle, for now we just decode as string. To check if an array is contained, we ideally need to check the
-        // size...
-        int keyType = 0;
-        ASSERT(codes_get_native_type(handle.raw(), key.c_str(), &keyType) == 0);
-        switch (keyType) {
-            case GRIB_TYPE_LONG: {
-                if constexpr (util::IsVector_v<ValueType>) {
-                    if constexpr (TP::template CanCreateFromValue_v<std::vector<long>>) {
-                        return entryDef.makeEntry(handle.getLongArray(key));
-                    }
-                    else {
-                        throwWrongType(entryDef.keyInfo(), util::typeToString<std::vector<long>>());
-                    }
+        return std::visit(
+            [&](auto&& v) -> EntryType_t<EntryDef_> {
+                if constexpr (TP::template CanCreateFromValue_v<std::decay_t<decltype(v)>>) {
+                    return entryDef.makeEntry(std::move(v));
                 }
                 else {
-                    if constexpr (TP::template CanCreateFromValue_v<long>) {
-                        return entryDef.makeEntry(handle.getLong(key));
-                    }
-                    else {
-                        throwWrongType(entryDef.keyInfo(), util::typeToString<long>());
-                    }
+                    throwWrongType(entryDef.keyInfo(), util::typeToString<std::decay_t<decltype(v)>>());
                 }
-            }
-            case GRIB_TYPE_DOUBLE: {
-                if constexpr (util::IsVector_v<ValueType>) {
-                    if constexpr (TP::template CanCreateFromValue_v<std::vector<double>>) {
-                        return entryDef.makeEntry(handle.getDoubleArray(key));
-                    }
-                    else {
-                        throwWrongType(entryDef.keyInfo(), util::typeToString<std::vector<double>>());
-                    }
-                }
-                else {
-                    if constexpr (TP::template CanCreateFromValue_v<double>) {
-                        return entryDef.makeEntry(handle.getDouble(key));
-                    }
-                    else {
-                        throwWrongType(entryDef.keyInfo(), util::typeToString<double>());
-                    }
-                }
-            }
-            case GRIB_TYPE_BYTES:
-            case GRIB_TYPE_STRING: {
-                // TODO pgeier add support for string vectors?
-                if constexpr (TP::template CanCreateFromValue_v<std::string>) {
-                    return entryDef.makeEntry(handle.getString(key));
-                }
-                else if constexpr (std::is_integral_v<ValueType> && TP::template CanCreateFromValue_v<long>) {
-                    return entryDef.makeEntry(handle.getLong(key));
-                }
-                else if constexpr (std::is_floating_point_v<ValueType> && TP::template CanCreateFromValue_v<double>) {
-                    return entryDef.makeEntry(handle.getDouble(key));
-                }
-                else {
-                    throwWrongType(entryDef.keyInfo(), util::typeToString<std::string>());
-                }
-            }
-            default: {
-                throwWrongType(entryDef.keyInfo(), std::to_string(keyType));
-            }
-        }
-        return {};
+                return {};
+            },
+            handle.get(key));
     }
 
     template <typename EntryDef_, typename Conf, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
-    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, const util::MioGribHandle& gh,
+    static EntryType_t<EntryDef_> getByValue(const EntryDef_& entryDef, const metkit::codes::CodesHandle& gh,
                                              const ParseOptions& opts) {
-        return getByValueThroughRef<util::MioGribHandle>(entryDef, gh, opts);
+        return getByValueThroughRef<metkit::codes::CodesHandle>(entryDef, gh, opts);
     }
 };
 
 
 //-----------------------------------------------------------------------------
-// Writing to MioGribHandle
+// Writing to CodeHandle
 //-----------------------------------------------------------------------------
 
 template <>
-struct EntryDumper<util::MioGribHandle> {
+struct EntryDumper<metkit::codes::CodesHandle> {
     template <typename EntryDef_, typename Entry_, typename GH,
               std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>
-                                && std::is_base_of_v<util::MioGribHandle, std::decay_t<GH>>),
+                                && std::is_base_of_v<metkit::codes::CodesHandle, std::decay_t<GH>>),
                                bool>
               = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, GH& handle, const DumpOptions& opts) {
@@ -554,8 +501,8 @@ struct EntryDumper<util::MioGribHandle> {
                     throw DataModellingException(oss.str(), Here());
                 }
                 // The contained value might be or mapped to a variant, that's why we visit
-                TP::template dumpToAndVisit<util::MioGribHandle>(std::forward<decltype(v)>(v), [&](auto&& vi) {
-                    handle.setValue(key, std::forward<decltype(vi)>(vi));
+                TP::template dumpToAndVisit<metkit::codes::CodesHandle>(std::forward<decltype(v)>(v), [&](auto&& vi) {
+                    handle.set(key, std::forward<decltype(vi)>(vi));
                 });
             }});
     }

@@ -39,8 +39,6 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
-    util/MioGribHandle.h
-    util/MioGribHandle.cc
     util/Timing.h
     util/PrehashedKey.h
     util/TypeTraits.h

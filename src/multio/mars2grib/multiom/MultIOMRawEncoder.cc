@@ -9,12 +9,22 @@
  */
 
 #include "multio/mars2grib/multiom/MultIOMRawEncoder.h"
-#include "eckit/config/LocalConfiguration.h"
 #include "multio/mars2grib/Mars2GribException.h"
+
+#include "eckit/config/LocalConfiguration.h"
+
+#include "metkit/codes/api/CodesAPI.h"
 
 #include <iostream>
 
-#include "multio/util/MioGribHandle.h"
+#include <eccodes.h>
+
+namespace std {
+template <>
+struct default_delete<codes_handle> {
+    void operator()(codes_handle* h) { ::codes_handle_delete(h); }
+};
+}  // namespace std
 
 namespace multio::mars2grib {
 
@@ -39,36 +49,47 @@ void* MultIOMRawEncoder::get() const {
 }
 
 
-std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::allocateAndPreset(std::unique_ptr<util::MioGribHandle> workSample,
-                                                                const MultIOMDict& mars, const MultIOMDict& par,
-                                                                const MultIOMDict& geo) {
-    if (multio_grib2_raw_encoder_prepare(encoder_.get(), mars.get(), par.get(), geo.get(), workSample->raw()) != 0) {
+std::unique_ptr<metkit::codes::CodesHandle> MultIOMRawEncoder::allocateAndPreset(
+    std::unique_ptr<metkit::codes::CodesHandle> workSample, const MultIOMDict& mars, const MultIOMDict& par,
+    const MultIOMDict& geo) {
+
+    std::unique_ptr<codes_handle> h{reinterpret_cast<codes_handle*>(workSample->release())};
+    if (multio_grib2_raw_encoder_prepare(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
         throw Mars2GribException(std::string("Can not prepare grib sample"));
     }
 
-    workSample = workSample->duplicate();  // Safe reload to avoid eccodes setting artifacts....
-    if (multio_grib2_raw_encoder_allocate(encoder_.get(), mars.get(), par.get(), geo.get(), workSample->raw()) != 0) {
+    h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
+    if (multio_grib2_raw_encoder_allocate(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
         throw Mars2GribException(std::string("Can not allocate grib sample"));
     }
 
-    workSample = workSample->duplicate();  // Safe reload to avoid eccodes setting artifacts....
-    if (multio_grib2_raw_encoder_preset(encoder_.get(), mars.get(), par.get(), geo.get(), workSample->raw()) != 0) {
+    h = std::unique_ptr<codes_handle>(reinterpret_cast<codes_handle*>(codes_handle_clone(h.get())));
+    if (multio_grib2_raw_encoder_preset(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
         throw Mars2GribException(std::string("Can not preset grib sample"));
     }
 
-    workSample = workSample->duplicate();  // Safe reload to force eccodes freeing memory
-    return workSample;
+    const void* data;
+    size_t size;
+    codes_get_message(h.get(), &data, &size);
+    return metkit::codes::codesHandleFromMessageCopy(
+        metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(data), size));
 };
 
 // Applies runtime changes on a prepared samel
 // TODO pgeier: Should not take geometry  - will be changed after C++ migration
-std::unique_ptr<util::MioGribHandle> MultIOMRawEncoder::runtime(std::unique_ptr<util::MioGribHandle> workSample,
-                                                                const MultIOMDict& mars, const MultIOMDict& par,
-                                                                const MultIOMDict& geo) {
-    if (multio_grib2_raw_encoder_runtime(encoder_.get(), mars.get(), par.get(), geo.get(), workSample->raw()) != 0) {
+std::unique_ptr<metkit::codes::CodesHandle> MultIOMRawEncoder::runtime(
+    std::unique_ptr<metkit::codes::CodesHandle> workSample, const MultIOMDict& mars, const MultIOMDict& par,
+    const MultIOMDict& geo) {
+    std::unique_ptr<codes_handle> h{reinterpret_cast<codes_handle*>(workSample->release())};
+    if (multio_grib2_raw_encoder_runtime(encoder_.get(), mars.get(), par.get(), geo.get(), h.get()) != 0) {
         throw Mars2GribException(std::string("Can not set runtime data on grib sample"));
     }
-    return workSample;
+    
+    const void* data;
+    size_t size;
+    codes_get_message(h.get(), &data, &size);
+    return metkit::codes::codesHandleFromMessageCopy(
+        metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(data), size));
 }
 
 

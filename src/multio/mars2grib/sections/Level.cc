@@ -304,7 +304,7 @@ DynSectionSetter::Config LevelSetter::sectionInfo() const {
     return ret;
 };
 
-void LevelSetter::allocate(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::allocate(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                            const dm::Geometry& geo) const {
     // set type of level here....
     auto vert = verticalForTypeOfLevel(conf_, mars, misc);
@@ -313,28 +313,28 @@ void LevelSetter::allocate(util::MioGribHandle& h, const dm::FullMarsRecord& mar
     }
 }
 
-void LevelSetter::preset(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::preset(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                          const dm::Geometry& geo) const {
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::runtime(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::runtime(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                           const dm::Geometry& geo) const {
     // TODO this should be only relevant for ML fields (because we don't cache them on level...)
     setLevels(h, mars, misc, geo);
 }
 
-void LevelSetter::setLevels(util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::setLevels(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                             const dm::Geometry& geo) const {
     auto optLevel = levelForTypeOfLevel(conf_, mars, misc);
     // TODO make the LevelDef own the typeOfLevel after migration
     dm::dumpEntry(dm::TypeOfLevelEntry, conf_.type, h);
     if (optLevel) {
-        h.setValue("level", *optLevel);
+        h.set("level", *optLevel);
     }
 }
 
-void LevelSetter::check(const util::MioGribHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+void LevelSetter::check(const metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
                         const dm::Geometry& geo) const {
     auto inferedHoriz = horizontalForTypeOfLevel(conf_, mars, misc);
     auto horiz = dm::readRecord<dm::HorizontalGribKeys>(h);

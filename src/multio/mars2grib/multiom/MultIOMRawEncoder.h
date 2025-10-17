@@ -10,10 +10,12 @@
 
 #pragma once
 
-#include "eckit/config/LocalConfiguration.h"
-#include "multio/mars2grib/multiom/MultIOMDict.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/util/MioGribHandle.h"
+#include "multio/mars2grib/multiom/MultIOMDict.h"
+
+#include "eckit/config/LocalConfiguration.h"
+
+#include "metkit/codes/api/CodesAPI.h"
 
 #include <memory>
 
@@ -61,13 +63,16 @@ struct MultIOMRawEncoder {
 
     // Calls prepare, allocate and preset on a sample
     // TODO: Should not take parametrization - will be changed after C++ migration
-    std::unique_ptr<util::MioGribHandle> allocateAndPreset(std::unique_ptr<util::MioGribHandle>, const MultIOMDict& mars,
-                                                 const MultIOMDict& par, const MultIOMDict& geo);
+    std::unique_ptr<metkit::codes::CodesHandle> extracted(const void*& data, size_t& size);
+    std::unique_ptr<metkit::codes::CodesHandle> allocateAndPreset(std::unique_ptr<metkit::codes::CodesHandle>,
+                                                                  const MultIOMDict& mars, const MultIOMDict& par,
+                                                                  const MultIOMDict& geo);
 
     // Applies runtime changes on a prepared samel
     // TODO: Should not take geometry  - will be changed after C++ migration
-    std::unique_ptr<util::MioGribHandle> runtime(std::unique_ptr<util::MioGribHandle>, const MultIOMDict& mars,
-                                                 const MultIOMDict& par, const MultIOMDict& geo);
+    std::unique_ptr<metkit::codes::CodesHandle> runtime(std::unique_ptr<metkit::codes::CodesHandle>,
+                                                        const MultIOMDict& mars, const MultIOMDict& par,
+                                                        const MultIOMDict& geo);
 
     // std::unique_ptr<codes_handle> encode(MultIOMDict& mars, MultIOMDict& par, const double* data, std::size_t len);
     // std::unique_ptr<codes_handle> encode(MultIOMDict& mars, MultIOMDict& par, const float* data, std::size_t len);

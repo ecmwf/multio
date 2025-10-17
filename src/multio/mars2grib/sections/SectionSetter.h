@@ -11,7 +11,7 @@
 #pragma once
 
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/util/MioGribHandle.h"
+#include "metkit/codes/api/CodesAPI.h"
 
 #include <functional>
 #include <memory>
@@ -50,21 +50,21 @@ struct DynSectionSetter {
 
 
     // Default implementation is to do nothing
-    virtual void prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    virtual void prepare(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                          const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    virtual void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                           const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    virtual void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                         const dm::Geometry&) const;
     // Default implementation is to do nothing
-    virtual void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    virtual void runtime(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                          const dm::Geometry&) const;
 
 
     // Implement a check method that is throwing on inconsistencies
-    virtual void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    virtual void check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                        const dm::Geometry&) const;
 
     // // Implement a check method that is adding dynamic key information to give feed back on requirements
@@ -79,16 +79,16 @@ public:
     // Registers a new section
     void add(std::unique_ptr<DynSectionSetter>);
 
-    void prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void prepare(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const;
-    void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                   const dm::Geometry&) const;
-    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                 const dm::Geometry&) const;
-    void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void runtime(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const;
 
-    void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                const dm::Geometry&) const;
 
     // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const;

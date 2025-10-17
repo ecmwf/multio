@@ -149,61 +149,64 @@ void GeometryValues::set(const std::string& key, std::reference_wrapper<const st
 Mars2Grib::Mars2Grib(Options options) : rawApi_{convertOptions(options)} {};
 
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const GeometryValues& geo, const double* values, size_t len) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const GeometryValues& geo, const double* values,
+                                                              size_t len) {
     auto handle = rawApi_.getHandle(mars.values_, misc.values_, geo.values_);
-    handle->setDataValues(values, len);
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+    handle->set("values", metkit::codes::Span<const double>(values, len));
+    return handle;
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const GeometryValues& geo, const float* values, size_t len) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const GeometryValues& geo, const float* values,
+                                                              size_t len) {
     auto handle = rawApi_.getHandle(mars.values_, misc.values_, geo.values_);
-    handle->setDataValues(values, len);
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+    handle->set("values", metkit::codes::Span<const float>(values, len));
+    return handle;
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const GeometryValues& geo, const std::vector<double>& values) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const GeometryValues& geo,
+                                                              const std::vector<double>& values) {
     return encode(mars, misc, geo, values.data(), values.size());
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const GeometryValues& geo, const std::vector<float>& values) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const GeometryValues& geo,
+                                                              const std::vector<float>& values) {
     return encode(mars, misc, geo, values.data(), values.size());
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const double* values, size_t len) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const double* values, size_t len) {
     auto handle = rawApi_.getHandle(mars.values_, misc.values_, dm::makeUnscopedGeometry(mars.values_));
-    handle->setDataValues(values, len);
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+    handle->set("values", metkit::codes::Span<const double>(values, len));
+    return handle;
 }
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const float* values, size_t len) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const float* values, size_t len) {
     auto handle = rawApi_.getHandle(mars.values_, misc.values_, dm::makeUnscopedGeometry(mars.values_));
-    handle->setDataValues(values, len);
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+    handle->set("values", metkit::codes::Span<const float>(values, len));
+    return handle;
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const std::vector<double>& values) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const std::vector<double>& values) {
     return encode(mars, misc, values.data(), values.size());
 }
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const std::vector<float>& values) {
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const std::vector<float>& values) {
     return encode(mars, misc, values.data(), values.size());
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                                const GeometryValues& geo) {
-    auto handle = rawApi_.getHandle(mars.values_, misc.values_, geo.values_);
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                              const GeometryValues& geo) {
+    return rawApi_.getHandle(mars.values_, misc.values_, geo.values_);
 }
 
-std::unique_ptr<codes_handle> Mars2Grib::encode(const MarsIdentifiers& mars, const AdditionalValues& misc) {
-    auto handle = rawApi_.getHandle(mars.values_, misc.values_, dm::makeUnscopedGeometry(mars.values_));
-    return std::unique_ptr<codes_handle>(codes_handle_clone(handle->raw()));
+std::unique_ptr<metkit::codes::CodesHandle> Mars2Grib::encode(const MarsIdentifiers& mars,
+                                                              const AdditionalValues& misc) {
+    return rawApi_.getHandle(mars.values_, misc.values_, dm::makeUnscopedGeometry(mars.values_));
 }
 
 }  // namespace multio::mars2grib

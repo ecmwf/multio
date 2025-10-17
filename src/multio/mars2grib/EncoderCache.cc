@@ -17,7 +17,6 @@
 #include "multio/mars2grib/Mars2GribException.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
-#include "multio/util/MioGribHandle.h"
 
 #include "multio/util/Print.h"
 
@@ -29,28 +28,45 @@ namespace dm = multio::datamod;
 
 namespace {
 
-std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGribHandle> sample,
-                                                   const dm::FullMarsRecord& marsKeys) {
+std::unique_ptr<metkit::codes::CodesHandle> defaultSample() {
+    // Basically GRIB2.tmpl from eccodes but without local section
+    static const std::vector<unsigned char> data_{
+        {0x47, 0x52, 0x49, 0x42, 0xff, 0xff, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xb3, 0x00, 0x00,
+         0x00, 0x15, 0x01, 0x00, 0x62, 0x00, 0x00, 0x04, 0x00, 0x01, 0x07, 0xd7, 0x03, 0x17, 0x0c, 0x00, 0x00, 0x00,
+         0x02, 0x00, 0x00, 0x00, 0x48, 0x03, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x28, 0x06, 0xff, 0xff,
+         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x80, 0x00,
+         0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0x05, 0x3c, 0xb1, 0xf7, 0x00, 0x00, 0x00,
+         0x00, 0x20, 0x85, 0x3c, 0xb1, 0xf7, 0x15, 0x4a, 0x3f, 0xac, 0x00, 0x2a, 0xec, 0x48, 0x00, 0x00, 0x00, 0x20,
+         0x00, 0x00, 0x00, 0x00, 0x22, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x80, 0x00, 0x00, 0x00,
+         0x01, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x01, 0x86, 0xa0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00,
+         0x00, 0x00, 0x15, 0x05, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+         0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x06, 0xff, 0x00, 0x00, 0x00, 0x05, 0x07, 0x37, 0x37, 0x37, 0x37}};
+
+    return metkit::codes::codesHandleFromMessage(data_);
+}
+
+std::unique_ptr<metkit::codes::CodesHandle> prepareSample(std::unique_ptr<metkit::codes::CodesHandle> sample,
+                                                          const dm::FullMarsRecord& marsKeys) {
 
     switch (marsKeys.repres.get()) {
         case dm::Repres::SH: {
-            sample->setValue("numberOfDataPoints", 6);
-            sample->setValue("numberOfValues", 6);
-            sample->setValue("bitsPerValue", 16);
-            sample->setValue("typeOfFirstFixedSurface", 105);
-            sample->setValue("scaleFactorOfFirstFixedSurface", 0);
-            sample->setValue("scaledValueOfFirstFixedSurface", 0);
-            sample->setValue("gridDefinitionTemplateNumber", 50);
-            sample->setValue("J", 1);
-            sample->setValue("K", 1);
-            sample->setValue("M", 1);
-            sample->setValue("spectralType", 1);
-            sample->setValue("spectralMode", 1);
-            sample->setValue("dataRepresentationTemplateNumber", 51);
+            sample->set("numberOfDataPoints", 6);
+            sample->set("numberOfValues", 6);
+            sample->set("bitsPerValue", 16);
+            sample->set("typeOfFirstFixedSurface", 105);
+            sample->set("scaleFactorOfFirstFixedSurface", 0);
+            sample->set("scaledValueOfFirstFixedSurface", 0);
+            sample->set("gridDefinitionTemplateNumber", 50);
+            sample->set("J", 1);
+            sample->set("K", 1);
+            sample->set("M", 1);
+            sample->set("spectralType", 1);
+            sample->set("spectralMode", 1);
+            sample->set("dataRepresentationTemplateNumber", 51);
             return sample;
         }
         case dm::Repres::GG: {
-            // sample->setValue("gridType", std::string("reduced_gg"));
+            // sample->set("gridType", std::string("reduced_gg"));
             return sample;
         }
         default: {
@@ -81,7 +97,7 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 
     MultIOMRawEncoder encoder{exportedConf};
 
-    auto sample = util::MioGribHandle::makeDefault();
+    auto sample = defaultSample();
 
     // Prepare sample
     sample = prepareSample(std::move(sample), marsKeys);
@@ -95,16 +111,16 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 }
 
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
-                                                             const MultIOMDict& mars, const MultIOMDict& misc,
-                                                             const MultIOMDict& geo) {
+std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
+                                                                    const MultIOMDict& mars, const MultIOMDict& misc,
+                                                                    const MultIOMDict& geo) {
     CacheEntry& entry = makeOrGetEntry(marsKeys, mars, misc, geo);
-    return entry.encoder.runtime(entry.preparedSample->duplicate(), mars, misc, geo);
+    return entry.encoder.runtime(entry.preparedSample->clone(), mars, misc, geo);
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
-                                                             const dm::MiscRecord& miscKeys,
-                                                             const dm::Geometry& geoKeys) {
+std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
+                                                                    const dm::MiscRecord& miscKeys,
+                                                                    const dm::Geometry& geoKeys) {
     try {
         MultIOMDict mars{MultIOMDictKind::MARS};
         MultIOMDict misc{MultIOMDictKind::Parametrization};
@@ -134,14 +150,14 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsR
 
         // TODO pgeier fix that needs to be expressed in GeoGG once MULTIOM is gone
         if (marsKeys.repres.get() == dm::Repres::GG) {
-            ret->setValue("shapeOfTheEarth", 6);
+            ret->set("shapeOfTheEarth", 6);
         }
         // TODO pgeier this is a fix that needs to be moved to the section setters
         if (miscKeys.bitmapPresent.isSet()) {
-            ret->setValue("bitmapPresent", miscKeys.bitmapPresent.get());
+            ret->set("bitmapPresent", miscKeys.bitmapPresent.get());
         }
         if (miscKeys.missingValue.isSet()) {
-            ret->setValue("missingValue", miscKeys.missingValue.get());
+            ret->set("missingValue", miscKeys.missingValue.get());
         }
         return ret;
     }
@@ -162,8 +178,8 @@ std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsR
     }
 }
 
-std::unique_ptr<util::MioGribHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
-                                                             const dm::MiscRecord& miscKeys) {
+std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
+                                                                    const dm::MiscRecord& miscKeys) {
     auto geo = makeUnscopedGeometry(marsKeys);
     return getHandle(marsKeys, miscKeys, geo);
 }

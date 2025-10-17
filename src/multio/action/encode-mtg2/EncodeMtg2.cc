@@ -26,7 +26,6 @@
 #include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
-#include "multio/util/MioGribHandle.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Print.h"
 
@@ -106,7 +105,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
 
-        std::unique_ptr<util::MioGribHandle> sample = mars2grib_.getHandle(marsRec, miscRec, geo);
+        std::unique_ptr<metkit::codes::CodesHandle> sample = mars2grib_.getHandle(marsRec, miscRec, geo);
 
         if (msg.payload().size() == 0) {
             throw EncodeMtg2Exception("Message has empty payload - no values to encode", Here());
@@ -126,18 +125,18 @@ void EncodeMtg2::executeImpl(Message msg) {
                 std::transform(values, values + size, values,
                                [&](const Precision& value) -> Precision { return value * scaleFactor; });
 
-                sample->setDataValues(values, size);
+                sample->set("values", metkit::codes::Span<const Precision>(values, size));
             }
             else {
                 // No scaling
                 auto values = static_cast<const Precision*>(msg.payload().data());
-                sample->setDataValues(values, size);
+                sample->set("values", metkit::codes::Span<const Precision>(values, size));
             }
 
             // The +32 is related to bug
             // TODO(pgeier) Track bug ECC-2130: https://jira.ecmwf.int/browse/ECC-2130
-            eckit::Buffer buf{sample->length() + 32};
-            sample->write(buf);
+            eckit::Buffer buf{sample->messageSize() + 32};
+            sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());
 
             // TODO(pgeier) write mapped metadata
             return Message{Message::Header{Message::Tag::Field, Peer{msg.source()}, Peer{msg.destination()},

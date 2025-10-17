@@ -56,7 +56,8 @@ const std::map<const std::string, const std::int64_t> ops_to_code{
     {"instant", 0000}, {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
 const std::map<const std::string, const std::int64_t> type_of_statistical_processing{
-    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"difference", 4}, {"stddev", 6}, {"inverse-difference", 8}};
+    {"average", 0},    {"accumulate", 1}, {"maximum", 2},           {"minimum", 3},
+    {"difference", 4}, {"stddev", 6},     {"inverse-difference", 8}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -242,8 +243,8 @@ std::string getUnstructuredGridType(const eckit::LocalConfiguration& config) {
 
 }  // namespace
 
-GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
-    template_{handle}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {}
+GribEncoder::GribEncoder(std::unique_ptr<metkit::codes::CodesHandle> handle, const eckit::LocalConfiguration& config) :
+    template_{std::move(handle)}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {}
 
 struct QueriedMarsKeys {
     std::optional<std::string> type{};
@@ -362,7 +363,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         }
     }
 
-    const auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, dm::legacy::ProductionStatusOfProcessedData)();
+    const auto productionStatusOfProcessedData
+        = lookUp<std::int64_t>(md, dm::legacy::ProductionStatusOfProcessedData)();
     if (productionStatusOfProcessedData) {
         g.setValue(dm::legacy::ProductionStatusOfProcessedData, *productionStatusOfProcessedData);
     }
@@ -370,7 +372,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     ret.paramId = firstOf(
         lookUp<std::int64_t>(md, dm::legacy::ParamId),
         lookUpTranslate<std::int64_t>(md, dm::legacy::Param));  // param might be a string, separated by . for GRIB1.
-                                                               // String to std::int64_t convertion should get it right
+                                                                // String to std::int64_t convertion should get it right
     if (ret.paramId) {
         g.setValue(dm::legacy::ParamId, *ret.paramId);
     }
@@ -406,7 +408,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                     g.setValue("dataset", *dataset);
 
                     if (*dataset == "climate-dt") {
-                        withFirstOf(valueSetter(g, dm::legacy::Activity), lookUp<std::string>(md, dm::legacy::Activity));
+                        withFirstOf(valueSetter(g, dm::legacy::Activity),
+                                    lookUp<std::string>(md, dm::legacy::Activity));
                         withFirstOf(valueSetter(g, dm::legacy::Experiment),
                                     lookUp<std::string>(md, dm::legacy::Experiment));
                         withFirstOf(valueSetter(g, dm::legacy::Generation),
@@ -451,9 +454,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 
     withFirstOf(valueSetter(g, dm::legacy::Expver), lookUp<std::string>(md, dm::legacy::Expver),
                 lookUp<std::string>(md, dm::legacy::ExperimentVersionNumber));
-    withFirstOf(valueSetter(g, dm::legacy::PerturbationNumber), lookUp<std::int64_t>(md, dm::legacy::PerturbationNumber),
-                lookUp<std::int64_t>(md, dm::legacy::EnsembleMember),
-                lookUp<std::int64_t>(md, dm::legacy::EnsembleMemberKC));
+    withFirstOf(
+        valueSetter(g, dm::legacy::PerturbationNumber), lookUp<std::int64_t>(md, dm::legacy::PerturbationNumber),
+        lookUp<std::int64_t>(md, dm::legacy::EnsembleMember), lookUp<std::int64_t>(md, dm::legacy::EnsembleMemberKC));
     withFirstOf(valueSetter(g, dm::legacy::NumberOfForecastsInEnsemble),
                 lookUp<std::int64_t>(md, dm::legacy::NumberOfForecastsInEnsemble),
                 lookUp<std::int64_t>(md, dm::legacy::EnsembleSize), lookUp<std::int64_t>(md, dm::legacy::EnsembleSize),
@@ -475,7 +478,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "climateDateTo"), lookUp<std::int64_t>(md, "climateDateTo"));
 
     withFirstOf(valueSetter(g, dm::legacy::ComponentIndex), lookUp<std::int64_t>(md, dm::legacy::ComponentIndex));
-    withFirstOf(valueSetter(g, dm::legacy::NumberOfComponents), lookUp<std::int64_t>(md, dm::legacy::NumberOfComponents));
+    withFirstOf(valueSetter(g, dm::legacy::NumberOfComponents),
+                lookUp<std::int64_t>(md, dm::legacy::NumberOfComponents));
     withFirstOf(valueSetter(g, dm::legacy::ModelErrorType), lookUp<std::int64_t>(md, dm::legacy::ModelErrorType));
     withFirstOf(valueSetter(g, dm::legacy::IterationNumber), lookUp<std::int64_t>(md, dm::legacy::IterationNumber));
     withFirstOf(valueSetter(g, dm::legacy::TotalNumberOfIterations),
@@ -489,7 +493,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     // Additional parameters passed through for spherical harmonics
     if (gridType) {
         if (*gridType == "sh") {
-            withFirstOf(valueSetter(g, dm::legacy::ComplexPacking), lookUp<std::int64_t>(md, dm::legacy::ComplexPacking));
+            withFirstOf(valueSetter(g, dm::legacy::ComplexPacking),
+                        lookUp<std::int64_t>(md, dm::legacy::ComplexPacking));
             withFirstOf(valueSetter(g, dm::legacy::PentagonalResolutionParameterJ),
                         lookUp<std::int64_t>(md, dm::legacy::PentagonalResolutionParameterJ),
                         lookUp<std::int64_t>(md, dm::legacy::J));
@@ -523,8 +528,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             std::optional<double> iDirectionIncrementInDegrees;
             std::optional<double> jDirectionIncrementInDegrees;
             if ((ni = lookUp<std::int64_t>(md, dm::legacy::Ni)()) && (nj = lookUp<std::int64_t>(md, dm::legacy::Nj)())
-                && (north = lookUp<double>(md, dm::legacy::North)()) && (south = lookUp<double>(md, dm::legacy::South)())
-                && (west = lookUp<double>(md, dm::legacy::West)()) && (east = lookUp<double>(md, dm::legacy::East)())
+                && (north = lookUp<double>(md, dm::legacy::North)())
+                && (south = lookUp<double>(md, dm::legacy::South)()) && (west = lookUp<double>(md, dm::legacy::West)())
+                && (east = lookUp<double>(md, dm::legacy::East)())
                 && (westEastInc = lookUp<double>(md, dm::legacy::WestEastIncrement)())
                 && (southNorthInc = lookUp<double>(md, dm::legacy::SouthNorthIncrement)())) {
                 std::int64_t scale = 0;
@@ -586,7 +592,13 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
                     [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
-                        g.setValue(kv.first, vec);
+                        if constexpr (std::is_same_v<std::decay_t<decltype(vec)>, std::vector<bool>>) {
+                            throw eckit::UserError(
+                                "Writing vector<bool> to an eccodes handle is currently not supported", Here());
+                        }
+                        else {
+                            g.setValue(kv.first, vec);
+                        }
                     },
                     [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
                         g.setValue(kv.first, v);
@@ -679,13 +691,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
     auto refDateTime = util::wrapDateTime(
         {util::toDateInts(std::get<0>(refDateTimeTup)), util::toTimeInts(std::get<1>(refDateTimeTup))});
-    g.setValue("year", refDateTime.date.year);
-    g.setValue("month", refDateTime.date.month);
-    g.setValue("day", refDateTime.date.day);
+    g.trySetValue("year", refDateTime.date.year);
+    g.trySetValue("month", refDateTime.date.month);
+    g.trySetValue("day", refDateTime.date.day);
 
-    g.setValue("hour", refDateTime.time.hour);
-    g.setValue("minute", refDateTime.time.minute);
-    g.setValue("second", refDateTime.time.second);
+    g.trySetValue("hour", refDateTime.time.hour);
+    g.trySetValue("minute", refDateTime.time.minute);
+    g.trySetValue("second", refDateTime.time.second);
 
     auto currentDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(dm::legacy::CurrentDate)),
                                                util::toTimeInts(md.get<std::int64_t>(dm::legacy::CurrentTime))});
@@ -939,11 +951,11 @@ void GribEncoder::setOceanCoordMetadata(message::Metadata& md) {
 
 
 void GribEncoder::initEncoder() {
-    encoder_ = template_.duplicate();
+    encoder_ = template_->clone();
 };
 
 bool GribEncoder::hasKey(const char* key) {
-    return encoder_->hasKey(key);
+    return encoder_->has(key);
 };
 
 void GribEncoder::setMissing(const std::string& key) {
@@ -997,8 +1009,8 @@ message::Message GribEncoder::setFieldValues(message::Message&& msg) {
         setValue("offsetValuesBy", *offsetByValue);
     }
 
-    eckit::Buffer buf{this->encoder_->length()};
-    encoder_->write(buf);
+    eckit::Buffer buf{this->encoder_->messageSize()};
+    encoder_->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());
 
     return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                    std::move(buf)};

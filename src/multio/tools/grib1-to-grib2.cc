@@ -29,7 +29,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "metkit/codes/CodesContent.h"
-#include "metkit/codes/CodesSplitter.h"
+#include "metkit/codes/api/CodesAPI.h"
 #include "multio/LibMultio.h"
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/core/Record.h"
@@ -39,7 +39,6 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
-#include "multio/util/MioGribHandle.h"
 #include "multio/util/Print.h"
 
 namespace multio::grib1ToGrib2 {
@@ -67,24 +66,25 @@ public:
 // For valid grib1 to grib2 to, there are unfortunately some mars keys defined although they have no meaning
 // For this case, we have to rely on the mars namespace iterator and only query keys that are listed up in the returned
 // set.
-KeySet iterateMarsNamespace(const eckit::message::Message& msg) {
+KeySet iterateMarsNamespace(const metkit::codes::CodesHandle& handle) {
     KeySet ks;
-    KeySetSetter setter{ks};
-    msg.getMetadata(setter, {eckit::message::ValueRepresentation::Native, std::optional<std::string>{"mars"}});
+    for (const auto& k : handle.keys(metkit::codes::namespaces::mars)) {
+        ks.add(k.name());
+    }
     return ks;
 }
 
 
 namespace extract {
 
-using GridTypeFunction = std::function<dm::Geometry(util::MioGribHandle&, dm::FullMarsRecord&, dm::MiscRecord&)>;
+using GridTypeFunction = std::function<dm::Geometry(metkit::codes::CodesHandle&, dm::FullMarsRecord&, dm::MiscRecord&)>;
 
-dm::Geometry handleReducedGG(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleReducedGG(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     mars.repres.set(dm::Repres::GG);
     return dm::readRecord<dm::GeoGGRecord>(h);
 }
 
-dm::Geometry handleReducedGGAtlas(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleReducedGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     dm::GeoGGRecord geoGG;
     mars.repres.set(dm::Repres::GG);
     mars.grid.set(h.getString("gridName"));
@@ -92,13 +92,13 @@ dm::Geometry handleReducedGGAtlas(util::MioGribHandle& h, dm::FullMarsRecord& ma
     return geoGG;
 }
 
-dm::Geometry handleSH(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleSH(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     // TODO pgeier implement with details
     mars.repres.set(dm::Repres::SH);
     return dm::readRecord<dm::GeoSHRecord>(h);
 }
 
-dm::Geometry handleLL(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleLL(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     mars.repres.set(dm::Repres::LL);
     mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
     dm::GeoLLRecord res;
@@ -115,7 +115,7 @@ dm::Geometry handleLL(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::Misc
     return res;
 }
 
-dm::Geometry handleRegularLLAtlas(util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+dm::Geometry handleRegularLLAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
     dm::GeoLLRecord geoLL;
     mars.repres.set(dm::Repres::LL);
     mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
@@ -125,7 +125,7 @@ dm::Geometry handleRegularLLAtlas(util::MioGribHandle& h, dm::FullMarsRecord& ma
 }
 
 // TODO(pgeier) Add option to the tool to specific if geometry should be infered by atlas
-dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
+dm::Geometry handleGridType(metkit::codes::CodesHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
                             dm::MiscRecord& misc) {
     // TODO(pgeier) add HealPpx
     const static std::unordered_map<std::string, GridTypeFunction> gridMap{
@@ -142,7 +142,7 @@ dm::Geometry handleGridType(util::MioGribHandle& h, const std::string& gridType,
     return gridTypeFunc->second(h, mars, misc);
 };
 
-void handlePackingType(util::MioGribHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
+void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
         {"grid_simple", "simple"},
         {"grid_complex", "complex"},
@@ -157,7 +157,7 @@ void handlePackingType(util::MioGribHandle& h, const std::string& packingType, d
     mars.packing.set(packingTypeVal->second);
 };
 
-void handleChemId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
+void handleChemId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
     const static std::unordered_map<long, long> chemIdMap{{228080, 3}, {228081, 3}, {228082, 3},
                                                           {228083, 3}, {228084, 3}, {228085, 3}};
 
@@ -167,7 +167,7 @@ void handleChemId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
     }
 }
 
-void handleParamId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
+void handleParamId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
     // Map taken from eccodes
     // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
     long initParamId = h.getLong("paramId");
@@ -263,9 +263,9 @@ void handleParamId(util::MioGribHandle& h, dm::FullMarsRecord& mars) {
     }
 }
 
-void handleMissingValue(util::MioGribHandle& h, dm::MiscRecord& misc) {
+void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
     double missingValue = 9999.0;
-    h.setValue("missingValue", missingValue);
+    h.set("missingValue", missingValue);
     misc.missingValue.set(missingValue);
 }
 
@@ -281,9 +281,9 @@ std::optional<std::pair<long, long>> parseRange(const std::string& s) {
     return std::make_pair(start, end);
 }
 
-void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
+void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
     // For some reason mars returns an empty string for step
-    if (h.hasKey("endStep")) {
+    if (h.has("endStep")) {
         auto endStep = h.getLong("endStep");
         mars.step.set(endStep);
 
@@ -297,7 +297,7 @@ void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars, int verbo
             stepRange = r->second - r->first;
         }
         else {
-            stepRange = h.hasKey("stepRange") ? h.getLong("stepRange") : endStep;
+            stepRange = h.has("stepRange") ? h.getLong("stepRange") : endStep;
         }
 
         mars.timespan.set(stepRange);
@@ -306,17 +306,17 @@ void handleStepRange(util::MioGribHandle& h, dm::FullMarsRecord& mars, int verbo
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
-                             int verbosity) {
+dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
+                             dm::MiscRecord& misc, int verbosity) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
     mars.expver = dm::parseEntry(dm::EXPVER, h);
 
-    if (h.hasKey("origin")) {
+    if (h.has("origin")) {
         mars.origin.set(dm::parseEntry(dm::ORIGIN, h));
     }
-    else if (h.hasKey("centre")) {
+    else if (h.has("centre")) {
         mars.origin.set(h.getString("centre"));
     }
 
@@ -334,7 +334,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     mars.levtype = dm::parseEntry(dm::LEVTYPE, h);
     if (mars.levtype.isSet()) {
         // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
-        if (h.hasKey("level")) {
+        if (h.has("level")) {
             std::optional<long> levelist;
             if (mars.levtype.get() == dm::LevType::PL) {
                 std::string pressureUnits = h.getString("pressureUnits");
@@ -372,11 +372,11 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     handleStepRange(h, mars, verbosity);
 
     // ... key truncation is not given officially ??
-    if (h.hasKey("J")) {
+    if (h.has("J")) {
         mars.truncation.set(h.getLong("J"));
     }
 
-    if (h.hasKey("gridName")) {
+    if (h.has("gridName")) {
         mars.grid.set(h.getString("gridName"));
     }
 
@@ -390,7 +390,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     }
 
     misc.initialStep = dm::parseEntry(dm::InitialStep, h);
-    if (h.hasKey("timeIncrement")) {
+    if (h.has("timeIncrement")) {
         misc.timeIncrementInSeconds.set(h.getLong("timeIncrement"));
     }
     misc.pv = dm::parseEntry(dm::Pv, h);
@@ -404,7 +404,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
-    if (h.hasKey("number") && h.hasKey("numberOfForecastsInEnsemble")) {
+    if (h.has("number") && h.has("numberOfForecastsInEnsemble")) {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
         long number = h.getLong("number");
 
@@ -419,10 +419,10 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
             if (mars.klass.isSet() && mars.klass.get() == "ai") {
                 // Handled in the encoder
             }
-            else if (h.hasKey("typeOfEnsembleForecast")) {
+            else if (h.has("typeOfEnsembleForecast")) {
                 misc.typeOfEnsembleForecast.set(dm::parseEntry(dm::TypeOfEnsembleForecast, h));
             }
-            else if (h.hasKey("eps")) {
+            else if (h.has("eps")) {
                 misc.typeOfEnsembleForecast.set(h.getLong("eps"));
             }
         }
@@ -438,8 +438,8 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     // getAndSet(h, parDict, "periodMax");
 
     // TODO pgeier waveDirections/waveFrequencies may be renamed to the GRIB name
-    if (h.hasKey("scaledValuesOfWaveDirections")) {
-        const double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
+    if (h.has("scaledValuesOfWaveDirections")) {
+        constexpr double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
         auto waveDirections = h.getDoubleArray("scaledValuesOfWaveDirections");
         auto directionScalingFactor = h.getDouble("directionScalingFactor");
         std::for_each(begin(waveDirections), end(waveDirections),
@@ -447,7 +447,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
         misc.waveDirections.set(waveDirections);
     }
-    if (h.hasKey("scaledValuesOfWaveFrequencies")) {
+    if (h.has("scaledValuesOfWaveFrequencies")) {
         auto waveFrequencies = h.getDoubleArray("scaledValuesOfWaveFrequencies");
         auto frequencyScalingFactor = h.getDouble("frequencyScalingFactor");
         std::for_each(begin(waveFrequencies), end(waveFrequencies),
@@ -460,7 +460,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     misc.scaleFactorOfCentralWaveNumber = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber, h);
     misc.scaledValueOfCentralWaveNumber = dm::parseEntry(dm::ScaledValueOfCentralWaveNumber, h);
 
-    if (h.hasKey("setPackingType")) {
+    if (h.has("setPackingType")) {
         std::string setPackingType = h.getString("setPackingType");
         handlePackingType(h, setPackingType, mars);
     }
@@ -469,12 +469,12 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
     return handleGridType(h, gridType, mars, misc);
 }
 
-void postFixToolOnly(const util::MioGribHandle& in, util::MioGribHandle& out) {
-    if (in.hasKey("gridType")) {
+void postFixToolOnly(const metkit::codes::CodesHandle& in, metkit::codes::CodesHandle& out) {
+    if (in.has("gridType")) {
         std::string gridType = in.getString("gridType");
         if (gridType == "reduced_gg") {
             long shapeOfTheEarth = in.getLong("shapeOfTheEarth");
-            out.setValue("shapeOfTheEarth", shapeOfTheEarth);
+            out.set("shapeOfTheEarth", shapeOfTheEarth);
         }
     }
 }
@@ -841,13 +841,11 @@ public:  // methods
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options] inputFile outputFile " << std::endl;
-        eckit::Log::info()
-            << std::endl
-            << "\tinputFile:\t"
-            << "GRIB file" << std::endl
-            << "\toutputFile:\t"
-            << "output file location"
-            << std::endl;
+        eckit::Log::info() << std::endl
+                           << "\tinputFile:\t"
+                           << "GRIB file" << std::endl
+                           << "\toutputFile:\t"
+                           << "output file location" << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;
@@ -877,7 +875,8 @@ private:
 
 Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, argv} {
     options_.push_back(new eckit::option::SimpleOption<bool>("help", "Print help"));
-    options_.push_back(new eckit::option::SimpleOption<bool>("no-output", "Does not write the file. Used for testing purposes."));
+    options_.push_back(
+        new eckit::option::SimpleOption<bool>("no-output", "Does not write the file. Used for testing purposes."));
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "all", "If specified also grib2 messages will reencoded instead of copied"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
@@ -916,7 +915,7 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     args.get("all", all);
     copyGrib2Messages_ = !all;
 
-    noOutput_=false;
+    noOutput_ = false;
     args.get("no-output", noOutput_);
 
     std::string packing;
@@ -962,6 +961,13 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
 
 void Grib1ToGrib2::finish(const eckit::option::CmdArgs&) {}
 
+void write(const metkit::codes::CodesHandle& grib, eckit::FileHandle& file) {
+    // TODO(pgeier) Propose additional API call CodesHandle::messageBytes that returns Span<> of the message
+    eckit::Buffer buf{grib.messageSize()};
+    grib.copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());
+    file.write(buf.data(), buf.size());
+};
+
 void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     using eckit::message::ValueRepresentation;
     eckit::message::Reader reader{args(0)};
@@ -1005,12 +1011,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
         eckit::MemoryHandle* mh = reinterpret_cast<eckit::MemoryHandle*>(dh.get());
 
         ASSERT(mh != NULL);
-        util::MioGribHandle inputHandle{codes_handle_new_from_message(NULL, mh->data(), mh->size())};
+        auto inputHandle = metkit::codes::codesHandleFromMessageCopy(
+            metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(mh->data()), mh->size()));
 
         dh.reset(nullptr);
         mh = NULL;
-
-        eckit::message::Message inputMsg{new metkit::codes::CodesContent{inputHandle.raw()}};
 
         if (excludeMap_) {
             bool ret = matches(msg, *excludeMap_, verbosity_);
@@ -1032,11 +1037,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
         }
 
 
-        std::string edition = inputHandle.getString("edition");
+        std::string edition = inputHandle->getString("edition");
         if (discipline192Handling_ != Discipline192Handling::TryToHandle) {
-            long paramId = inputHandle.getLong("paramId");
+            long paramId = inputHandle->getLong("paramId");
             bool isDiscipline192
-                = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle.getLong("discipline") == 192);
+                = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle->getLong("discipline") == 192);
             if (isDiscipline192) {
                 if (discipline192Handling_ == Discipline192Handling::LogAndIgnore) {
                     std::cout << "Excluding message with discipline 192 (paramId: " << paramId << ")" << std::endl;
@@ -1051,7 +1056,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Copying grib2 message..." << std::endl;
             }
             if (outputFileHandle) {
-                inputMsg.write(*outputFileHandle);
+                write(*inputHandle.get(), *outputFileHandle);
             }
         }
         else {
@@ -1060,12 +1065,12 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             dm::FullMarsRecord mars;
             dm::MiscRecord misc;
 
-            KeySet marsKeys = iterateMarsNamespace(inputMsg);
+            KeySet marsKeys = iterateMarsNamespace(*inputHandle.get());
             if (verbosity_ > 2) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
 
-            auto geo = extract::mapGrib1ToGrib2(marsKeys, inputHandle, mars, misc, verbosity_);
+            auto geo = extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
 
 
             if (overwritePacking_) {
@@ -1098,7 +1103,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
             codes_handle* rawOutputCodesHandle = NULL;
 
-            std::vector<double> values = inputHandle.getDoubleArray("values");
+            std::vector<double> values = inputHandle->getDoubleArray("values");
 
             if (verbosity_ > 2) {
                 std::cout << "Encoding with extracted metadata..." << std::endl;
@@ -1120,12 +1125,12 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             datamod::applyRecordDefaults(misc);
             datamod::validateRecord(misc);
 
-            std::unique_ptr<util::MioGribHandle> preparedHandle = mars2grib.getHandle(mars, misc, geo);
-            preparedHandle->setDataValues(values);
+            std::unique_ptr<metkit::codes::CodesHandle> preparedHandle = mars2grib.getHandle(mars, misc, geo);
+            preparedHandle->set("values", values);
 
 
             // Apply more changes
-            extract::postFixToolOnly(inputHandle, *preparedHandle.get());
+            extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
 
             if (verbosity_ > 0) {
                 util::PrintStream ps{std::cout};
@@ -1139,9 +1144,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             }
 
             // Output by writing all to the same binary file
-            eckit::message::Message outputMsg{new metkit::codes::CodesContent{preparedHandle->raw()}};
             if (outputFileHandle) {
-                outputMsg.write(*outputFileHandle);
+                write(*preparedHandle.get(), *outputFileHandle);
             }
         }
     }

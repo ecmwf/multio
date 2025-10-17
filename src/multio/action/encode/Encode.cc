@@ -26,6 +26,7 @@
 #include "atlas/parallel/mpi/mpi.h"
 
 #include "GridDownloader.h"
+#include "metkit/codes/api/CodesTypes.h"
 #include "multio/LibMultio.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/util/Timing.h"
@@ -59,19 +60,16 @@ GridType createGrid(const std::string& atlasNamedGrid) {
     return GridType(structuredGrid);
 }
 
-void updateGaussianGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
+void updateGaussianGrid(metkit::codes::CodesHandle& handle, const std::string& atlasNamedGrid) {
     const auto gaussianGrid = createGrid<atlas::GaussianGrid>(atlasNamedGrid);
 
     std::regex reducedGaussianMatch{"^\\s*[O]\\d+\\s*$"};
     bool isReducedGaussian = std::regex_match(atlasNamedGrid, reducedGaussianMatch);
     std::string gridType{isReducedGaussian ? "reduced_gg" : "regular_gg"};
-    size_t gridTypeSize = gridType.size();
-    int err = codes_set_string(handle, "gridType", gridType.c_str(), &gridTypeSize);
-    handleCodesError("eccodes error while setting the gridType to reduced_gg/regular_gg", err, Here());
+    handle.set("gridType", gridType);
 
 
-    err = codes_set_long(handle, "N", gaussianGrid.N());
-    handleCodesError("eccodes error while setting the N value: ", err, Here());
+    handle.set("N", gaussianGrid.N());
 
     auto tmp = gaussianGrid.nx();
     std::vector<long> pl(tmp.size(), 0);
@@ -79,45 +77,36 @@ void updateGaussianGrid(codes_handle* handle, const std::string& atlasNamedGrid)
         pl[i] = long(tmp[i]);
     }
 
-    err = codes_set_long_array(handle, "pl", pl.data(), pl.size());
-    handleCodesError("eccodes error while setting the PL array: ", err, Here());
+    handle.set("pl", pl);
 
     std::vector<double> values(gaussianGrid.size(), 0.0);
 
     auto it = gaussianGrid.lonlat().begin();
-    err = codes_set_double(handle, "latitudeOfFirstGridPointInDegrees", (*it)[1]);
-    handleCodesError("eccodes error while setting the latitudeOfFirstGridPointInDegrees: ", err, Here());
-    err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", (*it)[0]);
-    handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees: ", err, Here());
+    handle.set("latitudeOfFirstGridPointInDegrees", (*it)[1]);
+    handle.set("longitudeOfFirstGridPointInDegrees", (*it)[0]);
     it += gaussianGrid.size() - 1;
-    err = codes_set_double(handle, "latitudeOfLastGridPointInDegrees", (*it)[1]);
-    handleCodesError("eccodes error while setting the latitudeOfLastGridPointInDegrees: ", err, Here());
+    handle.set("latitudeOfLastGridPointInDegrees", (*it)[1]);
 
-    err = codes_set_double_array(handle, "values", values.data(), values.size());
-    handleCodesError("eccodes error while setting the values array: ", err, Here());
+    handle.set("values", values);
 
     const auto equator = gaussianGrid.N();
     const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
 
-    err = codes_set_double(handle, "longitudeOfLastGridPointInDegrees", maxLongitude);
-    handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees value: ", err, Here());
+    handle.set("longitudeOfLastGridPointInDegrees", maxLongitude);
 }
 
-void updateRegularLatLonGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
+void updateRegularLatLonGrid(metkit::codes::CodesHandle& handle, const std::string& atlasNamedGrid) {
     const auto llGrid = createGrid<atlas::RegularLonLatGrid>(atlasNamedGrid);
 
     std::string gridType{"regular_ll"};
     size_t gridTypeSize = gridType.size();
-    int err = codes_set_string(handle, "gridType", gridType.c_str(), &gridTypeSize);
-    handleCodesError("eccodes error while setting the gridType to regular_ll", err, Here());
+    handle.set("gridType", gridType);
 
-    err = codes_set_long(handle, "Ni", llGrid.nx());
-    handleCodesError("eccodes error while setting the Ni value: ", err, Here());
-    err = codes_set_long(handle, "Nj", llGrid.ny());
-    handleCodesError("eccodes error while setting the Nj value: ", err, Here());
+    handle.set("Ni", llGrid.nx());
+    handle.set("Nj", llGrid.ny());
 }
 
-using UpdateFunctionType = std::function<void(codes_handle*, const std::string&)>;
+using UpdateFunctionType = std::function<void(metkit::codes::CodesHandle&, const std::string&)>;
 static const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap{
     {"^\\s*[FON]\\d+\\s*$", &updateGaussianGrid}, {"^\\s*L\\d+x\\d+\\s*$", &updateRegularLatLonGrid}};
 
@@ -136,11 +125,7 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
 
     if (format == "grib") {
         ASSERT(conf.has("template"));
-        // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{conf.getString("template")};
-        int err;
-        auto sample = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
-        handleCodesError("eccodes error while reading the grib template: ", err, Here());
+        auto sample = metkit::codes::codesHandleFromFile(conf.getString("template"), metkit::codes::Product::GRIB);
 
         if (conf.has("atlas-named-grid")) {
             const auto atlasNamedGrid = conf.getString("atlas-named-grid");
@@ -154,11 +139,11 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
                                                      });
 
             if (updateFunction != updateFunctionMap.cend()) {
-                updateFunction->second(sample, atlasNamedGrid);
+                updateFunction->second(*sample.get(), atlasNamedGrid);
             }
         }
 
-        return std::make_unique<GribEncoder>(sample, conf);
+        return std::make_unique<GribEncoder>(std::move(sample), conf);
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format

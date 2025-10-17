@@ -63,7 +63,7 @@ struct DumpType<TypeOfStatisticalProcessing> {
 
 // TBD - add dump spec for writing to grib (dump as int)
 // template <>
-// struct DumpType<TypeOfStatisticalProcessing, util::MioGribHandle> {
+// struct DumpType<TypeOfStatisticalProcessing, metkit::codes::CodesHandle> {
 //     static std::int64_t dump(TypeOfStatisticalProcessing);
 // };
 

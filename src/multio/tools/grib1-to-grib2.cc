@@ -33,6 +33,7 @@
 #include "multio/LibMultio.h"
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/core/Record.h"
+#include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/tools/MultioTool.h"
 
 #include "multio/datamod/ContainerInterop.h"
@@ -123,21 +124,22 @@ dm::Geometry handleRegularLLAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRec
 }
 
 // TODO(pgeier) Add option to the tool to specific if geometry should be infered by atlas
-dm::Geometry handleGridType(metkit::codes::CodesHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
+dm::Geometry handleGridType(metkit::codes::CodesHandle& h, dm::GridType gridType, dm::FullMarsRecord& mars,
                             dm::MiscRecord& misc) {
     // TODO(pgeier) add HealPpx
-    const static std::unordered_map<std::string, GridTypeFunction> gridMap{
-        {"reduced_gg", &handleReducedGGAtlas},
-        {"regular_gg", &handleRegularGGAtlas},
-        {"regular_ll", &handleRegularLLAtlas},
-        {"sh", &handleSH},
+    switch (gridType) {
+        case dm::GridType::RegularGG:
+            return handleRegularGGAtlas(h, mars, misc);
+        case dm::GridType::ReducedGG:
+            return handleReducedGGAtlas(h, mars, misc);
+        case dm::GridType::RegularLL:
+            return handleRegularLLAtlas(h, mars, misc);
+        case dm::GridType::SH:
+            return handleSH(h, mars, misc);
+        default:
+            throw std::runtime_error(std::string("Unhandled gridType '") + dm::DumpType<dm::GridType>::dump(gridType)
+                                     + std::string("'"));
     };
-
-    const auto gridTypeFunc = gridMap.find(gridType);
-    if (gridTypeFunc == gridMap.cend()) {
-        throw std::runtime_error(std::string("Unhandled gridType '") + gridType + std::string("'"));
-    }
-    return gridTypeFunc->second(h, mars, misc);
 };
 
 void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
@@ -463,7 +465,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm
         handlePackingType(h, setPackingType, mars);
     }
 
-    std::string gridType = h.getString("gridType");
+    dm::GridType gridType = dm::ParseType<dm::GridType>::parse(h.getString("gridType"));
     return handleGridType(h, gridType, mars, misc);
 }
 

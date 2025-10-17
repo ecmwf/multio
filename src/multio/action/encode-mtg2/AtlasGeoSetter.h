@@ -34,18 +34,6 @@ namespace dm = multio::datamod;
 struct AtlasGeoSetter {
     using GridTypeFunction = std::function<void(const std::string& scope, const std::string& gridName)>;
 
-    static void handleReducedGG(const std::string& scope, const std::string& gridName) {
-        message::Metadata md{{scope, true}};
-
-        auto geoGG = datamod::scopeRecord(dm::GeoReducedGGRecord{}, scope);
-
-        dm::setKeysFromAtlas(geoGG, gridName);
-
-        dm::dumpRecord(geoGG, md);
-
-        message::Parametrization::instance().update(md);
-    }
-
     template <typename GGRec>
     static void handleGG(const std::string& scope, const std::string& gridName) {
         message::Metadata md{{scope, true}};

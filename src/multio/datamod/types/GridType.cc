@@ -49,7 +49,7 @@ GridType gridTypeFromGrid(const std::string& grid) {
             return GridType::HEALPix;
         case 'N':
             if (grid.rfind("x") == std::string::npos) {
-                return GridType::RegularGG;
+                return GridType::ReducedGG;
             }
             else {
                 return GridType::RegularLL;

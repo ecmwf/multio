@@ -19,6 +19,7 @@
 #include "multio/mars2grib/LegacyEncoderConf.h"
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/generated/InferPDT.h"
+#include "multio/mars2grib/grib2/Level.h"
 #include "multio/mars2grib/rules/Matcher.h"
 #include "multio/mars2grib/rules/Rule.h"
 
@@ -43,10 +44,14 @@ static auto ruleSet = exclusiveRuleList(
     chainedRuleList(
         rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),
         rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}},
-             Setter([](const dm::FullMarsRecord&, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout&) {
+             Setter([](const dm::FullMarsRecord& mars, const dm::MiscRecord&, LegacySectionsConf& c, Grib2Layout& layout) {
                  c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(TimeExtent::PointInTime);
                  c.product.ensureInit().modify().level.ensureInit().modify().type.set(
                      dm::TypeOfLevel::HeightAboveGround);
+
+                 layout.pdtCat.timeExtent.set(TimeExtent::PointInTime);
+                 layout.level
+                     = grib2::setLevel(dm::TypeOfLevel::HeightAboveGround, std::optional<std::int64_t>{}, mars);
              }))),
 
     // Branch for spherical harmonics
@@ -76,9 +81,9 @@ CASE("Test rules gen matchers [2]") {
     dm::MiscRecord misc{};
     LegacySectionsConf sections;
     Grib2Layout layout;
-    
+
     EXPECT(ruleSet(mars, misc, sections, layout));
-    
+
     EXPECT((sections.product.get().level.get().type.get()) == dm::TypeOfLevel::HeightAboveGround);
     EXPECT(((sections.product.get().pdtCat.get().timeExtent.get()) == TimeExtent::PointInTime));
     EXPECT((layout.level->typeOfLevel.get() == dm::TypeOfLevel::HeightAboveGround));

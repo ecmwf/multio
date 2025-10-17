@@ -78,6 +78,7 @@ constexpr auto LEVTYPE =
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.levtype; });
 
+// NOTE: for pressure levels (levtype=pl), this key is in Pa (not hPa) in MultIO
 constexpr auto LEVELIST =
     EntryDef<std::int64_t, StringToIntMapper>{"levelist"}
         .tagOptional()

@@ -497,7 +497,7 @@ IMPLICIT NONE
   CASE ( 'satelliteseries', 'satellite-series' )
     ITERATOR = PAR_ITERATOR_SATELLITE_SERIES
 
-  CASE ( 'scaledfactorofcentralwavenumber', 'scaled-factor-of-central-wave-number' )
+  CASE ( 'scalefactorofcentralwavenumber', 'scale-factor-of-central-wave-number' )
     ITERATOR = PAR_ITERATOR_SCALED_FACTOR_OF_CENTRAL_WAVE_NUMBER
 
   CASE ( 'scaledvalueofcentralwavenumber', 'scaled-value-of-central-wave-number' )

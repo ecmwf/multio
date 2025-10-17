@@ -10,10 +10,12 @@ intel_mpi:
       modules:
         - ninja
         - intel-mpi
+        - qhull
       modules_package:
         - eckit:intel-mpi
         - atlas:intel-mpi
       dependency_cmake_options:
+        - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
@@ -29,7 +31,6 @@ intel_mpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -39,10 +40,12 @@ hpcx_openmpi:
       modules:
         - ninja
         - hpcx-openmpi
+        - qhull
       modules_package:
         - eckit:hpcx-openmpi
         - atlas:hpcx-openmpi
       dependency_cmake_options:
+        - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
@@ -58,7 +61,6 @@ hpcx_openmpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -68,10 +70,12 @@ openmpi:
       modules:
         - ninja
         - openmpi
+        - qhull
       modules_package:
         - eckit:openmpi
         - atlas:openmpi
       dependency_cmake_options:
+        - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
@@ -87,7 +91,6 @@ openmpi:
       parallel: 64
       ntasks: 16
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
@@ -96,7 +99,9 @@ mpi_off:
     build:
       modules:
         - ninja
+        - qhull
       dependency_cmake_options:
+        - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
@@ -111,6 +116,5 @@ mpi_off:
         - ecmwf/mir@develop
       parallel: 64
       env:
-        - CTEST_PARALLEL_LEVEL=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions

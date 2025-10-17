@@ -1,7 +1,9 @@
 dependency_cmake_options: |
   ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
+  ecmwf/atlas: "-DENABLE_TESSELATION=ON"
 dependencies: |
   ecmwf/ecbuild
+  qhull/qhull@refs/tags/v8.0.2
   ecmwf/eccodes
   ecmwf/eckit
   ecmwf/metkit

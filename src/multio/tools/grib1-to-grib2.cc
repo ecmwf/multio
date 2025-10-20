@@ -386,7 +386,7 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm
     // However, for ai it must be set to 10 and there is some data that explicitly needs this fix
     // Thats why if class is ai, we let the mapping determine it.
     if (mars.klass.get() != "ai") {
-        misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedData, h);
+        misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedDataEntry, h);
     }
 
     misc.initialStep = dm::parseEntry(dm::InitialStep, h);

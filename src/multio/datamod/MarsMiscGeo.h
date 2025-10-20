@@ -346,7 +346,7 @@ constexpr auto WaveFrequencies =                      //
 struct MiscRecord {
     EntryType_t<decltype(TablesVersion)> tablesVersion;
     EntryType_t<decltype(GeneratingProcessIdentifier)> generatingProcessIdentifier;
-    EntryType_t<decltype(TypeOfProcessedData)> typeOfProcessedData;
+    EntryType_t<decltype(TypeOfProcessedDataEntry)> typeOfProcessedData;
     EntryType_t<decltype(InitialStep)> initialStep;
     EntryType_t<decltype(TimeIncrementInSeconds)> timeIncrementInSeconds;
     EntryType_t<decltype(LengthOfTimeWindow)> lengthOfTimeWindow;
@@ -369,7 +369,7 @@ struct MiscRecord {
 
     static constexpr std::string_view record_name_ = "misc";
     static constexpr auto record_entries_ = std::make_tuple(
-        TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedData, InitialStep, TimeIncrementInSeconds,
+        TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
         Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,

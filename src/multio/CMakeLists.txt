@@ -168,6 +168,8 @@ list( APPEND multio_datamod_srcs
     datamod/types/TypeOfLevel.h
     datamod/types/TypeOfStatisticalProcessing.cc
     datamod/types/TypeOfStatisticalProcessing.h
+    datamod/types/TypeOfProcessedData.cc
+    datamod/types/TypeOfProcessedData.h
     datamod/ContainerInterop.h
     datamod/Mapper.cc
     datamod/Mapper.h

@@ -42,7 +42,7 @@ void AdditionalValues::setGeneratingProcessIdentifier(std::int64_t value) {
     dm::GeneratingProcessIdentifier.get(values_).set(value);
 }
 void AdditionalValues::setTypeOfProcessedData(std::int64_t value) {
-    dm::TypeOfProcessedData.get(values_).set(value);
+    dm::TypeOfProcessedDataEntry.get(values_).set(value);
 }
 void AdditionalValues::setInitialStep(std::int64_t value) {
     dm::InitialStep.get(values_).set(value);

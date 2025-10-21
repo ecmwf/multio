@@ -181,12 +181,9 @@ auto makeGridRule(dm::Repres repres, std::int64_t num) {
 }
 
 auto gridRules() {
-    return exclusiveRuleList(makeGridRule(dm::Repres::GG, 40), makeGridRule(dm::Repres::LL, 0));
+    return exclusiveRuleList(makeGridRule(dm::Repres::LL, 0), makeGridRule(dm::Repres::GG, 40),
+                             makeGridRule(dm::Repres::SH, 50));
 }
-auto gridRuleSH() {
-    return exclusiveRuleList(makeGridRule(dm::Repres::SH, 50));
-}
-
 
 auto localSectionRules() {
     return exclusiveRuleList(  //
@@ -199,22 +196,18 @@ auto localSectionRules() {
 
 auto processTypesRules() {
     return exclusiveRuleList(  //
-        rule(all(Missing{dm::NUMBER}, Missing{dm::HDATE})), rule(all(Has{dm::NUMBER}, Missing{dm::HDATE}), ensemble()),
-        rule(all(Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), ensemble()));
-}
-
-auto processTypesRulesAl() {
-    return exclusiveRuleList(  //
-        rule(all(Has{dm::NUMBER}), largeEnsemble()));
+        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Missing{dm::NUMBER}, Missing{dm::HDATE})),
+        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Missing{dm::HDATE}), ensemble()),
+        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), ensemble()),
+        rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Missing{dm::HDATE}), largeEnsemble()),
+        rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), largeEnsemble()));
 }
 
 
 auto packingRules() {
-    return exclusiveRuleList(  //
-        rule(OneOf{dm::PACKING, {"simple"}}, dataRepres(0)), rule(OneOf{dm::PACKING, {"ccsds"}}, dataRepres(42)));
-}
-auto packingRulesSH() {
-    return exclusiveRuleList(  //
+    return exclusiveRuleList(                                 //
+        rule(OneOf{dm::PACKING, {"simple"}}, dataRepres(0)),  //
+        rule(OneOf{dm::PACKING, {"ccsds"}}, dataRepres(42)),  //
         rule(OneOf{dm::PACKING, {"complex"}}, dataRepres(51)));
 }
 
@@ -589,24 +582,15 @@ auto paramHLRules() {
 //-----------------------------------------------------------------------------
 
 auto paramMLRules() {
-    return exclusiveRuleList(                                                            //
-        rule(matchParams(75, 76, 133, 203, 246, 247, 248, 260290),                       //
-             pointInTime(),                                                              //
-             typeOfLevel(TOL::Hybrid)),                                                  //
-        rule(matchParams(paramRange(162100, 162113)),                                    //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
-             typeOfLevel(TOL::Hybrid))                                                   //
+    return exclusiveRuleList(                                                                                //
+        rule(matchParams(75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 203, 246, 247, 248, 260290),  //
+             pointInTime(),                                                                                  //
+             typeOfLevel(TOL::Hybrid)),                                                                      //
+        rule(matchParams(paramRange(162100, 162113)),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),                      //
+             typeOfLevel(TOL::Hybrid))                                                                       //
     );
 }
-
-auto paramMLRulesSH() {
-    return exclusiveRuleList(                                          //
-        rule(matchParams(77, 129, 130, 131, 132, 135, 138, 152, 155),  //
-             pointInTime(),                                            //
-             typeOfLevel(TOL::Hybrid))                                 //
-    );
-}
-
 
 //-----------------------------------------------------------------------------
 // PL
@@ -630,23 +614,13 @@ auto plLevelRules(MkTail&& mkTail) {
 
 auto paramPLRules() {
     return plLevelRules([]() {
-        return exclusiveRuleList(                                                                  //
-            rule(matchParams(60, 75, 76, paramRange(129, 135), 203, 246, 247, 248, 157, 260290),   //
-                 pointInTime()),                                                                   //
-            rule(matchParams(235100, paramRange(235129, 235133), 235135, 235157, 235203, 235246),  //
-                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))             //
-        );
-    });
-}
-
-auto paramPLRulesSH() {
-    return plLevelRules([]() {
-        return exclusiveRuleList(                                                       //
-            rule(matchParams(1, 2, paramRange(129, 135), 138, 152, 155, 157),           //
-                 pointInTime()),                                                        //
-            rule(matchParams(235129, 235130, 235138, 235152, 235155, 263107),           //
-                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average))  //
-        );
+        return exclusiveRuleList(  //
+            rule(matchParams(1, 2, 60, 75, 76, paramRange(129, 135), 138, 152, 155, 157, 203, 246, 247, 248, 157,
+                             260290),
+                 pointInTime()),
+            rule(matchParams(235100, paramRange(235129, 235133), 235135, 235138, 235152, 235155, 235157, 235203, 235246,
+                             263107),
+                 timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average)));
     });
 }
 
@@ -676,29 +650,14 @@ auto paramPTRules() {
     );
 }
 
-auto paramPTRulesSH() {
-    return exclusiveRuleList(                               //
-        rule(matchParams(53, 54, 131, 132, 133, 138, 155),  //
-             pointInTime(),                                 //
-             typeOfLevel(TOL::Theta))                       //
-    );
-}
 
 //-----------------------------------------------------------------------------
 // PV
 //-----------------------------------------------------------------------------
 
 auto paramPVRules() {
-    return exclusiveRuleList(                              //
-        rule(matchParams(3, 54, 129, 131, 132, 133, 203),  //
-             pointInTime(),                                //
-             typeOfLevel(TOL::PotentialVorticity))         //
-    );
-}
-
-auto paramPVRulesSH() {
     return exclusiveRuleList(                                                       //
-        rule(matchParams(3, 54, 129),                                               //
+        rule(matchParams(3, 54, 129, 131, 132, 133, 203),                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::PotentialVorticity)),                                 //
         rule(matchParams(235098, 235269),                                           //
@@ -765,17 +724,8 @@ auto paramRules() {
         chainedRuleList(rule(matchLevType(dm::LevType::PL)), paramPLRules()),    //
         chainedRuleList(rule(matchLevType(dm::LevType::PT)), paramPTRules()),    //
         chainedRuleList(rule(matchLevType(dm::LevType::PV)), paramPVRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::SOL)), paramSOLRules())   //
-    );
-}
-
-
-auto paramRulesSH() {
-    return exclusiveRuleList(                                                    //
-        chainedRuleList(rule(matchLevType(dm::LevType::ML)), paramMLRulesSH()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::PL)), paramPLRulesSH()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::PT)), paramPTRulesSH()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::PV)), paramPVRulesSH())   //
+        chainedRuleList(rule(matchLevType(dm::LevType::SOL)), paramSOLRules()),  //
+        chainedRuleList(rule(matchLevType(dm::LevType::AL)), paramAlRules())     //
     );
 }
 
@@ -784,37 +734,15 @@ auto paramRulesSH() {
 // Big rule tree...
 //-----------------------------------------------------------------------------
 
-const ExclusiveRuleList& allRules() {
-    static auto all_ = exclusiveRuleList(
-        // Branch for grids
-        chainedRuleList(                                                       //
-            rule(all(Has{dm::GRID}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}})),  //
-            gridRules(),                                                       //
-            localSectionRules(),                                               //
-            processTypesRules(),                                               //
-            paramRules(),                                                      //
-            packingRules()                                                     //
-            ),
+const ChainedRuleList& allRules() {
+    static auto all_ = chainedRuleList(  //
+        gridRules(),                     //
+        localSectionRules(),             //
+        processTypesRules(),             //
+        paramRules(),                    //
+        packingRules()                   //
+    );
 
-        // Branch for spherical harmonics
-        chainedRuleList(                                                             //
-            rule(all(Has{dm::TRUNCATION}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}})),  //
-            gridRuleSH(),                                                            //
-            localSectionRules(),                                                     //
-            processTypesRules(),                                                     //
-            paramRulesSH(),                                                          //
-            packingRulesSH()                                                         //
-            ),
-
-        // Branch for abstract level
-        chainedRuleList(                          //
-            rule(matchLevType(dm::LevType::AL)),  //
-            gridRules(),                          //
-            localSectionRules(),                  //
-            processTypesRulesAl(),                //
-            paramAlRules(),                       //
-            packingRules()                        //
-            ));
     return all_;
 }
 

@@ -18,7 +18,7 @@
 namespace multio::mars2grib::rules {
 using namespace rules;
 
-const ExclusiveRuleList& allRules();
+const ChainedRuleList& allRules();
 
 SectionsConf buildEncoderConf(const dm::FullMarsRecord&);
 

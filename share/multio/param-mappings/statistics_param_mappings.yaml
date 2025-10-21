@@ -4021,3 +4021,13 @@
   - typeOfStatisticalProcessing: 0
     paramOut: 263909
 
+# Manually added mappings
+- paramIn: 260289
+  mappings:
+  # Note: Average (0) is automatically generated above
+  - typeOfStatisticalProcessing: 2
+    paramOut: 237093
+  - typeOfStatisticalProcessing: 3
+    paramOut: 238093
+  - typeOfStatisticalProcessing: 6
+    paramOut: 239093

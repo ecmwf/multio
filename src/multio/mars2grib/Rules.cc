@@ -245,35 +245,62 @@ auto paramSFCRules() {
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Minimum),
              overallLengthOfTimeRange("6h"),                                           //
              typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                  //
-        rule(matchParams(201, 237167),                                                 //
+        rule(matchParams(201, 237167, 237168),                                         //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),     //
-             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2), fixedLevel(10)),  //
-        rule(matchParams(202, 238167),                                                 //
+             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                  //
+        rule(matchParams(202, 238167, 238168),                                         //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),     //
              typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                  //
         rule(matchParams(228004, 235168),                                              //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),     //
              typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                  //
-        rule(matchParams(123),                                                         //
-             timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),
+        rule(matchParams(239167, 239168),                                              //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation), //
+             typeOfLevel(TOL::HeightAboveGroundAt2m), fixedLevel(2)),                        //
+        rule(matchParams(123),                                                               //
+             timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),    //
              overallLengthOfTimeRange("6h"),                             //
              typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),  //
         rule(matchParams(228028),                                        //
              timeRange(TimeRangeType::FixedTimeRange, TOSP::Maximum),
              overallLengthOfTimeRange("3h"),                                        //
              typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
-        rule(matchParams(49, 237207, 237318),                                       //
+        rule(matchParams(49, 237165, 237166, 237207, 237318),                                       //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
              typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
         rule(matchParams(235087, 235088, 235136, 235137, 235087, 235088, 235137, 235288, 235287, 235290, 235326,
                          235383),                                                   //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::EntireAtmosphere)),                                   //
+        rule(matchParams(237087, 237088, 237326, 237288, 237290, 237137, 237287),   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
+             typeOfLevel(TOL::EntireAtmosphere)),                                   //
+        rule(matchParams(238087, 238088, 238326, 238288, 238290, 238137, 238287),   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),  //
+             typeOfLevel(TOL::EntireAtmosphere)),                                   //
+        rule(matchParams(239087, 239088, 239326, 239288, 239290, 239137, 239287),   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
+             typeOfLevel(TOL::EntireAtmosphere)),                                   //
         rule(matchParams(228005, 235165, 235166),                                   //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
+             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
+        rule(matchParams(238165, 238166, 238207),                                   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),  //
+             typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),             //
+        rule(matchParams(239165, 239166, 239207),                                                             //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),                  //
              typeOfLevel(TOL::HeightAboveGroundAt10m), fixedLevel(10)),                                       //
         rule(matchParams(235151),                                                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
+             typeOfLevel(TOL::MeanSea)),                                                                      //
+        rule(matchParams(237151),                                                                             //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),                            //
+             typeOfLevel(TOL::MeanSea)),                                                                      //
+        rule(matchParams(238151),                                                                             //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),                            //
+             typeOfLevel(TOL::MeanSea)),                                                                      //
+        rule(matchParams(239151),                                                                             //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),                  //
              typeOfLevel(TOL::MeanSea)),                                                                      //
         rule(matchParams(235039, 235040, 235049, 235050, 235053),                                             //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
@@ -284,20 +311,77 @@ auto paramSFCRules() {
                          235283, 235339),                                                                     //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),                            //
              typeOfLevel(TOL::Surface)),                                                                      //
-        rule(matchParams(235108), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+        rule(matchParams(235108),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
              typeOfLevel(TOL::LowCloudLayer)),
-        rule(matchParams(235090), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+        rule(matchParams(237108),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),
+             typeOfLevel(TOL::LowCloudLayer)),
+        rule(matchParams(238108),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),
+             typeOfLevel(TOL::LowCloudLayer)),
+        rule(matchParams(239108),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),
+             typeOfLevel(TOL::LowCloudLayer)),
+        rule(matchParams(235090),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
              typeOfLevel(TOL::MixingLayer)),
-        rule(matchParams(235322), timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+        rule(matchParams(237090),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),
+             typeOfLevel(TOL::MixingLayer)),
+        rule(matchParams(238090),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),
+             typeOfLevel(TOL::MixingLayer)),
+        rule(matchParams(239090),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),
+             typeOfLevel(TOL::MixingLayer)),
+        rule(matchParams(235322),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),
+             typeOfLevel(TOL::Tropopause)),
+        rule(matchParams(237322),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),
+             typeOfLevel(TOL::Tropopause)),
+        rule(matchParams(238322),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),
+             typeOfLevel(TOL::Tropopause)),
+        rule(matchParams(239322),
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),
              typeOfLevel(TOL::Tropopause)),
         rule(matchParams(235077, 235094),                                                // 235077 also exists on SOL !
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
              typeOfLevel(TOL::SoilLayer)),                                               //
+        rule(matchParams(237077, 237094),                                                //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),       //
+             typeOfLevel(TOL::SoilLayer)),                                               //
+        rule(matchParams(238077, 238094),                                                //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),       //
+             typeOfLevel(TOL::SoilLayer)),                                               //
+        rule(matchParams(239077, 239094),                                                //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
+             typeOfLevel(TOL::SoilLayer)),                                               //
         rule(matchParams(235309),                                                        //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
              typeOfLevel(TOL::IceLayerOnWater)),                                         //
+        rule(matchParams(237309),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),       //
+             typeOfLevel(TOL::IceLayerOnWater)),                                         //
+        rule(matchParams(238309),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),       //
+             typeOfLevel(TOL::IceLayerOnWater)),                                         //
+        rule(matchParams(239309),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
+             typeOfLevel(TOL::IceLayerOnWater)),                                         //
         rule(matchParams(263024),                                                        //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),       //
+             typeOfLevel(TOL::SeaIceLayer)),                                             //
+        rule(matchParams(265024),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),       //
+             typeOfLevel(TOL::SeaIceLayer)),                                             //
+        rule(matchParams(266024),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),       //
+             typeOfLevel(TOL::SeaIceLayer)),                                             //
+        rule(matchParams(267024),                                                        //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
              typeOfLevel(TOL::SeaIceLayer)),                                             //
         rule(matchParams(260683),                                                        //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Mode),          //
@@ -452,12 +536,15 @@ auto paramSFCRules() {
              pointInTime(),                            //
              periodRange(),
              typeOfLevel(TOL::Surface)),                                            //
-        rule(matchParams(228226, 237013, 237055, 237117, 237321),                   //
+        rule(matchParams(228226, 237013, 237041, 237042, 237055, 237078, 237080, 237083, 237084, 237093, 237117, 237134, 237159, 237263, 237321),  //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
              typeOfLevel(TOL::Surface)),                                            //
-        rule(matchParams(228227, 238055, 238013),                                   //
+        rule(matchParams(228227, 238055, 238013, 238041, 238042, 238078, 238080, 238083, 238084, 238093, 238134, 238159, 238263),  //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),  //
              typeOfLevel(TOL::Surface)),                                            //
+        rule(matchParams(239041, 239042, 239078, 239080, 239083, 239084, 239093, 239134, 239159, 239263),  //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
+             typeOfLevel(TOL::Surface)),                                                      //
         rule(matchParams(140251),                                                   //
              pointInTime(),                                                         //
              dirFreq()),                                                            //

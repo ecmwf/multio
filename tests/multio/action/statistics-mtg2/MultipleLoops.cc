@@ -39,7 +39,7 @@ CASE("Monthly average of daily high temperature") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    for (std::int64_t step = 0; step < 744; ++step) {
+    for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
                             {"grid", "none"},
@@ -59,6 +59,7 @@ CASE("Monthly average of daily high temperature") {
 
     auto md = env.debugSink().front().metadata();
     EXPECT_EQUAL(237167, md.get<std::int64_t>("param"));
+    EXPECT_EQUAL(744, md.get<std::int64_t>("step"));
     EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));
     EXPECT_EQUAL("moav", md.get<std::string>("stattype"));
 }
@@ -103,7 +104,7 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    for (std::int64_t step = 0; step < 744; ++step) {
+    for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
                             {"grid", "none"},
@@ -123,6 +124,7 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
 
     auto md = env.debugSink().front().metadata();
     EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
+    EXPECT_EQUAL(744, md.get<std::int64_t>("step"));
     EXPECT_EQUAL(3, md.get<std::int64_t>("timespan"));
     EXPECT_EQUAL("moav_damx", md.get<std::string>("stattype"));
 }

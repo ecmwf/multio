@@ -1,8 +1,10 @@
 #pragma once
 
+#include <optional>
 #include <random>
 
 #include "../../../MultioTestEnvironment.h"
+#include "eckit/testing/Test.h"
 
 
 inline constexpr std::size_t SIZE = 4096;
@@ -46,12 +48,20 @@ public:
         EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
-        // Check the result
+        // Check the values
         auto ref = reference(pls);
         auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                      env.debugSink().front().payload().size() / sizeof(ElemType));
         EXPECT_EQUAL(res.size(), SIZE);
         EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+        // Check the metadata
+        EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("step"));
+        if (name_ == "instant") {
+            EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+        } else {
+            EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+        }
     }
 
     void runMultiple() {
@@ -75,27 +85,57 @@ public:
 
         // Check the results
         {   // July (11 days)
+            // Check the values
             auto ref = reference(pls, 1, 12);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(264, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(264, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
         {   // August (31 days)
+            // Check the values
             auto ref = reference(pls, 12, 43);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(1008, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
         {   // September (2 days)
+            // Check the values
             auto ref = reference(pls, 43, 45);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(1056, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(48, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
     }
@@ -143,7 +183,7 @@ private:
                 "\"type\": \"statistics-mtg2\", "
                 "\"output-frequency\": \"1m\", "
                 "\"operations\": [ \"" + name_ + "\" ], "
-                "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
+                "\"options\": { \"initial-condition-present\": true, \"disable-strict-mapping\": true } },"
                 "{ \"type\": \"debug-sink\" } ] }";
     }
 

@@ -420,9 +420,8 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, util::MioGribHandle& h, dm::FullM
         const double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
         auto waveDirections = h.getDoubleArray("scaledValuesOfWaveDirections");
         auto directionScalingFactor = h.getDouble("directionScalingFactor");
-        std::for_each(begin(waveDirections), end(waveDirections), [directionScalingFactor](double& val) {
-            val /= directionScalingFactor * rad2deg;
-        });
+        std::for_each(begin(waveDirections), end(waveDirections),
+                      [directionScalingFactor, rad2deg](double& val) { val /= directionScalingFactor * rad2deg; });
         misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
         misc.waveDirections.set(waveDirections);
     }

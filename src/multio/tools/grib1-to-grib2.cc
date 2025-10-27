@@ -841,11 +841,13 @@ public:  // methods
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options] inputFile outputFile " << std::endl;
-        eckit::Log::info() << std::endl
-                           << "\tinputFile:\t"
-                           << "GRIB file" << std::endl
-                           << "\toutputFile:\t"
-                           << "output file location" << std::endl;
+        eckit::Log::info()
+            << std::endl
+            << "\tinputFile:\t"
+            << "GRIB file" << std::endl
+            << "\toutputFile:\t"
+            << "output file location"
+            << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;
@@ -868,12 +870,14 @@ private:
     std::optional<std::string> overwritePacking_ = {};
     std::optional<std::string> setModel_ = {};
     bool mapWMOUnits_ = false;
+    bool noOutput_ = false;
     std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules_ = mars2mars::allRulesNoWMOMapping();
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
 };
 
 Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, argv} {
     options_.push_back(new eckit::option::SimpleOption<bool>("help", "Print help"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("no-output", "Does not write the file. Used for testing purposes."));
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "all", "If specified also grib2 messages will reencoded instead of copied"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
@@ -911,6 +915,9 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     bool all = false;
     args.get("all", all);
     copyGrib2Messages_ = !all;
+
+    noOutput_=false;
+    args.get("no-output", noOutput_);
 
     std::string packing;
     args.get("packing", packing);
@@ -958,23 +965,31 @@ void Grib1ToGrib2::finish(const eckit::option::CmdArgs&) {}
 void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     using eckit::message::ValueRepresentation;
     eckit::message::Reader reader{args(0)};
-    eckit::PathName outPath{args(1)};
+    std::optional<eckit::PathName> outPath;
+    if (!noOutput_) {
+        outPath = args(1);
+    }
 
-    if (outPath.exists()) {
-        const int result = remove(((std::string)outPath).c_str());
-        if (result == 0) {
-            if (verbosity_ > 0) {
-                std::cout << "Removed existing file " << outPath << std::endl;
+    if (outPath) {
+        if (outPath->exists()) {
+            const int result = remove(((std::string)*outPath).c_str());
+            if (result == 0) {
+                if (verbosity_ > 0) {
+                    std::cout << "Removed existing file " << *outPath << std::endl;
+                }
+            }
+            else {
+                std::cerr << "Could not remove existing file " << *outPath << std::endl;
+                return;
             }
         }
-        else {
-            std::cerr << "Could not remove existing file " << outPath << std::endl;
-            return;
-        }
     }
-    eckit::FileHandle outputFileHandle{outPath, true};  // overwrite output
+    std::optional<eckit::FileHandle> outputFileHandle;
 
-    outputFileHandle.openForWrite(0);
+    if (outPath) {
+        outputFileHandle.emplace(*outPath, true);  // overwrite output
+        outputFileHandle->openForWrite(0);
+    }
 
     // TODO pgeier add to mars2grib if necessary
     // optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
@@ -1035,7 +1050,9 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             if (verbosity_ > 2) {
                 std::cout << "Copying grib2 message..." << std::endl;
             }
-            inputMsg.write(outputFileHandle);
+            if (outputFileHandle) {
+                inputMsg.write(*outputFileHandle);
+            }
         }
         else {
 
@@ -1113,7 +1130,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             if (verbosity_ > 0) {
                 util::PrintStream ps{std::cout};
 
-                ps << "Converted " << std::endl;;
+                ps << "Converted " << std::endl;
+                ;
                 {
                     util::IndentGuard g{ps};
                     ps << mars << std::endl;
@@ -1122,11 +1140,15 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
             // Output by writing all to the same binary file
             eckit::message::Message outputMsg{new metkit::codes::CodesContent{preparedHandle->raw()}};
-            outputMsg.write(outputFileHandle);
+            if (outputFileHandle) {
+                outputMsg.write(*outputFileHandle);
+            }
         }
     }
 
-    outputFileHandle.close();
+    if (outputFileHandle) {
+        outputFileHandle->close();
+    }
 }
 
 }  // namespace multio::grib1ToGrib2

@@ -5,6 +5,8 @@
 #include <cinttypes>
 #include <iostream>
 
+#include "eckit/types/DateTime.h"
+#include "eckit/types/Time.h"
 #include "multio/LibMultio.h"
 #include "multio/action/statistics-mtg2/StatisticsIO.h"
 
@@ -58,9 +60,15 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 
 
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
+    // Note: A subtraction eckit::DateTime - eckit::Second yields eckit::Second instead of eckit::DateTime
+    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a workarounds
+    eckit::DateTime epoch{eckit::Date{0000, 01, 01}, eckit::Time{00, 00, 00}};
+    eckit::Second deltaCurr = cfg.curr() - epoch;
+    eckit::Second deltaStart = deltaCurr - eckit::Second{cfg.timespan().value_or(0) * 3600.0};
+
     eckit::DateTime epochPoint{cfg.epoch()};
-    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.curr())};
-    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.curr())};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
+    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
     long windowType = 0;
     if (cfg.options().windowType() == "forward-offset") {

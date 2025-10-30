@@ -55,6 +55,12 @@ public:
             return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
         });
     }
+
+    std::int64_t toHours() const {
+        return visit([](auto&& duration) -> std::int64_t {
+            return std::chrono::duration_cast<std::chrono::hours>(duration).count();
+        });
+    }
 };
 
 }  // namespace multio::datamod

@@ -12,6 +12,7 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/Glossary.h"
 #include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/core/EntryParser.h"
 
 namespace multio::action::statistics_mtg2 {
 
@@ -54,6 +55,13 @@ std::int64_t readStep(const message::Metadata& md) {
     const auto stepVal = md.getOpt<std::int64_t>(dm::legacy::Step);
     ASSERT(stepVal.has_value());
     return *stepVal;
+}
+
+std::optional<std::int64_t> readTimespan(const message::Metadata& md) {
+    if (const auto& timespan = dm::parseEntry(dm::TIMESPAN, md); timespan.isSet()) {
+        return timespan.get().toHours();
+    }
+    return std::nullopt;
 }
 
 std::string readParam(const message::Metadata& md) {
@@ -116,6 +124,7 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     level_{readLevel(md)},
     timeStep_{readTimeStep(md, opt.timeStep())},
     step_{readStep(md)},
+    timespan_{readTimespan(md)},
     param_{readParam(md)},
     levType_{readLevType(md)},
     gridType_{readGridType(md)},
@@ -167,6 +176,9 @@ std::int64_t StatisticsConfiguration::timeStep() const {
 }
 std::int64_t StatisticsConfiguration::step() const {
     return step_;
+}
+std::optional<std::int64_t> StatisticsConfiguration::timespan() const {
+    return timespan_;
 }
 
 const std::string& StatisticsConfiguration::param() const {

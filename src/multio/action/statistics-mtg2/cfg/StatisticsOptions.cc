@@ -81,14 +81,18 @@ std::string parseLogPrefix(const eckit::LocalConfiguration& cfg) {
     return cfg.getString("log-prefix", "Plan");
 }
 
-std::string parseWindowType(const eckit::LocalConfiguration& cfg) {
+WindowType parseWindowType(const eckit::LocalConfiguration& cfg) {
     const auto windowType = cfg.getString("window-type", "forward-offset");
-    if (windowType != "forward-offset" && windowType != "backward-offset") {
-        std::ostringstream os;
-        os << "Invalid window type :: " << windowType << std::endl;
-        throw eckit::UserError(os.str(), Here());
+    if (windowType == "forward-offset") {
+        return WindowType::ForwardOffset;
     }
-    return windowType;
+    if (windowType == "backward-offset") {
+        return WindowType::BackwardOffset;
+    }
+
+    std::ostringstream os;
+    os << "Invalid window type :: " << windowType << std::endl;
+    throw eckit::UserError(os.str(), Here());
 }
 
 std::string parseSolverResetAccumulatedFieldsEvery(const eckit::LocalConfiguration& cfg) {
@@ -201,7 +205,7 @@ const std::string& StatisticsOptions::restartLib() const {
 const std::string& StatisticsOptions::logPrefix() const {
     return logPrefix_;
 }
-const std::string& StatisticsOptions::windowType() const {
+WindowType StatisticsOptions::windowType() const {
     return windowType_;
 }
 const std::string& StatisticsOptions::solverResetAccumulatedFieldsEvery() const {

@@ -400,9 +400,9 @@ IMPLICIT NONE
   ! CASE( TYPE_HCMEAN_E )
   !   ! Hindcast climate mean
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_SSD_E )
-  !   ! Simulated satellite data
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_SSD_E )
+    ! Simulated satellite data
+    SORT = 1_JPIB_K
   ! CASE( TYPE_GSD_E )
   !   ! Gridded satellite data
   !   SORT = 1_JPIB_K

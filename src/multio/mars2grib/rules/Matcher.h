@@ -96,7 +96,7 @@ struct NoneOf {
     bool operator()(const dm::FullMarsRecord& rec) const {
         const auto& entry = entryDef.get().get(rec);
 
-        return (entry.isSet() && (std::find(values.begin(), values.end(), entry.get()) == values.end()));
+        return !entry.isSet() || (std::find(values.begin(), values.end(), entry.get()) == values.end());
     }
 };
 template <typename EntryDef_>
@@ -336,7 +336,7 @@ struct Print<mars2grib::matcher::All<Matchers...>> {
         {
             IndentGuard g(ps);
             ps << m;
-            ps.softBreak(); 
+            ps.softBreak();
         }
     }
     static void print(PrintStream& ps, const mars2grib::matcher::All<Matchers...>& a) {
@@ -363,12 +363,12 @@ struct Print<mars2grib::matcher::Any<Matchers...>> {
         {
             IndentGuard g(ps);
             ps << m;
-            ps.softBreak(); 
+            ps.softBreak();
         }
     }
     static void print(PrintStream& ps, const mars2grib::matcher::Any<Matchers...>& a) {
         ps << "any(";
-        ps.softBreak(); 
+        ps.softBreak();
         bool first = true;
         std::apply([&](const auto&... matchers) { (printMatcher(first, ps, matchers), ...); }, a.matchers);
         ps << ")";

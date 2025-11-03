@@ -259,7 +259,9 @@ private:
                 "\"type\": \"statistics-mtg2\", "
                 "\"output-frequency\": \"1m\", "
                 "\"operations\": [ \"" + name_ + "\" ], "
-                "\"options\": { \"initial-condition-present\": true, \"disable-strict-mapping\": true } },"
+                "\"options\": { \"initial-condition-present\": true,"
+                "               \"solver-reset-accumulate-fields-every\": \"never\","
+                "               \"disable-strict-mapping\": true } },"
                 "{ \"type\": \"debug-sink\" } ] }";
     }
 

@@ -597,14 +597,17 @@ auto paramHLRules() {
 // ML
 //-----------------------------------------------------------------------------
 
+// NOTE - levtype ML is always mapped to TOL::Hybrid - these rules can be generalized once the time mapping is mapped
+// orthogonally
 auto paramMLRules() {
-    return exclusiveRuleList(                                                                                //
-        rule(matchParams(75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 203, 246, 247, 248, 260290),  //
-             pointInTime(),                                                                                  //
-             typeOfLevel(TOL::Hybrid)),                                                                      //
-        rule(matchParams(paramRange(162100, 162113)),                                                        //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),                      //
-             typeOfLevel(TOL::Hybrid))                                                                       //
+    return exclusiveRuleList(  //
+        rule(matchParams(21, 22, 23, 75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 156, 157, 203, 246, 247, 248,
+                         260290),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::Hybrid)),                                                  //
+        rule(matchParams(paramRange(162100, 162113)),                                    //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
+             typeOfLevel(TOL::Hybrid))                                                   //
     );
 }
 

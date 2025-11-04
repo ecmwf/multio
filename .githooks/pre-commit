@@ -1,39 +1,39 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 staged_files=$(git diff --name-only --cached)
-
-if command -v gsed &> /dev/null
-then
-    sed_command=gsed
-else
-    sed_command=sed
-fi
-
-errors=""
+declare -i errors=0
 
 for file in $staged_files
 do
     if [ -f "$file" ]
     then
-        filename=$(basename -- "$file")
-        extension="${filename##*.}"
-        if [ "$extension" == "h" ] || [ "$extension" == "c" ] || [ "$extension" == "cc" ]
+        base="$(basename "${file}")"
+        ext="${base##*.}"
+        if [ "${ext}" == "${base}" ]
         then
-            format_result=$(git clang-format -q --style=file $file)
+            tmpfile=$(mktemp "/tmp/${USER}-format-XXXXXX")
         else
-            format_result=$($sed_command --in-place -e 's/[[:space:]]*$//' -e '${/^$/d;}' $file)
+            tmpfile=$(mktemp "/tmp/${USER}-format-XXXXXX.${ext}")
         fi
-        errors="$errors$format_result"
-        git add $file
+
+        git show :"${file}" > "${tmpfile}"
+
+        ./format-sources.sh "${tmpfile}"
+        if ! git diff --no-index --quiet -- "${tmpfile}" <(git show :"${file}")
+        then
+            echo "Detected formatting issue in '${file}'"
+            ((errors++))
+        fi
+
+        rm -f "${tmpfile}"
     fi
 done
 
 exec 1>&2
 
-if [ "$errors" != "" ]
+if (( errors > 0))
 then
-    echo "Automatic format error:"
-    echo $errors
-    echo "Please run clang-format manually!"
+    echo "Please run 'format-sources.sh' manually!"
+    echo "You can ignore this pre-commit hook using 'git commit --no-verify'"
     exit 1
 fi

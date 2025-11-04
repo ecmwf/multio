@@ -155,8 +155,8 @@ auto fixHeightAboveGround10m() {
 }
 
 auto fixHeightAboveSea() {
-    return rule(all(matchParams(140233, 140245, 140249)),                         //
-                setMarsKey(dm::LEVELIST, 10));  //
+    return rule(all(matchParams(140233, 140245, 140249)),  //
+                setMarsKey(dm::LEVELIST, 10));             //
 }
 
 
@@ -302,6 +302,19 @@ auto ruleWaveBitsPerValue() {
 
 
 //-----------------------------------------------------------------------------
+// Map incremental fields for type=4i
+//-----------------------------------------------------------------------------
+
+const RuleList& incrementalType4IRules() {
+    static auto type4i_ = ruleList(
+        rule(matchParams(200130), setMarsKey(dm::PARAM, 130)), rule(matchParams(200133), setMarsKey(dm::PARAM, 133)),
+        rule(matchParams(200138), setMarsKey(dm::PARAM, 138)), rule(matchParams(200152), setMarsKey(dm::PARAM, 152)),
+        rule(matchParams(200155), setMarsKey(dm::PARAM, 155)), rule(matchParams(200203), setMarsKey(dm::PARAM, 203)));
+    return type4i_;
+}
+
+
+//-----------------------------------------------------------------------------
 // All rules
 //-----------------------------------------------------------------------------
 
@@ -382,12 +395,13 @@ const RuleList& mapBitsPerValue() {
 
 
 const RuleList& allRulesNoWMOMapping() {
-    static auto all_ = ruleList(fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
+    static auto all_ = ruleList(incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
     return all_;
 }
 
 const RuleList& allRules() {
-    static auto all_ = ruleList(wmoUnitMapping(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
+    static auto all_
+        = ruleList(wmoUnitMapping(), incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
     return all_;
 }
 

@@ -391,18 +391,11 @@ void Statistics::executeImpl(message::Message msg) {
         return;
     }
 
-    // std::ostringstream os;
-    // os << "Current time vs current point in the  window :: "
-    //    << cfg.curr() << " " << ts.cwin().currPoint()
-    //    << std::endl;
-    // std::cout << os.str() << std::endl;
-
-    // In any case if the current time is greater than the current point in the window, we have a problem
+    // The incomming message must occur AFTER the current point in the window!
     if (cfg.curr() <= ts.cwin().currPoint()) {
         std::ostringstream os;
-        os << "Current time is greater than the current point in the window :: " << cfg.curr().date().yyyymmdd() << " "
-           << cfg.curr().time().hhmmss() << " " << ts.cwin().currPoint().date().yyyymmdd() << " "
-           << ts.cwin().currPoint().time().hhmmss() << std::endl;
+        os << "Current time is before or equal to the current point in the window :: "
+           << cfg.curr() << " > " << ts.cwin().currPoint() << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
 

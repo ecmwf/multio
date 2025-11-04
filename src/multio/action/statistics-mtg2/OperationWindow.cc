@@ -5,6 +5,8 @@
 #include <cinttypes>
 #include <iostream>
 
+#include "eckit/types/DateTime.h"
+#include "eckit/types/Time.h"
 #include "multio/LibMultio.h"
 #include "multio/action/statistics-mtg2/StatisticsIO.h"
 
@@ -58,23 +60,17 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 
 
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
+    // Note: A subtraction eckit::DateTime - eckit::Second yields eckit::Second instead of eckit::DateTime
+    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a workarounds
+    eckit::DateTime epoch{eckit::Date{0000, 01, 01}, eckit::Time{00, 00, 00}};
+    eckit::Second deltaCurr = cfg.curr() - epoch;
+    eckit::Second deltaStart = deltaCurr - eckit::Second{cfg.timespan().value_or(0) * 3600.0};
+
     eckit::DateTime epochPoint{cfg.epoch()};
-    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.curr())};
-    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.curr())};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
+    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    long windowType = 0;
-    if (cfg.options().windowType() == "forward-offset") {
-        windowType = 0;
-    }
-    else if (cfg.options().windowType() == "backward-offset") {
-        windowType = 1;
-    }
-    else {
-        std::ostringstream os;
-        os << " Unknown window type: " << cfg.options().windowType() << std::endl;
-        throw eckit::SeriousBug(os.str(), Here());
-    };
-    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), cfg.options().windowType()};
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -99,14 +95,14 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     timeStepInSeconds_{0},
     count_{0},
     counts_{},
-    type_{0} {
+    windowType_{WindowType::ForwardOffset} {
     load(IOmanager, opt);
     return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeStepInSeconds, long windowType) :
+                                 long timeStepInSeconds, WindowType windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -117,7 +113,7 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     timeStepInSeconds_{timeStepInSeconds},
     count_{0},
     counts_{},
-    type_{windowType} {}
+    windowType_{windowType} {}
 
 
 long OperationWindow::count() const {
@@ -180,27 +176,12 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     return;
 }
 
-std::string OperationWindow::windowType() const {
-    if (type_ == 0) {
-        return std::string{"forward-offset"};
-    }
-    else if (type_ == 1) {
-        return std::string{"backward-offset"};
-    }
-    else {
-        std::ostringstream os;
-        os << *this << " Unknown window type " << std::endl;
-        throw eckit::SeriousBug(os.str(), Here());
-    }
-}
-
-
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret;
-    if (type_ == 0) {
+    if (windowType_ == WindowType::ForwardOffset) {
         ret = gtLowerBound(dt, false) && leUpperBound(dt, false);
     }
-    else if (type_ == 1) {
+    else if (windowType_ == WindowType::BackwardOffset) {
         ret = geLowerBound(dt, false) && ltUpperBound(dt, false);
     }
     else {
@@ -482,7 +463,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
-        outFile << "type_ :: " << type_ << std::endl;
+        outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
         outFile.close();
     }
 
@@ -509,7 +490,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
 
     currState[14] = static_cast<std::uint64_t>(timeStepInSeconds_);
     currState[15] = static_cast<std::uint64_t>(count_);
-    currState[16] = static_cast<std::uint64_t>(type_);
+    currState[16] = static_cast<std::uint64_t>(windowType_);
 
     const size_t countsSize = counts_.size();
     currState[17] = static_cast<std::uint64_t>(countsSize);
@@ -534,7 +515,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
     timeStepInSeconds_ = static_cast<long>(currState[14]);
     count_ = static_cast<long>(currState[15]);
-    type_ = static_cast<long>(currState[16]);
+    windowType_ = static_cast<WindowType>(currState[16]);
 
     const auto countsSize = static_cast<size_t>(currState[17]);
     counts_.resize(countsSize);
@@ -554,7 +535,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
-        outFile << "type_ :: " << type_ << std::endl;
+        outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
         outFile.close();
     }
 

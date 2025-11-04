@@ -1,8 +1,10 @@
 #pragma once
 
+#include <optional>
 #include <random>
 
 #include "../../../MultioTestEnvironment.h"
+#include "eckit/testing/Test.h"
 
 
 inline constexpr std::size_t SIZE = 4096;
@@ -37,7 +39,7 @@ public:
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 2; ++i) {
             pls[i] = getPayload(SIZE, step);
-            EXPECT_NO_THROW(env.process(getMessage(pls[i], step)));
+            EXPECT_NO_THROW(env.process(getMessage(pls[i], step, 2020'07'21)));
             step += 24;
         }
         EXPECT_EQUAL(env.debugSink().size(), 0);
@@ -46,15 +48,23 @@ public:
         EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
-        // Check the result
+        // Check the values
         auto ref = reference(pls);
         auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                      env.debugSink().front().payload().size() / sizeof(ElemType));
         EXPECT_EQUAL(res.size(), SIZE);
         EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+        // Check the metadata
+        EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("step"));
+        if (name_ == "instant") {
+            EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+        } else {
+            EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+        }
     }
 
-    void runMultiple() {
+    void runMultipleUnaligned() {
         const std::string plan = getPlan();
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
@@ -64,7 +74,7 @@ public:
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 45; ++i) {
             pls[i] = getPayload(SIZE, step);
-            EXPECT_NO_THROW(env.process(getMessage(pls[i], step)));
+            EXPECT_NO_THROW(env.process(getMessage(pls[i], step, 2020'07'21)));
             step += 24;
         }
         EXPECT_EQUAL(env.debugSink().size(), 2);
@@ -75,27 +85,133 @@ public:
 
         // Check the results
         {   // July (11 days)
+            // Check the values
             auto ref = reference(pls, 1, 12);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(264, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(264, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
         {   // August (31 days)
+            // Check the values
             auto ref = reference(pls, 12, 43);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(1008, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
         {   // September (2 days)
+            // Check the values
             auto ref = reference(pls, 43, 45);
             auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
                                         env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
             EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(1056, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(48, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
+            env.debugSink().pop();
+        }
+    }
+
+    void runMultipleAligned() {
+        const std::string plan = getPlan();
+        auto env = MultioTestEnvironment(plan);
+        EXPECT_EQUAL(env.debugSink().size(), 0);
+
+        // Send 93 messages stating from 1st october
+        auto pls = SpatialDataOverTime(93);
+        std::int64_t step = 0;
+        for (std::size_t i = 0; i < 93; ++i) {
+            pls[i] = getPayload(SIZE, step);
+            EXPECT_NO_THROW(env.process(getMessage(pls[i], step, 2025'10'01)));
+            step += 24;
+        }
+        EXPECT_EQUAL(env.debugSink().size(), 2);
+
+        // Flush last-step should trigger emitting the last statistics message
+        EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
+        EXPECT_EQUAL(env.debugSink().size(), 4);
+
+        // Check the results
+        {   // October (31 days)
+            // Check the values
+            auto ref = reference(pls, 1, 32);
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
+            EXPECT_EQUAL(res.size(), SIZE);
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
+            env.debugSink().pop();
+        }
+        {   // November (30 days)
+            // Check the values
+            auto ref = reference(pls, 32, 62);
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
+            EXPECT_EQUAL(res.size(), SIZE);
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(1464, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(720, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
+            env.debugSink().pop();
+        }
+        {   // December (31 days)
+            // Check the values
+            auto ref = reference(pls, 62, 93);
+            auto res = ArrayView<ElemType>(static_cast<ElemType const *>(env.debugSink().front().payload().data()),
+                                        env.debugSink().front().payload().size() / sizeof(ElemType));
+            EXPECT_EQUAL(res.size(), SIZE);
+            EXPECT(res.isApproximatelyEqual(ref, tolerance_));
+
+            // Check the metadata
+            EXPECT_EQUAL(2208, env.debugSink().front().metadata().get<std::int64_t>("step"));
+            if (name_ == "instant") {
+                EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
+            } else {
+                EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            }
+
             env.debugSink().pop();
         }
     }
@@ -143,19 +259,21 @@ private:
                 "\"type\": \"statistics-mtg2\", "
                 "\"output-frequency\": \"1m\", "
                 "\"operations\": [ \"" + name_ + "\" ], "
-                "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
+                "\"options\": { \"initial-condition-present\": true,"
+                "               \"solver-reset-accumulate-fields-every\": \"never\","
+                "               \"disable-strict-mapping\": true } },"
                 "{ \"type\": \"debug-sink\" } ] }";
     }
 
-    Message getMessage(SpatialData payload, std::int64_t step) {
+    Message getMessage(SpatialData payload, std::int64_t step, std::int64_t date, std::int64_t time = 00'00'00) {
         static_assert(std::is_same_v<ElemType, float> || std::is_same_v<ElemType, double>, "type must be float or double");
 
         auto md = Metadata({
             {"param", 130},
             {"levtype", "sfc"},
             {"grid", "custom"},
-            {"date", 20200721},
-            {"time", 0000},
+            {"date", date},
+            {"time", time},
             {"step", step},
             {"misc-precision", std::is_same_v<ElemType, float> ? "single" : "double"}
         });

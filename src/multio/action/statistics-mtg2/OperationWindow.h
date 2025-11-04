@@ -20,8 +20,8 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds,
-                    long windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
+                    long timeStepInSeconds, WindowType windowType);
 
     long count() const;
     const std::vector<long>& counts() const;
@@ -35,7 +35,6 @@ public:
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
-    std::string windowType() const;
     bool isWithin(const eckit::DateTime& dt) const;
     bool gtLowerBound(const eckit::DateTime& dt, bool throw_error) const;
     bool geLowerBound(const eckit::DateTime& dt, bool throw_error) const;
@@ -119,7 +118,7 @@ private:
     long timeStepInSeconds_;
     long count_;
     mutable std::vector<long> counts_;
-    long type_;
+    WindowType windowType_;
 
     void initCountsLazy(size_t sz) const;
 

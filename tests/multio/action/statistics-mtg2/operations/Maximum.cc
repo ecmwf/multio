@@ -24,8 +24,10 @@ auto testDouble = MaximumTest<double>();
 
 CASE("single test float") { testFloat.runSingle(); }
 CASE("single test double") { testDouble.runSingle(); }
-CASE("multiple test float") { testFloat.runMultiple(); }
-CASE("multiple test double") { testDouble.runMultiple(); }
+CASE("multiple unaligned test float") { testFloat.runMultipleUnaligned(); }
+CASE("multiple unaligned test double") { testDouble.runMultipleUnaligned(); }
+CASE("multiple aligned test float") { testFloat.runMultipleAligned(); }
+CASE("multiple aligned test double") { testDouble.runMultipleAligned(); }
 
 }  // multio::test::statistics_mtg2
 

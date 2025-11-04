@@ -19,6 +19,7 @@ private:
     const std::int64_t level_;
     const std::int64_t timeStep_;
     const std::int64_t step_;
+    const std::optional<std::int64_t> timespan_;
 
     const std::string param_;
     const std::string levType_;
@@ -54,6 +55,7 @@ public:
     std::int64_t level() const;
     std::int64_t timeStep() const;
     std::int64_t step() const;
+    std::optional<std::int64_t> timespan() const;
 
     const std::string& param() const;
     const std::string& levType() const;

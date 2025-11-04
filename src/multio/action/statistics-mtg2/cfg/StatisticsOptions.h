@@ -9,6 +9,13 @@
 
 namespace multio::action::statistics_mtg2 {
 
+
+enum class WindowType : std::int64_t {
+    ForwardOffset = 0,
+    BackwardOffset = 1,
+};
+
+
 /*
  * This class handle all the statistics configurations under the option keyword in the yaml
  */
@@ -26,7 +33,7 @@ private:
     const std::string restartLib_;
 
     const std::string logPrefix_;
-    const std::string windowType_;
+    const WindowType windowType_;
     const std::string solverResetAccumulatedFieldsEvery_;
 
     const std::optional<std::int64_t> valueCountThreshold_;
@@ -50,7 +57,7 @@ public:
     const std::string& restartLib() const;
 
     const std::string& logPrefix() const;
-    const std::string& windowType() const;
+    WindowType windowType() const;
     const std::string& solverResetAccumulatedFieldsEvery() const;
 
     std::optional<std::int64_t> valueCountThreshold() const;

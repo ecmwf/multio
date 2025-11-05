@@ -16,14 +16,14 @@ void parseIntStrict(std::int64_t& value, const std::string& str) {
     try {
         value = std::stol(str, &pos);
     }
-    catch (std::invalid_argument e) {
-        throw eckit::UserError("Cannot convert '" + str + "' to int64 : input is not numeric");
+    catch (const std::invalid_argument& e) {
+        throw eckit::UserError("Cannot convert '" + str + "' to int64 : input is not numeric", Here());
     }
-    catch (std::out_of_range e) {
-        throw eckit::UserError("Cannot convert '" + str + "' to int64 : output value is out of range");
+    catch (const std::out_of_range& e) {
+        throw eckit::UserError("Cannot convert '" + str + "' to int64 : output value is out of range", Here());
     }
     if (pos != str.size()) {
-        throw eckit::UserError("Cannot convert '" + str + "' to int64 : input contains trailing characters");
+        throw eckit::UserError("Cannot convert '" + str + "' to int64 : input contains trailing characters", Here());
     }
 }
 
@@ -32,14 +32,14 @@ void parseDoubleStrict(double& value, const std::string& str) {
     try {
         value = std::stod(str, &pos);
     }
-    catch (std::invalid_argument e) {
-        throw eckit::UserError("Cannot convert '" + str + "' to double : input is not numeric");
+    catch (const std::invalid_argument& e) {
+        throw eckit::UserError("Cannot convert '" + str + "' to double : input is not numeric", Here());
     }
-    catch (std::out_of_range e) {
-        throw eckit::UserError("Cannot convert '" + str + "' to double : output value is out of range");
+    catch (const std::out_of_range& e) {
+        throw eckit::UserError("Cannot convert '" + str + "' to double : output value is out of range", Here());
     }
     if (pos != str.size()) {
-        throw eckit::UserError("Cannot convert '" + str + "' to double : input contains trailing characters");
+        throw eckit::UserError("Cannot convert '" + str + "' to double : input contains trailing characters", Here());
     }
 }
 

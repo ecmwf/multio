@@ -101,6 +101,7 @@ MaestroSink::~MaestroSink() {
         if (readyCdoEnabled_) {
             readyCdo_.dispose();
         }
+        flush();  // Call .withdraw() and .dispose() on all offered CDOs
         mstro_finalize();
     }
     timing.process();

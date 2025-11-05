@@ -43,8 +43,8 @@ TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
                 }
                 oss << "'" << key << "'";
             }
-            throw eckit::UserError{"Found unknown key '" + key + "' in the configuration, allowed keys are: ["
-                                   + oss.str() + "]"};
+            throw eckit::UserError{
+                "Found unknown key '" + key + "' in the configuration, allowed keys are: [" + oss.str() + "]", Here()};
         }
     }
 

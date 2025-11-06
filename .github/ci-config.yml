@@ -10,5 +10,5 @@ dependencies: |
   ecmwf/atlas
   ecmwf/atlas-orca
   ecmwf/mir
-dependency_branch: develop
+dependency_branch: master
 parallelism_factor: 8

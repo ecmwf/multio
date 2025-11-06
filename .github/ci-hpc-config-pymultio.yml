@@ -3,16 +3,16 @@ build:
   modules:
     - ninja
   dependencies:
-    - ecmwf/ecbuild@develop
-    - ecmwf/eccodes@develop
-    - ecmwf/eckit@develop
-    - ecmwf/metkit@develop
-    - ecmwf/fckit@develop
-    - ecmwf/fdb@develop
-    - ecmwf/atlas@develop
-    - ecmwf/atlas-orca@develop
-    - ecmwf/mir@develop
-    - ecmwf/multio@develop
+    - ecmwf/ecbuild@master
+    - ecmwf/eccodes@master
+    - ecmwf/eckit@master
+    - ecmwf/metkit@master
+    - ecmwf/fckit@master
+    - ecmwf/fdb@master
+    - ecmwf/atlas@master
+    - ecmwf/atlas-orca@master
+    - ecmwf/mir@master
+    - ecmwf/multio@master
   dependency_cmake_options:
     - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
     - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"

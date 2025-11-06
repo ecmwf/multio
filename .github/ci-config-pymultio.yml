@@ -11,6 +11,6 @@ dependencies: |
   ecmwf/atlas-orca
   ecmwf/mir
   ecmwf/multio
-dependency_branch: develop
+dependency_branch: master
 parallelism_factor: 8
 self_build: false

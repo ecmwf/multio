@@ -17,15 +17,15 @@ intel_mpi:
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
-        - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
-        - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
-        - ecmwf/fckit@develop
-        - ecmwf/fdb@develop
-        - ecmwf/atlas@develop
-        - ecmwf/atlas-orca@develop
-        - ecmwf/mir@develop
+        - ecmwf/ecbuild@master
+        - ecmwf/eccodes@master
+        - ecmwf/eckit@master
+        - ecmwf/metkit@master
+        - ecmwf/fckit@master
+        - ecmwf/fdb@master
+        - ecmwf/atlas@master
+        - ecmwf/atlas-orca@master
+        - ecmwf/mir@master
       parallel: 64
       ntasks: 16
       env:
@@ -46,15 +46,15 @@ hpcx_openmpi:
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
-        - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
-        - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
-        - ecmwf/fckit@develop
-        - ecmwf/fdb@develop
-        - ecmwf/atlas@develop
-        - ecmwf/atlas-orca@develop
-        - ecmwf/mir@develop
+        - ecmwf/ecbuild@master
+        - ecmwf/eccodes@master
+        - ecmwf/eckit@master
+        - ecmwf/metkit@master
+        - ecmwf/fckit@master
+        - ecmwf/fdb@master
+        - ecmwf/atlas@master
+        - ecmwf/atlas-orca@master
+        - ecmwf/mir@master
       parallel: 64
       ntasks: 16
       env:
@@ -75,15 +75,15 @@ openmpi:
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
-        - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
-        - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
-        - ecmwf/fckit@develop
-        - ecmwf/fdb@develop
-        - ecmwf/atlas@develop
-        - ecmwf/atlas-orca@develop
-        - ecmwf/mir@develop
+        - ecmwf/ecbuild@master
+        - ecmwf/eccodes@master
+        - ecmwf/eckit@master
+        - ecmwf/metkit@master
+        - ecmwf/fckit@master
+        - ecmwf/fdb@master
+        - ecmwf/atlas@master
+        - ecmwf/atlas-orca@master
+        - ecmwf/mir@master
       parallel: 64
       ntasks: 16
       env:
@@ -100,15 +100,15 @@ mpi_off:
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
-        - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
-        - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
-        - ecmwf/fckit@develop
-        - ecmwf/fdb@develop
-        - ecmwf/atlas@develop
-        - ecmwf/atlas-orca@develop
-        - ecmwf/mir@develop
+        - ecmwf/ecbuild@master
+        - ecmwf/eccodes@master
+        - ecmwf/eckit@master
+        - ecmwf/metkit@master
+        - ecmwf/fckit@master
+        - ecmwf/fdb@master
+        - ecmwf/atlas@master
+        - ecmwf/atlas-orca@master
+        - ecmwf/mir@master
       parallel: 64
       env:
         - CTEST_PARALLEL_LEVEL=1

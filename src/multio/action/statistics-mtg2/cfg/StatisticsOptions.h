@@ -34,7 +34,6 @@ private:
 
     const std::string logPrefix_;
     const WindowType windowType_;
-    const std::string solverResetAccumulatedFieldsEvery_;
 
     const std::optional<std::int64_t> valueCountThreshold_;
 
@@ -58,7 +57,6 @@ public:
 
     const std::string& logPrefix() const;
     WindowType windowType() const;
-    const std::string& solverResetAccumulatedFieldsEvery() const;
 
     std::optional<std::int64_t> valueCountThreshold() const;
 

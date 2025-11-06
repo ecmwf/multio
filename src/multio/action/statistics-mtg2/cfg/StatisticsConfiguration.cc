@@ -64,13 +64,13 @@ std::optional<std::int64_t> readTimespan(const message::Metadata& md) {
     return std::nullopt;
 }
 
-std::string readParam(const message::Metadata& md) {
+std::int64_t readParam(const message::Metadata& md) {
     // TODO: use whole validated keyset...
-    if (const auto& grid = dm::parseEntry(dm::PARAM, md); grid.isSet()) {
-        return std::to_string(grid.get());
+    if (const auto& param = dm::parseEntry(dm::PARAM, md); param.isSet()) {
+        return param.get();
     }
     else if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
-        return std::to_string(*paramId);
+        return *paramId;
     }
     throw eckit::SeriousBug{"Param metadata not present", Here()};
 }
@@ -181,7 +181,7 @@ std::optional<std::int64_t> StatisticsConfiguration::timespan() const {
     return timespan_;
 }
 
-const std::string& StatisticsConfiguration::param() const {
+int64_t StatisticsConfiguration::param() const {
     return param_;
 }
 const std::string& StatisticsConfiguration::levType() const {

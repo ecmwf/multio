@@ -21,12 +21,13 @@ public:
         Operation{name, operation, win, cfg.options()},
         values_{std::vector<T>(sz / sizeof(T), 0.0)},
         initValues_{std::vector<T>(sz / sizeof(T), 0.0)},
-        needRestart_{needRestart} {}
+        needRestart_{needRestart},
+        operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {}
 
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, bool needRestart,
                                    const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                                    const StatisticsOptions& opt) :
-        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart} {
+        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart}, operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {
         load(IOmanager, opt);
         return;
     }
@@ -179,6 +180,7 @@ protected:
 
 private:
     bool needRestart_;
+    const StatisticsOperationMapping operationMapping_;
 
     const std::string restartFileName() const { return name_ + "_" + (sizeof(T) == 4 ? "single" : "double"); };
 
@@ -187,9 +189,8 @@ private:
             return false;  // Not a statistical field
         }
 
-        // TODO(knobel): Make StatisticsOperationMapping a singleton
         // TODO(knobel): Do this check only once when the TemporalStatistics object is created
-        const auto op = StatisticsOperationMapping::makeStatisticsOperationMapping().getOperation(cfg.param());
+        const auto op = operationMapping_.getOperation(cfg.param());
         if (!op) {
             throw eckit::SeriousBug{"Metadata has timespan, but param is not known to be statistical! : param=" + std::to_string(cfg.param()), Here()};
         }

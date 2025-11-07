@@ -44,13 +44,6 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
-    TARGET ${PREFIX}_deaccumulate
-    SOURCES DeAccumulate.cc
-    NO_AS_NEEDED
-    LIBS multio-action-debug-sink multio-action-statistics-mtg2
-)
-
-ecbuild_add_test(
     TARGET ${PREFIX}_flux_average
     SOURCES FluxAverage.cc
     NO_AS_NEEDED

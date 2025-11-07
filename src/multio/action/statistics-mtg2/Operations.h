@@ -28,7 +28,6 @@
 #include "multio/action/statistics-mtg2/operations/Minimum.h"
 #include "multio/action/statistics-mtg2/operations/StdDev.h"
 
-#include "multio/action/statistics-mtg2/operations/DeAccumulate.h"
 #include "multio/action/statistics-mtg2/operations/FixedWindowFluxAverage.h"
 
 namespace multio::action::statistics_mtg2 {
@@ -60,9 +59,6 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
     }
     if (opname == "accumulate") {
         return std::make_unique<Accumulate<Precision>>(opname, sz, win, cfg);
-    }
-    if (opname == "de-accumulate") {
-        return std::make_unique<DeAccumulate<Precision>>(opname, sz, win, cfg);
     }
     if (opname == "fixed-window-flux-average") {
         return std::make_unique<FixedWindowFluxAverage<Precision>>(opname, sz, win, cfg);
@@ -115,10 +111,6 @@ std::unique_ptr<Operation> load_operation(const std::string& opname, std::shared
     if (opname == "accumulate") {
         found = true;
         ret = std::make_unique<Accumulate<Precision>>(opname, win, IOmanager, opt);
-    }
-    if (opname == "de-accumulate") {
-        found = true;
-        ret = std::make_unique<DeAccumulate<Precision>>(opname, win, IOmanager, opt);
     }
     if (opname == "fixed-window-flux-average") {
         found = true;

@@ -57,4 +57,11 @@ ecbuild_add_test(
     LIBS multio-action-debug-sink multio-action-select multio-action-average-rate multio-action-statistics-mtg2
 )
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_accumulations
+    SOURCES Accumulations.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2
+)
+
 add_subdirectory(operations)

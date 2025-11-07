@@ -27,11 +27,9 @@ list( APPEND _statistics_sources
     operations/Average.h
     operations/Difference.h
     operations/InverseDifference.h
-    operations/FluxAverage.h
     operations/Instant.h
     operations/Minimum.h
     operations/Maximum.h
-    operations/FixedWindowFluxAverage.h
     operations/StdDev.h
     mappings/StatisticsParamMapping.cc
     mappings/StatisticsParamMapping.h

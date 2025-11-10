@@ -14,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -21,9 +22,55 @@
 
 namespace multio::util::config::detail {
 
+//----------------------------------------------------------------------------------------------------------------------
+
+template <typename TConfig, class = void>
+struct HasFieldsMember : std::false_type {};
+
+template <typename TConfig>
+struct HasFieldsMember<TConfig, std::void_t<decltype(TConfig::fields_)>> : std::true_type {};
+
+template <typename TConfig>
+inline constexpr bool HasFieldsMember_v = HasFieldsMember<TConfig>::value;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename TEnum, std::enable_if_t<std::is_enum_v<TEnum>, bool> = true>
 struct EnumTrait;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+template <typename TConfig>
+TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
+    TConfig config;
+    std::set<std::string> allowedKeys;
+
+    std::apply(
+        [&](const auto&... field) {
+            (parseEntry(field, config, localConfig), ...);
+            (allowedKeys.emplace(field.key), ...);
+        },
+        config.fields_);
+
+    for (const auto& key : localConfig.keys()) {
+        if (allowedKeys.find(key) == allowedKeys.end()) {
+            size_t i = 0;
+            std::ostringstream oss;
+            for (const auto& key : localConfig.keys()) {
+                if (i++ > 0) {
+                    oss << ", ";
+                }
+                oss << "'" << key << "'";
+            }
+            throw eckit::UserError{
+                "Found unknown key '" + key + "' in the configuration, allowed keys are: [" + oss.str() + "]", Here()};
+        }
+    }
+
+    return config;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 bool parseEntry(std::string& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
 bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
@@ -58,6 +105,24 @@ bool parseEntry(T& value, const std::string& key, const eckit::LocalConfiguratio
     throw eckit::UserError{
         "Could not convert '" + configValue + "' to enum value : allowed values are: [" + oss.str() + "]", Here()};
 }
+
+template <typename TConfig, std::enable_if_t<HasFieldsMember_v<TConfig>, bool> = true>
+bool parseEntry(std::vector<TConfig>& vector, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isSubConfigurationList(key)) {
+        vector.clear();
+        for (const auto& c : localConfig.getSubConfigurations(key)) {
+            vector.emplace_back(parseConfig<TConfig>(c));
+        }
+        return true;
+    }
+    throw eckit::UserError{"Could not convert value of key '" + key + "' to vector : no conversion method defined",
+                           Here()};
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
 bool parseEntry(std::optional<T>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {

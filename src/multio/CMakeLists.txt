@@ -22,8 +22,8 @@ list( APPEND multio_library_srcs
 )
 
 list( APPEND multio_util_srcs
-    util/config/detail/Entry.cc
-    util/config/detail/Entry.h
+    util/config/detail/Parser.cc
+    util/config/detail/Parser.h
     util/config/Parser.h
     util/DateTime.cc
     util/DateTime.h

@@ -14,8 +14,7 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-#include "detail/Config.h"
-#include "detail/Entry.h"
+#include "detail/Parser.h"
 
 
 namespace multio::util::config {

@@ -17,7 +17,7 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/util/config/Parser.h"
-#include "multio/util/config/detail/Entry.h"
+#include "multio/util/config/detail/Parser.h"
 
 
 namespace multio::test {

@@ -19,6 +19,8 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/config/ComponentConfiguration.h"
+
 
 namespace multio::util::config::detail {
 
@@ -68,6 +70,14 @@ TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
     }
 
     return config;
+}
+
+template <typename TConfig>
+TConfig parseActionConfig(const multio::config::ComponentConfiguration& componentConfig) {
+    auto localConfig = componentConfig.parsedConfig();
+    localConfig.remove("type");
+    localConfig.remove("next");
+    return parseConfig<TConfig>(localConfig);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

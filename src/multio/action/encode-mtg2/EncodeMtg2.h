@@ -12,30 +12,26 @@
 
 
 #include "multio/action/ChainedAction.h"
-#include "multio/datamod/Mapper.h"
-#include "multio/datamod/core/EntryDef.h"
-#include "multio/datamod/core/Print.h"
 #include "multio/mars2grib/api/RawAPI.h"
+#include "multio/util/config/Parser.h"
 
 
 namespace multio::action {
 
-namespace dm = multio::datamod;
+namespace cf = multio::util::config;
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 struct EncodeMtg2Options {
-    dm::Entry<bool, dm::mapper::BoolMapper> cached;
-    dm::Entry<bool, dm::mapper::BoolMapper> geoFromAtlas;
+    bool cached = true;
+    bool geoFromAtlas = false;
 
-    static constexpr std::string_view record_name_ = "encode-mtg2";
-    static constexpr auto record_entries_
-        = std::make_tuple(dm::entryDef("cached", &EncodeMtg2Options::cached).withDefault(true),
-                          dm::entryDef("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas).withDefault(false));
+    static constexpr auto fields_
+        = std::make_tuple(cf::optionalEntry("cached", &EncodeMtg2Options::cached),
+                          cf::optionalEntry("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas));
 };
 
-
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 class EncodeMtg2 : public ChainedAction {
 public:
@@ -56,16 +52,7 @@ private:
 };
 
 
-//---------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 }  // namespace multio::action
-
-//-----------------------------------------------------------------------------
-
-namespace multio::util {
-template <>
-struct Print<multio::action::EncodeMtg2Options> : datamod::PrintRecord {};
-}  // namespace multio::util
-
-//-----------------------------------------------------------------------------

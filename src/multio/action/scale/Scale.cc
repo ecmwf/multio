@@ -17,15 +17,12 @@
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
+#include "multio/util/config/Parser.h"
 
 
 namespace multio::action::scale {
 
-const Mappings getMappings(const std::string& preset) {
-    if (preset != "local-to-wmo" && preset != "wmo-to-local") {
-        throw eckit::UserError("Preset " + preset + " does not exist!", Here());
-    }
-
+const Mappings getMappings(const ScalePreset preset) {
     // Load the mapping file
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
         multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"
@@ -35,39 +32,31 @@ const Mappings getMappings(const std::string& preset) {
     // We use the same mapping file for local-to-wmo and wmo-to-local, the
     // second is just the reverse mapping of the first!
     Mappings mappings;
-    for (auto& mapping : mappingConf.getSubConfigurations()) {
-        const auto paramIn = mapping.getInt64("param-in");
-        const auto paramOut = mapping.getInt64("param-out");
-        const auto scaling = mapping.getDouble("scaling");
-        if (preset == "local-to-wmo") {
-            mappings[paramIn] = {paramOut, scaling};
-        }
-        else {
-            mappings[paramOut] = {paramIn, 1.0 / scaling};
+    for (const auto& subConfig : mappingConf.getSubConfigurations()) {
+        const auto mapping = util::config::parseConfig<ScaleMapping>(subConfig);
+        switch (preset) {
+            case ScalePreset::LocalToWmo : {
+                mappings[mapping.paramIn] = {mapping.paramOut, mapping.scaling};
+            }
+            case ScalePreset::WmoToLocal : {
+                mappings[mapping.paramOut] = {mapping.paramIn, 1.0 / mapping.scaling};
+            }
         }
     }
     return mappings;
 }
 
-Mappings getMappings(const eckit::LocalConfiguration& config) {
+Mappings getMappings(const ScaleConfig& config) {
     Mappings mappings;
 
     // Read the preset mapping from a mappings file
-    if (config.has("preset-mappings")) {
-        ASSERT(config.isString("preset-mappings"));
-        mappings = getMappings(config.getString("preset-mappings"));
+    if (config.preset) {
+        mappings = getMappings(config.preset.value());
     }
 
     // Read any user defined mappings from the action configuration
-    if (config.has("custom-mappings")) {
-        ASSERT(config.isSubConfigurationList("custom-mappings"));
-        for (auto& mapping : config.getSubConfigurations("custom-mappings")) {
-            const auto paramIn = mapping.getInt64("param-in");
-            const auto paramOut = mapping.getInt64("param-out");
-            const auto scaling = mapping.getDouble("scaling");
-            ASSERT(mappings.find(paramIn) == mappings.end());
-            mappings[paramIn] = {paramOut, scaling};
-        }
+    for (const auto& mapping : config.customMappings) {
+        mappings[mapping.paramIn] = {mapping.paramOut, mapping.scaling};
     }
 
     if (mappings.empty()) {
@@ -77,7 +66,7 @@ Mappings getMappings(const eckit::LocalConfiguration& config) {
 }
 
 Scale::Scale(const ComponentConfiguration& compConf) :
-    ChainedAction(compConf), mappings_{getMappings(compConf.parsedConfig())} {}
+    ChainedAction(compConf), mappings_{getMappings(cf::parseActionConfig<ScaleConfig>(compConf))} {}
 
 void Scale::executeImpl(message::Message msg) {
     // Skip non-field messages
@@ -133,3 +122,12 @@ void Scale::print(std::ostream& os) const {
 static ActionBuilder<Scale> ScaleBuilder("scale");
 
 }  // namespace multio::action::scale
+
+
+template <>
+struct multio::util::config::detail::EnumTrait<multio::action::scale::ScalePreset> {
+    static constexpr std::array values{
+        std::pair{multio::action::scale::ScalePreset::LocalToWmo, "local-to-wmo"},
+        std::pair{multio::action::scale::ScalePreset::WmoToLocal, "wmo-to-local"},
+    };
+};

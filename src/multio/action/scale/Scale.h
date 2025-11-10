@@ -1,13 +1,17 @@
 #pragma once
 
+#include <cstdint>
+
 #include "multio/action/ChainedAction.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/GribKeys.h"
+#include "multio/util/config/Parser.h"
 
 namespace multio::action::scale {
 
 namespace dm = multio::datamod;
+namespace cf = multio::util::config;
 
 //-------------------------- Action Metadata Keys ---------------------------//
 
@@ -23,37 +27,34 @@ struct ScaleMetadataKeys {
 };
 
 //------------------------ Action Configuration Keys ------------------------//
-//
-// TODO: Support (lists of) sub-records in datamod
-//
-// struct ScaleMappingKeys {
-//     dm::Entry<std::int64_t> paramIn;
-//     dm::Entry<std::int64_t> paramOut;
-//     dm::Entry<double> scaling;
-//
-//     static constexpr std::string_view record_name_ = "scale-mapping-keys";
-//
-//     using SMK = ScaleMappingKeys;
-//     static constexpr auto record_entries_ = std::make_tuple(
-//         dm::entryDef("param-in", &SMK::paramIn),
-//         dm::entryDef("param-out", &SMK::paramOut),
-//         dm::entryDef("scaling", &SMK::scaling)
-//     );
-// };
-//
-// struct ScaleConfigurationKeys {
-//     dm::Entry<std::string> presetMappings;
-//     dm::Entry<std::List<ScaleMappingKeys>> customMappings;
-//
-//     static constexpr std::string_view record_name_ = "scale-action-configuration";
-//
-//     using SCK = ScaleConfigurationKeys;
-//     static constexpr auto record_entries_ = std::make_tuple(
-//         dm::entryDef("preset-mappings", &SCK::presetMappings).tagOptional(),
-//         dm::entryDef("custom-mappings", &SCK::customMappings).tagOptional()
-//     );
-// };
-//
+
+enum class ScalePreset : std::size_t {
+    LocalToWmo,
+    WmoToLocal,
+};
+
+struct ScaleMapping {
+    std::int64_t paramIn;
+    std::int64_t paramOut;
+    double scaling;
+
+    static constexpr auto fields_ = std::make_tuple(
+        cf::requiredEntry("param-in", &ScaleMapping::paramIn),
+        cf::requiredEntry("param-out", &ScaleMapping::paramOut),
+        cf::requiredEntry("scaling", &ScaleMapping::scaling)
+    );
+};
+
+struct ScaleConfig {
+    std::optional<ScalePreset> preset;
+    std::vector<ScaleMapping> customMappings;
+
+    static constexpr auto fields_ = std::make_tuple(
+        cf::optionalEntry("preset-mappings", &ScaleConfig::preset),
+        cf::optionalEntry("custom-mappings", &ScaleConfig::customMappings)
+    );
+};
+
 //---------------------------------------------------------------------------//
 
 using Param = std::int64_t;

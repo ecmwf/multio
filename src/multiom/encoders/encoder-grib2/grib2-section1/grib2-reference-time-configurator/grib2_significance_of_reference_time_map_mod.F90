@@ -304,9 +304,9 @@ IMPLICIT NONE
   ! CASE( TYPE_GO_E )
   !   ! Gridded observations
   !   SORT = 1_JPIB_K
-  ! CASE( TYPE_ME_E )
-  !   ! Model errors
-  !   SORT = 1_JPIB_K
+  CASE( TYPE_ME_E )
+    ! Model errors
+    SORT = 1_JPIB_K
   ! CASE( TYPE_PD_E )
   !   ! Probability distribution
   !   SORT = 1_JPIB_K

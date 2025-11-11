@@ -14,17 +14,19 @@
 
 #pragma once
 
-#include <memory>
+#include "metkit/codes/api/CodesTypes.h"
+#include "multio/datamod/Glossary.h"
+#include "multio/message/Message.h"
+
 
 #include "eckit/config/LocalConfiguration.h"
 
+#include "metkit/codes/api/CodesAPI.h"
+
 #include "eccodes.h"
-#include "metkit/codes/GribHandle.h"
 
-#include "multio/datamod/Glossary.h"
-#include "multio/message/Message.h"
-#include "multio/util/MioGribHandle.h"
 
+#include <memory>
 #include <variant>
 
 
@@ -34,26 +36,25 @@ namespace dm = multio::datamod;
 
 using CodesScalarValue = std::variant<std::int64_t, double, std::string>;
 using CodesOverwrites = std::vector<std::pair<std::string, CodesScalarValue>>;
-using multio::util::MioGribHandle;
 
 class GribEncoder {
 public:
-    GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
+    GribEncoder(std::unique_ptr<metkit::codes::CodesHandle> handle, const eckit::LocalConfiguration& config);
 
     template <typename T>
     void setValue(const std::string& key, std::optional<T> v) {
         if (v) {
-            encoder_->setValue(key, *v);
+            encoder_->set(key, *v);
         }
     };
 
     template <typename T>
     void setValue(const std::string& key, T v) {
         if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) {
-            encoder_->setValue(key, static_cast<std::int64_t>(v));
+            encoder_->set(key, static_cast<std::int64_t>(v));
         }
         else {
-            encoder_->setValue(key, v);
+            encoder_->set(key, v);
         }
     };
 
@@ -61,11 +62,27 @@ public:
 
     template <typename T>
     void setValue(const std::string& key, const std::vector<T>& v) {
-        encoder_->setValue(key, v);
+        encoder_->set(key, v);
     };
+    
+    // Dirty implementation - before metkit::codes::CodesHandle
+    // was used, the former implementation explicitly ignored key setting errors
+    // when the key was read-only.
+    // As this encoder is planned to be removed, some keys with undecided read-only behaviour
+    // are set with this call.
+    template <typename T>
+    void trySetValue(const std::string& key, T&& val) {
+        try {
+            setValue(key, std::forward<std::decay_t<T>>(val));
+        }
+        catch (metkit::codes::CodesException& e) {
+            eckit::Log::info() << "Multio legacy GribEncoder::trySetValue(" << key << ",  " << val
+                               << ")  failed: " << std::endl;
+        }
+    }
     template <typename T>
     void setDataValues(const T* data, size_t count) {
-        encoder_->setDataValues(data, count);
+        encoder_->set("values", metkit::codes::Span<const T>(reinterpret_cast<const T*>(data), count));
     };
     bool hasKey(const char* key);
 
@@ -81,8 +98,8 @@ public:
 
 private:
     // Encoder is now a member of the action
-    const MioGribHandle template_;
-    std::unique_ptr<MioGribHandle> encoder_;
+    const std::unique_ptr<metkit::codes::CodesHandle> template_;
+    std::unique_ptr<metkit::codes::CodesHandle> encoder_;
 
     void initEncoder();
 

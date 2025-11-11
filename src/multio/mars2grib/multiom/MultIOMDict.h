@@ -14,7 +14,9 @@
 #include <memory>
 #include <string>
 
+#include "metkit/codes/api/CodesAPI.h"
 #include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/types/TypeOfProcessedData.h"
 #include "multio/util/VariantHelpers.h"
 #include "multiom/api/c/api.h"
 
@@ -88,6 +90,13 @@ struct MultIOMDict {
 
 
 namespace multio::datamod {
+
+template <>
+struct DumpType<TypeOfProcessedData, mars2grib::MultIOMDict> {
+    static int64_t dump(TypeOfProcessedData d) {
+        return DumpType<TypeOfProcessedData, metkit::codes::CodesHandle>::dump(d);
+    };
+};
 
 template <>
 struct EntryDumper<mars2grib::MultIOMDict> {

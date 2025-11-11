@@ -35,18 +35,20 @@ const std::unordered_map<std::string, int> latParamIds{
 const std::unordered_map<std::string, int> lonParamIds{
     {"T", 250004}, {"U", 250006}, {"V", 250008}, {"W", 250010}, {"F", 250012}};
 
-std::unique_ptr<multio::action::encode::GribEncoder> createEncoder(const multio::config::ComponentConfiguration& compConf) {
+std::unique_ptr<multio::action::encode::GribEncoder> createEncoder(
+    const multio::config::ComponentConfiguration& compConf) {
     if (not compConf.parsedConfig().has("grid-downloader-template")) {
         eckit::Log::warning() << "Multio GridDownloader: configuration is missing the coordinates encoder template, "
                                  "running without encoding!"
                               << std::endl;
         return nullptr;
     }
-    eckit::AutoStdFile fin{compConf.parsedConfig().getString("grid-downloader-template")};
 
     int err = 0;
     auto encoder = std::make_unique<multio::action::encode::GribEncoder>(
-        codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), compConf.parsedConfig());
+        metkit::codes::codesHandleFromFile(compConf.parsedConfig().getString("grid-downloader-template"),
+                                           metkit::codes::Product::GRIB),
+        compConf.parsedConfig());
     if (err != 0) {
         std::ostringstream oss;
         oss << "Could not create a GribEncoder for the grid coordinates due to an error in ecCodes: " << err;

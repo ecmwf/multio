@@ -10,7 +10,6 @@
 
 
 #include "multio/mars2grib/sections/SectionSetter.h"
-#include "multio/util/MioGribHandle.h"
 
 
 namespace multio::mars2grib::sections {
@@ -19,16 +18,16 @@ namespace multio::mars2grib::sections {
 //-----------------------------------------------------------------------------
 
 
-void DynSectionSetter::prepare(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::prepare(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                const dm::Geometry&) const {}
-void DynSectionSetter::allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                 const dm::Geometry&) const {}
-void DynSectionSetter::preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                               const dm::Geometry&) const {}
-void DynSectionSetter::runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+void DynSectionSetter::runtime(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                                const dm::Geometry&) const {}
-void DynSectionSetter::check(const util::MioGribHandle&, const dm::FullMarsRecord&,
-                             const dm::MiscRecord&, const dm::Geometry&) const {}
+void DynSectionSetter::check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+                             const dm::Geometry&) const {}
 // void DynSectionSetter::collectKeyInfo(KeyInfoList&, KeyInfoList&, const dm::FullMarsRecord&) const {}
 
 
@@ -54,35 +53,35 @@ void SectionCollector::add(std::unique_ptr<DynSectionSetter> sect) {
     }
 }
 
-void SectionCollector::prepare(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
+void SectionCollector::prepare(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars,
                                const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : prepare_) {
         secRef.get().prepare(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::allocate(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
+void SectionCollector::allocate(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars,
                                 const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : allocate_) {
         secRef.get().allocate(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::preset(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
-                              const dm::MiscRecord& misc, const dm::Geometry& geo) const {
+void SectionCollector::preset(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+                              const dm::Geometry& geo) const {
     for (auto secRef : preset_) {
         secRef.get().preset(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::runtime(util::MioGribHandle& h, const dm::FullMarsRecord& mars,
+void SectionCollector::runtime(metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars,
                                const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().runtime(h, mars, misc, geo);
     }
 }
 
-void SectionCollector::check(const util::MioGribHandle& h, const dm::FullMarsRecord& mars,
+void SectionCollector::check(const metkit::codes::CodesHandle& h, const dm::FullMarsRecord& mars,
                              const dm::MiscRecord& misc, const dm::Geometry& geo) const {
     for (auto secRef : runtime_) {
         secRef.get().check(h, mars, misc, geo);

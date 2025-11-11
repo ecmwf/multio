@@ -19,6 +19,8 @@
 #include "multio/mars2grib/multiom/MultIOMRawEncoder.h"
 #include "multio/util/PrehashedKey.h"
 
+#include "metkit/codes/api/CodesAPI.h"
+
 
 namespace multio::mars2grib {
 
@@ -35,21 +37,21 @@ public:
     EncoderCache& operator=(EncoderCache&&) = default;
 
     // Try to infer geometry and then prepare a grib handle
-    std::unique_ptr<util::MioGribHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys);
+    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys);
     // Perpare a grib handle
-    std::unique_ptr<util::MioGribHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
+    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
                                                    const dm::Geometry& geoKeys);
 
 protected:
     // Prepare a grib handle with already mapped MultIOM dicts
-    std::unique_ptr<util::MioGribHandle> getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& marsDict,
+    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& marsDict,
                                                    const MultIOMDict& parDict, const MultIOMDict& geoDict);
 
 private:
     struct CacheEntry {
         SectionsConf sections;
         MultIOMRawEncoder encoder;
-        std::unique_ptr<util::MioGribHandle> preparedSample;
+        std::unique_ptr<metkit::codes::CodesHandle> preparedSample;
     };
 
     CacheEntry& makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& marsDict,

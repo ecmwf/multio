@@ -14,8 +14,6 @@
 #include <memory>
 #include <vector>
 
-#include "metkit/codes/CodesHandleDeleter.h"
-
 #include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/mars2grib/api/RawAPI.h"
@@ -150,27 +148,27 @@ public:
     ~Mars2Grib() = default;
 
 
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const GeometryValues& geom, const std::vector<double>& values);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const GeometryValues& geom, const std::vector<float>& values);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const GeometryValues& geom, const double* values, size_t len);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const GeometryValues& geom, const float* values, size_t len);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const GeometryValues& geom, const std::vector<double>& values);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const GeometryValues& geom, const std::vector<float>& values);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const GeometryValues& geom, const double* values, size_t len);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const GeometryValues& geom, const float* values, size_t len);
 
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const std::vector<double>& values);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const std::vector<float>& values);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const double* values, size_t len);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc, const float* values,
-                                         size_t len);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const std::vector<double>& values);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const std::vector<float>& values);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const double* values, size_t len);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const float* values, size_t len);
 
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
-                                         const GeometryValues& geom);
-    std::unique_ptr<codes_handle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc,
+                                                       const GeometryValues& geom);
+    std::unique_ptr<metkit::codes::CodesHandle> encode(const MarsIdentifiers& mars, const AdditionalValues& misc);
 
 private:
     Mars2GribRaw rawApi_;

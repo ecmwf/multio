@@ -15,6 +15,7 @@
 #include "multio/datamod/core/Print.h"
 #include "multio/datamod/types/TypeOfLevel.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
+#include "multio/datamod/types/TypeOfProcessedData.h"
 
 
 namespace multio::datamod {
@@ -51,8 +52,8 @@ constexpr auto ProductionStatusOfProcessedData =
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.productionStatusOfProcessedData; });
         
-constexpr auto TypeOfProcessedData =
-    EntryDef<std::int64_t>{"typeOfProcessedData"}  
+constexpr auto TypeOfProcessedDataEntry =
+    EntryDef<TypeOfProcessedData>{"typeOfProcessedData"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
 

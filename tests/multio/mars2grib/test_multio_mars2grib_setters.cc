@@ -22,7 +22,6 @@
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Metadata.h"
 
-#include "multio/util/MioGribHandle.h"
 
 #include "multio/util/SampleMetadataGen.h"
 
@@ -71,7 +70,6 @@ CASE("Test level setter") {
         // col.writeKeyInfo(std::cout, mars);
 
         // TBD
-        // auto sample = util::MioGribHandle::makeDefault();
         // col.prepare(*sample.get(), mars, misc, geo);
         // col.allocate(*sample.get(), mars, misc, geo);
         // col.preset(*sample.get(), mars, misc, geo);

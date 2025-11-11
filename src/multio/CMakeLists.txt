@@ -39,8 +39,6 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
-    util/MioGribHandle.h
-    util/MioGribHandle.cc
     util/Timing.h
     util/PrehashedKey.h
     util/TypeTraits.h
@@ -170,6 +168,8 @@ list( APPEND multio_datamod_srcs
     datamod/types/TypeOfLevel.h
     datamod/types/TypeOfStatisticalProcessing.cc
     datamod/types/TypeOfStatisticalProcessing.h
+    datamod/types/TypeOfProcessedData.cc
+    datamod/types/TypeOfProcessedData.h
     datamod/ContainerInterop.h
     datamod/Mapper.cc
     datamod/Mapper.h

@@ -43,19 +43,19 @@ public:
     DynSectionSetter::Config sectionInfo() const override;
 
     // Allocate is setting vertical
-    void allocate(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void allocate(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                   const dm::Geometry&) const override;
     // Calls set level
-    void preset(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void preset(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                 const dm::Geometry&) const override;
 
     // Calls set level
-    void runtime(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void runtime(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                  const dm::Geometry&) const override;
 
-    void setLevels(util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const;
+    void setLevels(metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&, const dm::Geometry&) const;
 
-    void check(const util::MioGribHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
+    void check(const metkit::codes::CodesHandle&, const dm::FullMarsRecord&, const dm::MiscRecord&,
                const dm::Geometry&) const override;
 
     // void collectKeyInfo(KeyInfoList& required, KeyInfoList& optional, const dm::FullMarsRecord&) const override;

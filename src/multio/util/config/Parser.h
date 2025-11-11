@@ -13,9 +13,9 @@
 #include <string_view>
 
 #include "eckit/config/LocalConfiguration.h"
+#include "multio/config/ComponentConfiguration.h"
 
-#include "detail/Config.h"
-#include "detail/Entry.h"
+#include "detail/Parser.h"
 
 
 namespace multio::util::config {
@@ -50,6 +50,18 @@ constexpr detail::Entry<TConfig, TValue> optionalEntry(const std::string_view& k
 template <typename TConfig>
 TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
     return detail::parseConfig<TConfig>(localConfig);
+}
+
+/**
+ * Create a parsed configuration object from the multio::config::ComponentConfiguration
+ * This method ignores the keys "type" and "next" that are present in action configurations
+ * @param componentConfig An unparsed multio::config::ComponentConfiguration
+ * @returns A parsed configuration of the desired type
+ * @throws If an unknown key is present in the localConfig, or if a value cannot be parsed
+ */
+template <typename TConfig>
+TConfig parseActionConfig(const multio::config::ComponentConfiguration& componentConfig) {
+    return detail::parseActionConfig<TConfig>(componentConfig);
 }
 
 

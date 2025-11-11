@@ -13,13 +13,9 @@
 #include <iostream>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
 
-#include "multio/LibMultio.h"
 #include "multio/action/encode-mtg2/AtlasGeoSetter.h"
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
-#include "multio/config/PathConfiguration.h"
-#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
@@ -27,7 +23,6 @@
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/PrecisionTag.h"
-#include "multio/util/Print.h"
 
 namespace multio::action {
 
@@ -38,27 +33,13 @@ using message::Peer;
 
 mars2grib::RawOptions mapOpts(EncodeMtg2Options opts) {
     mars2grib::RawOptions ret;
-    ret.cached = opts.cached.get();
+    ret.cached = opts.cached;
     return ret;
 };
 
-EncodeMtg2Options parseOpts(const ComponentConfiguration& compConf) {
-    /// TODO(pgeier) With C++20 designators are more useful for inline creation of structs:
-    /// ParsedOptions{.allowAdditionalKeys=false}
-    dm::ParseOptions opts;
-    opts.allowAdditionalKeys = false;
-
-    // TODO(pgeier) Fix after refactoring action - need to remove keys "type" and "next"
-    auto conf = compConf.parsedConfig();
-    conf.remove("type");
-    conf.remove("next");
-    
-    return dm::readRecordByValue<EncodeMtg2Options>(conf, opts);
-}
-
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, opts_{parseOpts(compConf)}, mars2grib_{mapOpts(opts_)} {}
+    ChainedAction{compConf}, opts_{cf::parseActionConfig<EncodeMtg2Options>(compConf)}, mars2grib_{mapOpts(opts_)} {}
 
 
 void EncodeMtg2::executeImpl(Message msg) {
@@ -87,7 +68,7 @@ void EncodeMtg2::executeImpl(Message msg) {
             const auto& global = message::Parametrization::instance().get();
             // Fetch atlas and store in global parametrization (by scoping keys...)
             // Scoping here may be refactored
-            if (opts_.geoFromAtlas.get() && (global.find(scope) == global.end())) {
+            if (opts_.geoFromAtlas && (global.find(scope) == global.end())) {
                 extract::AtlasGeoSetter::handleGrid(scope, marsRec.grid.get());
             }
         }
@@ -147,14 +128,10 @@ void EncodeMtg2::executeImpl(Message msg) {
 }
 
 void EncodeMtg2::print(std::ostream& os) const {
-    util::PrintStream ps(os);
-    ps << dm::RecordName_v<EncodeMtg2Options> << std::endl;
-    {
-        util::IndentGuard g{ps};
-        ps << opts_;
-    }
+    os << "EncodeMtg2{cached=" << (opts_.cached ? "true" : "false")
+       << ", geo-from-atlas=" << (opts_.geoFromAtlas ? "true" : "false") << "}";
 }
 
-static ActionBuilder<EncodeMtg2> EncodeMtg2Builder(std::string(dm::RecordName_v<EncodeMtg2Options>));
+static ActionBuilder<EncodeMtg2> EncodeMtg2Builder("encode-mtg2");
 
 }  // namespace multio::action

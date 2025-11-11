@@ -43,19 +43,14 @@ struct EnumTrait;
 //----------------------------------------------------------------------------------------------------------------------
 
 template <typename TConfig>
+bool containsKey(const std::string& key) {
+    return std::apply([&](const auto&... field) { return ((field.key == key) || ... || false); }, TConfig::fields_);
+}
+
+template <typename TConfig>
 TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
-    TConfig config;
-    std::set<std::string> allowedKeys;
-
-    std::apply(
-        [&](const auto&... field) {
-            (parseEntry(field, config, localConfig), ...);
-            (allowedKeys.emplace(field.key), ...);
-        },
-        config.fields_);
-
     for (const auto& key : localConfig.keys()) {
-        if (allowedKeys.find(key) == allowedKeys.end()) {
+        if (!containsKey<TConfig>(key)) {
             size_t i = 0;
             std::ostringstream oss;
             for (const auto& key : localConfig.keys()) {
@@ -69,6 +64,8 @@ TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
         }
     }
 
+    TConfig config;
+    std::apply([&](const auto&... field) { (parseEntry(field, config, localConfig), ...); }, config.fields_);
     return config;
 }
 

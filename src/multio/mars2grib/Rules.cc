@@ -50,6 +50,15 @@ auto matchLevType(dm::LevType lt) {
     return OneOf{dm::LEVTYPE, {lt}};
 }
 
+auto matchSatellite() {
+    // Satellite data can be identified by having the keyword CHANNEL:
+    // https://apps.ecmwf.int/mars-catalogue/?stream=oper&levtype=sfc&expver=1&month=nov&year=2025&date=2025-11-03&type=ssd&class=od
+    //
+    // Other satellite related keywords like instrument and ident is not always given because channel is actually
+    // holding a channel like index as combination of instrument, indent and the true channel:
+    // https://apps.ecmwf.int/mars-catalogue/?stream=elda&levtype=sfc&expver=1&month=nov&year=2025&type=em&class=od
+    return Has{dm::CHANNEL};
+}
 
 //-----------------------------------------------------------------------------
 // Setters
@@ -195,10 +204,13 @@ auto localSectionRules() {
 }
 
 auto processTypesRules() {
-    return exclusiveRuleList(  //
+    return exclusiveRuleList(
+        // Match any levtype but AL (or no levtype)
         rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Missing{dm::NUMBER}, Missing{dm::HDATE})),
         rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Missing{dm::HDATE}), ensemble()),
         rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), ensemble()),
+        // Levtype AL specific - detection whether a largeEnsemble is used should actually depend on
+        // numberOfForecastsInEnsemble > 254
         rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Missing{dm::HDATE}), largeEnsemble()),
         rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), largeEnsemble()));
 }
@@ -215,6 +227,22 @@ auto packingRules() {
 //-----------------------------------------------------------------------------
 // Params
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Satellite
+//-----------------------------------------------------------------------------
+
+// Single satellite rule - defined here to be checked twice - with levtype sfc
+// and without any levtype but ident, instrument and channel
+auto singleSatelliteRule() {
+    return rule(matchParams(paramRange(260510, 260512)),  //
+                pointInTime(),                            //
+                satellite());
+}
+
+auto paramSatelliteRules() {
+    return exclusiveRuleList(singleSatelliteRule());
+}
 
 //-----------------------------------------------------------------------------
 // SFC
@@ -535,11 +563,10 @@ auto paramSFCRules() {
              typeOfLevel(TOL::Isothermal)),                                                                //
 
         //-----------------------------------------------------------------------------
-        // Satellite
+        // Satellite - this is supported for ERA6. MultIOM is emiting levtype: sfc
+        // TODO(pgeier) Fix should be to not map satellite with levtype sfc
         //-----------------------------------------------------------------------------
-        rule(matchParams(paramRange(260510, 260513)),  //
-             pointInTime(),                            //
-             satellite())
+        singleSatelliteRule()
 
     );
 }
@@ -570,14 +597,17 @@ auto paramHLRules() {
 // ML
 //-----------------------------------------------------------------------------
 
+// NOTE - levtype ML is always mapped to TOL::Hybrid - these rules can be generalized once the time mapping is mapped
+// orthogonally
 auto paramMLRules() {
-    return exclusiveRuleList(                                                                                //
-        rule(matchParams(75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 203, 246, 247, 248, 260290),  //
-             pointInTime(),                                                                                  //
-             typeOfLevel(TOL::Hybrid)),                                                                      //
-        rule(matchParams(paramRange(162100, 162113)),                                                        //
-             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),                      //
-             typeOfLevel(TOL::Hybrid))                                                                       //
+    return exclusiveRuleList(  //
+        rule(matchParams(21, 22, 23, 75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 156, 157, 203, 246, 247, 248,
+                         260290),                                                        //
+             pointInTime(),                                                              //
+             typeOfLevel(TOL::Hybrid)),                                                  //
+        rule(matchParams(paramRange(162100, 162113)),                                    //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Accumulation),  //
+             typeOfLevel(TOL::Hybrid))                                                   //
     );
 }
 
@@ -696,6 +726,11 @@ auto paramAlRules() {
 
 
 //-----------------------------------------------------------------------------
+// Satellite
+//-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
 // Final composed param rules
 //-----------------------------------------------------------------------------
 
@@ -714,7 +749,8 @@ auto paramRules() {
         chainedRuleList(rule(matchLevType(dm::LevType::PT)), paramPTRules()),    //
         chainedRuleList(rule(matchLevType(dm::LevType::PV)), paramPVRules()),    //
         chainedRuleList(rule(matchLevType(dm::LevType::SOL)), paramSOLRules()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::AL)), paramAlRules())     //
+        chainedRuleList(rule(matchLevType(dm::LevType::AL)), paramAlRules()),    //
+        chainedRuleList(rule(matchSatellite()), paramSatelliteRules())           //
     );
 }
 

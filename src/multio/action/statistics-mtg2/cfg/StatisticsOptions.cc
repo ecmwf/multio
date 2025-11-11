@@ -95,19 +95,6 @@ WindowType parseWindowType(const eckit::LocalConfiguration& cfg) {
     throw eckit::UserError(os.str(), Here());
 }
 
-std::string parseSolverResetAccumulatedFieldsEvery(const eckit::LocalConfiguration& cfg) {
-    // Used in the deaccumulate action to not deaccumulate twice
-    const auto accumulatedFieldsResetFreqency = cfg.getString("solver-reset-accumulate-fields-every", "month");
-    if (accumulatedFieldsResetFreqency != "hour" && accumulatedFieldsResetFreqency != "day"
-        && accumulatedFieldsResetFreqency != "month" && accumulatedFieldsResetFreqency != "year"
-        && accumulatedFieldsResetFreqency != "never") {
-        std::ostringstream os;
-        os << "Invalid reset period of accumulated fields :: " << accumulatedFieldsResetFreqency << std::endl;
-        throw eckit::UserError(os.str(), Here());
-    }
-    return accumulatedFieldsResetFreqency;
-}
-
 std::optional<std::int64_t> parseValueCountThreshold(const eckit::LocalConfiguration& cfg) {
     const auto threshold = cfg.getLong("value-count-threshold", -1);
 
@@ -166,7 +153,6 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     restartLib_{parseRestartLib(cfg)},
     logPrefix_{parseRestartPrefix(cfg)},
     windowType_{parseWindowType(cfg)},
-    solverResetAccumulatedFieldsEvery_{parseSolverResetAccumulatedFieldsEvery(cfg)},
     valueCountThreshold_{parseValueCountThreshold(cfg)},
     disableStrictMapping_{parseDisableStrictMapping(cfg)},
     disableSquashing_{parseDisableSquashing(cfg)},
@@ -207,9 +193,6 @@ const std::string& StatisticsOptions::logPrefix() const {
 }
 WindowType StatisticsOptions::windowType() const {
     return windowType_;
-}
-const std::string& StatisticsOptions::solverResetAccumulatedFieldsEvery() const {
-    return solverResetAccumulatedFieldsEvery_;
 }
 
 std::optional<std::int64_t> StatisticsOptions::valueCountThreshold() const {

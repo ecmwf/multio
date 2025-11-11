@@ -1,7 +1,11 @@
 
 #pragma once
 
+#include <string>
+#include "eckit/exception/Exceptions.h"
+#include "eckit/types/Time.h"
 #include "multio/action/statistics-mtg2/TimeUtils.h"
+#include "multio/action/statistics-mtg2/mappings/StatisticsOperationMapping.h"
 #include "multio/action/statistics-mtg2/operations/Operation.h"
 
 namespace multio::action::statistics_mtg2 {
@@ -17,12 +21,13 @@ public:
         Operation{name, operation, win, cfg.options()},
         values_{std::vector<T>(sz / sizeof(T), 0.0)},
         initValues_{std::vector<T>(sz / sizeof(T), 0.0)},
-        needRestart_{needRestart} {}
+        needRestart_{needRestart},
+        operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {}
 
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, bool needRestart,
                                    const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                                    const StatisticsOptions& opt) :
-        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart} {
+        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart}, operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {
         load(IOmanager, opt);
         return;
     }
@@ -30,7 +35,7 @@ public:
     void updateWindow(const void* data, long sz, const message::Message& msg,
                       const StatisticsConfiguration& cfg) override {
         checkSize(sz, cfg);
-        if (solverResetAccumulatedFields(msg, cfg)) {
+        if (solverResetAccumulatedField(cfg)) {
             std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                            [](const T& v1) { return static_cast<T>(0.0); });
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
@@ -43,7 +48,7 @@ public:
 
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         checkSize(sz, cfg);
-        if (solverResetAccumulatedFields(msg, cfg)) {
+        if (solverResetAccumulatedField(cfg)) {
             std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
                            [](const T& v1) { return static_cast<T>(0.0); });
             std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
@@ -175,30 +180,29 @@ protected:
 
 private:
     bool needRestart_;
+    const StatisticsOperationMapping operationMapping_;
 
     const std::string restartFileName() const { return name_ + "_" + (sizeof(T) == 4 ? "single" : "double"); };
 
-    bool solverResetAccumulatedFields(const message::Message& msg, const StatisticsConfiguration& cfg) {
-        if (cfg.options().solverResetAccumulatedFieldsEvery() == "hour") {
-            return isBeginningOfHour(msg, cfg);
-        }
-        if (cfg.options().solverResetAccumulatedFieldsEvery() == "day") {
-            return isBeginningOfDay(msg, cfg);
-        }
-        if (cfg.options().solverResetAccumulatedFieldsEvery() == "month") {
-            return isBeginningOfMonth(msg, cfg);
-        }
-        if (cfg.options().solverResetAccumulatedFieldsEvery() == "year") {
-            return isBeginningOfYear(msg, cfg);
-        }
-        if (cfg.options().solverResetAccumulatedFieldsEvery() == "never") {
-            return false;
+    bool solverResetAccumulatedField(const StatisticsConfiguration& cfg) {
+        if (!cfg.timespan()) {
+            return false;  // Not a statistical field
         }
 
-        std::ostringstream os;
-        os << "Invalid reset period of accumulated fields :: " << cfg.options().solverResetAccumulatedFieldsEvery()
-           << std::endl;
-        throw eckit::UserError(os.str(), Here());
+        // TODO(knobel): Do this check only once when the TemporalStatistics object is created
+        const auto op = operationMapping_.getOperation(cfg.param());
+        if (!op) {
+            throw eckit::SeriousBug{"Metadata has timespan, but param is not known to be statistical! : param=" + std::to_string(cfg.param()), Here()};
+        }
+        if (op != 1) {
+            return false;  // Not an accumulated field (typeOfStatisticalProcessing=1)
+        }
+
+        const auto timeDiff = static_cast<std::int64_t>((cfg.curr() - win_.prevPoint()) / 3600);
+        if (timeDiff > *cfg.timespan()) {
+            throw eckit::SeriousBug{"Window is not alligned with accumulation reset!", Here()};
+        }
+        return timeDiff == *cfg.timespan();
     }
 };
 

@@ -21,7 +21,7 @@ private:
     const std::int64_t step_;
     const std::optional<std::int64_t> timespan_;
 
-    const std::string param_;
+    const std::int64_t param_;
     const std::string levType_;
     const std::string gridType_;
     const std::string precision_;
@@ -57,7 +57,7 @@ public:
     std::int64_t step() const;
     std::optional<std::int64_t> timespan() const;
 
-    const std::string& param() const;
+    std::int64_t param() const;
     const std::string& levType() const;
     const std::string& gridType() const;
     const std::string& precision() const;

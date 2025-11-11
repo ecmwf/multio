@@ -260,7 +260,6 @@ private:
                 "\"output-frequency\": \"1m\", "
                 "\"operations\": [ \"" + name_ + "\" ], "
                 "\"options\": { \"initial-condition-present\": true,"
-                "               \"solver-reset-accumulate-fields-every\": \"never\","
                 "               \"disable-strict-mapping\": true } },"
                 "{ \"type\": \"debug-sink\" } ] }";
     }

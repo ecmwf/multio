@@ -127,6 +127,7 @@ namespace multio::mars2grib::rules {
 // An ExclusiveRuleList contains a list of rules from which only one is expected to match and be applied
 // This concept is important to express combinations of orthogonal rules
 struct ExclusiveRuleList : DerivedRule<ExclusiveRuleList> {
+    std::string name;
     std::vector<std::unique_ptr<DynRule>> rules;
 
     // Match and set
@@ -135,8 +136,9 @@ struct ExclusiveRuleList : DerivedRule<ExclusiveRuleList> {
 
 
 template <typename Rule_, typename... Rules_>
-ExclusiveRuleList exclusiveRuleList(Rule_&& rule, Rules_&&... rules) {
+ExclusiveRuleList exclusiveRuleList(std::string name, Rule_&& rule, Rules_&&... rules) {
     ExclusiveRuleList res;
+    res.name = name;
     res.rules.emplace_back(std::make_unique<std::decay_t<Rule_>>(std::forward<Rule_>(rule)));
     (res.rules.emplace_back(std::make_unique<std::decay_t<Rules_>>(std::forward<Rules_>(rules))), ...);
     return res;

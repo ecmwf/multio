@@ -57,7 +57,7 @@ auto matchSatellite() {
     // Other satellite related keywords like instrument and ident is not always given because channel is actually
     // holding a channel like index as combination of instrument, indent and the true channel:
     // https://apps.ecmwf.int/mars-catalogue/?stream=elda&levtype=sfc&expver=1&month=nov&year=2025&type=em&class=od
-    return Has{&dm::FullMarsRecord::channel};
+    return all(Missing{&dm::FullMarsRecord::levtype}, Has{&dm::FullMarsRecord::channel});
 }
 
 //-----------------------------------------------------------------------------
@@ -101,6 +101,13 @@ auto reforecast() {
     return Setter([](SectionsConf& c) {
         c.product.ensureInit().modify().pdtCat.ensureInit().modify().processType.set(ProcessType::Reforecast);
         c.product.ensureInit().modify().process.ensureInit();
+    });
+}
+auto derivedForecast() {
+    return Setter([](SectionsConf& c) {
+        c.product.ensureInit().modify().pdtCat.ensureInit().modify().processType.set(ProcessType::DerivedForecast);
+        c.product.ensureInit().modify().process.ensureInit();
+        c.product.ensureInit().modify().process.modify().type.set("derived");
     });
 }
 
@@ -190,14 +197,28 @@ auto makeGridRule(dm::Repres repres, std::int64_t num) {
 }
 
 auto gridRules() {
-    return exclusiveRuleList(makeGridRule(dm::Repres::LL, 0), makeGridRule(dm::Repres::GG, 40),
+    return exclusiveRuleList("gridRules",  //
+                             makeGridRule(dm::Repres::LL, 0), makeGridRule(dm::Repres::GG, 40),
                              makeGridRule(dm::Repres::SH, 50));
 }
 
 auto localSectionRules() {
     return exclusiveRuleList(  //
-        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Missing{&dm::FullMarsRecord::method}), localUse(1)),
-        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Has{&dm::FullMarsRecord::method}), localUse(15)),
+        "localSectionRules",   //
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}},
+                 Missing{&dm::FullMarsRecord::method}, Missing{&dm::FullMarsRecord::channel}),
+             localUse(1)),
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}},
+                 Has{&dm::FullMarsRecord::method}),
+             localUse(15)),
+        // DerivedEnsembleForecasts (type=em/es can be combined with satellite (have channel) - there is no valid PDT
+        // for this - hence the channel information is stored in the local 14 template. Also notice that for these
+        // templates channel acts as an index from which instrument can be inferred (this is not documented and
+        // implemented anywhere)
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}},
+                 Missing{&dm::FullMarsRecord::method}, Has{&dm::FullMarsRecord::channel},
+                 OneOf{&dm::FullMarsRecord::type, {"em", "es"}}),
+             localUse(14)),
         rule(all(Has{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(36)),
         rule(all(Missing{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1001)),
         rule(all(Has{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1036)));
@@ -205,19 +226,22 @@ auto localSectionRules() {
 
 auto processTypesRules() {
     return exclusiveRuleList(
+        "processTypesRules",
         // Match any levtype but AL (or no levtype)
-        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate})),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}, NoneOf{&dm::FullMarsRecord::type, {"em", "es"}})),
         rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), ensemble()),
         rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), ensemble()),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}, OneOf{&dm::FullMarsRecord::type, {"em", "es"}}),
+             derivedForecast(), ensemble()),
         // Levtype AL specific - detection whether a largeEnsemble is used should actually depend on
         // numberOfForecastsInEnsemble > 254
         rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), largeEnsemble()),
         rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), largeEnsemble()));
 }
 
-
 auto packingRules() {
     return exclusiveRuleList(                                 //
+        "packingRules",
         rule(OneOf{&dm::FullMarsRecord::packing, {"simple"}}, dataRepres(0)),  //
         rule(OneOf{&dm::FullMarsRecord::packing, {"ccsds"}}, dataRepres(42)),  //
         rule(OneOf{&dm::FullMarsRecord::packing, {"complex"}}, dataRepres(51)));
@@ -240,8 +264,26 @@ auto singleSatelliteRule() {
                 satellite());
 }
 
-auto paramSatelliteRules() {
-    return exclusiveRuleList(singleSatelliteRule());
+// derivedEnsembleProduct satellite rules --- for these cases the satellite information is stored in
+// a local template. This is explicitly handled  in the `localSectionRules()`.
+auto derivedEnsembleForecastSatelliteRule() {
+    // TODO(pgeier) Reintroduce strict checks an missing timespan etc..
+    //              194 is coming from fdb prod - the grib1-to-grib2 tool still emits timespan although 192 is not
+    //              statistical
+    // return rule(all(Missing{dm::TIMESPAN}, Missing{dm::STATTYPE}, matchParams(194)),  //
+    //             pointInTime(), typeOfLevel(TOL::Surface));                            //
+    return rule(matchParams(194),                           //
+                pointInTime(), typeOfLevel(TOL::Surface));  //
+}
+
+auto satelliteRules() {
+    return exclusiveRuleList(
+        "satelliteRules",
+        chainedRuleList(rule(all(Has{&dm::FullMarsRecord::channel}, NoneOf{&dm::FullMarsRecord::type, {"em", "es"}})),
+                        singleSatelliteRule()),  //
+        chainedRuleList(rule(all(Has{&dm::FullMarsRecord::channel}, OneOf{&dm::FullMarsRecord::type, {"em", "es"}})),
+                        derivedEnsembleForecastSatelliteRule()),  //
+        chainedRuleList(rule(Missing{&dm::FullMarsRecord::channel})));
 }
 
 //-----------------------------------------------------------------------------
@@ -249,7 +291,8 @@ auto paramSatelliteRules() {
 //-----------------------------------------------------------------------------
 
 auto paramSFCRules() {
-    return exclusiveRuleList(                              //
+    return exclusiveRuleList(
+        "paramSFCRules",                                   //
         rule(matchParams(228023),                          //
              pointInTime(), typeOfLevel(TOL::CloudBase)),  //
         rule(matchParams(                                  //
@@ -601,6 +644,7 @@ auto paramSFCRules() {
 
 auto paramHLRules() {
     return exclusiveRuleList(                                                                 //
+        "paramHLRules",                                                                       //
         rule(matchParams(10, 54, 130, 131, 132, 157, 246, 247, 3031),                         //
              pointInTime(),                                                                   //
              typeOfLevel(TOL::HeightAboveGround)),                                            //
@@ -628,6 +672,7 @@ auto paramHLRules() {
 // orthogonally
 auto paramMLRules() {
     return exclusiveRuleList(  //
+        "paramMLRules",        //
         rule(matchParams(21, 22, 23, 75, 76, 77, paramRange(129, 133), 135, 138, 152, 155, 156, 157, 203, 246, 247, 248,
                          260290),                                                        //
              pointInTime(),                                                              //
@@ -647,6 +692,7 @@ auto paramMLRules() {
 template <typename MkTail>
 auto plLevelRules(MkTail&& mkTail) {
     return exclusiveRuleList(                      //
+        "plLevelRules",                            //
         chainedRuleList(                           //
             rule(greaterEqual(&dm::FullMarsRecord::levelist, 100),  //
                  typeOfLevel(TOL::IsobaricInhPa)),
@@ -661,7 +707,8 @@ auto plLevelRules(MkTail&& mkTail) {
 auto paramPLRules() {
     return plLevelRules([]() {
         return exclusiveRuleList(  //
-            rule(matchParams(1, 2, 60, 75, 76, paramRange(129, 135), 138, 152, 155, 157, 203, 246, 247, 248, 157,
+            "paramPLRules",        //
+            rule(matchParams(1, 2, 10, 60, 75, 76, paramRange(129, 135), 138, 152, 155, 157, 203, 246, 247, 248, 157,
                              260290),
                  pointInTime()),
             rule(matchParams(235100, paramRange(235129, 235133), 235135, 235138, 235152, 235155, 235157, 235203, 235246,
@@ -677,6 +724,7 @@ auto paramPLRules() {
 
 auto paramPTRules() {
     return exclusiveRuleList(                                                       //
+        "paramPTRules",                                                             //
         rule(matchParams(53, 54, 60, 131, 132, 133, 138, 155, 203),                 //
              pointInTime(),                                                         //
              typeOfLevel(TOL::Theta)),                                              //
@@ -703,6 +751,7 @@ auto paramPTRules() {
 
 auto paramPVRules() {
     return exclusiveRuleList(                                                       //
+        "paramPVRules",                                                             //
         rule(matchParams(3, 54, 129, 131, 132, 133, 203),                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::PotentialVorticity)),                                 //
@@ -719,6 +768,7 @@ auto paramPVRules() {
 
 auto paramSOLRules() {
     return exclusiveRuleList(                                                       //
+        "paramSOLRules",                                                            //
         rule(matchParams(262000, 262024),                                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SeaIceLayer)),                                        //
@@ -744,17 +794,13 @@ auto paramSOLRules() {
 
 auto paramAlRules() {
     return exclusiveRuleList(                          //
+        "paramALRules",                                //
         rule(matchParams(paramRange(213101, 213160)),  //
              pointInTime(),                            //
              randomPattern(),                          //
              typeOfLevel(TOL::AbstractSingleLevel))    //
     );
 }
-
-
-//-----------------------------------------------------------------------------
-// Satellite
-//-----------------------------------------------------------------------------
 
 
 //-----------------------------------------------------------------------------
@@ -767,18 +813,24 @@ auto paramAlRules() {
 //    ....
 // )
 
-auto paramRules() {
-    return exclusiveRuleList(                                                    //
-        chainedRuleList(rule(matchLevType(dm::LevType::SFC)), paramSFCRules()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::HL)), paramHLRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::ML)), paramMLRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::PL)), paramPLRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::PT)), paramPTRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::PV)), paramPVRules()),    //
-        chainedRuleList(rule(matchLevType(dm::LevType::SOL)), paramSOLRules()),  //
-        chainedRuleList(rule(matchLevType(dm::LevType::AL)), paramAlRules()),    //
-        chainedRuleList(rule(matchSatellite()), paramSatelliteRules())           //
-    );
+auto horizontalRules() {
+    return exclusiveRuleList(  //
+        "horizontalRules",     //
+        chainedRuleList(rule(all(matchLevType(dm::LevType::SFC), Missing{&dm::FullMarsRecord::channel})),
+                        paramSFCRules()),
+
+        // By-passing rules - allow satellite products to pass without effects -- handled in `satelliteRules`
+        rule(all(matchLevType(dm::LevType::SFC), Has{&dm::FullMarsRecord::channel})),  //
+        rule(all(Missing{&dm::FullMarsRecord::levtype}, Has{&dm::FullMarsRecord::channel})),
+
+        //
+        chainedRuleList(rule(matchLevType(dm::LevType::HL)), paramHLRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::ML)), paramMLRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::PL)), paramPLRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::PT)), paramPTRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::PV)), paramPVRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::SOL)), paramSOLRules()),
+        chainedRuleList(rule(matchLevType(dm::LevType::AL)), paramAlRules()));
 }
 
 
@@ -791,7 +843,8 @@ const ChainedRuleList& allRules() {
         gridRules(),                     //
         localSectionRules(),             //
         processTypesRules(),             //
-        paramRules(),                    //
+        horizontalRules(),               //
+        satelliteRules(),                //
         packingRules()                   //
     );
 

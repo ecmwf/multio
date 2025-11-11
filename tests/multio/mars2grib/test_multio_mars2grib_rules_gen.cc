@@ -37,7 +37,7 @@ CASE("Test rules gen matchers") {
     using namespace multio::mars2grib::matcher;
     using namespace multio::mars2grib;
 
-    static auto ruleSet = exclusiveRuleList(
+    static auto ruleSet = exclusiveRuleList("testRuleSet",
         // Branch for grids
         chainedRuleList(
             rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),

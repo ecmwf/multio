@@ -292,15 +292,13 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
             std::cout << "stepRange = " << stepRangeStr << std::endl;
         }
 
-        long stepRange;
+        // StepRange is a proper steprange - it contains a dash `-`
         if (auto r = parseRange(stepRangeStr)) {
-            stepRange = r->second - r->first;
+            mars.timespan.set(r->second - r->first);
         }
         else {
-            stepRange = h.has("stepRange") ? h.getLong("stepRange") : endStep;
+            mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
         }
-
-        mars.timespan.set(stepRange);
     }
 }
 
@@ -404,7 +402,13 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
-    if (h.has("number") && h.has("numberOfForecastsInEnsemble")) {
+
+    // Check for derivedEnsembleForecast
+    if (mars.type.get() == "es" || mars.type.get() == "em") {
+        long numForecasts = h.getLong("numberOfForecastsInEnsemble");
+        misc.numberOfForecastsInEnsemble.set(numForecasts);
+    }
+    else if (h.has("number") && h.has("numberOfForecastsInEnsemble")) {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
         long number = h.getLong("number");
 

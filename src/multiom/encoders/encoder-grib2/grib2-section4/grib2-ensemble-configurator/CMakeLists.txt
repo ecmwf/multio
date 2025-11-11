@@ -10,6 +10,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 # Collect source files in module2
 set( MULTIOM_ENCODER_GRIB2_SECTION4_ENSEMBLE_MAIN_SOURCES
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_ENSEMBLE_DIR}/grib2_section4_ensemble_default_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_ENSEMBLE_DIR}/grib2_section4_ensemble_derived_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_ENSEMBLE_DIR}/grib2_section4_ensemble_custom_mod.F90
   ${MULTIOM_ENCODERS_GRIB2_SECTION4_ENSEMBLE_DIR}/grib2_section4_ensemble_factory_mod.F90
 )

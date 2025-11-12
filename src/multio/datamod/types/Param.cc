@@ -53,3 +53,8 @@ std::ostream& operator<<(std::ostream& out, const Param& param) {
 }
 
 }  // namespace multio::datamod
+
+
+void multio::util::Print<multio::datamod::Param>::print(PrintStream& ps, const multio::datamod::Param& p) {
+    ps << "Param(" << p.id() << ")";
+}

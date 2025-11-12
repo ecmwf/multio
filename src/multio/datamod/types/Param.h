@@ -16,7 +16,7 @@
 #include <string>
 
 #include "multio/datamod/core/TypeParserDumper.h"
-#include "multio/util/TypeToString.h"
+#include "multio/util/Print.h"
 
 
 namespace multio::datamod {
@@ -55,12 +55,14 @@ struct ParseType<Param> {
 
 }  // namespace multio::datamod
 
+
+template <>
+struct multio::util::Print<multio::datamod::Param> {
+    static void print(PrintStream& ps, const multio::datamod::Param& v);
+};
+
+
 template <>
 struct std::hash<multio::datamod::Param> {
     size_t operator()(const multio::datamod::Param& param) const { return param.id(); }
-};
-
-template <>
-struct multio::util::TypeToString<multio::datamod::Param> {
-    std::string operator()() const { return "Param"; };
 };

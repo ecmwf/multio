@@ -12,23 +12,10 @@
 
 #include <charconv>
 
-#include "metkit/mars/Param.h"
-
 #include "multio/datamod/core/DataModellingException.h"
 
 
 namespace multio::datamod::mapper {
-
-std::int64_t ParamMapper::parse(std::int64_t v) noexcept {
-    return v;
-}
-std::int64_t ParamMapper::dump(std::int64_t v) noexcept {
-    return v;
-}
-std::int64_t ParamMapper::parse(const std::string& str) {
-    return metkit::Param(str).paramId();
-}
-
 
 std::int64_t toIntStrict(const std::string& s) {
     std::int64_t value;
@@ -48,4 +35,3 @@ bool BoolMapper::parse(const std::string& v) {
 }
 
 }  // namespace multio::datamod::mapper
-

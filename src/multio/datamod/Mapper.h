@@ -10,7 +10,6 @@
 
 #pragma once
 
-
 #include <cstdint>
 #include <string>
 
@@ -23,12 +22,6 @@ struct StringToIntMapper {
     static std::int64_t parse(const std::string& v);
 };
 
-struct ParamMapper {
-    static std::int64_t dump(std::int64_t) noexcept;
-    static std::int64_t parse(std::int64_t) noexcept;
-    static std::int64_t parse(const std::string&);
-};
-
 struct BoolMapper {
     static inline bool dump(bool v) noexcept { return v; };
     static inline bool parse(bool v) noexcept { return v; };
@@ -36,6 +29,4 @@ struct BoolMapper {
     static bool parse(const std::string& v);
 };
 
-
 }  // namespace multio::datamod::mapper
-

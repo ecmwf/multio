@@ -162,6 +162,8 @@ list( APPEND multio_datamod_srcs
     datamod/types/TimeDuration.h
     datamod/types/LevType.cc
     datamod/types/LevType.h
+    datamod/types/Param.cc
+    datamod/types/Param.h
     datamod/types/StatType.cc
     datamod/types/StatType.h
     datamod/types/TypeOfLevel.cc

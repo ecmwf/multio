@@ -30,8 +30,8 @@ namespace dm = multio::datamod;
 CASE("Test reading Param keys from metadata") {
     using namespace dm;
 
-    EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", 3}}).get(), 3);
-    EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", "123.456"}}).get(), 456123);
+    EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", 3}}).get(), Param{3});
+    EXPECT_EQUAL(parseEntry(PARAM, Metadata{{"param", "123.456"}}).get(), Param{456123});
 };
 
 CASE("Test parsing/dumping levtype") {
@@ -93,7 +93,7 @@ CASE("Test parsing/dumping typeOfStatisticalProcessing") {
     EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("severity")) == "severity"));
     EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("mode")) == "mode"));
     EXPECT((DumpType<dm::TypeOfStatisticalProcessing>::dump(ParseType<dm::TypeOfStatisticalProcessing>::parse("index-processing")) == "index-processing"));
-    
+
     EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Average)) == TypeOfStatisticalProcessing::Average));
     EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Accumulation)) == TypeOfStatisticalProcessing::Accumulation));
     EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Maximum)) == TypeOfStatisticalProcessing::Maximum));
@@ -112,7 +112,7 @@ CASE("Test parsing/dumping typeOfStatisticalProcessing") {
     EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::Mode)) == TypeOfStatisticalProcessing::Mode));
     EXPECT((ParseType<dm::TypeOfStatisticalProcessing>::parse(DumpType<dm::TypeOfStatisticalProcessing>::dump(TypeOfStatisticalProcessing::IndexProcessing)) == TypeOfStatisticalProcessing::IndexProcessing));
     // clang-format on
-    
+
     EXPECT_THROWS(ParseType<dm::TypeOfStatisticalProcessing>::parse("noop"));
 }
 

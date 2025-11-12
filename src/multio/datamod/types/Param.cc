@@ -39,4 +39,17 @@ bool operator==(const Param& lhs, const Param& rhs) noexcept {
     return lhs.id() == rhs.id();
 }
 
+bool operator<=(const Param& lhs, const Param& rhs) noexcept {
+    return lhs.id() <= rhs.id();
+}
+
+bool operator>=(const Param& lhs, const Param& rhs) noexcept {
+    return lhs.id() >= rhs.id();
+}
+
+std::ostream& operator<<(std::ostream& out, const Param& param) {
+    out << param.id();
+    return out;
+}
+
 }  // namespace multio::datamod

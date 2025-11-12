@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <ostream>
 #include <string>
 
 #include "multio/datamod/core/TypeParserDumper.h"
@@ -30,7 +31,6 @@ public:
     Param& operator=(const std::int64_t);
     Param& operator=(const std::string&);
 
-    operator std::int64_t() const { return id_; }
     std::int64_t id() const { return id_; };
 
 private:
@@ -38,6 +38,9 @@ private:
 };
 
 bool operator==(const Param&, const Param&) noexcept;
+bool operator<=(const Param&, const Param&) noexcept;
+bool operator>=(const Param&, const Param&) noexcept;
+std::ostream& operator<<(std::ostream&, const Param&);
 
 template <>
 struct DumpType<Param> {

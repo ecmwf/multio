@@ -78,7 +78,7 @@ void Scale::executeImpl(message::Message msg) {
     auto md = dm::readRecord<ScaleMetadataKeys>(msg.metadata());
 
     // Try to find a mapping for the incomming field
-    const auto paramIn = md.param.get();
+    const auto paramIn = md.param.get().id();
     const auto search = mappings_.find(paramIn);
 
     // Skip if no mapping was found

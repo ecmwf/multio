@@ -67,7 +67,7 @@ std::optional<std::int64_t> readTimespan(const message::Metadata& md) {
 std::int64_t readParam(const message::Metadata& md) {
     // TODO: use whole validated keyset...
     if (const auto& param = dm::parseEntry(dm::PARAM, md); param.isSet()) {
-        return param.get();
+        return param.get().id();
     }
     else if (auto paramId = md.getOpt<std::int64_t>(dm::legacy::ParamId); paramId) {
         return *paramId;

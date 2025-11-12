@@ -17,7 +17,7 @@ mars2grib::SectionsConf expectedAIFSSingleEncoderSections(const dm::FullMarsReco
         return dm::readRecord<mars2grib::SectionsConf>(
             eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
-    switch (mars.param.get()) {
+    switch (mars.param.get().id()) {
         case 134:
         case 235:
         case 141:
@@ -73,7 +73,7 @@ mars2grib::SectionsConf expectedAIFSEnsEncoderSections(const dm::FullMarsRecord&
         return dm::readRecord<mars2grib::SectionsConf>(
             eckit::LocalConfiguration{eckit::YAMLConfiguration{std::move(str)}});
     };
-    switch (mars.param.get()) {
+    switch (mars.param.get().id()) {
         case 134:
         case 235:
         case 141:

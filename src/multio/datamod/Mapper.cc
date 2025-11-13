@@ -15,9 +15,9 @@
 #include "multio/datamod/core/DataModellingException.h"
 
 
-namespace multio::datamod::mapper {
+namespace multio::datamod {
 
-std::int64_t toIntStrict(const std::string& s) {
+int64_t ParseType<int64_t>::parse(const std::string& s) {
     std::int64_t value;
     auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), value);
     if (ec != std::errc() || ptr != s.data() + s.size()) {
@@ -26,12 +26,4 @@ std::int64_t toIntStrict(const std::string& s) {
     return value;
 }
 
-std::int64_t StringToIntMapper::parse(const std::string& v) {
-    return toIntStrict(v);
-}
-
-bool BoolMapper::parse(const std::string& v) {
-    return toIntStrict(v) > 0;
-}
-
-}  // namespace multio::datamod::mapper
+}  // namespace multio::datamod

@@ -10,23 +10,24 @@
 
 #pragma once
 
+
+#include "core/TypeParserDumper.h"
+
 #include <cstdint>
 #include <string>
 
 
-namespace multio::datamod::mapper {
+namespace multio::datamod {
 
-struct StringToIntMapper {
-    static inline std::int64_t dump(std::int64_t v) noexcept { return v; };
-    static inline std::int64_t parse(std::int64_t v) noexcept { return v; };
-    static std::int64_t parse(const std::string& v);
+template <>
+struct ParseType<int64_t> {
+    static int64_t parse(const std::string& s);
 };
 
-struct BoolMapper {
-    static inline bool dump(bool v) noexcept { return v; };
-    static inline bool parse(bool v) noexcept { return v; };
-    static inline bool parse(std::int64_t v) { return v > 0; };
-    static bool parse(const std::string& v);
+template <>
+struct ParseType<bool> {
+    static bool parse(int64_t v) { return v > 0; };
+    static bool parse(const std::string& s) { return ParseType<int64_t>::parse(s) > 0; };
 };
 
-}  // namespace multio::datamod::mapper
+}  // namespace multio::datamod

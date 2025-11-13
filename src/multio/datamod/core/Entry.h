@@ -54,9 +54,6 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 ///  * ValueType
 ///  * reference_wrapper<ValueType>
 ///
-/// In addition to the `ValueType` a `Mapper` can be specified. This allows customized parsing through the
-/// `TypeParserDumper` mechanism, either through the `Mapper` inself or specialization of `ParseType<ValueType>`.
-///
 /// This Type is ment to be described through an `EntryDef` and is ment to be used used in a "Record".
 /// Multiple Entries will form a record.
 ///
@@ -74,7 +71,7 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 ///   * `set(UnsetType{})`: clear the entry
 ///   * `set(reference_wrapper<ValueType>)`: sets a reference
 ///   * `setRef(const ValueType&)`: sets a reference
-///   * `set(Value)`: Set with arbitraty value - will convert or use `TypeParserDumper<ValueType, Mapper>::parse` if the
+///   * `set(Value)`: Set with arbitraty value - will convert or use `TypeParserDumper<ValueType>::parse` if the
 ///   value can be parsed.
 ///
 /// Query functions:
@@ -87,12 +84,11 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 ///   * `ensureInit(Val)`: Will default initialize to the passed value if no value is set
 ///   * `ensureInit(Func&&)`: Will default initialize to the result of the function if no value is set
 /// \cond
-template <typename ValueType_, typename Mapper_ = DefaultMapper>
+template <typename ValueType_>
 struct Entry {
     using ValueType = ValueType_;
-    using Mapper = Mapper_;
-    using ParserDumper = TypeParserDumper<ValueType, Mapper>;
-    using This = Entry<ValueType, Mapper>;
+    using ParserDumper = TypeParserDumper<ValueType>;
+    using This = Entry<ValueType>;
 
     using RefType = std::reference_wrapper<const ValueType>;
     using Container = std::variant<UnsetType, ValueType, RefType>;
@@ -297,19 +293,17 @@ struct Entry {
 
 namespace std {
 
-template <typename ValueType, typename Mapper>
-struct equal_to<multio::datamod::Entry<ValueType, Mapper>> {
-    bool operator()(const multio::datamod::Entry<ValueType, Mapper>& lhs,
-                    const multio::datamod::Entry<ValueType, Mapper>& rhs) const {
+template <typename ValueType>
+struct equal_to<multio::datamod::Entry<ValueType>> {
+    bool operator()(const multio::datamod::Entry<ValueType>& lhs, const multio::datamod::Entry<ValueType>& rhs) const {
         return lhs.visit(
             [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal == rhsVal; }); });
     }
 };
 
-template <typename ValueType, typename Mapper>
-struct not_equal_to<multio::datamod::Entry<ValueType, Mapper>> {
-    bool operator()(const multio::datamod::Entry<ValueType, Mapper>& lhs,
-                    const multio::datamod::Entry<ValueType, Mapper>& rhs) const {
+template <typename ValueType>
+struct not_equal_to<multio::datamod::Entry<ValueType>> {
+    bool operator()(const multio::datamod::Entry<ValueType>& lhs, const multio::datamod::Entry<ValueType>& rhs) const {
         return lhs.visit(
             [&](const auto& lhsVal) { return rhs.visit([&](const auto& rhsVal) { return lhsVal != rhsVal; }); });
     }
@@ -320,13 +314,13 @@ struct not_equal_to<multio::datamod::Entry<ValueType, Mapper>> {
 
 namespace multio::datamod {
 
-template <typename ValueType, typename Mapper>
-bool operator==(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) {
-    return std::equal_to<Entry<ValueType, Mapper>>{}(lhs, rhs);
+template <typename ValueType>
+bool operator==(const Entry<ValueType>& lhs, const Entry<ValueType>& rhs) {
+    return std::equal_to<Entry<ValueType>>{}(lhs, rhs);
 }
-template <typename ValueType, typename Mapper>
-bool operator!=(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapper>& rhs) {
-    return std::not_equal_to<Entry<ValueType, Mapper>>{}(lhs, rhs);
+template <typename ValueType>
+bool operator!=(const Entry<ValueType>& lhs, const Entry<ValueType>& rhs) {
+    return std::not_equal_to<Entry<ValueType>>{}(lhs, rhs);
 }
 
 
@@ -335,8 +329,8 @@ bool operator!=(const Entry<ValueType, Mapper>& lhs, const Entry<ValueType, Mapp
 
 template <typename T>
 struct IsEntry : std::false_type {};
-template <typename Val, typename Mapper>
-struct IsEntry<Entry<Val, Mapper>> : std::true_type {};
+template <typename Val>
+struct IsEntry<Entry<Val>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool IsEntry_v = IsEntry<T>::value;
@@ -344,7 +338,6 @@ inline constexpr bool IsEntry_v = IsEntry<T>::value;
 /// C++20 Concept
 // template <typename T>
 // concept EntryType = IsEntry<std::remove_cvref_t<T>>::value;
-
 
 
 }  // namespace multio::datamod

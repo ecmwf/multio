@@ -133,25 +133,25 @@ constexpr std::size_t VARIANT_REF_INDEX = 2;
 CASE("Test static asserts") {
     // Test some static asserts
     using namespace datamod;
-    static_assert(HasParse_v<TypeParser<std::string, DefaultMapper>, std::string>);
-    static_assert(HasParse_v<TypeParser<std::string, DefaultMapper>, std::string&>);
-    static_assert(HasParse_v<TypeParser<std::string, DefaultMapper>, const std::string&>);
-    static_assert(HasParse_v<TypeParser<std::string, DefaultMapper>, std::string&&>);
+    static_assert(HasParse_v<TypeParser<std::string>, std::string>);
+    static_assert(HasParse_v<TypeParser<std::string>, std::string&>);
+    static_assert(HasParse_v<TypeParser<std::string>, const std::string&>);
+    static_assert(HasParse_v<TypeParser<std::string>, std::string&&>);
 
-    static_assert(HasParse_v<TypeParser<bool, DefaultMapper>, bool>);
-    static_assert(HasParse_v<TypeParser<bool, DefaultMapper>, bool&>);
-    static_assert(HasParse_v<TypeParser<bool, DefaultMapper>, const bool&>);
-    static_assert(HasParse_v<TypeParser<bool, DefaultMapper>, bool&&>);
+    static_assert(HasParse_v<TypeParser<bool>, bool>);
+    static_assert(HasParse_v<TypeParser<bool>, bool&>);
+    static_assert(HasParse_v<TypeParser<bool>, const bool&>);
+    static_assert(HasParse_v<TypeParser<bool>, bool&&>);
 
-    static_assert(HasParse_v<TypeParser<double, DefaultMapper>, double>);
-    static_assert(HasParse_v<TypeParser<double, DefaultMapper>, double&>);
-    static_assert(HasParse_v<TypeParser<double, DefaultMapper>, const double&>);
-    static_assert(HasParse_v<TypeParser<double, DefaultMapper>, double&&>);
+    static_assert(HasParse_v<TypeParser<double>, double>);
+    static_assert(HasParse_v<TypeParser<double>, double&>);
+    static_assert(HasParse_v<TypeParser<double>, const double&>);
+    static_assert(HasParse_v<TypeParser<double>, double&&>);
 
-    static_assert(HasParse_v<TypeParser<std::int64_t, DefaultMapper>, std::int64_t>);
-    static_assert(HasParse_v<TypeParser<std::int64_t, DefaultMapper>, std::int64_t&>);
-    static_assert(HasParse_v<TypeParser<std::int64_t, DefaultMapper>, std::int64_t&>);
-    static_assert(HasParse_v<TypeParser<std::int64_t, DefaultMapper>, std::int64_t&&>);
+    static_assert(HasParse_v<TypeParser<std::int64_t>, std::int64_t>);
+    static_assert(HasParse_v<TypeParser<std::int64_t>, std::int64_t&>);
+    static_assert(HasParse_v<TypeParser<std::int64_t>, std::int64_t&>);
+    static_assert(HasParse_v<TypeParser<std::int64_t>, std::int64_t&&>);
 };
 
 

@@ -35,7 +35,7 @@
 
 namespace multio::datamod {
 
-template <typename RecordType>
+template <typename RecordType, typename Container=void>
 struct RecordMapper {
     // Parse record from other record or implemented container
     template <
@@ -48,20 +48,17 @@ struct RecordMapper {
 
     // Dump to other record
     template <
-        typename Container, typename Val,
+        typename Val,
         std::enable_if_t<EntryDumperIsSpecialized_v<Container> && std::is_same_v<std::decay_t<Val>, RecordType>, bool>
         = true>
-    static Container dumpTo(Val&& v) {
+    static Container dump(Val&& v) {
         return dumpRecord<Container>(std::forward<Val>(v));
     }
 };
 
 
-template <typename RecordType>
-using NestedEntry_t = Entry<RecordType, RecordMapper<RecordType>>;
-
 template <typename T, typename M>
-constexpr auto nestedEntryDef(M T::*member) {
+constexpr auto nestedEntryDef(M T::* member) {
     static_assert(IsEntry_v<M>);
     using RecordType = typename M::ValueType;
     return entryDef(RecordName_v<RecordType>, member).withDefault([]() {
@@ -73,7 +70,7 @@ constexpr auto nestedEntryDef(M T::*member) {
 
 
 template <typename T, typename M>
-constexpr auto nestedOptEntryDef(M T::*member) {
+constexpr auto nestedOptEntryDef(M T::* member) {
     static_assert(IsEntry_v<M>);
     using RecordType = typename M::ValueType;
     return entryDef(RecordName_v<RecordType>, member).tagOptional();

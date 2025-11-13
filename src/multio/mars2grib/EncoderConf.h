@@ -95,10 +95,10 @@ struct TablesConfigurator {
 // Whole identification section
 struct IdentificationSection {
     dm::Entry<std::int64_t> templateNumber;
-    dm::NestedEntry_t<TablesConfigurator> tables;
-    dm::NestedEntry_t<OriginConfigurator> origin;
-    dm::NestedEntry_t<DataTypeConfigurator> dataType;
-    dm::NestedEntry_t<ReferenceTimeConfigurator> referenceTime;
+    dm::Entry<TablesConfigurator> tables;
+    dm::Entry<OriginConfigurator> origin;
+    dm::Entry<DataTypeConfigurator> dataType;
+    dm::Entry<ReferenceTimeConfigurator> referenceTime;
 
     static constexpr std::string_view record_name_ = "identification-section";
     static constexpr auto record_entries_ = std::make_tuple(
@@ -230,23 +230,23 @@ using multio::mars2grib::sections::LevelConfigurator;
 struct ProductSection {
     dm::Entry<std::int64_t> templateNumber;
     // Optional as it is used to generate templateNumber
-    dm::NestedEntry_t<rules::PDTCat> pdtCat;
+    dm::Entry<rules::PDTCat> pdtCat;
 
     // Param and Model are the only required configurators
     // All others are optional/product dependent
-    dm::NestedEntry_t<ParamConfigurator> param;
-    dm::NestedEntry_t<ModelConfigurator> model;
+    dm::Entry<ParamConfigurator> param;
+    dm::Entry<ModelConfigurator> model;
 
     // All optional in the sum of all products
-    dm::NestedEntry_t<PointInTimeConfigurator> pointInTime;
-    dm::NestedEntry_t<TimeRangeConfigurator> timeRange;
-    dm::NestedEntry_t<LevelConfigurator> level;
-    dm::NestedEntry_t<ProcessConfigurator> process;
-    dm::NestedEntry_t<RandomPatternsConfigurator> randomPatterns;
-    dm::NestedEntry_t<ChemConfigurator> chemical;
-    dm::NestedEntry_t<DirFreqConfigurator> dirFreq;
-    dm::NestedEntry_t<PeriodConfigurator> periodRange;
-    dm::NestedEntry_t<SatelliteConfigurator> satellite;
+    dm::Entry<PointInTimeConfigurator> pointInTime;
+    dm::Entry<TimeRangeConfigurator> timeRange;
+    dm::Entry<LevelConfigurator> level;
+    dm::Entry<ProcessConfigurator> process;
+    dm::Entry<RandomPatternsConfigurator> randomPatterns;
+    dm::Entry<ChemConfigurator> chemical;
+    dm::Entry<DirFreqConfigurator> dirFreq;
+    dm::Entry<PeriodConfigurator> periodRange;
+    dm::Entry<SatelliteConfigurator> satellite;
 
     static constexpr std::string_view record_name_ = "product-definition-section";
     static constexpr auto record_entries_ = std::make_tuple(
@@ -338,12 +338,12 @@ struct DataRepresSection {
 struct SectionsConf {
     dm::Entry<std::string> type;
 
-    dm::NestedEntry_t<IndicatorSection> indicator;
-    dm::NestedEntry_t<IdentificationSection> identification;
-    dm::NestedEntry_t<LocalUseSection> localUse;
-    dm::NestedEntry_t<GridSection> grid;
-    dm::NestedEntry_t<ProductSection> product;
-    dm::NestedEntry_t<DataRepresSection> dataRepres;
+    dm::Entry<IndicatorSection> indicator;
+    dm::Entry<IdentificationSection> identification;
+    dm::Entry<LocalUseSection> localUse;
+    dm::Entry<GridSection> grid;
+    dm::Entry<ProductSection> product;
+    dm::Entry<DataRepresSection> dataRepres;
 
     static constexpr std::string_view record_name_ = "encoder";
     static constexpr auto record_entries_ = std::make_tuple(
@@ -408,4 +408,97 @@ struct Print<multio::mars2grib::SectionsConf> : datamod::PrintRecord {};
 
 }  // namespace util
 
+
+template <>
+struct datamod::ParseType<mars2grib::TablesConfigurator> : RecordMapper<mars2grib::TablesConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::TablesConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::TablesConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::OriginConfigurator> : RecordMapper<mars2grib::OriginConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::OriginConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::OriginConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::DataTypeConfigurator> : RecordMapper<mars2grib::DataTypeConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::DataTypeConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::DataTypeConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::ReferenceTimeConfigurator> : RecordMapper<mars2grib::ReferenceTimeConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::ReferenceTimeConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::ReferenceTimeConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::rules::PDTCat> : RecordMapper<mars2grib::rules::PDTCat> {};
+template <>
+struct datamod::DumpType<mars2grib::rules::PDTCat, eckit::LocalConfiguration> : RecordMapper<mars2grib::rules::PDTCat , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::ParamConfigurator> : RecordMapper<mars2grib::ParamConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::ParamConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::ParamConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::ModelConfigurator> : RecordMapper<mars2grib::ModelConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::ModelConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::ModelConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::PointInTimeConfigurator> : RecordMapper<mars2grib::PointInTimeConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::PointInTimeConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::PointInTimeConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::TimeRangeConfigurator> : RecordMapper<mars2grib::TimeRangeConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::TimeRangeConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::TimeRangeConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::LevelConfigurator> : RecordMapper<mars2grib::LevelConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::LevelConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::LevelConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::ProcessConfigurator> : RecordMapper<mars2grib::ProcessConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::ProcessConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::ProcessConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::RandomPatternsConfigurator> : RecordMapper<mars2grib::RandomPatternsConfigurator> {
+};
+template <>
+struct datamod::DumpType<mars2grib::RandomPatternsConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::RandomPatternsConfigurator, eckit::LocalConfiguration> {
+};
+template <>
+struct datamod::ParseType<mars2grib::ChemConfigurator> : RecordMapper<mars2grib::ChemConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::ChemConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::ChemConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::DirFreqConfigurator> : RecordMapper<mars2grib::DirFreqConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::DirFreqConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::DirFreqConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::PeriodConfigurator> : RecordMapper<mars2grib::PeriodConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::PeriodConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::PeriodConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::SatelliteConfigurator> : RecordMapper<mars2grib::SatelliteConfigurator> {};
+template <>
+struct datamod::DumpType<mars2grib::SatelliteConfigurator, eckit::LocalConfiguration> : RecordMapper<mars2grib::SatelliteConfigurator , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::IndicatorSection> : RecordMapper<mars2grib::IndicatorSection> {};
+template <>
+struct datamod::DumpType<mars2grib::IndicatorSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::IndicatorSection , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::IdentificationSection> : RecordMapper<mars2grib::IdentificationSection> {};
+template <>
+struct datamod::DumpType<mars2grib::IdentificationSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::IdentificationSection , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::LocalUseSection> : RecordMapper<mars2grib::LocalUseSection> {};
+template <>
+struct datamod::DumpType<mars2grib::LocalUseSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::LocalUseSection , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::GridSection> : RecordMapper<mars2grib::GridSection> {};
+template <>
+struct datamod::DumpType<mars2grib::GridSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::GridSection , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::ProductSection> : RecordMapper<mars2grib::ProductSection> {};
+template <>
+struct datamod::DumpType<mars2grib::ProductSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::ProductSection , eckit::LocalConfiguration> {};
+template <>
+struct datamod::ParseType<mars2grib::DataRepresSection> : RecordMapper<mars2grib::DataRepresSection> {};
+template <>
+struct datamod::DumpType<mars2grib::DataRepresSection, eckit::LocalConfiguration> : RecordMapper<mars2grib::DataRepresSection , eckit::LocalConfiguration> {};
+
 }  // namespace multio
+

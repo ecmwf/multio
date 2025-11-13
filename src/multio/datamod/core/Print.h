@@ -23,10 +23,10 @@
 namespace multio::util {
 
 // Printing something readable to ostream
-template <typename ValueType, typename Mapper>
-struct Print<datamod::Entry<ValueType, Mapper>> {
-    static void print(PrintStream& ps, const datamod::Entry<ValueType, Mapper>& entry) {
-        using ParserDumper = typename datamod::Entry<ValueType, Mapper>::ParserDumper;
+template <typename ValueType>
+struct Print<datamod::Entry<ValueType>> {
+    static void print(PrintStream& ps, const datamod::Entry<ValueType>& entry) {
+        using ParserDumper = typename datamod::Entry<ValueType>::ParserDumper;
 
         if (!entry.isSet()) {
             ps << "<UNSET>";

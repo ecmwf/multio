@@ -15,7 +15,7 @@
 #include "multio/util/VariantHelpers.h"
 
 // TLDR:
-// Interfacing trait. Usage through `TypeParserDumper<ValueType, Mapper>` at the end of this file through functions
+// Interfacing trait. Usage through `TypeParserDumper<ValueType>` at the end of this file through functions
 // `::parse`, `::dump` or `::dumpToAndVisit`.
 // Motivation: Use basic std types (string, int, double, vector, ...), variant
 // and enums to express key values of everything that will be parse/written to other containers like
@@ -37,9 +37,6 @@
 // This is also helpful to extend existing types with additional parsing & validation steps that may blow
 // up the type unessesarily.
 //
-// Sometimes specific keys are representable through a simple type (e.g. an integer or string) and should
-// remain being simple, then it may be convenient to create a custom Mapper type that exposes `parse` and `dump`.
-//
 // # Illustration
 //
 //   INPUT                      Internal        Output
@@ -51,27 +48,23 @@
 //
 // # How to use for parsing
 // * Parsing a field of type `ValueType`: `TypeParserDumper<ValueType>::parse(...)`
-// * Parsing a field of type `ValueType` with supplied CustomMapper: `TypeParserDumper<ValueType,
-// CustomMapper>::parse(...)`
 // * Conditionally check at compile time if a `ValueType` can be parsed from a given `InputType`:
 // HasParse_v<ParseType<ValueType>, InputType>
 //
 // # How to use for dumping
 // * Dumping a field of type `ValueType`: `TypeDumper<ValueType>::dump(...)`
-// * Dumping a field of type `ValueType` with supplied CustomMapper: `TypeDumper<ValueType, void,
-// CustomMapper>::dump(...)`
 // * Dumping a field of type `ValueType` to a container `Container`: `TypeDumper<ValueType, Container>::dump(...)`
-// * Dumping a field of type `ValueType` to a container `Container` with supplied CustomMapper: `TypeDumper<ValueType,
-// Container, CustomMapper>::dump(...)` Conditionally check at compile time if a `ValueType` can be parsed from a given
+//
+// Conditionally check at compile time if a `ValueType` can be parsed from a given
 // `InputType`: HasDump_v<DumpType<ValueType>, const ValueType&>
 // * Dumping a field through `dumpToAndVisit` when variant types are not handled explicitly: `TypeDumper<ValueType,
-// Container, Mapper>::dumpToAndVisit(visitor, val)`
+// Container>::dumpToAndVisit(visitor, val)`
 //
 // # Composed TypeParserDumper trait
-// * Parsing: `TypeParserDumper<ValueType, Mapper>::parse(...)`
-// * Dumping: `TypeParserDumper<ValueType, Mapper>::template dumpTo<Container>(...)`
+// * Parsing: `TypeParserDumper<ValueType>::parse(...)`
+// * Dumping: `TypeParserDumper<ValueType>::template dumpTo<Container>(...)`
 //   Note that the `Container` template argument must always be given here
-// * Dumping: `TypeParserDumper<ValueType, Mapper>::template writeAndWrite<Container>(...)`
+// * Dumping: `TypeParserDumper<ValueType>::template writeAndWrite<Container>(...)`
 //   Note that the `Container` template argument must always be given here
 //
 // Dumping with the note of a Container is useful to specialize formatting layout for given containers
@@ -81,58 +74,55 @@ namespace multio::datamod {
 
 //=============================================================================
 
-template <typename MapperOrSpec, typename FromType, class = void>
+template <typename Spec, typename FromType, class = void>
 struct HasParse : std::false_type {};
 
-template <typename MapperOrSpec, typename FromType>
-struct HasParse<MapperOrSpec, FromType, std::void_t<decltype(MapperOrSpec::parse(std::declval<FromType>()))>>
-    : std::true_type {};
+template <typename Spec, typename FromType>
+struct HasParse<Spec, FromType, std::void_t<decltype(Spec::parse(std::declval<FromType>()))>> : std::true_type {};
 
-template <typename MapperOrSpec, typename FromType>
-inline constexpr bool HasParse_v = HasParse<MapperOrSpec, FromType>::value;
+template <typename Spec, typename FromType>
+inline constexpr bool HasParse_v = HasParse<Spec, FromType>::value;
 
 /// C++20 concept
-// template <typename MapperOrSpec, typename FromType>
+// template <typename Spec, typename FromType>
 // concept HasParse = requires(FromType from) {
-//     { MapperOrSpec::parse(from) }; // return type optional, we just care it's valid
+//     { Spec::parse(from) }; // return type optional, we just care it's valid
 // };
 
 
-template <typename MapperOrSpec, typename FromType, class = void>
+template <typename Spec, typename FromType, class = void>
 struct HasDump : std::false_type {};
 
-template <typename MapperOrSpec, typename FromType>
-struct HasDump<MapperOrSpec, FromType, std::void_t<decltype(MapperOrSpec::dump(std::declval<FromType>()))>>
-    : std::true_type {};
+template <typename Spec, typename FromType>
+struct HasDump<Spec, FromType, std::void_t<decltype(Spec::dump(std::declval<FromType>()))>> : std::true_type {};
 
 
-template <typename MapperOrSpec, typename FromType>
-inline constexpr bool HasDump_v = HasDump<MapperOrSpec, FromType>::value;
+template <typename Spec, typename FromType>
+inline constexpr bool HasDump_v = HasDump<Spec, FromType>::value;
 
 
 /// C++20 concept
-// template <typename MapperOrSpec, typename FromType>
+// template <typename Spec, typename FromType>
 // concept HasParse = requires(FromType from) {
-//     { MapperOrSpec::dump(from) }; // return type optional, we just care it's valid
+//     { Spec::dump(from) }; // return type optional, we just care it's valid
 // };
 
 
-template <typename MapperOrSpec, typename Container, typename FromType, class = void>
+template <typename Spec, typename Container, typename FromType, class = void>
 struct HasDumpTo : std::false_type {};
 
-template <typename MapperOrSpec, typename Container, typename FromType>
-struct HasDumpTo<MapperOrSpec, Container, FromType,
-                 std::void_t<decltype(MapperOrSpec::template dumpTo<Container>(std::declval<FromType>()))>>
-    : std::true_type {};
+template <typename Spec, typename Container, typename FromType>
+struct HasDumpTo<Spec, Container, FromType,
+                 std::void_t<decltype(Spec::template dumpTo<Container>(std::declval<FromType>()))>> : std::true_type {};
 
 
-template <typename MapperOrSpec, typename Container, typename FromType>
-inline constexpr bool HasDumpTo_v = HasDumpTo<MapperOrSpec, Container, FromType>::value;
+template <typename Spec, typename Container, typename FromType>
+inline constexpr bool HasDumpTo_v = HasDumpTo<Spec, Container, FromType>::value;
 
 /// C++20 concept
-// template <typename MapperOrSpec, typename FromType>
+// template <typename Spec, typename FromType>
 // concept HasParse = requires(FromType from) {
-//     { MapperOrSpec::dumpTo(from) }; // return type optional, we just care it's valid
+//     { Spec::dumpTo(from) }; // return type optional, we just care it's valid
 // };
 
 
@@ -148,12 +138,9 @@ template <typename Type, typename Container = void>
 struct DumpType;
 
 
-struct DefaultMapper {};
-
 // Accessor to parse values for ValueType
-// either via ParseType<> specialization, a CustomMapper::parse
-// or conversion
-template <typename ValueType, typename CustomMapper = DefaultMapper>
+// either via ParseType<> specialization or conversion
+template <typename ValueType>
 struct TypeParser {
     // Identity
     template <typename Val, std::enable_if_t<std::is_same_v<ValueType, std::decay_t<Val>>, bool> = true>
@@ -170,21 +157,10 @@ struct TypeParser {
         return ParseType<ValueType>::parse(std::forward<Val>(val));
     }
 
-    // Custom mapper is defined
-    template <typename Val,
-              std::enable_if_t<(!std::is_same_v<ValueType, std::decay_t<Val>> && !HasParse_v<ParseType<ValueType>, Val>
-                                && HasParse_v<CustomMapper, Val>),
-                               bool>
-              = true>
-    static decltype(auto) parse(Val&& val) {
-        return CustomMapper::parse(std::forward<Val>(val));
-    }
-
 
     // Type defined conversions
     template <typename Val,
-              std::enable_if_t<(!std::is_same_v<ValueType, std::decay_t<Val>> && !HasParse_v<CustomMapper, Val>
-                                && !HasParse_v<ParseType<ValueType>, Val>
+              std::enable_if_t<(!std::is_same_v<ValueType, std::decay_t<Val>> && !HasParse_v<ParseType<ValueType>, Val>
                                 && std::is_convertible_v<std::decay_t<Val>, ValueType>),
                                bool>
               = true>
@@ -195,15 +171,14 @@ struct TypeParser {
 
 
 // Accessor to map values for ValueType
-// either via DumpTypec<> specialization or a CustomMapper::dump
+// either via DumpTypec<> specialization
 // to a basic type that is more appropriate for usual containers.
 // Note: Variants are explicitly accepted as a mapped type to allow types to
 // have multiple representation.
 // Thats why the `dumpToAndVisit` can/should be used
-template <typename ValueType, typename Container = void, typename CustomMapper = DefaultMapper>
+template <typename ValueType, typename Container = void>
 struct TypeDumper {
-    // DumpType<ValueType, Container>::dump is defined and has precedence over DumpType<ValueType, void>,
-    // CustomMapper and conversion
+    // DumpType<ValueType, Container>::dump is defined and has precedence over DumpType<ValueType, void> and conversion
     template <typename Val,
               std::enable_if_t<(std::is_same_v<ValueType, std::decay_t<Val>> && !std::is_same_v<Container, void>
                                 && HasDump_v<DumpType<ValueType, Container>, Val>),
@@ -213,7 +188,7 @@ struct TypeDumper {
         return DumpType<ValueType, Container>::dump(std::forward<Val>(val));
     }
 
-    // DumpType<ValueType, void>::dump is defined and has precedence over CustomMapper  or conversion
+    // DumpType<ValueType, void>::dump is defined and has precedence over conversion
     template <typename Val, std::enable_if_t<(std::is_same_v<ValueType, std::decay_t<Val>>
                                               && (std::is_same_v<Container, void>
                                                   || (!std::is_same_v<Container, void>
@@ -226,38 +201,12 @@ struct TypeDumper {
     }
 
 
-    // CustomMapper::dumpTo<Container> is defined and has precedence over DumpType or conversion
-    template <typename Val,
-              std::enable_if_t<
-                  (std::is_same_v<ValueType, std::decay_t<Val>> && !HasDump_v<DumpType<ValueType, void>, Val>
-                   && !HasDump_v<DumpType<ValueType, Container>, Val> && HasDumpTo_v<CustomMapper, Container, Val>),
-                  bool>
-              = true>
-    static decltype(auto) dump(Val&& val) {
-        return CustomMapper::template dumpTo<Container>(std::forward<Val>(val));
-    }
-
-    // CustomMapper::dump is defined and has precedence over DumpType or conversion
-    template <
-        typename Val,
-        std::enable_if_t<(std::is_same_v<ValueType, std::decay_t<Val>> && !HasDump_v<DumpType<ValueType, void>, Val>
-                          && !HasDump_v<DumpType<ValueType, Container>, Val>
-                          && !HasDumpTo_v<CustomMapper, Container, Val> && HasDump_v<CustomMapper, Val>),
-                         bool>
-        = true>
-    static decltype(auto) dump(Val&& val) {
-        return CustomMapper::dump(std::forward<Val>(val));
-    }
-
-
     // Identity - if nothing is specialized
-    template <
-        typename Val,
-        std::enable_if_t<(std::is_same_v<ValueType, std::decay_t<Val>> && !HasDump_v<DumpType<ValueType, void>, Val>
-                          && !HasDump_v<DumpType<ValueType, Container>, Val>
-                          && !HasDumpTo_v<CustomMapper, Container, Val> && !HasDump_v<CustomMapper, Val>),
-                         bool>
-        = true>
+    template <typename Val, std::enable_if_t<(std::is_same_v<ValueType, std::decay_t<Val>>
+                                              && !HasDump_v<DumpType<ValueType, void>, Val>
+                                              && !HasDump_v<DumpType<ValueType, Container>, Val>),
+                                             bool>
+                            = true>
     static decltype(auto) dump(Val&& val) {
         return std::forward<Val>(val);
     }
@@ -270,24 +219,24 @@ struct TypeDumper {
 
 
 // Combined accessor parse & and dump
-template <typename ValueType, typename Mapper>
+template <typename ValueType>
 struct TypeParserDumper {
     template <typename V>
-    inline static constexpr bool CanCreateFromValue_v = HasParse_v<TypeParser<ValueType, Mapper>, V>;
+    inline static constexpr bool CanCreateFromValue_v = HasParse_v<TypeParser<ValueType>, V>;
 
     template <typename Val, std::enable_if_t<CanCreateFromValue_v<Val>, bool> = true>
     static decltype(auto) parse(Val&& val) {
-        return TypeParser<ValueType, Mapper>::parse(std::forward<Val>(val));
+        return TypeParser<ValueType>::parse(std::forward<Val>(val));
     }
 
     template <typename Container, typename Val>
     static decltype(auto) dumpTo(Val&& val) {
-        return TypeDumper<ValueType, Container, Mapper>::dump(std::forward<Val>(val));
+        return TypeDumper<ValueType, Container>::dump(std::forward<Val>(val));
     }
 
     template <typename Container, typename Val, typename Func>
     static decltype(auto) dumpToAndVisit(Val&& val, Func&& func) {
-        return TypeDumper<ValueType, Container, Mapper>::dumpToAndVisit(std::forward<Val>(val), std::forward<Func>(func));
+        return TypeDumper<ValueType, Container>::dumpToAndVisit(std::forward<Val>(val), std::forward<Func>(func));
     }
 };
 

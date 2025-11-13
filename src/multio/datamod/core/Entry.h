@@ -71,7 +71,7 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 ///   * `set(UnsetType{})`: clear the entry
 ///   * `set(reference_wrapper<ValueType>)`: sets a reference
 ///   * `setRef(const ValueType&)`: sets a reference
-///   * `set(Value)`: Set with arbitraty value - will convert or use `TypeParserDumper<ValueType>::parse` if the
+///   * `set(Value)`: Set with arbitraty value - will convert or use `TypeParser<ValueType>::parse` if the
 ///   value can be parsed.
 ///
 /// Query functions:
@@ -87,7 +87,6 @@ bool operator!=(const MV1& lhs, const MV2& rhs) noexcept {
 template <typename ValueType_>
 struct Entry {
     using ValueType = ValueType_;
-    using ParserDumper = TypeParserDumper<ValueType>;
     using This = Entry<ValueType>;
 
     using RefType = std::reference_wrapper<const ValueType>;
@@ -160,7 +159,7 @@ struct Entry {
         = std::is_same_v<std::decay_t<V>, ValueType> || std::is_same_v<std::decay_t<V>, UnsetType>
        || std::is_same_v<std::decay_t<V>, RefType> || std::is_same_v<std::decay_t<V>, Container>
        || std::is_same_v<std::decay_t<V>, This> || util::IsOptional_v<std::decay_t<V>>
-       || ParserDumper::template CanCreateFromValue_v<V>;  //< Check if a value can be sot for template type V
+       || CanParse_v<ValueType, V>;  //< Check if a value can be sot for template type V
 
     // Explicitly setting value as reference
     template <typename V, std::enable_if_t<(std::is_same_v<std::decay_t<V>, ValueType>), bool> = true>
@@ -179,11 +178,11 @@ struct Entry {
         typename V,
         std::enable_if_t<(!std::is_same_v<std::decay_t<V>, UnsetType> && !std::is_same_v<std::decay_t<V>, RefType>
                           && !std::is_same_v<std::decay_t<V>, ValueType> && !std::is_same_v<std::decay_t<V>, Container>
-                          && !std::is_same_v<std::decay_t<V>, This> && ParserDumper::template CanCreateFromValue_v<V>),
+                          && !std::is_same_v<std::decay_t<V>, This> && CanParse_v<ValueType, V>),
                          bool>
         = true>
     void set(V&& v) {
-        value = ParserDumper::parse(std::forward<V>(v));
+        value = TypeParser<ValueType>::parse(std::forward<V>(v));
     }
 
     // Set everything UnsetType, RefType or ContainerType
@@ -254,7 +253,7 @@ struct Entry {
     }
 
     template <typename Func,
-              std::enable_if_t<ParserDumper::template CanCreateFromValue_v<decltype(std::declval<Func>()())>, bool>
+              std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Func>()())>, bool>
               = true>
     This& ensureInit(Func&& func) {
         if (!isSet()) {
@@ -267,7 +266,7 @@ struct Entry {
         return *this;
     }
     template <typename Val,
-              std::enable_if_t<ParserDumper::template CanCreateFromValue_v<decltype(std::declval<Val>())>, bool> = true>
+              std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Val>())>, bool> = true>
     This& ensureInit(Val&& val) {
         if (!isSet()) {
             this->set(std::forward<Val>(val)());

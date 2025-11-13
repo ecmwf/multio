@@ -21,6 +21,8 @@
 
 namespace multio::datamod {
 
+using IntOrString = std::variant<std::int64_t, std::string>;
+
 // clang-format off
 
 //----------------------------------------------------------------------------------------------------------------------

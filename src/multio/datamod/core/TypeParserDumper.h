@@ -108,23 +108,6 @@ inline constexpr bool HasDump_v = HasDump<Spec, FromType>::value;
 // };
 
 
-template <typename Spec, typename Container, typename FromType, class = void>
-struct HasDumpTo : std::false_type {};
-
-template <typename Spec, typename Container, typename FromType>
-struct HasDumpTo<Spec, Container, FromType,
-                 std::void_t<decltype(Spec::template dumpTo<Container>(std::declval<FromType>()))>> : std::true_type {};
-
-
-template <typename Spec, typename Container, typename FromType>
-inline constexpr bool HasDumpTo_v = HasDumpTo<Spec, Container, FromType>::value;
-
-/// C++20 concept
-// template <typename Spec, typename FromType>
-// concept HasParse = requires(FromType from) {
-//     { Spec::dumpTo(from) }; // return type optional, we just care it's valid
-// };
-
 
 //=============================================================================
 
@@ -218,27 +201,8 @@ struct TypeDumper {
 };
 
 
-// Combined accessor parse & and dump
-template <typename ValueType>
-struct TypeParserDumper {
-    template <typename V>
-    inline static constexpr bool CanCreateFromValue_v = HasParse_v<TypeParser<ValueType>, V>;
-
-    template <typename Val, std::enable_if_t<CanCreateFromValue_v<Val>, bool> = true>
-    static decltype(auto) parse(Val&& val) {
-        return TypeParser<ValueType>::parse(std::forward<Val>(val));
-    }
-
-    template <typename Container, typename Val>
-    static decltype(auto) dumpTo(Val&& val) {
-        return TypeDumper<ValueType, Container>::dump(std::forward<Val>(val));
-    }
-
-    template <typename Container, typename Val, typename Func>
-    static decltype(auto) dumpToAndVisit(Val&& val, Func&& func) {
-        return TypeDumper<ValueType, Container>::dumpToAndVisit(std::forward<Val>(val), std::forward<Func>(func));
-    }
-};
+template <typename ValueType, typename FromType>
+inline constexpr bool CanParse_v = HasParse_v<TypeParser<ValueType>, FromType>;
 
 
 //=============================================================================

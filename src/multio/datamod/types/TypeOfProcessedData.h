@@ -38,14 +38,10 @@ enum class TypeOfProcessedData : int64_t
 }  // namespace multio::datamod
 
 
-namespace multio::util {
-
 template <>
-struct Print<datamod::TypeOfProcessedData> {
+struct multio::util::Print<multio::datamod::TypeOfProcessedData> {
     static void print(PrintStream&, const datamod::TypeOfProcessedData&);
 };
-
-}  // namespace multio::util
 
 
 namespace multio::datamod {

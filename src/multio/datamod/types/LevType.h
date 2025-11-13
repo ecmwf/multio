@@ -46,27 +46,18 @@ const std::vector<LevType>& allLevTypes();
 }  // namespace multio::datamod
 
 
-namespace multio::util {
-
 template <>
-struct Print<datamod::LevType> {
+struct multio::util::Print<multio::datamod::LevType> {
     static void print(PrintStream& ps, const datamod::LevType& v);
 };
 
-}  // namespace multio::util
-
-namespace multio::datamod {
-
 template <>
-struct DumpType<LevType> {
+struct multio::datamod::DumpType<multio::datamod::LevType> {
     static std::string dump(LevType);
 };
 
 template <>
-struct ParseType<LevType> {
-    static inline LevType parse(LevType v) noexcept { return v; };
+struct multio::datamod::ParseType<multio::datamod::LevType> {
     static LevType parse(const std::string& s);
 };
 
-
-}  // namespace multio::datamod

@@ -11,7 +11,6 @@
 #pragma once
 
 #include <tuple>
-#include <type_traits>
 
 #include "multio/datamod/core/Entry.h"
 #include "multio/datamod/core/EntryDef.h"
@@ -26,13 +25,12 @@ namespace multio::util {
 template <typename ValueType>
 struct Print<datamod::Entry<ValueType>> {
     static void print(PrintStream& ps, const datamod::Entry<ValueType>& entry) {
-        using ParserDumper = typename datamod::Entry<ValueType>::ParserDumper;
 
         if (!entry.isSet()) {
             ps << "<UNSET>";
         }
         else {
-            ps << ParserDumper::template dumpTo<std::ostream>(entry.get());
+            ps << datamod::TypeDumper<ValueType, std::ostream>::dump(entry.get());
         }
     }
 };

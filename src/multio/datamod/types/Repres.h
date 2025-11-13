@@ -31,32 +31,27 @@ enum class Repres : std::size_t
              // of the others...
 };
 
+Repres represFromGrid(const std::string& grid);
+
 }  // namespace multio::datamod
 
 
-namespace multio::util {
 
 template <>
-struct Print<datamod::Repres> {
+struct multio::util::Print<multio::datamod::Repres> {
     static void print(PrintStream& ps, const datamod::Repres& v);
 };
 
-}  // namespace multio::util
-
-namespace multio::datamod {
 
 template <>
-struct DumpType<Repres> {
+struct multio::datamod::DumpType<multio::datamod::Repres> {
     static std::string dump(Repres);
 };
 
 template <>
-struct ParseType<Repres> {
-    static inline Repres parse(Repres v) noexcept { return v; };
+struct multio::datamod::ParseType<multio::datamod::Repres> {
     static Repres parse(const std::string& s);
 };
 
 
-Repres represFromGrid(const std::string& grid);
 
-}  // namespace multio::datamod

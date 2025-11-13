@@ -20,6 +20,7 @@
 #include "multio/datamod/core/EntryParser.h"
 
 #include "multio/datamod/core/Record.h"
+#include "multio/datamod/core/TypeParserDumper.h"
 #include "multio/message/BaseMetadata.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Parametrization.h"
@@ -67,7 +68,7 @@ struct EntryParser<message::BaseMetadata> {
     template <bool byRef = true, typename EntryDef_,
               std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
     static decltype(auto) makeVisitor(const EntryDef_& entryDef, const message::BaseMetadata& md) noexcept {
-        using TP = typename EntryDef_::ParserDumper;
+        using ValueType = typename EntryDef_::ValueType;
         using Ret = EntryType_t<EntryDef_>;
 
         return [&](auto&& v) -> Ret {
@@ -77,7 +78,7 @@ struct EntryParser<message::BaseMetadata> {
                 }
                 return {};
             }
-            else if constexpr (TP::template CanCreateFromValue_v<decltype(v)>) {
+            else if constexpr (CanParse_v<ValueType, decltype(v)>) {
                 if constexpr (byRef) {
                     return entryDef.makeEntryRef(std::forward<decltype(v)>(v));
                 }
@@ -196,14 +197,14 @@ struct EntryDumper<message::BaseMetadata> {
     template <typename EntryDef_, typename Entry_,
               std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_> && IsEntry_v<std::decay_t<Entry_>>), bool> = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, message::BaseMetadata& md, const DumpOptions&) {
-        using TP = typename EntryDef_::ParserDumper;
+        using ValueType = typename EntryDef_::ValueType;
         // TODO pgeier think about handling missing value by setting Null ?
         std::forward<Entry_>(entry).visit(  //
             eckit::Overloaded{[&](UnsetType v) { md.erase(entryDef.key()); },
                               [&](auto&& v) {
                                   // The contained value might be or mapped to a variant, that's
                                   // why we visit
-                                  TP::template dumpToAndVisit<message::BaseMetadata>(
+                                  TypeDumper<ValueType, message::BaseMetadata>::dumpToAndVisit(
                                       std::forward<decltype(v)>(v),
                                       [&](auto&& vi) { md.set(entryDef.key(), std::forward<decltype(vi)>(vi)); });
                               }});
@@ -313,7 +314,7 @@ struct EntryParser<eckit::Configuration> {
     template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
     static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const eckit::Configuration& conf,
                                            const ParseOptions&) {
-        using TP = typename EntryDef_::ParserDumper;
+        using ValueType = typename EntryDef_::ValueType;
         using Ret = EntryType_t<EntryDef_>;
         std::string key{entryDef.key()};
         if (!conf.has(key)) {
@@ -338,7 +339,7 @@ struct EntryParser<eckit::Configuration> {
                                                    },
                                                    [&](auto tt) -> Ret {
                                                        using Type = typename std::decay_t<decltype(tt)>::type;
-                                                       if constexpr (TP::template CanCreateFromValue_v<Type>) {
+                                                       if constexpr (CanParse_v<ValueType, Type>) {
                                                            return entryDef.makeEntry(getValueByType<Type>(conf, key));
                                                        }
                                                        else {
@@ -390,8 +391,9 @@ struct EntryDumper<eckit::LocalConfiguration> {
                 }
             },
             [&](auto&& v) {
-                // The contained value might be or mapped to a variant, that's why we visit
-                EntryDef_::ParserDumper::template dumpToAndVisit<eckit::LocalConfiguration>(
+                // The contained value might be or mapped to a variant,
+                // that's why we visit
+                TypeDumper<typename EntryDef_::ValueType, eckit::LocalConfiguration>::dumpToAndVisit(
                     std::forward<decltype(v)>(v),
                     [&](auto&& vi) { conf.set(std::string(entryDef.key()), std::forward<decltype(vi)>(vi)); });
             }});
@@ -431,7 +433,6 @@ struct EntryParser<metkit::codes::CodesHandle> {
     template <typename EntryDef_, std::enable_if_t<(IsBaseEntryDefinition_v<EntryDef_>), bool> = true>
     static EntryType_t<EntryDef_> getByRef(const EntryDef_& entryDef, const metkit::codes::CodesHandle& handle,
                                            const ParseOptions&) {
-        using TP = typename EntryDef_::ParserDumper;
         using ValueType = typename EntryDef_::ValueType;
 
         // TODO pgeier use const char* in EntryDef for better IO performance?
@@ -453,7 +454,7 @@ struct EntryParser<metkit::codes::CodesHandle> {
 
         return std::visit(
             [&](auto&& v) -> EntryType_t<EntryDef_> {
-                if constexpr (TP::template CanCreateFromValue_v<std::decay_t<decltype(v)>>) {
+                if constexpr (CanParse_v<ValueType, std::decay_t<decltype(v)>>) {
                     return entryDef.makeEntry(std::move(v));
                 }
                 else {
@@ -484,27 +485,27 @@ struct EntryDumper<metkit::codes::CodesHandle> {
                                bool>
               = true>
     static void set(const EntryDef_& entryDef, Entry_&& entry, GH& handle, const DumpOptions& opts) {
-        using TP = typename EntryDef_::ParserDumper;
+        using ValueType = typename EntryDef_::ValueType;
         std::string key{entryDef.key()};
-        std::forward<Entry_>(entry).visit(eckit::Overloaded{
-            [&](UnsetType v) {
-                if (opts.removeMissingKeys) {
-                    if (handle.isDefined(key)) {
-                        handle.setMissing(key);
-                    }
-                }
-            },
-            [&](auto&& v) {
-                if (!handle.isDefined(key)) {
-                    std::ostringstream oss;
-                    oss << "Key " << entryDef.keyInfo() << " should be written but is not defined on  eccodes handle.";
-                    throw DataModellingException(oss.str(), Here());
-                }
-                // The contained value might be or mapped to a variant, that's why we visit
-                TP::template dumpToAndVisit<metkit::codes::CodesHandle>(std::forward<decltype(v)>(v), [&](auto&& vi) {
-                    handle.set(key, std::forward<decltype(vi)>(vi));
-                });
-            }});
+        std::forward<Entry_>(entry).visit(
+            eckit::Overloaded{[&](UnsetType v) {
+                                  if (opts.removeMissingKeys) {
+                                      if (handle.isDefined(key)) {
+                                          handle.setMissing(key);
+                                      }
+                                  }
+                              },
+                              [&](auto&& v) {
+                                  if (!handle.isDefined(key)) {
+                                      std::ostringstream oss;
+                                      oss << "Key " << entryDef.keyInfo()
+                                          << " should be written but is not defined on  eccodes handle.";
+                                      throw DataModellingException(oss.str(), Here());
+                                  }
+                                  // The contained value might be or mapped to a variant, that's why we visit
+                                  TypeDumper<ValueType, metkit::codes::CodesHandle>::dumpToAndVisit(
+                    std::forward<decltype(v)>(v), [&](auto&& vi) { handle.set(key, std::forward<decltype(vi)>(vi)); });
+                              }});
     }
 };
 

@@ -208,7 +208,6 @@ struct BaseEntryDef {
     using ValueType = ValueType_;
     using This = BaseEntryDef<ValueType_, tag_>;
 
-    using ParserDumper = TypeParserDumper<ValueType>;
     using EntryType = Entry<ValueType_>;
 
     static constexpr EntryTag tag = tag_;
@@ -254,10 +253,10 @@ struct BaseEntryDef {
             }
             else {
                 if constexpr (!std::is_lvalue_reference_v<V>) {
-                    return EntryType{ParserDumper::parse(std::move(v))};
+                    return EntryType{TypeParser<ValueType>::parse(std::move(v))};
                 }
                 else {
-                    return EntryType{ParserDumper::parse(v)};
+                    return EntryType{TypeParser<ValueType>::parse(v)};
                 }
             }
         }
@@ -314,7 +313,6 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
     using This = EntryDef<ValueType_, tag_, PointerAccessor, DefaultValueFunctor_>;
     using KeyType = typename Base::KeyType;
     using ValueType = typename Base::ValueType;
-    using ParserDumper = typename Base::ParserDumper;
 
     using EntryType = typename Base::EntryType;
     using DefaultValueFunctor = DefaultValueFunctor_;
@@ -565,7 +563,6 @@ struct ScopedEntryDef {
     using KeyType = typename EntryDef_::KeyType;
     using ValueType = typename EntryDef_::ValueType;
 
-    using ParserDumper = typename EntryDef_::ParserDumper;
     using EntryType = typename EntryDef_::EntryType;
     using Accessor = typename EntryDef_::Accessor;
 

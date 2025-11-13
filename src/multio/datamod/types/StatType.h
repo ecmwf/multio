@@ -72,32 +72,27 @@ bool operator!=(const StatType& lhs, const StatType& rhs) noexcept;
 }  // namespace multio::datamod
 
 
-namespace std {
-
 template <>
-struct hash<multio::datamod::SingleStatType> {
+struct std::hash<multio::datamod::SingleStatType> {
     std::size_t operator()(const multio::datamod::SingleStatType& o) const noexcept {
         return multio::util::hashCombine(multio::util::hash(o.duration), multio::util::hash(o.operation));
     }
 };
 
 template <>
-struct hash<multio::datamod::StatType> {
+struct std::hash<multio::datamod::StatType> {
     std::size_t operator()(const multio::datamod::StatType& o) const noexcept {
         return multio::util::hashCombine(multio::util::hash(o.firstLevel()), multio::util::hash(o.secondLevel()));
     }
 };
-}  // namespace std
 
-
-namespace multio::util {
 
 template <>
-struct Print<datamod::StatType> {
+struct multio::util::Print<multio::datamod::StatType> {
     static void print(PrintStream& ps, const datamod::StatType& v);
 };
 
-}  // namespace multio::util
+
 
 namespace multio::datamod {
 
@@ -108,7 +103,6 @@ struct DumpType<StatTypeDuration> {
 
 template <>
 struct ParseType<StatTypeDuration> {
-    static inline StatTypeDuration parse(StatTypeDuration v) noexcept { return v; };
     static StatTypeDuration parse(std::string_view s);
 };
 
@@ -120,7 +114,6 @@ struct DumpType<StatTypeOperation> {
 
 template <>
 struct ParseType<StatTypeOperation> {
-    static inline StatTypeOperation parse(StatTypeOperation v) noexcept { return v; };
     static StatTypeOperation parse(std::string_view s);
 };
 
@@ -132,7 +125,6 @@ struct DumpType<SingleStatType> {
 
 template <>
 struct ParseType<SingleStatType> {
-    static inline SingleStatType parse(SingleStatType v) noexcept { return v; };
     static SingleStatType parse(std::string_view s);
 };
 
@@ -144,7 +136,6 @@ struct DumpType<StatType> {
 
 template <>
 struct ParseType<StatType> {
-    static inline StatType parse(StatType v) noexcept { return v; };
     static StatType parse(std::string_view s);
 };
 

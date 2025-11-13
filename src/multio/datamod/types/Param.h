@@ -47,12 +47,6 @@ struct DumpType<Param> {
     static std::int64_t dump(const Param& param) { return param.id(); }
 };
 
-template <>
-struct ParseType<Param> {
-    static Param parse(const std::int64_t id) { return Param{id}; }
-    static Param parse(const std::string& str) { return Param{str}; }
-};
-
 }  // namespace multio::datamod
 
 

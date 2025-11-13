@@ -124,14 +124,10 @@ enum class TypeOfLevel : std::size_t
 }  // namespace multio::datamod
 
 
-namespace multio::util {
-
 template <>
-struct Print<datamod::TypeOfLevel> {
+struct multio::util::Print<multio::datamod::TypeOfLevel> {
     static void print(PrintStream&, const datamod::TypeOfLevel&);
 };
-
-}  // namespace multio::util
 
 namespace multio::datamod {
 
@@ -143,7 +139,6 @@ struct DumpType<TypeOfLevel> {
 
 template <>
 struct ParseType<TypeOfLevel> {
-    static inline TypeOfLevel parse(TypeOfLevel v) noexcept { return v; };
     static TypeOfLevel parse(const std::string& s);
 };
 

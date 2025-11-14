@@ -57,56 +57,51 @@ struct SetScaleFactor : DynSetter {
 
 //-----------------------------------------------------------------------------
 
-// First id_ is the key to be set. idx is the path to it
-template <typename EntryDef_>
-struct SetMarsKey : DynSetter {
-    SetMarsKey(std::reference_wrapper<const EntryDef_> e, dm::EntryType_t<EntryDef_> v) :
-        entryDef_{std::move(e)}, value{std::move(v)} {}
-    std::reference_wrapper<const EntryDef_> entryDef_;
-    dm::EntryType_t<EntryDef_> value;
+template <typename RecordType, typename ValueType>
+struct SetKey;
 
-    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
-        entryDef_.get().get(marsVals) = value;
+// First id_ is the key to be set. idx is the path to it
+template <typename MarsRec, typename ValueType>
+struct SetMarsKey : DynSetter {
+    SetMarsKey(ValueType MarsRec::* member, ValueType v) : member_{member}, value{std::move(v)} {}
+    ValueType MarsRec::* member_;
+    ValueType value;
+
+    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord&, MappingResult&) const override {
+        marsVals.*member_ = value;
     }
     void print(util::PrintStream& ps) const override { ps << "SetMarsKey(" << value << ")"; }
 };
 
-template <typename EntryDef_>
-SetMarsKey<EntryDef_> setMarsKey(const EntryDef_& entryDef,
-                                 dm::EntryType_t<EntryDef_> val = dm::EntryType_t<EntryDef_>{}) {
-    entryDef.applyDefaults(val);
-    return SetMarsKey<EntryDef_>{std::cref(entryDef), std::move(val)};
-}
-template <typename EntryDef_>
-SetMarsKey<EntryDef_> setMarsKey(const EntryDef_& entryDef, dm::EntryValueType_t<EntryDef_> val) {
-    return setMarsKey(entryDef, dm::EntryType_t<EntryDef_>{val});
-}
+template <typename ValueType>
+struct SetKey<dm::MarsFieldId, ValueType> : SetMarsKey<dm::MarsFieldId, ValueType> {
+    using SetMarsKey<dm::MarsFieldId, ValueType>::SetMarsKey;
+};
+template <typename ValueType>
+struct SetKey<dm::MarsFieldDetails, ValueType> : SetMarsKey<dm::MarsFieldDetails, ValueType> {
+    using SetMarsKey<dm::MarsFieldDetails, ValueType>::SetMarsKey;
+};
+template <typename ValueType>
+struct SetKey<dm::MarsId, ValueType> : SetMarsKey<dm::MarsId, ValueType> {
+    using SetMarsKey<dm::MarsId, ValueType>::SetMarsKey;
+};
 
+template <typename ValueType>
+struct SetKey<dm::MiscRecord, ValueType> : DynSetter {
+    SetKey(ValueType dm::MiscRecord::* member, ValueType v) : member_{member}, value{std::move(v)} {}
+    ValueType dm::MiscRecord::* member_;
+    ValueType value;
 
-//-----------------------------------------------------------------------------
-
-template <typename EntryDef_>
-struct SetMiscKey : DynSetter {
-    SetMiscKey(std::reference_wrapper<const EntryDef_> e, dm::EntryType_t<EntryDef_> v) :
-        entryDef_{std::move(e)}, value{std::move(v)} {}
-    std::reference_wrapper<const EntryDef_> entryDef_;
-    dm::EntryType_t<EntryDef_> value;
-
-    void set(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals, MappingResult&) const override {
-        entryDef_.get().get(miscVals) = value;
+    void set(dm::FullMarsRecord&, dm::MiscRecord& miscVals, MappingResult&) const override {
+        miscVals.*member_ = value;
     }
     void print(util::PrintStream& ps) const override { ps << "SetMiscKey(" << value << ")"; }
 };
 
-template <typename EntryDef_>
-SetMiscKey<EntryDef_> setMiscKey(const EntryDef_& entryDef,
-                                 dm::EntryType_t<EntryDef_> val = dm::EntryType_t<EntryDef_>{}) {
-    entryDef.applyDefaults(val);
-    return SetMiscKey<EntryDef_>{std::cref(entryDef), std::move(val)};
-}
-template <typename EntryDef_>
-SetMiscKey<EntryDef_> setMiscKey(const EntryDef_& entryDef, dm::EntryValueType_t<EntryDef_> val) {
-    return setMiscKey(entryDef, dm::EntryType_t<EntryDef_>{val});
+template <typename RecordType, typename ValueType, typename Val>
+SetKey<RecordType, ValueType> setKey(ValueType RecordType::* member, Val&& val) {
+    ValueType RecordType::* member_ = member;
+    return SetKey<RecordType, ValueType>(member_, ValueType{std::forward<Val>(val)});
 }
 
 
@@ -163,15 +158,11 @@ struct Print<mars2mars::rules::SetScaleFactor> {
 };
 
 
-template <typename EntryDef_>
-struct Print<mars2mars::rules::SetMarsKey<EntryDef_>> {
-    static void print(PrintStream& ps, const mars2mars::rules::SetMarsKey<EntryDef_>& r) { r.print(ps); };
+template <typename RecordType, typename ValueType>
+struct Print<mars2mars::rules::SetKey<RecordType, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::rules::SetKey<RecordType, ValueType>& r) { r.print(ps); };
 };
 
-template <typename EntryDef_>
-struct Print<mars2mars::rules::SetMiscKey<EntryDef_>> {
-    static void print(PrintStream& ps, const mars2mars::rules::SetMiscKey<EntryDef_>& r) { r.print(ps); };
-};
 
 template <>
 struct Print<mars2mars::rules::SetAll> {

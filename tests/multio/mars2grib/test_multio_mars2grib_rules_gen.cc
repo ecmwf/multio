@@ -39,19 +39,21 @@ CASE("Test rules gen matchers") {
 
     static auto ruleSet = exclusiveRuleList(
         // Branch for grids
-        chainedRuleList(rule(all(Has{dm::GRID}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}})),
-                        rule(OneOf{dm::PARAM, {1, 3, 4}}, Setter([](SectionsConf& c) {
-                                 c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(
-                                     TimeExtent::PointInTime);
-                                 c.product.ensureInit().modify().level.ensureInit().modify().type.set(
-                                     dm::TypeOfLevel::HeightAboveGround);
-                             }))),
+        chainedRuleList(
+            rule(all(Has{&dm::FullMarsRecord::grid}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})),
+            rule(OneOf{&dm::FullMarsRecord::param, {1, 3, 4}}, Setter([](SectionsConf& c) {
+                     c.product.ensureInit().modify().pdtCat.ensureInit().modify().timeExtent.set(
+                         TimeExtent::PointInTime);
+                     c.product.ensureInit().modify().level.ensureInit().modify().type.set(
+                         dm::TypeOfLevel::HeightAboveGround);
+                 }))),
 
         // Branch for spherical harmonics
-        chainedRuleList(rule(all(Has{dm::TRUNCATION}, NoneOf{dm::LEVTYPE, {dm::LevType::AL}}))),
+        chainedRuleList(
+            rule(all(Has{&dm::FullMarsRecord::truncation}, NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}))),
 
         // Branch for abstract level
-        chainedRuleList(rule(OneOf{dm::LEVTYPE, {dm::LevType::AL}})));
+        chainedRuleList(rule(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}})));
 
     {
         dm::FullMarsRecord mars{};
@@ -263,14 +265,15 @@ CASE("Test real rules matchers with AIFS JSON rules") {
 };
 
 
-// TODO(pgeier) have commented because of changes in the rules. New json must be generated. 
+// TODO(pgeier) have commented because of changes in the rules. New json must be generated.
 //              But after merge this code is not needed anymore
 // CASE("Test real rules matchers with era6 5220 JSON rules") {
 //     using namespace multio::mars2grib::rules;
 //     using namespace multio::mars2grib;
 
 //     auto marsMessages
-//         = eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-era6-5220.json"}}}
+//         =
+//         eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{"mars-encoder-conf-test-era6-5220.json"}}}
 //               .getSubConfigurations("rules");
 
 //     std::size_t i = 0;

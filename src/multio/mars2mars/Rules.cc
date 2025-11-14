@@ -20,22 +20,22 @@ using namespace multio::mars2grib::matcher;
 // To param 262024
 
 auto fixParam35ToSol1() {
-    return rule(all(matchParams(35), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(35), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
                 setKey(&dm::FullMarsRecord::param, 262024));                                                       //
 }
 auto fixParam36ToSol2() {
-    return rule(all(matchParams(36), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(36), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
                 setKey(&dm::FullMarsRecord::param, 262024));                                                       //
 }
 auto fixParam37ToSol3() {
-    return rule(all(matchParams(37), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(37), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
                 setKey(&dm::FullMarsRecord::param, 262024));                                                       //
 }
 auto fixParam38ToSol4() {
-    return rule(all(matchParams(38), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(38), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
                 setKey(&dm::FullMarsRecord::param, 262024));                                                       //
 }
@@ -43,22 +43,22 @@ auto fixParam38ToSol4() {
 // To param 260199
 
 auto fixParam39ToSol1() {
-    return rule(all(matchParams(39), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(39), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
                 setKey(&dm::FullMarsRecord::param, 260199));                                                       //
 }
 auto fixParam40ToSol2() {
-    return rule(all(matchParams(40), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(40), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
                 setKey(&dm::FullMarsRecord::param, 260199));                                                       //
 }
 auto fixParam41ToSol3() {
-    return rule(all(matchParams(41), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(41), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
                 setKey(&dm::FullMarsRecord::param, 260199));                                                       //
 }
 auto fixParam42ToSol4() {
-    return rule(all(matchParams(42), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                      //
+    return rule(all(matchParams(42), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
                 setKey(&dm::FullMarsRecord::param, 260199));                                                       //
 }
@@ -67,22 +67,22 @@ auto fixParam42ToSol4() {
 // To param 260360
 
 auto fixParam139ToSol1() {
-    return rule(all(matchParams(139), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                     //
+    return rule(all(matchParams(139), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
                 setKey(&dm::FullMarsRecord::param, 260360));                                                       //
 }
 auto fixParam170ToSol2() {
-    return rule(all(matchParams(170), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                     //
+    return rule(all(matchParams(170), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
                 setKey(&dm::FullMarsRecord::param, 260360));                                                       //
 }
 auto fixParam183ToSol3() {
-    return rule(all(matchParams(183), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                     //
+    return rule(all(matchParams(183), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
                 setKey(&dm::FullMarsRecord::param, 260360));                                                       //
 }
 auto fixParam236ToSol4() {
-    return rule(all(matchParams(236), OneOf{dm::LEVTYPE, {dm::LevType::SFC}}),                                     //
+    return rule(all(matchParams(236), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
                 setKey(&dm::FullMarsRecord::param, 260360));                                                       //
 }
@@ -144,13 +144,13 @@ auto fixTotalPrecip228() {
 //-----------------------------------------------------------------------------
 
 auto fixHeightAboveGround2m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, OneOf{dm::LEVELIST, {0}},
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::FullMarsRecord::levelist, {0}},
                     matchParams(167, 168, 174096, 228037)),  //
                 setKey(&dm::FullMarsRecord::levelist, 2));   //
 }
 
 auto fixHeightAboveGround10m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, OneOf{dm::LEVELIST, {0}},
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::FullMarsRecord::levelist, {0}},
                     matchParams(228029, 228131, 228132, 165, 166, 207)),  //
                 setKey(&dm::FullMarsRecord::levelist, 10));               //
 }
@@ -166,7 +166,8 @@ auto fixHeightAboveSea() {
 //-----------------------------------------------------------------------------
 
 auto fixMapToSol() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, Has{dm::LEVELIST}, NoneOf{dm::LEVELIST, {0}},
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, Has{&dm::FullMarsRecord::levelist},
+                    NoneOf{&dm::FullMarsRecord::levelist, {0}},
                     matchParams(33, 238, 228038, 228141, 260360, 262000, 262024, 260199)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));                    //
 }
@@ -249,37 +250,37 @@ auto fixTimespanSeverityPrecip() {
 //-----------------------------------------------------------------------------
 
 auto fixWindspeedU100m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228246)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228246)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
                 setKey(&dm::FullMarsRecord::param, 131));  //
 }
 
 auto fixWindspeedU200m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228239)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228239)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
                 setKey(&dm::FullMarsRecord::param, 131));  //
 }
 
 auto fixWindspeedV100m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228247)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228247)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
                 setKey(&dm::FullMarsRecord::param, 132));  //
 }
 
 auto fixWindspeedV200m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228240)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228240)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
                 setKey(&dm::FullMarsRecord::param, 132));  //
 }
 
 auto fixWindspeed100m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228241)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228241)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
                 setKey(&dm::FullMarsRecord::param, 10));  //
 }
 
 auto fixWindspeed200m() {
-    return rule(all(OneOf{dm::LEVTYPE, {dm::LevType::SFC}}, matchParams(228249)),  //
+    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228249)),  //
                 setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
                 setKey(&dm::FullMarsRecord::param, 10));  //
 }
@@ -291,7 +292,7 @@ auto fixWindspeed200m() {
 
 
 auto ruleWaveBitsPerValueS1() {
-    return rule(all(greaterThan(dm::STEP, std::chrono::hours{1}),
+    return rule(all(greaterThan(&dm::FullMarsRecord::step, std::chrono::hours{1}),
                     matchParams(22824)),                     //
                 setKey(&dm::MiscRecord::bitsPerValue, 24));  //
 }

@@ -11,6 +11,7 @@
 #include "EncodeMtg2.h"
 
 #include <iostream>
+#include <type_traits>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -92,6 +93,17 @@ void EncodeMtg2::executeImpl(Message msg) {
             throw EncodeMtg2Exception("Message has empty payload - no values to encode", Here());
         }
 
+        // ecCodes does not support setting float values (yet)
+        auto setValuesAsDouble = [&] (const auto* data, size_t size) {
+            using Precision = std::decay_t<decltype(*data)>;
+            if constexpr (std::is_same_v<Precision, double>) {
+                sample->set("values", metkit::codes::Span<const Precision>(data, size));
+            }
+            else {
+                sample->set("values", std::vector<double>{data, data+size});
+            }
+        };
+
         executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
             using Precision = typename decltype(pt)::type;
             size_t size = msg.payload().size() / sizeof(Precision);
@@ -106,12 +118,12 @@ void EncodeMtg2::executeImpl(Message msg) {
                 std::transform(values, values + size, values,
                                [&](const Precision& value) -> Precision { return value * scaleFactor; });
 
-                sample->set("values", metkit::codes::Span<const Precision>(values, size));
+                setValuesAsDouble(values, size);
             }
             else {
                 // No scaling
                 auto values = static_cast<const Precision*>(msg.payload().data());
-                sample->set("values", metkit::codes::Span<const Precision>(values, size));
+                setValuesAsDouble(values, size);
             }
 
             // The +32 is related to bug

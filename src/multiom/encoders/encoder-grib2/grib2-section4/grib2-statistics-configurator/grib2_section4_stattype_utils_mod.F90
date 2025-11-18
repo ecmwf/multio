@@ -782,7 +782,7 @@ END FUNCTION IS_VALID_PERIOD
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'PERIOD_TO_HOURS'
 PP_THREAD_SAFE FUNCTION PERIOD_TO_HOURS( &
-&  PERIOD_ID, HOURS, YEAR, MONTH, HOOKS ) RESULT(RET)
+&  PERIOD_ID, HOURS, END_YEAR, END_MONTH, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -802,11 +802,11 @@ PP_THREAD_SAFE FUNCTION PERIOD_TO_HOURS( &
 IMPLICIT NONE
 
   !> Dummy arguments
-  INTEGER(KIND=JPIB_K),           INTENT(IN)    :: PERIOD_ID
-  INTEGER(KIND=JPIB_K),           INTENT(OUT)   :: HOURS
-  INTEGER(KIND=JPIB_K), OPTIONAL, INTENT(IN)    :: YEAR
-  INTEGER(KIND=JPIB_K), OPTIONAL, INTENT(IN)    :: MONTH
-  TYPE(HOOKS_T),                  INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: PERIOD_ID
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: HOURS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: END_YEAR
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: END_MONTH
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -831,26 +831,26 @@ IMPLICIT NONE
   CASE ( TYPE_OF_PERIOD_DAILY_E )
     HOURS = 24
   CASE ( TYPE_OF_PERIOD_MONTHLY_E )
-    IF ( PRESENT(YEAR) .AND. PRESENT(MONTH) ) THEN
-      SELECT CASE ( MONTH )
-      CASE ( 1, 3, 5, 7, 8, 10, 12 )
-        HOURS = 744
-      CASE ( 4, 6, 9, 11 )
-        HOURS = 720
-      CASE ( 2 )
-        IF ( MOD(YEAR,4) == 0 ) THEN ! Julian calendar
-! .AND. ( MOD(YEAR,100) /= 0 .OR. MOD(YEAR,400) == 0 ) ) THEN ! Gregorian calendar
-          HOURS = 696
-        ELSE
-          HOURS = 672
-        ENDIF
-      CASE DEFAULT
-        PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_PERIOD )
-      END SELECT
-    ELSE
-      ! If year and month are not provided assume a month of 30 days
+    ! Set HOURS to the length of the PREVIOUS month
+    SELECT CASE ( END_MONTH )
+    CASE ( 1, 2, 4, 6, 8, 9, 11 )
+      HOURS = 744
+    CASE ( 5, 7, 10, 12 )
       HOURS = 720
-    ENDIF
+    CASE ( 3 )
+      ! Check if this is a leap year in the Gregorian calendar
+      ! IF ( ( MOD(END_YEAR,4) == 0 ) .AND. ( ( MOD(END_YEAR,100) /= 0 ) .OR. ( MOD(END_YEAR,400) == 0 ) ) ) THEN
+
+      ! Check if this is a leap year in our Truncated-Gregorian calendar
+      ! Note: This only works reliably between 1900 and 2100
+      IF ( MOD(END_YEAR,4) == 0 ) THEN
+        HOURS = 696
+      ELSE
+        HOURS = 672
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_PERIOD )
+    END SELECT
   CASE Default
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_PERIOD )
   END SELECT

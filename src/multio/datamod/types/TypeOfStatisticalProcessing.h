@@ -44,14 +44,10 @@ enum class TypeOfStatisticalProcessing : std::int64_t
 }  // namespace multio::datamod
 
 
-namespace multio::util {
-
 template <>
-struct Print<datamod::TypeOfStatisticalProcessing> {
+struct multio::util::Print<multio::datamod::TypeOfStatisticalProcessing> {
     static void print(PrintStream&, const datamod::TypeOfStatisticalProcessing&);
 };
-
-}  // namespace multio::util
 
 
 namespace multio::datamod {
@@ -69,7 +65,6 @@ struct DumpType<TypeOfStatisticalProcessing> {
 
 template <>
 struct ParseType<TypeOfStatisticalProcessing> {
-    static inline TypeOfStatisticalProcessing parse(TypeOfStatisticalProcessing v) noexcept { return v; };
     static TypeOfStatisticalProcessing parse(const std::string& s);
     static TypeOfStatisticalProcessing parse(std::int64_t i);
 };

@@ -28,9 +28,9 @@ struct std::hash<multio::datamod::UnsetType> {
     std::size_t operator()(const multio::datamod::UnsetType&) const noexcept { return 0; }
 };
 
-template <typename Val, typename Mapper>
-struct std::hash<multio::datamod::Entry<Val, Mapper>> {
-    std::size_t operator()(const multio::datamod::Entry<Val, Mapper>& entry) const
+template <typename Val>
+struct std::hash<multio::datamod::Entry<Val>> {
+    std::size_t operator()(const multio::datamod::Entry<Val>& entry) const
         noexcept(noexcept(multio::util::hash(std::declval<Val>()))) {
         return entry.visit([&](const auto& v) -> std::size_t { return multio::util::hash(v); });
     }

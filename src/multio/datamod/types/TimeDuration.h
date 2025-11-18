@@ -24,8 +24,6 @@ namespace multio::datamod {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-using IntOrString = std::variant<std::int64_t, std::string>;
-
 using TimeDurationVariant = std::variant<std::chrono::hours, std::chrono::seconds>;
 
 // Time duration will get a proper type because printing it has a special domain specific meaning
@@ -77,20 +75,17 @@ struct variant_alternative<I, multio::datamod::TimeDuration>
 
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace multio::util {
-
 template <>
-struct Print<datamod::TimeDuration> {
+struct multio::util::Print<multio::datamod::TimeDuration> {
     static void print(PrintStream& ps, const datamod::TimeDuration& v);
 };
 
-}  // namespace multio::util
 
 namespace multio::datamod {
 
 template <>
 struct DumpType<TimeDuration> {
-    static IntOrString dump(const TimeDuration&);
+    static std::variant<std::int64_t, std::string> dump(const TimeDuration&);
 };
 
 

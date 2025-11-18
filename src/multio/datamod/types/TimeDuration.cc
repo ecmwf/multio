@@ -17,7 +17,7 @@
 
 namespace multio::datamod {
 
-IntOrString DumpType<TimeDuration>::dump(const TimeDuration& td) {
+std::variant<std::int64_t, std::string> DumpType<TimeDuration>::dump(const TimeDuration& td) {
     using Ret = std::variant<std::int64_t, std::string>;
     return td.visit(eckit::Overloaded{
         [&](const std::chrono::hours& h) -> Ret { return h.count(); },

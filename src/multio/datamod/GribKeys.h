@@ -241,7 +241,7 @@ struct HorizontalGribKeys {
 // Data Repres
 
 constexpr auto BitmapPresent =
-    EntryDef<bool, mapper::BoolMapper>{"bitmapPresent"}  
+    EntryDef<bool>{"bitmapPresent"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.bitmapPresent; });
 

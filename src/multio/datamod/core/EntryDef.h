@@ -47,12 +47,9 @@ namespace multio::datamod {
 ///
 /// # Defining entries
 ///
-/// Entries are defined via the template `EntryDef<Type, Mapper>{"string-accessor"}.withAcessor([](auto&& v){return
+/// Entries are defined via the template `EntryDef<Type>{"string-accessor"}.withAcessor([](auto&& v){return
 /// &v.structAccessor;})`, where
 ///   * `Type` is the used type used to represent values for the entry
-///   * `Mapper` is an optional mapping functor that allows custom mapping from other types.
-///      E.g. `ParamMapper` for `param` that handles string representations.
-///      It is also possible that `Type` is more complex and supports constructions from other types.
 ///   * the first argument in the constructor is a constexpr string that is used to access (parse/dump) the entry
 ///     from/to containers (i.e. `JSON`)
 ///   * `withAccesosr(...)` accepts an indefinite lambda that allows accessing the entry in a record.
@@ -99,9 +96,9 @@ namespace multio::datamod {
 // Forward declaration
 enum class EntryTag : std::uint64_t
 {
-    Required,    // Strictly required and can not be defaulted or conditionally depending on other keys
-    Defaulted,   // Can be missing after reading from container but then may be defaulted through a custom alter function
-    Optional,    // Can be missing after validation
+    Required,   // Strictly required and can not be defaulted or conditionally depending on other keys
+    Defaulted,  // Can be missing after reading from container but then may be defaulted through a custom alter function
+    Optional,   // Can be missing after validation
 };
 
 template <typename EntryTag_, std::enable_if_t<std::is_same_v<EntryTag_, EntryTag>, bool> = true>
@@ -205,15 +202,13 @@ struct AccessFunctor {
 ///      It should be also noted that due to the branching with the Metadata a lot of detailed branches are created -
 ///       often this is basically a big jump table with specialized code instead of many conditional jumps
 ///
-template <typename ValueType_, typename Mapper_, EntryTag tag_>
+template <typename ValueType_, EntryTag tag_>
 struct BaseEntryDef {
     using KeyType = util::PrehashedKey<std::string_view>;
     using ValueType = ValueType_;
-    using Mapper = Mapper_;
-    using This = BaseEntryDef<ValueType_, Mapper_, tag_>;
+    using This = BaseEntryDef<ValueType_, tag_>;
 
-    using ParserDumper = TypeParserDumper<ValueType, Mapper>;
-    using EntryType = Entry<ValueType_, Mapper_>;
+    using EntryType = Entry<ValueType_>;
 
     static constexpr EntryTag tag = tag_;
 
@@ -258,10 +253,10 @@ struct BaseEntryDef {
             }
             else {
                 if constexpr (!std::is_lvalue_reference_v<V>) {
-                    return EntryType{ParserDumper::parse(std::move(v))};
+                    return EntryType{TypeParser<ValueType>::parse(std::move(v))};
                 }
                 else {
-                    return EntryType{ParserDumper::parse(v)};
+                    return EntryType{TypeParser<ValueType>::parse(v)};
                 }
             }
         }
@@ -311,15 +306,13 @@ struct BaseEntryDef {
 //
 // For interaction with containers the `id` is usually stripped away and the BaseEntryDef is passed around
 // to avoid to fine-grined type specialization.
-template <typename ValueType_, typename Mapper_ = DefaultMapper, EntryTag tag_ = EntryTag::Required,
-          typename PointerAccessor = DefaultPointerAccessor, typename DefaultValueFunctor_ = NoDefaultFunctor>
-struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
-    using Base = BaseEntryDef<ValueType_, Mapper_, tag_>;
-    using This = EntryDef<ValueType_, Mapper_, tag_, PointerAccessor, DefaultValueFunctor_>;
-    using Mapper = typename Base::Mapper;
+template <typename ValueType_, EntryTag tag_ = EntryTag::Required, typename PointerAccessor = DefaultPointerAccessor,
+          typename DefaultValueFunctor_ = NoDefaultFunctor>
+struct EntryDef : BaseEntryDef<ValueType_, tag_> {
+    using Base = BaseEntryDef<ValueType_, tag_>;
+    using This = EntryDef<ValueType_, tag_, PointerAccessor, DefaultValueFunctor_>;
     using KeyType = typename Base::KeyType;
     using ValueType = typename Base::ValueType;
-    using ParserDumper = typename Base::ParserDumper;
 
     using EntryType = typename Base::EntryType;
     using DefaultValueFunctor = DefaultValueFunctor_;
@@ -378,7 +371,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
     constexpr auto tagRequired() const {
         static_assert(tag_ != EntryTag::Required, "Definition is already required");
         static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made required");
-        return EntryDef<ValueType_, Mapper_, EntryTag::Required, PointerAccessor, DefaultValueFunctor>{
+        return EntryDef<ValueType_, EntryTag::Required, PointerAccessor, DefaultValueFunctor>{
             Base::key_, accessor_, defaultFunctor_, Base::description_};
     }
 
@@ -386,7 +379,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
     // guaranteed to contain a value after validation
     constexpr auto tagDefaulted() const {
         static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted");
-        return EntryDef<ValueType_, Mapper_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
+        return EntryDef<ValueType_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
             Base::key_,
             accessor_,
             defaultFunctor_,
@@ -398,7 +391,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
     constexpr auto tagOptional() const {
         static_assert(tag_ != EntryTag::Optional, "Definition is already optional");
         static_assert(tag_ != EntryTag::Defaulted, "Definition is already defaulted and can not be made optional");
-        return EntryDef<ValueType_, Mapper_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
+        return EntryDef<ValueType_, EntryTag::Optional, PointerAccessor, DefaultValueFunctor>{
             Base::key_, accessor_, defaultFunctor_, Base::description_};
     }
 
@@ -409,7 +402,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
                                bool>
               = true>
     constexpr auto withDefault(NewDefValFtor&& ftor) const {
-        return EntryDef<ValueType_, Mapper_, EntryTag::Defaulted, PointerAccessor, std::decay_t<NewDefValFtor>>{
+        return EntryDef<ValueType_, EntryTag::Defaulted, PointerAccessor, std::decay_t<NewDefValFtor>>{
             Base::key_, std::move(accessor_), std::forward<NewDefValFtor>(ftor), Base::description_};
     }
 
@@ -432,7 +425,7 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
     // Make the key-value pair defaulted and set a functon that generates a default value
     template <typename NewAcc>
     constexpr auto withAccessor(NewAcc&& newAcc) const {
-        return EntryDef<ValueType_, Mapper_, tag_, std::decay_t<NewAcc>, DefaultValueFunctor>{
+        return EntryDef<ValueType_, tag_, std::decay_t<NewAcc>, DefaultValueFunctor>{
             Base::key_, AccessFunctor<std::decay_t<NewAcc>, EntryType>{std::forward<NewAcc>(newAcc)}, defaultFunctor_,
             Base::description_};
     }
@@ -443,8 +436,8 @@ struct EntryDef : BaseEntryDef<ValueType_, Mapper_, tag_> {
 
 template <typename T>
 struct IsBaseEntryDefinition : std::false_type {};
-template <typename ValueType, typename Mapper, EntryTag tag>
-struct IsBaseEntryDefinition<BaseEntryDef<ValueType, Mapper, tag>> : std::true_type {};
+template <typename ValueType, EntryTag tag>
+struct IsBaseEntryDefinition<BaseEntryDef<ValueType, tag>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool IsBaseEntryDefinition_v = IsBaseEntryDefinition<T>::value;
@@ -457,8 +450,8 @@ inline constexpr bool IsBaseEntryDefinition_v = IsBaseEntryDefinition<T>::value;
 
 template <typename T>
 struct IsEntryDefinition : std::false_type {};
-template <typename ValueType, typename Mapper, EntryTag tag, typename Acc, typename DefFunctor>
-struct IsEntryDefinition<EntryDef<ValueType, Mapper, tag, Acc, DefFunctor>> : std::true_type {};
+template <typename ValueType, EntryTag tag, typename Acc, typename DefFunctor>
+struct IsEntryDefinition<EntryDef<ValueType, tag, Acc, DefFunctor>> : std::true_type {};
 
 template <typename T>
 inline constexpr bool IsEntryDefinition_v = IsEntryDefinition<T>::value;
@@ -499,9 +492,8 @@ template <typename T, typename M>
 constexpr auto entryDef(std::string_view key, M T::* member) {
     static_assert(IsEntry_v<M>);
     using ValueType = typename M::ValueType;
-    using Mapper = typename M::Mapper;
 
-    return EntryDef<ValueType, Mapper>{key}.withAccessor(PointerToMemberAccessor<T, M>{member});
+    return EntryDef<ValueType>{key}.withAccessor(PointerToMemberAccessor<T, M>{member});
 }
 
 
@@ -570,9 +562,7 @@ struct ScopedEntryDef {
 
     using KeyType = typename EntryDef_::KeyType;
     using ValueType = typename EntryDef_::ValueType;
-    using Mapper = typename EntryDef_::Mapper;
 
-    using ParserDumper = typename EntryDef_::ParserDumper;
     using EntryType = typename EntryDef_::EntryType;
     using Accessor = typename EntryDef_::Accessor;
 

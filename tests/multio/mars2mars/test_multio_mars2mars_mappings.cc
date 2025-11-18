@@ -30,7 +30,7 @@ CASE("Test fixParam35ToSol1") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 262024);
+    EXPECT(mars.param.get() == Param{262024});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -51,7 +51,7 @@ CASE("Test fixParam36ToSol2") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 262024);
+    EXPECT(mars.param.get() == Param{262024});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -72,7 +72,7 @@ CASE("Test fixParam37ToSol3") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 262024);
+    EXPECT(mars.param.get() == Param{262024});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -92,7 +92,7 @@ CASE("Test fixParam38ToSol4") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 262024);
+    EXPECT(mars.param.get() == Param{262024});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -113,7 +113,7 @@ CASE("Test fixParam39ToSol1") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260199);
+    EXPECT(mars.param.get() == Param{260199});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -134,7 +134,7 @@ CASE("Test fixParam40ToSol2") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260199);
+    EXPECT(mars.param.get() == Param{260199});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -154,7 +154,7 @@ CASE("Test fixParam41ToSol3") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260199);
+    EXPECT(mars.param.get() == Param{260199});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -174,7 +174,7 @@ CASE("Test fixParam42ToSol4") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260199);
+    EXPECT(mars.param.get() == Param{260199});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -195,7 +195,7 @@ CASE("Test fixParam139ToSol1") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260360);
+    EXPECT(mars.param.get() == Param{260360});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 1);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -215,7 +215,7 @@ CASE("Test fixParam170ToSol2") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260360);
+    EXPECT(mars.param.get() == Param{260360});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 2);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -235,7 +235,7 @@ CASE("Test fixParam183ToSol3") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260360);
+    EXPECT(mars.param.get() == Param{260360});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 3);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -256,7 +256,7 @@ CASE("Test fixParam263ToSol4") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260360);
+    EXPECT(mars.param.get() == Param{260360});
     EXPECT(mars.levelist.isSet());
     EXPECT(mars.levelist.get() == 4);
     EXPECT(mars.levtype.get() == LevType::SOL);
@@ -299,7 +299,7 @@ CASE("Test fixCloudParam164") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 228164);
+    EXPECT(mars.param.get() == Param{228164});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
@@ -317,7 +317,7 @@ CASE("Test fixCloudParam186") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 3073);
+    EXPECT(mars.param.get() == Param{3073});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
@@ -335,7 +335,7 @@ CASE("Test fixCloudParam187") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 3074);
+    EXPECT(mars.param.get() == Param{3074});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
@@ -353,7 +353,7 @@ CASE("Test fixCloudParam188") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 3075);
+    EXPECT(mars.param.get() == Param{3075});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
@@ -371,7 +371,7 @@ CASE("Test fixConvectivePrecip143") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 228143);
+    EXPECT(mars.param.get() == Param{228143});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
@@ -389,7 +389,7 @@ CASE("Test fixTotalPrecip228") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 228228);
+    EXPECT(mars.param.get() == Param{228228});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
@@ -498,7 +498,7 @@ CASE("Test fixRunOffWaterParam205") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 231002);
+    EXPECT(mars.param.get() == Param{231002});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
@@ -516,7 +516,7 @@ CASE("Test fixSnowfallWaterEquivParam") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 228144);
+    EXPECT(mars.param.get() == Param{228144});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
@@ -534,7 +534,7 @@ CASE("Test fixSnowCover") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 260038);
+    EXPECT(mars.param.get() == Param{260038});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
@@ -556,7 +556,7 @@ CASE("Test fixTimespanMax2T") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 237167);
+        EXPECT(mars.param.get() == Param{237167});
     }
 };
 
@@ -574,7 +574,7 @@ CASE("Test fixTimespanMaxCape") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 237117);
+    EXPECT(mars.param.get() == Param{237117});
 };
 
 CASE("Test fixTimespanMaxMuCapes") {
@@ -590,7 +590,7 @@ CASE("Test fixTimespanMaxMuCapes") {
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == 237321);
+    EXPECT(mars.param.get() == Param{237321});
 };
 
 CASE("Test fixTimespanMaxPrecipRate") {
@@ -609,7 +609,7 @@ CASE("Test fixTimespanMaxPrecipRate") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 237055);
+        EXPECT(mars.param.get() == Param{237055});
     }
 };
 
@@ -629,7 +629,7 @@ CASE("Test fixTimespanMaxWindGust") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 237318);
+        EXPECT(mars.param.get() == Param{237318});
     }
 };
 
@@ -650,7 +650,7 @@ CASE("Test fixTimespanMeanFlashDensity") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 235326);
+        EXPECT(mars.param.get() == Param{235326});
     }
 };
 
@@ -671,7 +671,7 @@ CASE("Test fixTimespanMin2T") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 238167);
+        EXPECT(mars.param.get() == Param{238167});
     }
 };
 
@@ -692,7 +692,7 @@ CASE("Test fixTimespanMinPrecipRate") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 238055);
+        EXPECT(mars.param.get() == Param{238055});
     }
 };
 
@@ -713,7 +713,7 @@ CASE("Test fixTimespanModePrecip") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 260683);
+        EXPECT(mars.param.get() == Param{260683});
     }
 };
 
@@ -734,7 +734,7 @@ CASE("Test fixTimespanSeverityPrecip") {
         auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
         EXPECT(res);
-        EXPECT(mars.param.get() == 260682);
+        EXPECT(mars.param.get() == Param{260682});
     }
 };
 
@@ -755,7 +755,7 @@ CASE("Test fixWindspeedU100m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 100);
-    EXPECT(mars.param.get() == 131);
+    EXPECT(mars.param.get() == Param{131});
 };
 
 CASE("Test fixWindspeedU200m") {
@@ -774,7 +774,7 @@ CASE("Test fixWindspeedU200m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 200);
-    EXPECT(mars.param.get() == 131);
+    EXPECT(mars.param.get() == Param{131});
 };
 
 CASE("Test fixWindspeedV100m") {
@@ -793,7 +793,7 @@ CASE("Test fixWindspeedV100m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 100);
-    EXPECT(mars.param.get() == 132);
+    EXPECT(mars.param.get() == Param{132});
 };
 
 
@@ -813,7 +813,7 @@ CASE("Test fixWindspeedV200m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 200);
-    EXPECT(mars.param.get() == 132);
+    EXPECT(mars.param.get() == Param{132});
 };
 
 
@@ -833,7 +833,7 @@ CASE("Test fixWindspeed100m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 100);
-    EXPECT(mars.param.get() == 10);
+    EXPECT(mars.param.get() == Param{10});
 };
 
 
@@ -853,7 +853,7 @@ CASE("Test fixWindspeed200m") {
     EXPECT(res);
     EXPECT(mars.levtype.get() == LevType::HL);
     EXPECT(mars.levelist.get() == 200);
-    EXPECT(mars.param.get() == 10);
+    EXPECT(mars.param.get() == Param{10});
 };
 
 

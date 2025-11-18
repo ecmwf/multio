@@ -50,12 +50,12 @@ void AverageRate::executeImpl(message::Message msg) {
     auto md = dm::readRecord<AverageRateKeys>(msg.metadata());
 
     // Find and apply the mapping for this param, throw exception if not available
-    if (auto search = paramMappings_.find(md.param.get()); search != paramMappings_.end()) {
+    if (auto search = paramMappings_.find(md.param.get().id()); search != paramMappings_.end()) {
         md.param.set(search->second);
         dm::dumpRecord(md, msg.modifyMetadata());
     } else {
         std::ostringstream os;
-        os << "Action average-rate cannot find mapping from param " << md.param.get() << " : " << msg;
+        os << "Action average-rate cannot find mapping from param " << md.param.get().id() << " : " << msg;
         throw eckit::UserError(os.str(), Here());
     }
 

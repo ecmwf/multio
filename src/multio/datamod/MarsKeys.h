@@ -13,8 +13,9 @@
 #include "multio/datamod/Mapper.h"
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/types/LevType.h"
-#include "multio/datamod/types/StatType.h"
+#include "multio/datamod/types/Param.h"
 #include "multio/datamod/types/Repres.h"
+#include "multio/datamod/types/StatType.h"
 #include "multio/datamod/types/TimeDuration.h"
 
 
@@ -24,9 +25,9 @@ using mapper::StringToIntMapper;
 
 // clang-format off
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 // Mars Keys
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 /// \defgroup datamod_models_mars
 /// \ingroup datamod_models
@@ -68,7 +69,7 @@ constexpr auto MODEL =
 // Field id
 
 constexpr auto PARAM =
-    EntryDef<std::int64_t, mapper::ParamMapper>{"param"}
+    EntryDef<Param>{"param"}
         .withAccessor([](auto&& v) { return &v.param; });
 
 // Horizontal & vertial
@@ -283,10 +284,6 @@ constexpr auto REPRES
               "against the derived value.")
 ;
 
-
 // clang-format on
 
-//-----------------------------------------------------------------------------
-
 }  // namespace multio::datamod
-

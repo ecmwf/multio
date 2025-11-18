@@ -220,7 +220,7 @@ struct Print<mars2grib::matcher::Range<EntryDef_>> {
 template <typename EntryDef_>
 struct Print<mars2grib::matcher::Ranges<EntryDef_>> {
     static void print(PrintStream& ps, const mars2grib::matcher::Ranges<EntryDef_>& r) {
-        ps << "Ranges<" << util::typeToString<datamod::EntryValueType_t<EntryDef_>>() << ">(";
+        ps << "Ranges(";
         bool first = true;
         for (const auto& ri : r.ranges) {
             if (first) {

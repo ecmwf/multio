@@ -17,11 +17,11 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/MemoryHandle.h"
 #include "eckit/message/Message.h"
 #include "eckit/serialisation/Stream.h"
 
-#include "metkit/codes/CodesContent.h"
-#include "metkit/codes/UserDataContent.h"
+#include "eckit/message/MessageContent.h"
 
 namespace multio {
 namespace message {
@@ -192,9 +192,36 @@ void LogMessage::print(std::ostream& out) const {
         << ")";
 }
 
+
+namespace {
+
+class MultioDataContent : public eckit::message::MessageContent {
+public:
+    MultioDataContent(const void* data, size_t size) : data_(data), size_(size) {}
+    virtual ~MultioDataContent() = default;
+
+protected:
+    const void* data_;
+    const size_t size_;
+
+    eckit::DataHandle* readHandle() const override { return new eckit::MemoryHandle(data_, size_); }
+    size_t length() const override { return size_; }
+    const void* data() const override { return data_; }
+    void write(eckit::DataHandle& handle) const override {
+        if (handle.write(data_, size_) != size_) {
+            std::ostringstream oss;
+            oss << "Write error to data handle " << handle;
+            throw eckit::WriteError(oss.str(), Here());
+        }
+    }
+    void print(std::ostream& s) const override { s << "MultioDataContent[]"; }
+};
+
+}  // namespace
+
 eckit::message::Message to_eckit_message(const Message& msg) {
     ASSERT(msg.tag() == Message::Tag::Field);
-    return eckit::message::Message{new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
+    return eckit::message::Message{new MultioDataContent(msg.payload().data(), msg.size())};
 }
 
 }  // namespace message

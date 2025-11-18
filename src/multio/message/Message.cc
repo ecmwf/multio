@@ -198,7 +198,6 @@ namespace {
 class MultioDataContent : public eckit::message::MessageContent {
 public:
     MultioDataContent(const void* data, size_t size) : data_(data), size_(size) {}
-    virtual ~MultioDataContent() = default;
 
 protected:
     const void* data_;

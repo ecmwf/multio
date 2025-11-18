@@ -12,6 +12,7 @@
 
 
 #include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Compare.h"
 #include "multio/datamod/core/Hash.h"
 #include "multio/datamod/core/Print.h"
@@ -30,58 +31,17 @@ namespace dm = multio::datamod;
 // However with this approach it is made explicit that there is a further logic happening
 // that should be distinguished from the existing FullMarsRecord.
 
-struct MarsCacheRecord {
-    dm::EntryType_t<decltype(dm::ORIGIN)> origin;
-    dm::EntryType_t<decltype(dm::CLASS)> klass;
-    dm::EntryType_t<decltype(dm::STREAM)> stream;
-    dm::EntryType_t<decltype(dm::TYPE)> type;
-    dm::EntryType_t<decltype(dm::EXPVER)> expver;
-    dm::EntryType_t<decltype(dm::PARAM)> param;
-    dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
-    dm::EntryType_t<decltype(dm::DATE)> date;
-    dm::EntryType_t<decltype(dm::TIME)> time;
-    // Caching is step independent
-    // TODO(pgeier) also remove other timeinformation for caching - not changing overall structure. For MULTIOM
-    // RawEncoders they are expected dm::EntryType_t<decltype(dm::STEP)> step;
-    dm::EntryType_t<decltype(dm::LEVTYPE)> levtype;
-    dm::EntryType_t<decltype(dm::LEVELIST)> levelist;
-    dm::EntryType_t<decltype(dm::MODEL)> model;
-    dm::EntryType_t<decltype(dm::RESOLUTION)> resolution;
-    dm::EntryType_t<decltype(dm::ACTIVITY)> activity;
-    dm::EntryType_t<decltype(dm::EXPERIMENT)> experiment;
-    dm::EntryType_t<decltype(dm::GENERATION)> generation;
-    dm::EntryType_t<decltype(dm::REALIZATION)> realization;
-    dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
-    dm::EntryType_t<decltype(dm::ANOFFSET)> anoffset;
-    dm::EntryType_t<decltype(dm::PACKING)> packing;
-    dm::EntryType_t<decltype(dm::NUMBER)> number;
-    dm::EntryType_t<decltype(dm::IDENT)> ident;
-    dm::EntryType_t<decltype(dm::INSTRUMENT)> instrument;
-    dm::EntryType_t<decltype(dm::CHANNEL)> channel;
-    dm::EntryType_t<decltype(dm::CHEM)> chem;
-    dm::EntryType_t<decltype(dm::WAVELENGTH)> wavelength;
-    // The only keys that are completly excluded
-    // dm::EntryType_t<decltype(dm::DIRECTION)> direction;
-    // dm::EntryType_t<decltype(dm::FREQUENCY)> frequency;
-    dm::EntryType_t<decltype(dm::HDATE)> hdate;
-    dm::EntryType_t<decltype(dm::DATASET)> dataset;
-    dm::EntryType_t<decltype(dm::METHOD)> method;
-    dm::EntryType_t<decltype(dm::SYSTEM)> system;
-    dm::EntryType_t<decltype(dm::GRID)> grid;
-    dm::EntryType_t<decltype(dm::TRUNCATION)> truncation;
-    dm::EntryType_t<decltype(dm::REPRES)> repres;
-
-    static constexpr std::string_view record_name_ = "mars";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::ORIGIN, dm::CLASS, dm::STREAM, dm::TYPE, dm::EXPVER, dm::PARAM, dm::STATTYPE, dm::DATE, dm::TIME, dm::LEVTYPE,
-        dm::LEVELIST, dm::MODEL, dm::RESOLUTION, dm::ACTIVITY, dm::EXPERIMENT, dm::GENERATION, dm::REALIZATION,
-        dm::TIMESPAN, dm::ANOFFSET, dm::PACKING, dm::NUMBER, dm::IDENT, dm::INSTRUMENT, dm::CHANNEL, dm::CHEM,
-        dm::WAVELENGTH, dm::HDATE, dm::DATASET, dm::METHOD, dm::SYSTEM, dm::GRID, dm::TRUNCATION, dm::REPRES);
+struct MarsCacheRecord: dm::FullMarsRecord {
+    static constexpr std::string_view record_name_ = "mars-cache";
 
     static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
         if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == dm::LevType::ML) {
             cacheKeys.levelist.unset();
         }
+        
+        cacheKeys.step.unset();
+        cacheKeys.direction.unset();
+        cacheKeys.frequency.unset();
 
         // Explicitly acquire because all the whole data structure is ment to be stored in a container
         dm::acquireRecord(cacheKeys);

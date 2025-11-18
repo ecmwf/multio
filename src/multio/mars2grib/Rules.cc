@@ -32,22 +32,22 @@ namespace dm = multio::datamod;
 //-----------------------------------------------------------------------------
 
 auto matchChemical() {
-    return all(Has{dm::CHEM}, Missing{dm::WAVELENGTH}, lessThan(dm::CHEM, 900));
+    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength}, lessThan(&dm::FullMarsRecord::chem, 900));
 }
 
 auto matchAerosol() {
-    return all(Has{dm::CHEM}, Missing{dm::WAVELENGTH}, greaterEqual(dm::CHEM, 900));
+    return all(Has{&dm::FullMarsRecord::chem}, Missing{&dm::FullMarsRecord::wavelength}, greaterEqual(&dm::FullMarsRecord::chem, 900));
 }
 
 auto matchOptical() {
-    return all(Missing{dm::CHEM}, Has{dm::WAVELENGTH});
+    return all(Missing{&dm::FullMarsRecord::chem}, Has{&dm::FullMarsRecord::wavelength});
 }
 auto matchChemicalOptical() {
-    return all(Has{dm::CHEM}, Has{dm::WAVELENGTH});
+    return all(Has{&dm::FullMarsRecord::chem}, Has{&dm::FullMarsRecord::wavelength});
 }
 
 auto matchLevType(dm::LevType lt) {
-    return OneOf{dm::LEVTYPE, {lt}};
+    return OneOf{&dm::FullMarsRecord::levtype, {lt}};
 }
 
 auto matchSatellite() {
@@ -57,7 +57,7 @@ auto matchSatellite() {
     // Other satellite related keywords like instrument and ident is not always given because channel is actually
     // holding a channel like index as combination of instrument, indent and the true channel:
     // https://apps.ecmwf.int/mars-catalogue/?stream=elda&levtype=sfc&expver=1&month=nov&year=2025&type=em&class=od
-    return Has{dm::CHANNEL};
+    return Has{&dm::FullMarsRecord::channel};
 }
 
 //-----------------------------------------------------------------------------
@@ -185,7 +185,7 @@ auto localTablesVersion(std::int64_t version) {
 //-----------------------------------------------------------------------------
 
 auto makeGridRule(dm::Repres repres, std::int64_t num) {
-    return rule(OneOf{dm::REPRES, {repres}},
+    return rule(OneOf{&dm::FullMarsRecord::repres, {repres}},
                 Setter([=](SectionsConf& c) { c.grid.ensureInit().modify().templateNumber.set(num); }));
 }
 
@@ -196,31 +196,31 @@ auto gridRules() {
 
 auto localSectionRules() {
     return exclusiveRuleList(  //
-        rule(all(Missing{dm::ANOFFSET}, NoneOf{dm::CLASS, {"d1"}}, Missing{dm::METHOD}), localUse(1)),
-        rule(all(Missing{dm::ANOFFSET}, NoneOf{dm::CLASS, {"d1"}}, Has{dm::METHOD}), localUse(15)),
-        rule(all(Has{dm::ANOFFSET}, NoneOf{dm::CLASS, {"d1"}}), localUse(36)),
-        rule(all(Missing{dm::ANOFFSET}, OneOf{dm::CLASS, {"d1"}}), localUse(1001)),
-        rule(all(Has{dm::ANOFFSET}, OneOf{dm::CLASS, {"d1"}}), localUse(1036)));
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Missing{&dm::FullMarsRecord::method}), localUse(1)),
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}, Has{&dm::FullMarsRecord::method}), localUse(15)),
+        rule(all(Has{&dm::FullMarsRecord::anoffset}, NoneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(36)),
+        rule(all(Missing{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1001)),
+        rule(all(Has{&dm::FullMarsRecord::anoffset}, OneOf{&dm::FullMarsRecord::klass, {"d1"}}), localUse(1036)));
 }
 
 auto processTypesRules() {
     return exclusiveRuleList(
         // Match any levtype but AL (or no levtype)
-        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Missing{dm::NUMBER}, Missing{dm::HDATE})),
-        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Missing{dm::HDATE}), ensemble()),
-        rule(all(NoneOf{dm::LEVTYPE, {dm::LevType::AL}}, Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), ensemble()),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Missing{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate})),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), ensemble()),
+        rule(all(NoneOf{&dm::FullMarsRecord::levtype, {dm::LevType::AL}}, Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), ensemble()),
         // Levtype AL specific - detection whether a largeEnsemble is used should actually depend on
         // numberOfForecastsInEnsemble > 254
-        rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Missing{dm::HDATE}), largeEnsemble()),
-        rule(all(matchLevType(dm::LevType::AL), Has{dm::NUMBER}, Has{dm::HDATE}), reforecast(), largeEnsemble()));
+        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Missing{&dm::FullMarsRecord::hdate}), largeEnsemble()),
+        rule(all(matchLevType(dm::LevType::AL), Has{&dm::FullMarsRecord::number}, Has{&dm::FullMarsRecord::hdate}), reforecast(), largeEnsemble()));
 }
 
 
 auto packingRules() {
     return exclusiveRuleList(                                 //
-        rule(OneOf{dm::PACKING, {"simple"}}, dataRepres(0)),  //
-        rule(OneOf{dm::PACKING, {"ccsds"}}, dataRepres(42)),  //
-        rule(OneOf{dm::PACKING, {"complex"}}, dataRepres(51)));
+        rule(OneOf{&dm::FullMarsRecord::packing, {"simple"}}, dataRepres(0)),  //
+        rule(OneOf{&dm::FullMarsRecord::packing, {"ccsds"}}, dataRepres(42)),  //
+        rule(OneOf{&dm::FullMarsRecord::packing, {"complex"}}, dataRepres(51)));
 }
 
 
@@ -621,11 +621,11 @@ template <typename MkTail>
 auto plLevelRules(MkTail&& mkTail) {
     return exclusiveRuleList(                      //
         chainedRuleList(                           //
-            rule(greaterEqual(dm::LEVELIST, 100),  //
+            rule(greaterEqual(&dm::FullMarsRecord::levelist, 100),  //
                  typeOfLevel(TOL::IsobaricInhPa)),
             mkTail()),                         //
         chainedRuleList(                       //
-            rule(lessThan(dm::LEVELIST, 100),  //
+            rule(lessThan(&dm::FullMarsRecord::levelist, 100),  //
                  typeOfLevel(TOL::IsobaricInPa)),
             mkTail())  //
     );

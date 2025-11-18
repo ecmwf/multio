@@ -21,24 +21,24 @@ namespace multio::mars2grib::matcher {
 // Param matchers
 //-----------------------------------------------------------------------------
 
-auto paramRange(dm::EntryValueType_t<decltype(dm::PARAM)> start,
-                dm::EntryValueType_t<decltype(dm::PARAM)> end) {
-    return Range{dm::PARAM, start, end};
+auto paramRange(dm::Param start, dm::Param end) {
+    return Range{&dm::FullMarsRecord::param, {start}, {end}};
 }
 
-using ParamMatcher = Any<OneOf<std::decay_t<decltype(dm::PARAM)>>, Ranges<std::decay_t<decltype(dm::PARAM)>>>;
+using ParamMatcher = Any<OneOf<dm::MarsFieldId, dm::Entry<dm::Param>>, Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>>;
 
-ParamMatcher matchParams(std::vector<dm::EntryValueType_t<decltype(dm::PARAM)>> params) {
-    return ParamMatcher{
-        std::make_tuple(OneOf{dm::PARAM, std::move(params)}, Ranges<std::decay_t<decltype(dm::PARAM)>>{{}})};
+ParamMatcher matchParams(std::vector<dm::Param> params) {
+    return ParamMatcher{std::make_tuple(OneOf{&dm::FullMarsRecord::param, std::move(params)},
+                                        Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>{{}})};
 }
 
-ParamMatcher matchParams(dm::EntryValueType_t<decltype(dm::PARAM)> param) {
+ParamMatcher matchParams(dm::Param param) {
     return matchParams(std::vector{param});
 }
 
-ParamMatcher matchParams(Range<std::decay_t<decltype(dm::PARAM)>> range) {
-    return ParamMatcher{std::make_tuple(OneOf{dm::PARAM, {}}, Ranges<std::decay_t<decltype(dm::PARAM)>>{{range}})};
+ParamMatcher matchParams(Range<dm::MarsFieldId, dm::Entry<dm::Param>> range) {
+    return ParamMatcher{
+        std::make_tuple(OneOf{&dm::FullMarsRecord::param, {}}, Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>{{range}})};
 }
 
 ParamMatcher matchParams(ParamMatcher m) {

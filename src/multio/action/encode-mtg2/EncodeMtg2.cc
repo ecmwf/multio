@@ -128,7 +128,7 @@ void EncodeMtg2::executeImpl(Message msg) {
 
             // The +32 is related to bug
             // TODO(pgeier) Track bug ECC-2130: https://jira.ecmwf.int/browse/ECC-2130
-            eckit::Buffer buf{sample->messageSize() + 32};
+            eckit::Buffer buf{sample->messageSize()};
             sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());
 
             // TODO(pgeier) write mapped metadata

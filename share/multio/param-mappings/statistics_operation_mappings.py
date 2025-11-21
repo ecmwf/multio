@@ -20,7 +20,13 @@ def get_statistical_parameter_to_operation_mappings() -> List[Dict[str, int]]:
                 "param": param_statistic,
                 "typeOfStatisticalProcessing": typeOfStatisticalProcessing,
             })
+
+    # Sort and remove duplicates
     statistical_parameter_to_operation_mappings.sort(key=lambda d: d["param"])
+    for i in range(len(statistical_parameter_to_operation_mappings)-1, 0, -1):
+        if statistical_parameter_to_operation_mappings[i] == statistical_parameter_to_operation_mappings[i-1]:
+            del statistical_parameter_to_operation_mappings[i]
+
     return statistical_parameter_to_operation_mappings
 
 

@@ -34,10 +34,12 @@ std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGrib
 
     switch (marsKeys.repres.get()) {
         case dm::Repres::SH: {
+            // https://confluence.ecmwf.int/display/ECC/ecCodes+developer+FAQ+-+GRIB#ecCodesdeveloperFAQGRIB-GRIB:HowcanIconvertthesampleGRIB2.tmpltosphericalharmonics?
             sample->setValue("numberOfDataPoints", 6);
             sample->setValue("numberOfValues", 6);
             sample->setValue("bitsPerValue", 16);
             sample->setValue("typeOfFirstFixedSurface", 105);
+            sample->setDataValues( std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0} );
             sample->setValue("scaleFactorOfFirstFixedSurface", 0);
             sample->setValue("scaledValueOfFirstFixedSurface", 0);
             sample->setValue("gridDefinitionTemplateNumber", 50);
@@ -46,6 +48,8 @@ std::unique_ptr<util::MioGribHandle> prepareSample(std::unique_ptr<util::MioGrib
             sample->setValue("M", 1);
             sample->setValue("spectralType", 1);
             sample->setValue("spectralMode", 1);
+            sample->setValue( "numberOfOctectsForNumberOfPoints", 0);
+            sample->setValue( "interpretationOfNumberOfPoints", 0);
             sample->setValue("dataRepresentationTemplateNumber", 51);
             return sample;
         }

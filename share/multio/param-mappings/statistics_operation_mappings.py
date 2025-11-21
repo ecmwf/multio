@@ -38,4 +38,4 @@ if __name__ == "__main__":
 
     statistical_parameter_to_operation_mappings = get_statistical_parameter_to_operation_mappings()
 
-    print(yaml.dump(statistical_parameter_to_operation_mappings, sort_keys=False))
+    print(yaml.dump(statistical_parameter_to_operation_mappings, sort_keys=False), end='')

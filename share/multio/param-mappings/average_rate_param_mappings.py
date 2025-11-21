@@ -44,4 +44,4 @@ if __name__ == "__main__":
 
     accumulated_to_average_parameter_mappings = get_accumulated_to_average_parameter_mappings()
 
-    print(yaml.dump(accumulated_to_average_parameter_mappings, sort_keys=False))
+    print(yaml.dump(accumulated_to_average_parameter_mappings, sort_keys=False), end='')

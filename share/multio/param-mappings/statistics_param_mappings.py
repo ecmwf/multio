@@ -181,4 +181,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     statistically_processed_parameter_mappings = get_statistically_processed_parameter_mappings()
-    print(yaml.dump(statistically_processed_parameter_mappings, sort_keys=False))
+    print(yaml.dump(statistically_processed_parameter_mappings, sort_keys=False), end='')

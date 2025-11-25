@@ -168,8 +168,8 @@ auto fixHeightAboveSea() {
 auto fixMapToSol() {
     return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, Has{&dm::FullMarsRecord::levelist},
                     NoneOf{&dm::FullMarsRecord::levelist, {0}},
-                    matchParams(33, 238, 228038, 228141, 260360, 262000, 262024, 260199)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));                    //
+                    matchParams(33, 238, 228038, 228141, 235080, 237080, 238080, 239080, 260360, 262000, 262024, 260199)),  //
+                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));                                          //
 }
 
 

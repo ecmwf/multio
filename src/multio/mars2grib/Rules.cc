@@ -695,7 +695,7 @@ auto paramSOLRules() {
         rule(matchParams(262000, 262024),                                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SeaIceLayer)),                                        //
-        rule(matchParams(33, 74, 238, 228038, 228141),                              //
+        rule(matchParams(33, 74, 238, 228038, 228141, 235080, 237080, 238080, 239080),  //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SnowLayer)),                                          //
         rule(matchParams(260360, 260199, 183),                                      //

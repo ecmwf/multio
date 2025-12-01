@@ -4393,8 +4393,6 @@ IMPLICIT NONE
       ERRMSG = 'Unknown error code: '//TRIM(ADJUSTL(CTMP))
     ENDIF
     C_ERRMSG => NULL()
-    ! MIVAL TODO: Eventually this can be removed (don't know if it works)
-    KRET = C_FREE( C_ERRMSG_PTR )
   ENDIF
 
   ! Exit point (On success)

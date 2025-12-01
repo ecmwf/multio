@@ -148,6 +148,8 @@ def get_statistically_processed_parameter_mappings() -> List[Dict[str, Any]]:
         for type_of_statistical_processing, variants in variants.items():
             if (len(variants) > 1):
                 print(f"Mapping for param={param_id} and typeOfStatisticalProcessing={type_of_statistical_processing} contains more than one variant! Using the first variant {variants[0]}. All variants: {variants}", file=sys.stderr)
+            if (not type_of_statistical_processing.isdigit()):
+                print(f"Mapping for param={param_id} and typeOfStatisticalProcessing={type_of_statistical_processing} has an invalid typeOfStatisticalProcessing! Skipping...", file=sys.stderr)
 
     return [
         {
@@ -157,7 +159,7 @@ def get_statistically_processed_parameter_mappings() -> List[Dict[str, Any]]:
                     "typeOfStatisticalProcessing": int(type_of_statistical_processing),
                     "paramOut": variants[0],
                 }
-                for type_of_statistical_processing, variants in variants.items()
+                for type_of_statistical_processing, variants in variants.items() if type_of_statistical_processing.isdigit()
             ],
         }
         for param_id, variants in statistically_processed_parameters_by_id.items()
@@ -179,4 +181,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     statistically_processed_parameter_mappings = get_statistically_processed_parameter_mappings()
-    print(yaml.dump(statistically_processed_parameter_mappings, sort_keys=False))
+    print(yaml.dump(statistically_processed_parameter_mappings, sort_keys=False), end='')

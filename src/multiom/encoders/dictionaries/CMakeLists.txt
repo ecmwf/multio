@@ -9,21 +9,23 @@ set(OFFSET ${OFFSET}${DOFFSET})
 #
 # Add Subdirectories
 add_subdirectory(mars)
+add_subdirectory(geo)
 add_subdirectory(parametrization)
+add_subdirectory(metadata)
 
 # Collect source files in data-structures
 set( MULTIOM_DATA_STRUCTURES_MAIN_SOURCES
   ${MULTIOM_DATA_STRUCTURES_DIR}/time_utils_mod.F90
-  ${MULTIOM_DATA_STRUCTURES_DIR}/cache_utils_mod.F90
-  ${MULTIOM_DATA_STRUCTURES_DIR}/multiom_debug_mod.F90
 )
 
 
 # Collect source files in data-structures
 set( MULTIOM_DATA_STRUCTURES_SOURCES
   ${MULTIOM_DATA_STRUCTURES_MARS_SOURCES}
+  ${MULTIOM_DATA_STRUCTURES_GEOMETRY_SOURCES}
   ${MULTIOM_DATA_STRUCTURES_PARAMETRIZATION_SOURCES}
   ${MULTIOM_DATA_STRUCTURES_MAIN_SOURCES}
+  ${MULTIOM_METADATA_SOURCES}
   CACHE INTERNAL "List of all sources in data-structures directory"
 )
 

@@ -1,7 +1,7 @@
-set(MULTIOM_RAWAPI_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(MULTIOM_API_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Enter in the module
-message("${OFFSET} + raw-api sources: ${MULTIOM_RAWAPI_DIR}")
+message("${OFFSET} + api sources: ${MULTIOM_API_DIR}")
 
 # Recursive print
 set(OFFSET ${OFFSET}${DOFFSET})
@@ -14,20 +14,20 @@ add_subdirectory(encoders)
 
 
 # Collect source files in module2
-set( MULTIOM_RAWAPI_MAIN_SOURCES
+set( MULTIOM_API_MAIN_SOURCES
 )
 
 # Collect source files in module2
-set( MULTIOM_RAWAPI_SOURCES
-  ${MULTIOM_RAWAPI_MAIN_SOURCES}
-  ${MULTIOM_RAWAPI_COMMON_SOURCES}
-  ${MULTIOM_RAWAPI_DICTIONARIES_SOURCES}
-  ${MULTIOM_RAWAPI_ENCODERS_SOURCES}
-  CACHE INTERNAL "List of all sources in rawapi directory"
+set( MULTIOM_API_SOURCES
+  ${MULTIOM_API_MAIN_SOURCES}
+  ${MULTIOM_API_COMMON_SOURCES}
+  ${MULTIOM_API_DICTIONARIES_SOURCES}
+  ${MULTIOM_API_ENCODERS_SOURCES}
+  CACHE INTERNAL "List of all sources in api directory"
 )
 
 # Optionally, message what has been appended for debugging
-foreach(source_file IN LISTS MULTIOM_RAWAPI_MAIN_SOURCES)
+foreach(source_file IN LISTS MULTIOM_API_MAIN_SOURCES)
 
     # Extract the filename (without the directory)
     get_filename_component(filename ${source_file} NAME)

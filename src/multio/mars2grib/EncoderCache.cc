@@ -50,10 +50,12 @@ std::unique_ptr<metkit::codes::CodesHandle> prepareSample(std::unique_ptr<metkit
 
     switch (marsKeys.repres.get()) {
         case dm::Repres::SH: {
+            // https://confluence.ecmwf.int/display/ECC/ecCodes+developer+FAQ+-+GRIB#ecCodesdeveloperFAQGRIB-GRIB:HowcanIconvertthesampleGRIB2.tmpltosphericalharmonics?
             sample->set("numberOfDataPoints", 6);
             sample->set("numberOfValues", 6);
             sample->set("bitsPerValue", 16);
             sample->set("typeOfFirstFixedSurface", 105);
+            sample->set("values", metkit::codes::Span<const double>{std::vector<double>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}});
             sample->set("scaleFactorOfFirstFixedSurface", 0);
             sample->set("scaledValueOfFirstFixedSurface", 0);
             sample->set("gridDefinitionTemplateNumber", 50);
@@ -62,7 +64,10 @@ std::unique_ptr<metkit::codes::CodesHandle> prepareSample(std::unique_ptr<metkit
             sample->set("M", 1);
             sample->set("spectralType", 1);
             sample->set("spectralMode", 1);
+            sample->set( "numberOfOctectsForNumberOfPoints", 0);
+            sample->set( "interpretationOfNumberOfPoints", 0);
             sample->set("dataRepresentationTemplateNumber", 51);
+
             return sample;
         }
         case dm::Repres::GG: {

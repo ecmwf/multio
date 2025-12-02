@@ -82,7 +82,7 @@ struct SetKeysFromAtlas<GeoGGRecord> {
             }
             geoGG.pl.set(std::move(pl));
         }
-        
+
         // Explicitly validate after manual setting
         applyRecordDefaults(geoGG);
         validateRecord(geoGG);

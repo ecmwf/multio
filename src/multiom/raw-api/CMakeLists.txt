@@ -11,17 +11,10 @@ set(OFFSET ${OFFSET}${DOFFSET})
 add_subdirectory(common)
 add_subdirectory(dictionaries)
 add_subdirectory(encoders)
-add_subdirectory(rules)
 
 
 # Collect source files in module2
 set( MULTIOM_RAWAPI_MAIN_SOURCES
-  #${MULTIOM_ENCODERS_DIR}/grib_section_base_mod.F90
-  #${MULTIOM_ENCODERS_DIR}/grib_encoder_options_mod.F90
-  # ${MULTIOM_ENCODERS_DIR}/grib_encoder_factory_mod.F90
-  #${MULTIOM_ENCODERS_DIR}/grib_encoder_register_mod.F90
-  #${MULTIOM_ENCODERS_DIR}/grib_encoder_tunneling_mod.F90
-  #${MULTIOM_ENCODERS_DIR}/grib_encoder_lazy_rules_mod.F90
 )
 
 # Collect source files in module2
@@ -30,7 +23,6 @@ set( MULTIOM_RAWAPI_SOURCES
   ${MULTIOM_RAWAPI_COMMON_SOURCES}
   ${MULTIOM_RAWAPI_DICTIONARIES_SOURCES}
   ${MULTIOM_RAWAPI_ENCODERS_SOURCES}
-  ${MULTIOM_RAWAPI_RULES_SOURCES}
   CACHE INTERNAL "List of all sources in rawapi directory"
 )
 

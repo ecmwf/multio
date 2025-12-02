@@ -13,7 +13,7 @@
 #include "eckit/log/Log.h"
 
 #include "multio/mars2grib/Mars2GribException.h"
-#include "multiom/api/c/api.h"
+#include "multiom/raw-api/dictionaries/c/api_dictionaries.h"
 
 namespace multio::mars2grib {
 

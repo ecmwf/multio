@@ -1,0 +1,803 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'mars_dictionary_wrapper_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'MARS_DICTIONARY_WRAPPER_MOD'
+MODULE MARS_DICTIONARY_WRAPPER_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+  ! Symbols imported from other modules within the project.
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+
+IMPLICIT NONE
+
+  !> Default module visibnility
+  PRIVATE
+
+  !> MARS_DICTIONARY index used used to identify the mars_dictionary wrapper
+  INTEGER(KIND=JPIB_K), PARAMETER :: MARS_DICTIONARY_IDX_E = 1_JPIB_K
+
+  !> Class used as a wrapper for the mars_dictionary
+  TYPE :: MARS_DICTIONARY_CONTAINER_T
+    TYPE(FORTRAN_MESSAGE_T), POINTER :: MARS_DICTIONARY => NULL()
+  END TYPE
+
+  !> Whitelist of public symbols
+  PUBLIC :: MARS_DICTIONARY_IDX_E
+
+  PUBLIC :: MAKE_MARS_DICTIONARY
+  PUBLIC :: FREE_MARS_DICTIONARY
+  PUBLIC :: EXTRACT_MARS_DICTIONARY
+
+CONTAINS
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAKE_MARS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION MAKE_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, &
+&  MARS_DICTIONARY_CFG, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_ALLOCATE_WRAPPER
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),                INTENT(INOUT) :: WRAPPED_MARS_DICTIONARY
+  TYPE(YAML_CONFIGURATION_T), INTENT(IN)    :: MARS_DICTIONARY_CFG
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: MARS_DICTIONARY
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CREATE_MARS_DICTIONARY=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INITIALIZE_MARS_DICTIONARY=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INJECT_CHECKSUM=7_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_MARS_DICTIONARY), ERRFLAG_WRAPPER_ALREADY_ASSOCIATED )
+
+  !> Initialize the mars_dictionary
+  MARS_DICTIONARY => NULL()
+
+  !> Create the mars_dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CREATE_MARS_DICTIONARY) CREATE_MARS_DICTIONARY( &
+&       WRAPPED_MARS_DICTIONARY, MARS_DICTIONARY, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(MARS_DICTIONARY), ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Initialize the mars_dictionary
+  PP_TRYCALL(ERRFLAG_INITIALIZE_MARS_DICTIONARY) MARS_DICTIONARY%INIT( HOOKS )
+
+  ! Inject checksum
+  PP_TRYCALL(ERRFLAG_INJECT_CHECKSUM) INJECT_CHECKSUM_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY already associated at function entry' )
+    CASE (ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY not associated after allocation' )
+    CASE (ERRFLAG_UNABLE_TO_CREATE_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract mars_dictionary' )
+    CASE (ERRFLAG_INITIALIZE_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to initialize mars_dictionary' )
+    CASE (ERRFLAG_INJECT_CHECKSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MAKE_MARS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FREE_MARS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION FREE_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_EXTRACT_WRAPPER
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_FREE_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_MARS_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(F_C_WRAPPER_T), POINTER, DIMENSION(:) :: WRAPPER
+  INTEGER(KIND=C_INT8_T), POINTER, DIMENSION(:) :: BUFFER
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: MARS_DICTIONARY
+  TYPE(MARS_DICTIONARY_CONTAINER_T) :: MARS_DICTIONARY_CONTAINER
+  INTEGER(KIND=JPIB_K) :: DIM
+  INTEGER(KIND=JPIB_K) :: ALLOC_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  !> Local prameters
+  INTEGER(KIND=JPIB_K), PARAMETER :: MARS_DICTIONARY_CONTAINER_BYTE_SIZE = &
+&   STORAGE_SIZE(MARS_DICTIONARY_CONTAINER) / 8_JPIB_K
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_MARS_DICTIONARY=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_BUFFER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUFFER_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_BUFFER_SIZE=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_FREE_MARS_DICTIONARY=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_MARS_DICTIONARY=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_FREE_WRAPPER=10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_MARS_DICTIONARY=11_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(WRAPPED_MARS_DICTIONARY), ERRFLAG_WRAPPER_NOT_ASSOCIATED )
+
+  ! Extract the wrapper
+  WRAPPER => NULL()
+  CALL C_F_POINTER( WRAPPED_MARS_DICTIONARY, WRAPPER, [1] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER )
+
+  ! Extract the buffer
+  BUFFER => NULL()
+  DIM = 0_JPIB_K
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_EXTRACT_BUFFER) F_C_EXTRACT_WRAPPER( &
+&   WRAPPER, BUFFER, DIM, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(BUFFER), ERRFLAG_BUFFER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( DIM .NE. MARS_DICTIONARY_CONTAINER_BYTE_SIZE, ERRFLAG_WRONG_BUFFER_SIZE )
+
+  ! Get the Container
+  MARS_DICTIONARY_CONTAINER = TRANSFER( BUFFER, MARS_DICTIONARY_CONTAINER )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY), ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Associate the mars_dictionary pointer
+  MARS_DICTIONARY => MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY
+
+  ! Print the mars_dictionary to be freed
+  !! MIVAL: This is a debug print statement that should be enable to debug the c/fortran interoperability
+  !! PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_MARS_DICTIONARY) MARS_DICTIONARY%PRINT( 6_JPIB_K, 0_JPIB_K, HOOKS )
+  ! Free the mars_dictionary
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_MARS_DICTIONARY) MARS_DICTIONARY%FREE( HOOKS )
+
+  ! Deallocate the mars_dictionary
+  DEALLOCATE( MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0_JPIB_K, ERRFLAG_UNABLE_TO_DEALLOCATE_MARS_DICTIONARY )
+  MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY => NULL()
+  MARS_DICTIONARY => NULL()
+
+  ! Error handling
+  BUFFER = 0_C_INT8_T
+
+  ! Free the wrapper
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_WRAPPER) F_C_FREE_WRAPPER( &
+&   WRAPPER, HOOKS )
+  WRAPPER => NULL()
+  BUFFER => NULL()
+
+  ! Reset the c pointer
+  WRAPPED_MARS_DICTIONARY = C_NULL_PTR
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract mars_dictionary' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_BUFFER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract buffer' )
+    CASE (ERRFLAG_BUFFER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Buffer not associated' )
+    CASE (ERRFLAG_WRONG_BUFFER_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong buffer size' )
+    CASE (ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY not associated' )
+    CASE (ERRFLAG_UNABLE_TO_FREE_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to free mars_dictionary' )
+    CASE (ERRFLAG_UNABLE_TO_DEALLOCATE_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate mars_dictionary' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE( ERRMSG, STAT=ALLOC_STAT )
+      END IF
+    CASE (ERRFLAG_UNABLE_TO_FREE_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to free wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print mars_dictionary' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FREE_MARS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CREATE_MARS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION CREATE_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, MARS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_ALLOCATE_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),                      INTENT(INOUT) :: WRAPPED_MARS_DICTIONARY
+  TYPE(FORTRAN_MESSAGE_T), POINTER, INTENT(INOUT) :: MARS_DICTIONARY
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(MARS_DICTIONARY_CONTAINER_T) :: MARS_DICTIONARY_CONTAINER
+  TYPE(F_C_WRAPPER_T),    POINTER, DIMENSION(:) :: WRAPPER
+  INTEGER(KIND=C_INT8_T), POINTER, DIMENSION(:) :: BUFFER
+  INTEGER(KIND=JPIB_K) :: ALLOC_STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  !> Local prameters
+  INTEGER(KIND=JPIB_K), PARAMETER :: MARS_DICTIONARY_CONTAINER_BYTE_SIZE = &
+&   STORAGE_SIZE(MARS_DICTIONARY_CONTAINER) / 8_JPIB_K
+
+  ! Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_MARS_DICTIONARY=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_WRAPPER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED_AFTER_ALLOCATION=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUFFER_NOT_ASSOCIATED_AFTER_ALLOCATION=6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(WRAPPED_MARS_DICTIONARY), ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(MARS_DICTIONARY), ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED)
+
+  ! Allocate the mars_dictionary
+  ALLOCATE( MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY, STAT=ALLOC_STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STAT .NE. 0_JPIB_K, ERRFLAG_UNABLE_TO_ALLOCATE_MARS_DICTIONARY )
+
+  ! Allocate the wrapper
+  WRAPPER => NULL()
+  BUFFER => NULL()
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_ALLOCATE_WRAPPER) F_C_ALLOCATE_WRAPPER( &
+&   WRAPPER, BUFFER, MARS_DICTIONARY_IDX_E, MARS_DICTIONARY_CONTAINER_BYTE_SIZE, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_WRAPPER_NOT_ASSOCIATED_AFTER_ALLOCATION)
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(BUFFER), ERRFLAG_BUFFER_NOT_ASSOCIATED_AFTER_ALLOCATION)
+
+  ! Wrap the mars_dictionary in order to be able to expose it to c
+  BUFFER = TRANSFER(MARS_DICTIONARY_CONTAINER, BUFFER, MARS_DICTIONARY_CONTAINER_BYTE_SIZE )
+
+  ! Set the return arguments
+  MARS_DICTIONARY => MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY
+  WRAPPED_MARS_DICTIONARY = C_LOC(WRAPPER)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper already associated' )
+    CASE (ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY already associated' )
+    CASE (ERRFLAG_UNABLE_TO_ALLOCATE_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate mars_dictionary' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE( ERRMSG, STAT=ALLOC_STAT )
+      END IF
+    CASE (ERRFLAG_UNABLE_TO_ALLOCATE_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate wrapper' )
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED_AFTER_ALLOCATION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated after allocation' )
+    CASE (ERRFLAG_BUFFER_NOT_ASSOCIATED_AFTER_ALLOCATION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Buffer not associated after allocation' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CREATE_MARS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'INJECT_CHECKSUM_MARS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION INJECT_CHECKSUM_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,          ONLY: JPIB_K
+  USE :: HOOKS_MOD,                  ONLY: HOOKS_T
+  USE :: API_F_C_WRAPPER_MOD,        ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD,        ONLY: F_C_INJECT_CHECKSUM_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),   INTENT(INOUT) :: WRAPPED_MARS_DICTIONARY
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(F_C_WRAPPER_T),    POINTER, DIMENSION(:) :: WRAPPER
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(WRAPPED_MARS_DICTIONARY), ERRFLAG_WRAPPER_NOT_ASSOCIATED )
+
+  ! Extract the wrapper
+  WRAPPER => NULL()
+  CALL C_F_POINTER( WRAPPED_MARS_DICTIONARY, WRAPPER, [1] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER )
+
+  ! Extract the buffer
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM) F_C_INJECT_CHECKSUM_WRAPPER( WRAPPER, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_INJECT_CHECKOSUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inject checksum' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION INJECT_CHECKSUM_MARS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'EXTRACT_MARS_DICTIONARY'
+PP_THREAD_SAFE FUNCTION EXTRACT_MARS_DICTIONARY( WRAPPED_MARS_DICTIONARY, MARS_DICTIONARY, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT8_T
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_WRAPPER_T
+  USE :: API_F_C_WRAPPER_MOD, ONLY: F_C_EXTRACT_WRAPPER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR),                      INTENT(IN)    :: WRAPPED_MARS_DICTIONARY
+  TYPE(FORTRAN_MESSAGE_T), POINTER, INTENT(INOUT) :: MARS_DICTIONARY
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  TYPE(F_C_WRAPPER_T),    POINTER, DIMENSION(:) :: WRAPPER
+  INTEGER(KIND=C_INT8_T), POINTER, DIMENSION(:) :: BUFFER
+  TYPE(MARS_DICTIONARY_CONTAINER_T) :: MARS_DICTIONARY_CONTAINER
+  INTEGER(KIND=JPIB_K) :: DIM
+
+  !> Local prameters
+  INTEGER(KIND=JPIB_K), PARAMETER :: MARS_DICTIONARY_CONTAINER_BYTE_SIZE = &
+&   STORAGE_SIZE(MARS_DICTIONARY_CONTAINER) / 8_JPIB_K
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRAPPER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_BUFFER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_BUFFER_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_BUFFER_SIZE=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED=7_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(WRAPPED_MARS_DICTIONARY), ERRFLAG_WRAPPER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(MARS_DICTIONARY), ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED )
+
+  ! Extract the wrapper
+  WRAPPER => NULL()
+  CALL C_F_POINTER( WRAPPED_MARS_DICTIONARY, WRAPPER, [1] )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(WRAPPER), ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER )
+
+  ! Extract the buffer
+  BUFFER => NULL()
+  DIM = 0_JPIB_K
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_EXTRACT_BUFFER) F_C_EXTRACT_WRAPPER( &
+&   WRAPPER, BUFFER, DIM, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(BUFFER), ERRFLAG_BUFFER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( DIM .NE. MARS_DICTIONARY_CONTAINER_BYTE_SIZE, ERRFLAG_WRONG_BUFFER_SIZE )
+
+  ! Get the Container
+  MARS_DICTIONARY_CONTAINER = TRANSFER( BUFFER, MARS_DICTIONARY_CONTAINER )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY), ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED )
+
+  ! Associate the mars_dictionary pointer
+  MARS_DICTIONARY => MARS_DICTIONARY_CONTAINER%MARS_DICTIONARY
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_WRAPPER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrapper not associated' )
+    CASE (ERRFLAG_MARS_DICTIONARY_ALREADY_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY already associated' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_WRAPPER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract wrapper' )
+    CASE (ERRFLAG_UNABLE_TO_EXTRACT_BUFFER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract buffer' )
+    CASE (ERRFLAG_BUFFER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Buffer not associated' )
+    CASE (ERRFLAG_WRONG_BUFFER_SIZE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong buffer size' )
+    CASE (ERRFLAG_MARS_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MARS_DICTIONARY not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  RETURN
+
+END FUNCTION EXTRACT_MARS_DICTIONARY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+END MODULE MARS_DICTIONARY_WRAPPER_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

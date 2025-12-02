@@ -656,7 +656,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_MODEL_PRESET( THIS, &
   USE :: GRIB_API,                 ONLY: GRIB_SUCCESS
   USE :: GRIB_API,                 ONLY: GRIB_IS_DEFINED
   USE :: GRIB_API,                 ONLY: GRIB_GET
-  USE :: GRIB_METADATA_MOD,        ONLY: GRIB_METADATA_T
   USE :: CGRIB_METADATA_MOD,        ONLY: CGRIB_METADATA_T
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -847,7 +846,6 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_MODEL_RUNTIME( THIS, &
   USE :: GRIB_API,                 ONLY: GRIB_SUCCESS
   USE :: GRIB_API,                 ONLY: GRIB_IS_DEFINED
   USE :: GRIB_API,                 ONLY: GRIB_GET
-  USE :: GRIB_METADATA_MOD,        ONLY: GRIB_METADATA_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS

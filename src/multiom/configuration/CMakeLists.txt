@@ -10,6 +10,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 set( MULTIOM_CONFIGURATION_SOURCES
   ${MULTIOM_CONFIGURATION_DIR}/yaml_core_utils_mod.F90
   ${MULTIOM_CONFIGURATION_DIR}/configuration_utils_mod.F90
+  ${MULTIOM_CONFIGURATION_DIR}/keyset_int64_mod.F90
   CACHE INTERNAL "List of all sources in configuration directory"
 )
 

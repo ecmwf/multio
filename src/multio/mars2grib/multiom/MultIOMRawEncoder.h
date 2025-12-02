@@ -17,7 +17,6 @@
 
 #include <memory>
 
-#include "multiom/api/c/api.h"
 
 extern "C" {
 int multio_grib2_raw_encoder_open(void* options, void* eckit_conf, void** handle);

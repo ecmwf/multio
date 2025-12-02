@@ -8,6 +8,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 
 set( MULTIOM_RAWAPI_ENCODERS_MAIN_SOURCES
+  ${MULTIOM_RAWAPI_ENCODERS_DIR}/multiom_raw_encoder_mod.F90
   ${MULTIOM_RAWAPI_ENCODERS_DIR}/raw_encoders_api_mod.F90
   ${MULTIOM_RAWAPI_ENCODERS_DIR}/raw_encoder_wrapper_mod.F90
 )

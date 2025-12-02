@@ -12,8 +12,6 @@ MODULE MULTIOM_API
 
   ! Include the error handler
   USE :: HOOKS_MOD, ONLY: HOOKS_T
-  USE :: TRACE_MOD, ONLY: OM_SET_DR_HOOK
-
   ! Datatypes
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
@@ -136,7 +134,6 @@ PRIVATE
 
 ! Include the error handler
 PUBLIC :: HOOKS_T
-PUBLIC :: OM_SET_DR_HOOK
 
 ! Datatypes
 PUBLIC :: JPIB_K

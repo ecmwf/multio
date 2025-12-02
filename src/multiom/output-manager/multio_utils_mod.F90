@@ -154,7 +154,7 @@ IMPLICIT NONE
   ! Destroy the MultIO configuration object
   ERR = MIOCC%DELETE()
   PP_DEBUG_DEVELOP_COND_THROW( ERR.NE.MULTIO_SUCCESS, ERRFLAG_UNABLE_TO_DESTROY_MIOCFG )
-  
+
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 

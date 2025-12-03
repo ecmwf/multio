@@ -8,8 +8,6 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 # Collect source files in module2
 set( MULTIOM_COMMON_SOURCES
-  ${MULTIOM_COMMON_DIR}/api_general_utils_mod.F90
-  ${MULTIOM_COMMON_DIR}/api_general_utils_c.cc
   ${MULTIOM_COMMON_DIR}/datakinds_def_mod.F90
   ${MULTIOM_COMMON_DIR}/enumerators_mod.F90
   ${MULTIOM_COMMON_DIR}/general_utils_c.c

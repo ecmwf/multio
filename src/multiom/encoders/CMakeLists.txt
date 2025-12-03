@@ -10,8 +10,7 @@ set(OFFSET ${OFFSET}${DOFFSET})
 #
 # Add Subdirectories
 add_subdirectory( dictionaries )
-add_subdirectory( encoders-base )
-add_subdirectory( section-encoders )
+add_subdirectory( grib2-encoder )
 add_subdirectory( api )
 
 
@@ -25,7 +24,6 @@ set( MULTIOM_ENCODERS_MAIN_SOURCES
 set( MULTIOM_ENCODERS_SOURCES
     ${MULTIOM_ENCODERS_MAIN_SOURCES}
     ${MULTIOM_DATA_STRUCTURES_SOURCES}
-    ${MULTIOM_ENCODERS_BASE_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
     ${MULTIOM_API_SOURCES}
   CACHE INTERNAL "List of all sources in encoders directory"
@@ -52,7 +50,6 @@ ecbuild_add_library(
 
   SOURCES
     ${MULTIOM_DATA_STRUCTURES_SOURCES}
-    ${MULTIOM_ENCODERS_BASE_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
     ${MULTIOM_API_SOURCES}
 

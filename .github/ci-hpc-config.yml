@@ -28,6 +28,8 @@ intel_mpi:
         - ecmwf/atlas@develop
         - ecmwf/atlas-orca@develop
         - ecmwf/mir@develop
+      cmake_options:
+        - -DECBUILD_DOWNLOAD_RETRIES=5
       parallel: 64
       ntasks: 16
       env:
@@ -58,6 +60,8 @@ hpcx_openmpi:
         - ecmwf/atlas@develop
         - ecmwf/atlas-orca@develop
         - ecmwf/mir@develop
+      cmake_options:
+        - -DECBUILD_DOWNLOAD_RETRIES=5
       parallel: 64
       ntasks: 16
       env:
@@ -88,6 +92,8 @@ openmpi:
         - ecmwf/atlas@develop
         - ecmwf/atlas-orca@develop
         - ecmwf/mir@develop
+      cmake_options:
+        - -DECBUILD_DOWNLOAD_RETRIES=5
       parallel: 64
       ntasks: 16
       env:
@@ -114,6 +120,8 @@ mpi_off:
         - ecmwf/atlas@develop
         - ecmwf/atlas-orca@develop
         - ecmwf/mir@develop
+      cmake_options:
+        - -DECBUILD_DOWNLOAD_RETRIES=5
       parallel: 64
       env:
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples

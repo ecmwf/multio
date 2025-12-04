@@ -9,6 +9,8 @@
  */
 
 #include "multio/mars2grib/EncoderCache.h"
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/log/JSON.h"
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryDumper.h"
@@ -18,9 +20,14 @@
 #include "multio/mars2grib/Rules.h"
 #include "multio/mars2grib/multiom/MultIOMDict.h"
 
+#include "multio/util/Environment.h"
 #include "multio/util/Print.h"
 
+#include <cstdint>
+#include <fstream>
+#include <iomanip>
 #include <sstream>
+#include <string>
 
 namespace multio::mars2grib {
 
@@ -83,8 +90,32 @@ std::unique_ptr<metkit::codes::CodesHandle> prepareSample(std::unique_ptr<metkit
 }  // namespace
 
 
+void dumpMars2EncoderConf(const dm::FullMarsRecord& marsKeys, const eckit::LocalConfiguration& encoderConf) {
+    static std::int64_t n = 0;
+
+    const auto marsConf = dm::dumpRecord<eckit::LocalConfiguration>(marsKeys);
+
+    eckit::LocalConfiguration testCase;
+    testCase.set("mars", marsConf);
+    testCase.set("encoder-config", encoderConf);
+
+    const auto prefix = util::getEnv("MARS2CONF_DUMP_PREFIX");
+    std::ostringstream oss;
+    oss << std::string{prefix->data(), prefix->size()} << std::setw(10) << std::setfill('0') << n++ << ".json";
+    std::fstream fs{std::string{oss.str()}, fs.out};
+    eckit::JSON json{fs};
+    json << testCase;
+}
+
+
 EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
                                                        const MultIOMDict& misc, const MultIOMDict& geo) {
+
+    SectionsConf sections = rules::buildEncoderConf(marsKeys);
+    auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
+
+    dumpMars2EncoderConf(marsKeys, exportedConf);
+
     // Select caching keys and prehash
     PrehashedMarsKeys cacheKeySet = dm::readRecord<MarsCacheRecord>(marsKeys);
 
@@ -97,8 +128,8 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 
     // Searching for rule...
 
-    SectionsConf sections = rules::buildEncoderConf(marsKeys);
-    auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
+    // SectionsConf sections = rules::buildEncoderConf(marsKeys);
+    // auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
 
     MultIOMRawEncoder encoder{exportedConf};
 

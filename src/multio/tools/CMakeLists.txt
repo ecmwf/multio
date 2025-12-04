@@ -64,6 +64,12 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
                         SOURCES   multio-convert-trace-log.cc MultioTool.cc
                         LIBS      multio eckit )
 
+
+# Tool for testing the encoder configuration from MARS
+ecbuild_add_executable( TARGET    check-mars-to-encoder
+                        SOURCES   check-mars-to-encoder.cc MultioTool.cc
+                        LIBS      multio multio-mars2grib eckit )
+
 endif()
 
 

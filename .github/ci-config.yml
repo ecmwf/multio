@@ -14,3 +14,4 @@ dependencies: |
   ecmwf/mir
 dependency_branch: develop
 parallelism_factor: 8
+cmake_options: -DECBUILD_DOWNLOAD_RETRIES=5

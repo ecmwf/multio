@@ -94,6 +94,20 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => REGULAR_GG_FREE
 END TYPE
 
+TYPE, EXTENDS(REPRES_A) :: REGULAR_LL_T
+  INTEGER(KIND=JPIB_K) :: NUMBER_OF_POINTS_ALONG_A_MERIDIAN=0_JPIB_K
+  INTEGER(KIND=JPIB_K) :: NUMBER_OF_POINTS_ALONG_A_PARALLEL=0_JPIB_K
+  REAL(KIND=JPRD_K) :: LAT_FIRST_GP_DEG=0.0_JPRD_K
+  REAL(KIND=JPRD_K) :: LON_FIRST_GP_DEG=0.0_JPRD_K
+  REAL(KIND=JPRD_K) :: LAT_LAST_GP_DEG=0.0_JPRD_K
+  REAL(KIND=JPRD_K) :: LON_LAST_GP_DEG=0.0_JPRD_K
+  REAL(KIND=JPRD_K) :: IDIR_INC=0.0_JPRD_K
+  REAL(KIND=JPRD_K) :: JDIR_INC=0.0_JPRD_K
+CONTAINS
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: WRITE_TO_YAML => REGULAR_LL_TO_YAML
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => REGULAR_LL_FREE
+END TYPE
+
 
 TYPE, EXTENDS(REPRES_A) :: SH_T
   INTEGER(KIND=JPIB_K) :: PENTAGONAL_RESOLUTIONS_PAR_J=0_JPIB_K
@@ -134,6 +148,7 @@ PUBLIC :: REPRES_A
 PUBLIC :: HEALPIX_T
 PUBLIC :: REDUCED_GG_T
 PUBLIC :: REGULAR_GG_T
+PUBLIC :: REGULAR_LL_T
 PUBLIC :: STRETCHED_ROTATED_SH_T
 PUBLIC :: STRETCHED_SH_T
 PUBLIC :: SH_T
@@ -660,6 +675,181 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION REGULAR_GG_TO_YAML
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_LL_TO_YAML'
+PP_THREAD_SAFE FUNCTION REGULAR_LL_TO_YAML( THIS, UNIT, OFFSET, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(REGULAR_LL_T),  INTENT(IN)    :: THIS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: OFFSET
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=32) :: CTMP
+  INTEGER(KIND=JPIB_K) :: WRITE_STAT
+  LOGICAL :: UNIT_OPENED
+
+  ! Error Flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNIT_NOT_OPENED=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IOSTATUS_NOT_ZERO=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_TO_STRING=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Erro handling
+  INQUIRE(UNIT=UNIT, OPENED=UNIT_OPENED)
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.UNIT_OPENED, ERRFLAG_UNIT_NOT_OPENED )
+
+  ! Write the representation type
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET)//'representation:'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! grid type
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'type: "regular_ll"'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! data-representation-type type
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'data-representation-type: "'//TRIM(ADJUSTL(THIS%DATA_REPRESENTATION_TYPE))//'"'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! grid name
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'name: "'//TRIM(ADJUSTL(THIS%NAME))//'"'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! number of points along a meridian
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(I8)',IOSTAT=WRITE_STAT) THIS%NUMBER_OF_POINTS_ALONG_A_MERIDIAN
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'number-of-points-along-a-meridian: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! number of points along a parallel
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(I8)',IOSTAT=WRITE_STAT) THIS%NUMBER_OF_POINTS_ALONG_A_PARALLEL
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'number-of-points-along-a-parallel: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+
+  ! latitude of first grid point in degrees
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%LAT_FIRST_GP_DEG
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'latitude-of-first-grid-point-in-degrees: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! logitude of first grid point in degrees
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%LON_FIRST_GP_DEG
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'longitude-of-first-grid-point-in-degrees: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! latitude of last grid point in degrees
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%LAT_LAST_GP_DEG
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'latitude-of-last-grid-point-in-degrees: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! logitude of last grid point in degrees
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%LON_LAST_GP_DEG
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'longitude-of-last-grid-point-in-degrees: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! idir increment
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%IDIR_INC
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'i-direction-increment: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+  ! jdir increment
+  CTMP = REPEAT(' ',32)
+  WRITE(CTMP,'(F11.4)',IOSTAT=WRITE_STAT) THIS%JDIR_INC
+  WRITE(UNIT,'(A)',IOSTAT=WRITE_STAT) REPEAT(' ',OFFSET+2)//'j-direction-increment: '//TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNIT_NOT_OPENED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unit not opened' )
+    CASE (ERRFLAG_IOSTATUS_NOT_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'IO status not zero' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION REGULAR_LL_TO_YAML
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1360,6 +1550,59 @@ IMPLICIT NONE
   RETURN
 
 END FUNCTION REGULAR_GG_FREE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'REGULAR_LL_FREE'
+PP_THREAD_SAFE FUNCTION REGULAR_LL_FREE( REPRES, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(REGULAR_LL_T), INTENT(INOUT) :: REPRES
+  TYPE(HOOKS_T),       INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Nothing to be done for now
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+END FUNCTION REGULAR_LL_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

@@ -4352,14 +4352,6 @@ IMPLICIT NONE
       TYPE(C_PTR), VALUE, INTENT(IN) :: STR
       INTEGER(KIND=C_SIZE_T) :: LEN
     END FUNCTION C_STRLEN
-    FUNCTION C_FREE( PTR ) &
-&    RESULT(RET) BIND(C, NAME='free')
-      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
-      USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-    IMPLICIT NONE
-      TYPE(C_PTR), VALUE, INTENT(IN) :: PTR
-      INTEGER(KIND=C_INT) :: RET
-    END FUNCTION C_FREE
   END INTERFACE
 
   ! Initialize the error message
@@ -4393,8 +4385,6 @@ IMPLICIT NONE
       ERRMSG = 'Unknown error code: '//TRIM(ADJUSTL(CTMP))
     ENDIF
     C_ERRMSG => NULL()
-    ! MIVAL TODO: Eventually this can be removed (don't know if it works)
-    KRET = C_FREE( C_ERRMSG_PTR )
   ENDIF
 
   ! Exit point (On success)

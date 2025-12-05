@@ -22,8 +22,8 @@ set( MULTIOM_API_DICTIONARIES_MAIN_SOURCES
   ${MULTIOM_API_DICTIONARIES_DIR}/reduced_gg_dictionary_wrapper_mod.F90
   ${MULTIOM_API_DICTIONARIES_DIR}/regular_gg_dictionary_utils_mod.F90
   ${MULTIOM_API_DICTIONARIES_DIR}/regular_gg_dictionary_wrapper_mod.F90
-  # ${MULTIOM_API_DICTIONARIES_DIR}/regular_ll_dictionary_utils_mod.F90
-  # ${MULTIOM_API_DICTIONARIES_DIR}/regular_ll_dictionary_wrapper_mod.F90
+  ${MULTIOM_API_DICTIONARIES_DIR}/regular_ll_dictionary_utils_mod.F90
+  ${MULTIOM_API_DICTIONARIES_DIR}/regular_ll_dictionary_wrapper_mod.F90
   ${MULTIOM_API_DICTIONARIES_DIR}/healpix_dictionary_utils_mod.F90
   ${MULTIOM_API_DICTIONARIES_DIR}/healpix_dictionary_wrapper_mod.F90
   ${MULTIOM_API_DICTIONARIES_DIR}/sh_dictionary_utils_mod.F90

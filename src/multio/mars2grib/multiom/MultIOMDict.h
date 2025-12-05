@@ -18,7 +18,7 @@
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/types/TypeOfProcessedData.h"
 #include "multio/util/VariantHelpers.h"
-#include "multiom/api/c/api.h"
+#include "multiom/encoders/api/dictionaries/c/api_dictionaries.h"
 
 namespace multio::mars2grib {
 struct ForeignDictType;

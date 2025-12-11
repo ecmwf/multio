@@ -10,7 +10,6 @@ set(OFFSET ${OFFSET}${DOFFSET})
 set( MULTIOM_DATA_STRUCTURES_MARS_MAIN_SOURCES
   ${MULTIOM_DATA_STRUCTURES_MARS_DIR}/fortran_message_enumerators_mod.F90
   ${MULTIOM_DATA_STRUCTURES_MARS_DIR}/fortran_message_mod.F90
-  # ${CMAKE_CURRENT_BINARY_DIR}/map_int64_mars_dict_mod.F90
 )
 
 # Collect source files in data-structures

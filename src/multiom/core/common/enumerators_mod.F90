@@ -454,7 +454,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PERIOD_DAILY_E=0_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_PERIOD_MONTHLY_E=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_PERIODS=2_JPIB_K
-  
+
 
   ! Enumeators for type of time range
   INTEGER(KIND=JPIB_K), PARAMETER :: TYPE_OF_TIME_RANGE_INSTANT_E=1_JPIB_K
@@ -2299,7 +2299,7 @@ IMPLICIT NONE
 
   !> Dummy arguments
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: ILEVTYPE
-  CHARACTER(LEN=16),    INTENT(OUT)   :: CLEVTYPE
+  CHARACTER(LEN=*),     INTENT(OUT)   :: CLEVTYPE
   TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -2324,7 +2324,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   !> Initialization of the output variable
-  CLEVTYPE = REPEAT(' ', 16)
+  CLEVTYPE = REPEAT(' ', LEN(CLEVTYPE))
 
   !> Select the prefix
   SELECT CASE ( ILEVTYPE )
@@ -3790,7 +3790,7 @@ IMPLICIT NONE
 
   !> Dummy arguments
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: IREPRES
-  CHARACTER(LEN=16),    INTENT(OUT)   :: CREPRES
+  CHARACTER(LEN=*),     INTENT(OUT)   :: CREPRES
   TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   !> Function result
@@ -3815,7 +3815,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   !> Initialization of the output variable
-  CREPRES = REPEAT(' ', 16)
+  CREPRES = REPEAT(' ', LEN(CREPRES))
 
   !> Select the repres
   SELECT CASE ( IREPRES )

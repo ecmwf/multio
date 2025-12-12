@@ -772,7 +772,7 @@ auto paramSOLRules() {
         rule(matchParams(262000, 262024),                                           //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SeaIceLayer)),                                        //
-        rule(matchParams(33, 74, 238, 228038, 228141, 235080, 237080, 238080, 239080),  //
+        rule(matchParams(33, 74, 238, 228038, 228141),                              //
              pointInTime(),                                                         //
              typeOfLevel(TOL::SnowLayer)),                                          //
         rule(matchParams(260360, 260199, 183),                                      //
@@ -781,8 +781,17 @@ auto paramSOLRules() {
         rule(matchParams(235077),                                                   // 235077 also exists on SOL !
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
              typeOfLevel(TOL::SoilLayer)),                                          //
-        rule(matchParams(235078),                                                   //
+        rule(matchParams(235078, 235080),                                           //
              timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Average),  //
+             typeOfLevel(TOL::SnowLayer)),                                          //
+        rule(matchParams(237080),                                                   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Maximum),  //
+             typeOfLevel(TOL::SnowLayer)),                                          //
+        rule(matchParams(238080),                                                   //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::Minimum),  //
+             typeOfLevel(TOL::SnowLayer)),                                          //
+       rule(matchParams(239080),                                                    //
+             timeRange(TimeRangeType::SinceLastPostProcessingStep, TOSP::StandardDeviation),  //
              typeOfLevel(TOL::SnowLayer))                                           //
     );
 }

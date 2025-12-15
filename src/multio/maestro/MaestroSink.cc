@@ -73,7 +73,20 @@ MaestroSink::MaestroSink(const ComponentConfiguration& compConf) : multio::sink:
         auto componentName
             = std::string{::getenv("COMPONENT_NAME")} + " -- " + std::to_string(eckit::mpi::comm().rank());
         mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), componentName.c_str(), 0);
-        ASSERT(s == MSTRO_OK);
+        if (s == MSTRO_OK)
+        {
+                LOG_DEBUG_LIB(LibMultio) << "Successfully initialized Maestro"  << std::endl;
+        }
+        else if(s == MSTRO_NOT_TWICE)
+        {
+                LOG_DEBUG_LIB(LibMultio) << "Not Twice - Maestro was already initialized" << std::endl;
+        }
+        else
+        {
+                LOG_DEBUG_LIB(LibMultio) << "Failed to initialize Maestro: (" <<mstro_status_description(s) << ")"<< std::endl;
+                ASSERT(s == MSTRO_OK); // fail hard
+        }
+
 
         auto component = std::string{::getenv("COMPONENT_NAME")};
         auto delimiter = std::string{" - "};

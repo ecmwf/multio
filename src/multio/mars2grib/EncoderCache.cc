@@ -90,14 +90,23 @@ std::unique_ptr<metkit::codes::CodesHandle> prepareSample(std::unique_ptr<metkit
 }  // namespace
 
 
-void dumpMars2EncoderConf(const dm::FullMarsRecord& marsKeys, const eckit::LocalConfiguration& encoderConf) {
+void dumpMars2EncoderConf(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys, const dm::Geometry& geomKeys, const eckit::LocalConfiguration& encoderConf) {
     static std::int64_t n = 0;
 
     const auto marsConf = dm::dumpRecord<eckit::LocalConfiguration>(marsKeys);
+    const auto miscConf = dm::dumpRecord<eckit::LocalConfiguration>(miscKeys);
+    const auto geomConf = std::visit(
+        [](const auto& geomKeys) {
+            return dm::dumpRecord<eckit::LocalConfiguration>(geomKeys);
+        },
+        geomKeys
+    );
 
     eckit::LocalConfiguration testCase;
     testCase.set("mars", marsConf);
-    testCase.set("encoder-config", encoderConf);
+    testCase.set("misc", miscConf);
+    testCase.set("geom", geomConf);
+    testCase.set("conf", encoderConf);
 
     const auto prefix = util::getEnv("MARS2CONF_DUMP_PREFIX");
     std::ostringstream oss;
@@ -109,12 +118,13 @@ void dumpMars2EncoderConf(const dm::FullMarsRecord& marsKeys, const eckit::Local
 
 
 EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
-                                                       const MultIOMDict& misc, const MultIOMDict& geo) {
+                                                       const dm::MiscRecord& miscKeys, const MultIOMDict& misc,
+                                                       const dm::Geometry& geomKeys, const MultIOMDict& geom) {
 
     SectionsConf sections = rules::buildEncoderConf(marsKeys);
     auto exportedConf = dm::dumpRecord<eckit::LocalConfiguration>(sections);
 
-    dumpMars2EncoderConf(marsKeys, exportedConf);
+    dumpMars2EncoderConf(marsKeys, miscKeys, geomKeys, exportedConf);
 
     // Select caching keys and prehash
     PrehashedMarsKeys cacheKeySet = dm::readRecord<MarsCacheRecord>(marsKeys);
@@ -137,7 +147,7 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 
     // Prepare sample
     sample = prepareSample(std::move(sample), marsKeys);
-    sample = encoder.allocateAndPreset(std::move(sample), mars, misc, geo);
+    sample = encoder.allocateAndPreset(std::move(sample), mars, misc, geom);
 
 
     // Move encoder and prepared sample to cache
@@ -147,16 +157,16 @@ EncoderCache::CacheEntry& EncoderCache::makeOrGetEntry(const dm::FullMarsRecord&
 }
 
 
-std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
-                                                                    const MultIOMDict& mars, const MultIOMDict& misc,
-                                                                    const MultIOMDict& geo) {
-    CacheEntry& entry = makeOrGetEntry(marsKeys, mars, misc, geo);
-    return entry.encoder.runtime(entry.preparedSample->clone(), mars, misc, geo);
+std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& mars,
+                                                                    const dm::MiscRecord& miscKeys, const MultIOMDict& misc,
+                                                                    const dm::Geometry& geomKeys, const MultIOMDict& geom) {
+    CacheEntry& entry = makeOrGetEntry(marsKeys, mars, miscKeys, misc, geomKeys, geom);
+    return entry.encoder.runtime(entry.preparedSample->clone(), mars, misc, geom);
 }
 
 std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::FullMarsRecord& marsKeys,
                                                                     const dm::MiscRecord& miscKeys,
-                                                                    const dm::Geometry& geoKeys) {
+                                                                    const dm::Geometry& geomKeys) {
     try {
         MultIOMDict mars{MultIOMDictKind::MARS};
         MultIOMDict misc{MultIOMDictKind::Parametrization};
@@ -176,13 +186,13 @@ std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::Fu
                 case dm::Repres::SH:
                     return MultIOMDictKind::SH;
             }
-            throw Mars2GribException("unkown repres", Here());
+            throw Mars2GribException("unknown repres", Here());
         })()};
 
-        std::visit([&](auto& specificGeoKeys) { dm::dumpRecord(specificGeoKeys, geom); }, geoKeys);
+        std::visit([&](auto& specificGeoKeys) { dm::dumpRecord(specificGeoKeys, geom); }, geomKeys);
 
         // return getHandle(marsKeys, mars, misc, geom);
-        auto ret = getHandle(marsKeys, mars, misc, geom);
+        auto ret = getHandle(marsKeys, mars, miscKeys, misc, geomKeys, geom);
 
         // TODO pgeier fix that needs to be expressed in GeoGG once MULTIOM is gone
         if (marsKeys.repres.get() == dm::Repres::GG) {
@@ -207,7 +217,7 @@ std::unique_ptr<metkit::codes::CodesHandle> EncoderCache::getHandle(const dm::Fu
 
             ps << "Mars: " << marsKeys << std::endl;
             ps << "Misc: " << miscKeys << std::endl;
-            ps << "Geo: " << geoKeys << std::endl;
+            ps << "Geom: " << geomKeys << std::endl;
         }
 
         std::throw_with_nested(mars2grib::Mars2GribException(oss.str(), Here()));

@@ -37,15 +37,18 @@ public:
     EncoderCache& operator=(EncoderCache&&) = default;
 
     // Try to infer geometry and then prepare a grib handle
-    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys);
+    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys,
+                                                          const dm::MiscRecord& miscKeys);
     // Perpare a grib handle
-    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const dm::MiscRecord& miscKeys,
-                                                   const dm::Geometry& geoKeys);
+    std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys,
+                                                          const dm::MiscRecord& miscKeys,
+                                                          const dm::Geometry& geomKeys);
 
 protected:
     // Prepare a grib handle with already mapped MultIOM dicts
     std::unique_ptr<metkit::codes::CodesHandle> getHandle(const dm::FullMarsRecord& marsKeys, const MultIOMDict& marsDict,
-                                                   const MultIOMDict& parDict, const MultIOMDict& geoDict);
+                                                          const dm::MiscRecord& miscKeys, const MultIOMDict& miscDict,
+                                                          const dm::Geometry& geomKeys, const MultIOMDict& geomDict);
 
 private:
     struct CacheEntry {
@@ -55,7 +58,8 @@ private:
     };
 
     CacheEntry& makeOrGetEntry(const dm::FullMarsRecord& marsKeys, const MultIOMDict& marsDict,
-                               const MultIOMDict& parDict, const MultIOMDict& geoDict);
+                               const dm::MiscRecord& miscKeys, const MultIOMDict& miscDict,
+                               const dm::Geometry& geomKeys, const MultIOMDict& geomDict);
 
     std::unordered_map<PrehashedMarsKeys, CacheEntry> cache_{};
 };

@@ -64,11 +64,6 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
                         SOURCES   multio-convert-trace-log.cc MultioTool.cc
                         LIBS      multio eckit )
 
-endif()
-
-
-
-if ( BUILD_MULTIOM )
 
 ecbuild_add_executable(
 
@@ -86,15 +81,11 @@ ecbuild_add_executable(
 
   LIBS
       multio
-      multio-mars2grib
       multio-mars2mars
-      multiom
       atlas
       eckit
-      fckit
       metkit
       eccodes
-      eccodes_f90
 )
 
 endif()

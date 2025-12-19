@@ -11,16 +11,13 @@
 #pragma once
 
 
-#include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/Compare.h"
 #include "multio/datamod/core/Hash.h"
 #include "multio/datamod/core/Print.h"
 
 
-namespace multio::mars2grib {
-
-namespace dm = multio::datamod;
+namespace multio::datamod {
 
 //-----------------------------------------------------------------------------
 // MARS encoder hash keys
@@ -31,20 +28,20 @@ namespace dm = multio::datamod;
 // However with this approach it is made explicit that there is a further logic happening
 // that should be distinguished from the existing FullMarsRecord.
 
-struct MarsCacheRecord: dm::FullMarsRecord {
+struct MarsCacheRecord: FullMarsRecord {
     static constexpr std::string_view record_name_ = "mars-cache";
 
-    static void applyDefaults(mars2grib::MarsCacheRecord& cacheKeys) {
-        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == dm::LevType::ML) {
+    static void applyDefaults(MarsCacheRecord& cacheKeys) {
+        if (cacheKeys.levtype.isSet() && cacheKeys.levtype.get() == LevType::ML) {
             cacheKeys.levelist.unset();
         }
-        
+
         cacheKeys.step.unset();
         cacheKeys.direction.unset();
         cacheKeys.frequency.unset();
 
         // Explicitly acquire because all the whole data structure is ment to be stored in a container
-        dm::acquireRecord(cacheKeys);
+        acquireRecord(cacheKeys);
     }
 };
 
@@ -54,15 +51,15 @@ struct MarsCacheRecord: dm::FullMarsRecord {
 namespace std {
 
 template <>
-struct equal_to<multio::mars2grib::MarsCacheRecord> : multio::datamod::EqualToRecord {};
+struct equal_to<multio::datamod::MarsCacheRecord> : multio::datamod::EqualToRecord {};
 template <>
-struct not_equal_to<multio::mars2grib::MarsCacheRecord> : multio::datamod::NotEqualToRecord {};
+struct not_equal_to<multio::datamod::MarsCacheRecord> : multio::datamod::NotEqualToRecord {};
 
 template <>
-struct hash<multio::mars2grib::MarsCacheRecord> : multio::datamod::HashRecord {};
+struct hash<multio::datamod::MarsCacheRecord> : multio::datamod::HashRecord {};
 }  // namespace std
 
 namespace multio::util {
 template <>
-struct Print<multio::mars2grib::MarsCacheRecord> : multio::datamod::PrintRecord {};
+struct Print<multio::datamod::MarsCacheRecord> : multio::datamod::PrintRecord {};
 }  // namespace multio::util

@@ -13,10 +13,10 @@
 
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/MarsCachedKeys.h"
 
 #include "multio/datamod/types/LevType.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
-#include "multio/mars2grib/MarsCachedKeys.h"
 
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/message/Metadata.h"
@@ -187,39 +187,39 @@ CASE("Test encoder hashes") {
     mk2.frequency.set(11);
     mk2.direction.set(11);
 
-    EXPECT_EQUAL(util::hash(readRecord<mars2grib::MarsCacheRecord>(mk1)),
-                 util::hash(readRecord<mars2grib::MarsCacheRecord>(mk2)));
+    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk1)),
+                 util::hash(readRecord<dm::MarsCacheRecord>(mk2)));
 
     auto mk22 = mk2;
     mk22.levelist.set(1);  // LEVEL can change hash ?
-    EXPECT(util::hash(readRecord<mars2grib::MarsCacheRecord>(mk1))
-           != util::hash(readRecord<mars2grib::MarsCacheRecord>(mk22)));
+    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1))
+           != util::hash(readRecord<dm::MarsCacheRecord>(mk22)));
 
 
     auto mk3 = marsKeys;
     mk3.param.set(123);  // Change param because hash should be different to mk1 & 2
-    EXPECT(util::hash(readRecord<mars2grib::MarsCacheRecord>(mk1))
-           != util::hash(readRecord<mars2grib::MarsCacheRecord>(mk3)));
+    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1))
+           != util::hash(readRecord<dm::MarsCacheRecord>(mk3)));
 
     mk3.levtype.set("ml");
     auto mk4 = mk3;
     mk3.levelist.set(9000);  // FOR ml levelist should not change hash
-    EXPECT_EQUAL(util::hash(readRecord<mars2grib::MarsCacheRecord>(mk3)),
-                 util::hash(readRecord<mars2grib::MarsCacheRecord>(mk4)));
+    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk3)),
+                 util::hash(readRecord<dm::MarsCacheRecord>(mk4)));
 
     // Example cache
-    std::unordered_map<mars2grib::MarsCacheRecord, int> cache{};
-    cache.insert_or_assign(readRecord<mars2grib::MarsCacheRecord>(mk1), 1);
-    cache.insert_or_assign(readRecord<mars2grib::MarsCacheRecord>(mk2), 2);
-    cache.insert_or_assign(readRecord<mars2grib::MarsCacheRecord>(mk22), 22);
-    cache.insert_or_assign(readRecord<mars2grib::MarsCacheRecord>(mk3), 3);
-    cache.insert_or_assign(readRecord<mars2grib::MarsCacheRecord>(mk4), 4);
+    std::unordered_map<dm::MarsCacheRecord, int> cache{};
+    cache.insert_or_assign(readRecord<dm::MarsCacheRecord>(mk1), 1);
+    cache.insert_or_assign(readRecord<dm::MarsCacheRecord>(mk2), 2);
+    cache.insert_or_assign(readRecord<dm::MarsCacheRecord>(mk22), 22);
+    cache.insert_or_assign(readRecord<dm::MarsCacheRecord>(mk3), 3);
+    cache.insert_or_assign(readRecord<dm::MarsCacheRecord>(mk4), 4);
 
-    EXPECT_EQUAL(cache[readRecord<mars2grib::MarsCacheRecord>(mk1)], 2);
-    EXPECT_EQUAL(cache[readRecord<mars2grib::MarsCacheRecord>(mk2)], 2);
-    EXPECT_EQUAL(cache[readRecord<mars2grib::MarsCacheRecord>(mk22)], 22);
-    EXPECT_EQUAL(cache[readRecord<mars2grib::MarsCacheRecord>(mk3)], 4);
-    EXPECT_EQUAL(cache[readRecord<mars2grib::MarsCacheRecord>(mk4)], 4);
+    EXPECT_EQUAL(cache[readRecord<dm::MarsCacheRecord>(mk1)], 2);
+    EXPECT_EQUAL(cache[readRecord<dm::MarsCacheRecord>(mk2)], 2);
+    EXPECT_EQUAL(cache[readRecord<dm::MarsCacheRecord>(mk22)], 22);
+    EXPECT_EQUAL(cache[readRecord<dm::MarsCacheRecord>(mk3)], 4);
+    EXPECT_EQUAL(cache[readRecord<dm::MarsCacheRecord>(mk4)], 4);
 };
 
 

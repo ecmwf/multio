@@ -1,7 +1,7 @@
 #include "multio/datamod/MarsMiscGeo.h"
 
-#include "multio/mars2grib/rules/Matcher.h"
-#include "multio/mars2grib/rules/ParamMatcher.h"
+#include "multio/mars2mars/rules/Matcher.h"
+#include "multio/mars2mars/rules/ParamMatcher.h"
 
 #include "multio/mars2mars/Rules.h"
 #include "multio/mars2mars/rules/Rule.h"
@@ -11,7 +11,7 @@
 namespace multio::mars2mars {
 
 using namespace rules;
-using namespace multio::mars2grib::matcher;
+using namespace multio::mars2mars::matcher;
 
 //-----------------------------------------------------------------------------
 // SOL fixes

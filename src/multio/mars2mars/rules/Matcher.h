@@ -19,7 +19,7 @@
 #include <vector>
 
 
-namespace multio::mars2grib::matcher {
+namespace multio::mars2mars::matcher {
 
 namespace dm = multio::datamod;
 
@@ -202,21 +202,21 @@ auto any(Matcher&& matcher, Matchers&&... matchers) {
 }
 
 
-}  // namespace multio::mars2grib::matcher
+}  // namespace multio::mars2mars::matcher
 
 
 namespace multio::util {
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::Range<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::Range<MarsRec, ValueType>& r) {
+struct Print<mars2mars::matcher::Range<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::Range<MarsRec, ValueType>& r) {
         ps << "Range(" << r.first << ", " << r.last << ")";
     }
 };
 
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::Ranges<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::Ranges<MarsRec, ValueType>& r) {
+struct Print<mars2mars::matcher::Ranges<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::Ranges<MarsRec, ValueType>& r) {
         ps << "Ranges(";
         bool first = true;
         for (const auto& ri : r.ranges) {
@@ -238,8 +238,8 @@ struct Print<mars2grib::matcher::Ranges<MarsRec, ValueType>> {
 };
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::OneOf<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::OneOf<MarsRec, ValueType>& r) {
+struct Print<mars2mars::matcher::OneOf<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::OneOf<MarsRec, ValueType>& r) {
         ps << "OneOf(";
         bool first = true;
         for (const auto& ri : r.values) {
@@ -257,8 +257,8 @@ struct Print<mars2grib::matcher::OneOf<MarsRec, ValueType>> {
 
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::NoneOf<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::NoneOf<MarsRec, ValueType>& r) {
+struct Print<mars2mars::matcher::NoneOf<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::NoneOf<MarsRec, ValueType>& r) {
         ps << "NoneOf(";
         bool first = true;
         for (const auto& ri : r.values) {
@@ -276,8 +276,8 @@ struct Print<mars2grib::matcher::NoneOf<MarsRec, ValueType>> {
 
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::Has<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::Has<MarsRec, ValueType>& r) {
+struct Print<mars2mars::matcher::Has<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::Has<MarsRec, ValueType>& r) {
         // TODO(pgeier) pretty printing needs to be fixed once the records use PointerToMember accessor only
         // then the proper readable key can be retrieved by checkend which entry in `record_entries_.member == r.member`
         ps << "Has()";
@@ -285,42 +285,42 @@ struct Print<mars2grib::matcher::Has<MarsRec, ValueType>> {
 };
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::Missing<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::Missing<MarsRec, ValueType>& r) { ps << "Missing()"; }
+struct Print<mars2mars::matcher::Missing<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::Missing<MarsRec, ValueType>& r) { ps << "Missing()"; }
 };
 
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::GreaterThan<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::GreaterThan<MarsRec, ValueType>& m) {
+struct Print<mars2mars::matcher::GreaterThan<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::GreaterThan<MarsRec, ValueType>& m) {
         ps << "GreaterThan(" << m.value << ")";
     }
 };
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::GreaterEqual<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::GreaterEqual<MarsRec, ValueType>& m) {
+struct Print<mars2mars::matcher::GreaterEqual<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::GreaterEqual<MarsRec, ValueType>& m) {
         ps << "GreaterEqual(" << m.value << ")";
     }
 };
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::LessThan<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::LessThan<MarsRec, ValueType>& m) {
+struct Print<mars2mars::matcher::LessThan<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::LessThan<MarsRec, ValueType>& m) {
         ps << "LessThan(" << m.value << ")";
     }
 };
 
 template <typename MarsRec, typename ValueType>
-struct Print<mars2grib::matcher::LessEqual<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2grib::matcher::LessEqual<MarsRec, ValueType>& m) {
+struct Print<mars2mars::matcher::LessEqual<MarsRec, ValueType>> {
+    static void print(PrintStream& ps, const mars2mars::matcher::LessEqual<MarsRec, ValueType>& m) {
         ps << "LessEqual(" << m.value << ")";
     }
 };
 
 
 template <typename... Matchers>
-struct Print<mars2grib::matcher::All<Matchers...>> {
+struct Print<mars2mars::matcher::All<Matchers...>> {
     template <typename M>
     static void printMatcher(bool& first, PrintStream& ps, const M& m) {
         if (first) {
@@ -336,7 +336,7 @@ struct Print<mars2grib::matcher::All<Matchers...>> {
             ps.softBreak();
         }
     }
-    static void print(PrintStream& ps, const mars2grib::matcher::All<Matchers...>& a) {
+    static void print(PrintStream& ps, const mars2mars::matcher::All<Matchers...>& a) {
         ps << "all(";
         ps.softBreak();
         bool first = true;
@@ -347,7 +347,7 @@ struct Print<mars2grib::matcher::All<Matchers...>> {
 
 
 template <typename... Matchers>
-struct Print<mars2grib::matcher::Any<Matchers...>> {
+struct Print<mars2mars::matcher::Any<Matchers...>> {
     template <typename M>
     static void printMatcher(bool& first, PrintStream& ps, const M& m) {
         if (first) {
@@ -363,7 +363,7 @@ struct Print<mars2grib::matcher::Any<Matchers...>> {
             ps.softBreak();
         }
     }
-    static void print(PrintStream& ps, const mars2grib::matcher::Any<Matchers...>& a) {
+    static void print(PrintStream& ps, const mars2mars::matcher::Any<Matchers...>& a) {
         ps << "any(";
         ps.softBreak();
         bool first = true;

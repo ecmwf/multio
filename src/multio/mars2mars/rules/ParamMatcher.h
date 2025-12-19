@@ -11,11 +11,11 @@
 #pragma once
 
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/rules/Matcher.h"
+#include "multio/mars2mars/rules/Matcher.h"
 
 #include <vector>
 
-namespace multio::mars2grib::matcher {
+namespace multio::mars2mars::matcher {
 
 //-----------------------------------------------------------------------------
 // Param matchers
@@ -67,5 +67,5 @@ ParamMatcher matchParams(Arg&& arg, Arg2&& arg2, More&&... more) {
 }
 
 
-}  // namespace multio::mars2grib::matcher
+}  // namespace multio::mars2mars::matcher
 

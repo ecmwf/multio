@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "multio/mars2grib/rules/Matcher.h"
+#include "multio/mars2mars/rules/Matcher.h"
 #include "multio/mars2mars/MappingResult.h"
 #include "multio/mars2mars/Mars2MarsException.h"
 #include "multio/mars2mars/rules/Setter.h"

@@ -10,7 +10,6 @@ set(OFFSET ${OFFSET}${DOFFSET})
 # Add Subdirectories
 add_subdirectory(common)
 add_subdirectory(dictionaries)
-add_subdirectory(encoders)
 
 
 # Collect source files in module2
@@ -22,7 +21,6 @@ set( MULTIOM_API_SOURCES
   ${MULTIOM_API_MAIN_SOURCES}
   ${MULTIOM_API_COMMON_SOURCES}
   ${MULTIOM_API_DICTIONARIES_SOURCES}
-  ${MULTIOM_API_ENCODERS_SOURCES}
   CACHE INTERNAL "List of all sources in api directory"
 )
 

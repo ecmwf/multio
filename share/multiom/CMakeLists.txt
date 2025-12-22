@@ -1,12 +1,6 @@
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/mappings")
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/encodings")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/plans")
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/share/multiom/samples")
 
-add_subdirectory(mappings)
-add_subdirectory(encodings)
 add_subdirectory(plans)
-add_subdirectory(samples)
 
 # Copy the output manager configuration files
 file(GLOB output_manager_main_file RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")

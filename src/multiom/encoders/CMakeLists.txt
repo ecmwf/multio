@@ -10,14 +10,11 @@ set(OFFSET ${OFFSET}${DOFFSET})
 #
 # Add Subdirectories
 add_subdirectory( dictionaries )
-add_subdirectory( api )
 
 
 # Collect source files in module2
 set( MULTIOM_ENCODERS_SOURCES
     ${MULTIOM_DATA_STRUCTURES_SOURCES}
-    ${MULTIOM_ENCODERS_SOURCES}
-    ${MULTIOM_API_SOURCES}
   CACHE INTERNAL "List of all sources in encoders directory"
 )
 
@@ -29,8 +26,7 @@ ecbuild_add_library(
     multiom-encoders
 
   SOURCES
-    ${MULTIOM_DATA_STRUCTURES_SOURCES}
-    ${MULTIOM_API_SOURCES}
+    ${MULTIOM_ENCODERS_SOURCES}
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}

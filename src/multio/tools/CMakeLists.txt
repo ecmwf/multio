@@ -64,6 +64,7 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
                         SOURCES   multio-convert-trace-log.cc MultioTool.cc
                         LIBS      multio eckit )
 
+endif()
 
 ecbuild_add_executable(
 
@@ -87,5 +88,3 @@ ecbuild_add_executable(
       metkit
       eccodes
 )
-
-endif()

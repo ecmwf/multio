@@ -22,7 +22,7 @@ intel_mpi:
         - ecmwf/ecbuild@develop
         - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
+        - ecmwf/metkit@feature/port-mars2grib
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
         - ecmwf/atlas@develop
@@ -54,7 +54,7 @@ hpcx_openmpi:
         - ecmwf/ecbuild@develop
         - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
+        - ecmwf/metkit@feature/port-mars2grib
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
         - ecmwf/atlas@develop
@@ -86,7 +86,7 @@ openmpi:
         - ecmwf/ecbuild@develop
         - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
+        - ecmwf/metkit@feature/port-mars2grib
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
         - ecmwf/atlas@develop
@@ -114,7 +114,7 @@ mpi_off:
         - ecmwf/ecbuild@develop
         - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
-        - ecmwf/metkit@develop
+        - ecmwf/metkit@feature/port-mars2grib
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
         - ecmwf/atlas@develop

@@ -20,8 +20,8 @@ namespace multio::datamod {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// TypeOfProcessedData defined with official integer representation in GRIB 4.10 code table
-// https://codes.ecmwf.int/grib/format/grib2/ctables/4/10/
+// TypeOfProcessedData defined with official integer representation in GRIB 1.4 code table
+// https://codes.ecmwf.int/grib/format/grib2/ctables/1/4
 enum class TypeOfProcessedData : int64_t
 {
     AnalysisProducts = 0,                     // an

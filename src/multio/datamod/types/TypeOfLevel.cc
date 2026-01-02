@@ -9,6 +9,8 @@
  */
 
 #include "TypeOfLevel.h"
+
+#include <algorithm>
 #include "multio/datamod/core/DataModellingException.h"
 
 

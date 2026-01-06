@@ -592,7 +592,19 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
                     [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
-                        if constexpr (std::is_same_v<std::decay_t<decltype(vec)>, std::vector<bool>>) {
+                        if constexpr (std::is_same_v<std::decay_t<decltype(vec)>, std::vector<long long>>) {
+                            if constexpr (sizeof(long) == sizeof(long long)) {
+                                auto* vec_ptr = reinterpret_cast<const std::vector<long>*>(&vec);
+                                const std::vector<long>& vec_hack = *vec_ptr;
+                                g.setValue(kv.first, vec_hack);
+                            }
+                            else {
+                                throw eckit::UserError(
+                                    "Writing vector<long long> to an eccodes handle is currently not supported",
+                                    Here());
+                            }
+                        }
+                        else if constexpr (std::is_same_v<std::decay_t<decltype(vec)>, std::vector<bool>>) {
                             throw eckit::UserError(
                                 "Writing vector<bool> to an eccodes handle is currently not supported", Here());
                         }

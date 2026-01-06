@@ -31,7 +31,7 @@
 #include "metkit/codes/CodesContent.h"
 #include "metkit/codes/api/CodesAPI.h"
 #include "metkit/codes/api/CodesTypes.h"
-#include "metkit/mars2grib/api/Grib2Encoder.h"
+#include "metkit/mars2grib/api/Mars2Grib.h"
 
 #include "multio/LibMultio.h"
 #include "multio/datamod/AtlasGeo.h"
@@ -1012,7 +1012,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     // optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
     // optDict.set("print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0));
 
-    metkit::mars2grib::Grib2Encoder encoder{};
+    metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
     while ((msg = reader.next())) {

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "metkit/mars2grib/api/Grib2Encoder.h"
+#include "metkit/mars2grib/api/Mars2Grib.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/util/config/Parser.h"
 
@@ -47,7 +47,7 @@ private:
 
     // TODO pgeier this option will be renamed and the action should get it own struct with parsing capabilities again
     EncodeMtg2Options opts_;
-    metkit::mars2grib::Grib2Encoder encoder_;
+    metkit::mars2grib::Mars2Grib encoder_;
 };
 
 

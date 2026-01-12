@@ -76,9 +76,9 @@ struct SetKeysFromAtlas<GeoGGRecord> {
 
         {
             auto tmp = gaussianGrid.nx();
-            std::vector<long> pl(tmp.size(), 0);
+            std::vector<std::int64_t> pl(tmp.size(), 0);
             for (int i = 0; i < tmp.size(); ++i) {
-                pl[i] = long(tmp[i]);
+                pl[i] = std::int64_t(tmp[i]);
             }
             geoGG.pl.set(std::move(pl));
         }

@@ -52,6 +52,10 @@ struct TypeToString<bool> {
     std::string operator()() const { return "bool"; };
 };
 template <>
+struct TypeToString<long> {
+    std::string operator()() const { return "long"; };
+};
+template <>
 struct TypeToString<double> {
     std::string operator()() const { return "double"; };
 };

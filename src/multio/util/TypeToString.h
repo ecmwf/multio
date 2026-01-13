@@ -56,16 +56,16 @@ struct TypeToString<long> {
     std::string operator()() const { return "long"; };
 };
 template <>
+struct TypeToString<long long> {
+    std::string operator()() const { return "long long"; };
+};
+template <>
 struct TypeToString<double> {
     std::string operator()() const { return "double"; };
 };
 template <>
 struct TypeToString<float> {
     std::string operator()() const { return "float"; };
-};
-template <>
-struct TypeToString<std::int64_t> {
-    std::string operator()() const { return "std::int64_t"; };
 };
 template <>
 struct TypeToString<std::int32_t> {

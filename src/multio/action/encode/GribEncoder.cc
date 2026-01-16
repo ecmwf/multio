@@ -57,7 +57,8 @@ const std::map<const std::string, const std::int64_t> ops_to_code{
     {"instant", 0000}, {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
 const std::map<const std::string, const std::int64_t> type_of_statistical_processing{
-    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"difference", 4}, {"stddev", 6}, {"inverse-difference", 8}};
+    {"average", 0},    {"accumulate", 1}, {"maximum", 2},           {"minimum", 3},
+    {"difference", 4}, {"stddev", 6},     {"inverse-difference", 8}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -285,18 +286,24 @@ void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long
     g.setMissing(glossary().scaledValueOfSecondFixedSurface);
 }
 
+void setOceanSurface(GribEncoder& g, const std::string& typeOfLevel, long level) {
+    g.setValue("typeOfLevel", "oceanSurface");
+
+    g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
+    g.setMissing(glossary().scaledValueOfSecondFixedSurface);
+}
+
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
 
-const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
-    {"snowLayer", &setLayerTypeOfLevel},
-    {"soilLayer", &setSoilLayerTypeOfLevel},
-    {"seaIceLayer", &setLayerTypeOfLevel},
-    {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"meanSea", &setLevelUnrelatedTypeOfLevel},
-    {"iceLayerOnWater", &setMissingFixedSurface},
-};
+const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{{"snowLayer", &setLayerTypeOfLevel},
+                                                                  {"soilLayer", &setSoilLayerTypeOfLevel},
+                                                                  {"seaIceLayer", &setLayerTypeOfLevel},
+                                                                  {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"meanSea", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"iceLayerOnWater", &setMissingFixedSurface},
+                                                                  {"oceanSurface", &setOceanSurface}};
 
 template <typename Dict>
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
@@ -668,8 +675,9 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
             significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }
-    if ( !significanceOfReferenceTime) {
-        std::optional<std::string> marsType = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
+    if (!significanceOfReferenceTime) {
+        std::optional<std::string> marsType
+            = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
         if (marsType && *marsType == "fc") {
             if (gribEdition == "2") {
                 significanceOfReferenceTime = 1;  // Forecast time from reference time

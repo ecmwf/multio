@@ -691,6 +691,20 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
             significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }
+    if ( !significanceOfReferenceTime) {
+        std::optional<std::string> marsType = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
+        if (marsType && *marsType == "fc") {
+            if (gribEdition == "2") {
+                significanceOfReferenceTime = 1;  // Forecast time from reference time
+            }
+            else {
+                significanceOfReferenceTime = 0;  // Start time + step
+            }
+        }
+        else {
+            significanceOfReferenceTime = 0;  // Start time + step
+        }
+    }
     if ((gribEdition == "2") && significanceOfReferenceTime) {
         g.setValue("significanceOfReferenceTime", *significanceOfReferenceTime);
     }

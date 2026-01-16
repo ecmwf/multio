@@ -285,18 +285,24 @@ void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long
     g.setMissing(dm::legacy::ScaledValueOfSecondFixedSurface);
 }
 
+void setOceanSurface(GribEncoder& g, const std::string& typeOfLevel, long level) {
+    g.setValue("typeOfLevel", typeOfLevel);
+
+    g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
+    g.setMissing(glossary().scaledValueOfSecondFixedSurface);
+}
+
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
 
-const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
-    {"snowLayer", &setLayerTypeOfLevel},
-    {"soilLayer", &setSoilLayerTypeOfLevel},
-    {"seaIceLayer", &setLayerTypeOfLevel},
-    {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
-    {"meanSea", &setLevelUnrelatedTypeOfLevel},
-    {"iceLayerOnWater", &setMissingFixedSurface},
-};
+const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{{"snowLayer", &setLayerTypeOfLevel},
+                                                                  {"soilLayer", &setSoilLayerTypeOfLevel},
+                                                                  {"seaIceLayer", &setLayerTypeOfLevel},
+                                                                  {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"meanSea", &setLevelUnrelatedTypeOfLevel},
+                                                                  {"iceLayerOnWater", &setMissingFixedSurface},
+                                                                  {"oceanSurface", &setOceanSurface}};
 
 template <typename Dict>
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
@@ -691,8 +697,9 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
             significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }
-    if ( !significanceOfReferenceTime) {
-        std::optional<std::string> marsType = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
+    if (!significanceOfReferenceTime) {
+        std::optional<std::string> marsType
+            = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
         if (marsType && *marsType == "fc") {
             if (gribEdition == "2") {
                 significanceOfReferenceTime = 1;  // Forecast time from reference time

@@ -287,7 +287,7 @@ void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long
 }
 
 void setOceanSurface(GribEncoder& g, const std::string& typeOfLevel, long level) {
-    g.setValue("typeOfLevel", "oceanSurface");
+    g.setValue("typeOfLevel", typeOfLevel);
 
     g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
     g.setMissing(glossary().scaledValueOfSecondFixedSurface);

@@ -154,7 +154,7 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
 }
 
 std::string encodingExceptionReason(const std::string& r) {
-    std::string s("Enocding exception: ");
+    std::string s("Encoding exception: ");
     s.append(r);
     return s;
 }

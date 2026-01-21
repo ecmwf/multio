@@ -288,8 +288,8 @@ void setMissingFixedSurface(GribEncoder& g, const std::string& typeOfLevel, long
 void setOceanSurface(GribEncoder& g, const std::string& typeOfLevel, long level) {
     g.setValue("typeOfLevel", typeOfLevel);
 
-    g.setMissing(glossary().scaleFactorOfSecondFixedSurface);
-    g.setMissing(glossary().scaledValueOfSecondFixedSurface);
+    g.setMissing(dm::legacy::ScaleFactorOfSecondFixedSurface);
+    g.setMissing(dm::legacy::ScaledValueOfSecondFixedSurface);
 }
 
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
@@ -369,11 +369,20 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         }
     }
 
-    const auto productionStatusOfProcessedData
-        = lookUp<std::int64_t>(md, dm::legacy::ProductionStatusOfProcessedData)();
+    auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, dm::legacy::ProductionStatusOfProcessedData)();
+
+    // ERA6 hack
+    const auto marsClass = lookUp<std::string>(md, dm::legacy::ClassKey)();
+    if (!productionStatusOfProcessedData) {
+        if (marsClass == "e6") {
+            productionStatusOfProcessedData = 3;
+        }
+    }
+
     if (productionStatusOfProcessedData) {
         g.setValue(dm::legacy::ProductionStatusOfProcessedData, *productionStatusOfProcessedData);
     }
+
 
     ret.paramId = firstOf(
         lookUp<std::int64_t>(md, dm::legacy::ParamId),
@@ -699,7 +708,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     }
     if (!significanceOfReferenceTime) {
         std::optional<std::string> marsType
-            = firstOf(lookUp<std::string>(md, glossary().type), lookUp<std::string>(md, glossary().marsType));
+            = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType),
+                      lookUp<std::string>(md, "marsType"));
         if (marsType && *marsType == "fc") {
             if (gribEdition == "2") {
                 significanceOfReferenceTime = 1;  // Forecast time from reference time

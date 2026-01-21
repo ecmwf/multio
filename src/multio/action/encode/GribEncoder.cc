@@ -315,6 +315,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     const auto levtype = lookUp<std::string>(md, dm::legacy::Levtype)();
     const auto gribEdition = lookUp<std::string>(md, dm::legacy::GribEdition)().value_or("2");
 
+    // Initialize subCenter to 0 -> ERA6 request
+    g.setValue(dm::legacy::SubCentre, 0);
+
     if ((gribEdition == "2") && (gridType != "sh")) {
         withFirstOf(valueSetter(g, dm::legacy::SetPackingType), lookUp<std::string>(md, dm::legacy::SetPackingType));
     }

@@ -1063,6 +1063,24 @@ message::Message GribEncoder::setFieldValues(message::Message&& msg) {
 }
 
 
+template <>
+inline void GribEncoder::setDataValues<double>(const double* data, size_t count) {
+    encoder_->set("values", metkit::codes::Span<const double>(data, count));
+}
+
+template <>
+inline void GribEncoder::setDataValues<float>(const float* data, size_t count) {
+    std::vector<double> tmp;
+    tmp.reserve(count);
+
+    for (size_t i = 0; i < count; ++i) {
+        tmp.push_back(static_cast<double>(data[i]));
+    }
+
+    setDataValues<double>(tmp.data(), tmp.size());
+}
+
+
 void GribEncoder::print(std::ostream& os) const {
     os << "GribEncoder(config=" << config_ << ")";
 };

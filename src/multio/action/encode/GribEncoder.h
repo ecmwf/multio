@@ -64,7 +64,7 @@ public:
     void setValue(const std::string& key, const std::vector<T>& v) {
         encoder_->set(key, v);
     };
-    
+
     // Dirty implementation - before metkit::codes::CodesHandle
     // was used, the former implementation explicitly ignored key setting errors
     // when the key was read-only.
@@ -80,10 +80,10 @@ public:
                                << ")  failed: " << std::endl;
         }
     }
+
     template <typename T>
-    void setDataValues(const T* data, size_t count) {
-        encoder_->set("values", metkit::codes::Span<const T>(reinterpret_cast<const T*>(data), count));
-    };
+    void setDataValues(const T* data, size_t count) = delete;
+
     bool hasKey(const char* key);
 
     message::Message encodeOceanCoordinates(message::Message&& msg, const message::Metadata& additionalMetadata);

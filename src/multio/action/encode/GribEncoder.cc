@@ -370,10 +370,22 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         }
     }
 
-    const auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, glossary().productionStatusOfProcessedData)();
+
+    
+    auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, glossary().productionStatusOfProcessedData)();
+    
+    
+    // ERA6 hack
+    const auto marsClass = lookUp<std::string>(md, glossary().classKey)();
+    if ( !productionStatusOfProcessedData ){
+    	if ( marsClass == "e6" ){
+		productionStatusOfProcessedData = 3;
+	}
+    }
     if (productionStatusOfProcessedData) {
         g.setValue(glossary().productionStatusOfProcessedData, *productionStatusOfProcessedData);
     }
+
 
     ret.paramId = firstOf(
         lookUp<std::int64_t>(md, glossary().paramId),

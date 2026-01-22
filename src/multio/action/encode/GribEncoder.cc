@@ -379,10 +379,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 
     // ERA6 hack
     const auto marsClass = lookUp<std::string>(md, dm::legacy::ClassKey)();
-    if (!productionStatusOfProcessedData) {
-        if (marsClass == "e6") {
-            productionStatusOfProcessedData = 3;
-        }
+    if (marsClass == "e6") {  // Re-analysis
+        g.setValue("backgroundProcess", 255);
+        productionStatusOfProcessedData = 3;
     }
 
     if (productionStatusOfProcessedData) {
@@ -773,6 +772,9 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
 
     auto currentDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(dm::legacy::CurrentDate)),
                                                util::toTimeInts(md.get<std::int64_t>(dm::legacy::CurrentTime))});
+
+    g.setMissing("hoursAfterDataCutoff");
+    g.setMissing("minutesAfterDataCutoff");
 
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {

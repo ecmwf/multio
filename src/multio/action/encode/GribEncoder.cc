@@ -14,10 +14,12 @@
 
 #include "GribEncoder.h"
 
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -58,6 +60,7 @@ const std::map<const std::string, const std::int64_t> ops_to_code{
 const std::map<const std::string, const std::int64_t> type_of_statistical_processing{
     {"average", 0},    {"accumulate", 1}, {"maximum", 2},           {"minimum", 3},
     {"difference", 4}, {"stddev", 6},     {"inverse-difference", 8}};
+
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -686,12 +689,46 @@ std::string getTimeReference(GribEncoder& g, const message::Metadata& md, const 
     return isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
 }
 
+// Hack introduced for ERA6 logic is copied from the new encoder
+std::optional<std::int64_t> significanceOfReferenceTimeFromType(const std::string& marsType) {
+    const std::array<std::string_view, 17> analysisTypes
+        = {{"an", "ia", "oi", "3v", "3g", "4g", "ea", "pa", "tpa", "ga", "gai", "ai", "af", "ab", "oai", "ga", "gai"}};
+
+    const std::array<std::string_view, 4> startOfDataAssimilationTypes = {{"4i", "4v", "me", "eme"}};
+
+    const std::array<std::string_view, 32> forecastTypes
+        = {{"fc",    "cf",    "pf",      "cm",  "fp",  "em",   "es",   "fa",     "efi", "efic", "bf",
+            "cd",    "wem",   "wes",     "cr",  "ses", "taem", "taes", "sg",     "sf",  "if",   "fcmean",
+            "fcmax", "fcmin", "fcstdev", "ssd", "tf",  "bf",   "cd",   "hcmean", "s3",  "si"}};
+
+    if (std::any_of(analysisTypes.begin(), analysisTypes.end(), [&marsType](auto v) { return marsType == v; })) {
+        return std::optional{static_cast<std::int64_t>(0)};
+    }
+    else if (std::any_of(forecastTypes.begin(), forecastTypes.end(), [&marsType](auto v) { return marsType == v; })) {
+        return std::optional{static_cast<std::int64_t>(1)};
+    }
+    else if (std ::any_of(startOfDataAssimilationTypes.begin(), startOfDataAssimilationTypes.end(),
+                          [&marsType](auto v) { return marsType == v; })) {
+        return std::optional{static_cast<std::int64_t>(6)};
+    }
+
+    return std::nullopt;
+}
+
+
 void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
                                  const QueriedMarsKeys& queriedMarsFields) {
     message::Metadata md = in;  // Copy to allow modification
 
     auto gribEdition = lookUp<std::string>(md, "gribEdition")().value_or("2");
     // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
+
+
+    std::optional<std::string> marsType
+        = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType),
+                  lookUp<std::string>(md, "marsType"));
+    std::optional<std::string> marsClass
+        = firstOf(lookUp<std::string>(md, dm::legacy::ClassKey), lookUp<std::string>(md, "marsClass"));
 
 
     auto operation = lookUp<std::string>(md, "operation")();
@@ -709,22 +746,11 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
             significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }
-    if (!significanceOfReferenceTime) {
-        std::optional<std::string> marsType
-            = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType),
-                      lookUp<std::string>(md, "marsType"));
-        if (marsType && *marsType == "fc") {
-            if (gribEdition == "2") {
-                significanceOfReferenceTime = 1;  // Forecast time from reference time
-            }
-            else {
-                significanceOfReferenceTime = 0;  // Start time + step
-            }
-        }
-        else {
-            significanceOfReferenceTime = 0;  // Start time + step
-        }
+    if (marsType.has_value() && marsClass.has_value() && marsClass.value() == "e6") {
+        significanceOfReferenceTime = significanceOfReferenceTimeFromType(marsType.value());
     }
+
+
     if ((gribEdition == "2") && significanceOfReferenceTime) {
         g.setValue("significanceOfReferenceTime", *significanceOfReferenceTime);
     }
@@ -812,7 +838,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
             if (searchStat == std::end(type_of_statistical_processing)) {
                 std::ostringstream oss;
                 oss << "setDateAndStatisticalFields - Cannot map value \"" << *operation
-                    << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical processing.";
+                    << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical "
+                       "processing.";
                 throw eckit::UserError(oss.str(), Here());
             }
             g.setValue("typeOfStatisticalProcessing", searchStat->second);
@@ -822,21 +849,21 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         // # CODE TABLE 4.11, Type of time intervals
         // 1 1  Successive times processed have same forecast time, start time of forecast is incremented
         // 2 2  Successive times processed have same start time of forecast, forecast time is incremented
-        // 3 3  Successive times processed have start time of forecast incremented and forecast time decremented so that
-        // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
-        // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
-        // forecast time and end of overall time interval
-        // g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : 1));
+        // 3 3  Successive times processed have start time of forecast incremented and forecast time decremented so
+        // that valid time remains constant 4 4  Successive times processed have start time of forecast decremented
+        // and forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time
+        // between forecast time and end of overall time interval g.setValue("typeOfTimeIncrement", (timeRef ==
+        // "start" ? 2 : 1));
         //
         // #### Work around ####
         // Eccodes has problems showing stepRange correctly for averaging fields with typeOfTimeIncrement == 1.
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
-        // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
-        // 255 (MISSING) as typeOfTimeIncrement
+        // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to
+        // put 255 (MISSING) as typeOfTimeIncrement
         //
-        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it
-        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I
-        // explicily set it to 255 now g.setValue(
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that
+        // it should be set to 1. However eccodes thinks different and will not consider it as time range then...
+        // hence I explicily set it to 255 now g.setValue(
         //     "typeOfTimeIncrement",
         //     (timeRef == "start" ? 2
         //                         : ((gribEdition == "2") && (significanceOfReferenceTime &&

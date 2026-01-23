@@ -380,8 +380,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     // ERA6 hack
     const auto marsClass = lookUp<std::string>(md, dm::legacy::ClassKey)();
     if (marsClass == "e6") {  // Re-analysis
+
+        auto type = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType));
         g.setValue("backgroundProcess", 255);
         productionStatusOfProcessedData = 3;
+        if ( type && (*type == "an" || *type == "4v")) {
+            g.setValue("typeOfProcessedData", 0);
+        }
     }
 
     if (productionStatusOfProcessedData) {

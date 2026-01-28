@@ -778,8 +778,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     auto currentDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>(dm::legacy::CurrentDate)),
                                                util::toTimeInts(md.get<std::int64_t>(dm::legacy::CurrentTime))});
 
-    g.setMissing("hoursAfterDataCutoff");
-    g.setMissing("minutesAfterDataCutoff");
+    if (g.hasKey("hoursAfterDataCutoff") && g.hasKey("minutesAfterDataCutoff")) {
+        g.setMissing("hoursAfterDataCutoff");
+        g.setMissing("minutesAfterDataCutoff");
+    }
 
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {

@@ -80,8 +80,8 @@ foreach(_test ${_statistics_tests_names} )
                     ecbuild_add_test(
                         TARGET        ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
                         TEST_REQUIRES ${PREFIX}_run_${_kind}_${_start}_${_test}
-                        ARGS          -H ${_reference} ${_result}
                         COMMAND       grib_compare
+                        ARGS          -H -b hoursAfterDataCutoff,minutesAfterDataCutoff ${_reference} ${_result}
                    )
 
                     ecbuild_add_test(
@@ -102,8 +102,8 @@ foreach(_test ${_statistics_tests_names} )
                 ecbuild_add_test(
                     TARGET        ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
                     TEST_REQUIRES ${PREFIX}_run_${_kind}_${_start}_${_test}
-                    ARGS          -H ${_reference} ${_result}
                     COMMAND       grib_compare
+                    ARGS          -H -b hoursAfterDataCutoff,minutesAfterDataCutoff ${_reference} ${_result}
                 )
 
                 ecbuild_add_test(

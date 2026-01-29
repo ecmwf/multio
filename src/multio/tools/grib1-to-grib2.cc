@@ -1136,14 +1136,12 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             datamod::applyRecordDefaults(misc);
             datamod::validateRecord(misc);
 
-            // Convert mars/misc/geo to eckit::LocalConfiguration
+            // Convert mars/misc to eckit::LocalConfiguration
             const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
             const auto miscConfig = dm::dumpRecord<eckit::LocalConfiguration>(misc);
-            const auto geomConfig
-                = std::visit([](const auto& geomRec) { return dm::dumpRecord<eckit::LocalConfiguration>(geomRec); }, geo);
 
             // Call the GRIB2 encoder in metkit
-            auto preparedHandle = encoder.encode(marsConfig, miscConfig, geomConfig, values);
+            auto preparedHandle = encoder.encode(marsConfig, miscConfig, values);
 
             // Apply more changes
             extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());

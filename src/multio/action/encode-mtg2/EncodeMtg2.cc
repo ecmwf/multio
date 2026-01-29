@@ -88,8 +88,6 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
     const auto misc = dm::dumpRecord<eckit::LocalConfiguration>(miscRec);
-    const auto geom
-        = std::visit([](const auto& geomRec) { return dm::dumpRecord<eckit::LocalConfiguration>(geomRec); }, geomRec);
 
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
@@ -107,7 +105,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         }
 
         // Call the GRIB2 encoder in metkit
-        const auto sample = encoder_.encode(mars, misc, geom, values, size);
+        const auto sample = encoder_.encode(mars, misc, values, size);
 
         eckit::Buffer buf{sample->messageSize()};
         sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());

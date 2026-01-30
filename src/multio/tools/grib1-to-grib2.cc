@@ -1141,7 +1141,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             const auto miscConfig = dm::dumpRecord<eckit::LocalConfiguration>(misc);
 
             // Call the GRIB2 encoder in metkit
-            auto preparedHandle = encoder.encode(marsConfig, miscConfig, values);
+            auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
 
             // Apply more changes
             extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());

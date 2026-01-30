@@ -105,7 +105,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         }
 
         // Call the GRIB2 encoder in metkit
-        const auto sample = encoder_.encode(mars, misc, values, size);
+        const auto sample = encoder_.encode(values, size, mars, misc);
 
         eckit::Buffer buf{sample->messageSize()};
         sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());

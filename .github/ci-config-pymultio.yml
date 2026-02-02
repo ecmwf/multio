@@ -6,7 +6,7 @@ dependencies: |
   qhull/qhull@refs/tags/v8.0.2
   ecmwf/eccodes
   ecmwf/eckit
-  ecmwf/metkit@feature/port-mars2grib
+  ecmwf/metkit
   ecmwf/fckit
   ecmwf/fdb
   ecmwf/atlas

@@ -7,7 +7,7 @@ build:
     - ecmwf/ecbuild@develop
     - ecmwf/eccodes@develop
     - ecmwf/eckit@develop
-    - ecmwf/metkit@feature/port-mars2grib
+    - ecmwf/metkit@develop
     - ecmwf/fckit@develop
     - ecmwf/fdb@develop
     - ecmwf/atlas@develop

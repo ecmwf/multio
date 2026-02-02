@@ -10,20 +10,19 @@
 
 #pragma once
 
-
+#include "metkit/mars2grib/api/Mars2Grib.h"
 #include "multio/action/ChainedAction.h"
-#include "multio/mars2grib/api/RawAPI.h"
 #include "multio/util/config/Parser.h"
 
 
-namespace multio::action {
+namespace multio::action::encode_mtg2 {
 
 namespace cf = multio::util::config;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 struct EncodeMtg2Options {
-    bool cached = true;
+    bool cached = false;
     bool geoFromAtlas = false;
 
     static constexpr auto fields_
@@ -48,11 +47,11 @@ private:
 
     // TODO pgeier this option will be renamed and the action should get it own struct with parsing capabilities again
     EncodeMtg2Options opts_;
-    mars2grib::Mars2GribRaw mars2grib_;
+    metkit::mars2grib::Mars2Grib encoder_;
 };
 
 
 //----------------------------------------------------------------------------------------------------------------------
 
 
-}  // namespace multio::action
+}  // namespace multio::action::encode_mtg2

@@ -10,36 +10,13 @@ set(OFFSET ${OFFSET}${DOFFSET})
 #
 # Add Subdirectories
 add_subdirectory( dictionaries )
-add_subdirectory( grib2-encoder )
-add_subdirectory( api )
-
-
-#
-# Main sources
-set( MULTIOM_ENCODERS_MAIN_SOURCES
-)
 
 
 # Collect source files in module2
 set( MULTIOM_ENCODERS_SOURCES
-    ${MULTIOM_ENCODERS_MAIN_SOURCES}
     ${MULTIOM_DATA_STRUCTURES_SOURCES}
-    ${MULTIOM_ENCODERS_SOURCES}
-    ${MULTIOM_API_SOURCES}
   CACHE INTERNAL "List of all sources in encoders directory"
 )
-
-
-#
-# Optionally, message what has been appended for debugging
-foreach(source_file IN LISTS MULTIOM_ENCODERS_MAIN_SOURCES)
-
-    # Extract the filename (without the directory)
-    get_filename_component(filename ${source_file} NAME)
-
-    # Print the filename
-    message("${OFFSET}    - ${filename}")
-endforeach()
 
 
 #
@@ -49,9 +26,7 @@ ecbuild_add_library(
     multiom-encoders
 
   SOURCES
-    ${MULTIOM_DATA_STRUCTURES_SOURCES}
     ${MULTIOM_ENCODERS_SOURCES}
-    ${MULTIOM_API_SOURCES}
 
   DEFINITIONS
     ${OUTPUT_MANAGER_BUILD_FLAVOUR}

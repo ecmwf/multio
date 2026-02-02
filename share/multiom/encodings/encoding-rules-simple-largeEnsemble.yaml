@@ -1,6 +1,0 @@
-encoding-rules:
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-simple-paramId-1.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-simple-paramId-15.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-simple-paramId-36.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-simple-paramId-1001.yaml'
-  - file: '{IFS_INSTALL_DIR}/share/multiom/encodings/simple/largeEnsemble/al/rule-abstractSingleLevel-gg-largeEnsemble-instant-simple-paramId-1036.yaml'

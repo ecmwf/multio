@@ -8,6 +8,8 @@ ecbuild_add_library(
         Mars2MarsException.h
         Rules.cc
         Rules.h
+        rules/Matcher.h
+        rules/ParamMatcher.h
         rules/Setter.h
         rules/Rule.h
         rules/Rule.cc

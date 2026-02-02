@@ -31,6 +31,8 @@
 #include "metkit/codes/CodesContent.h"
 #include "metkit/codes/api/CodesAPI.h"
 #include "metkit/codes/api/CodesTypes.h"
+#include "metkit/mars2grib/api/Mars2Grib.h"
+
 #include "multio/LibMultio.h"
 #include "multio/datamod/AtlasGeo.h"
 #include "multio/datamod/core/Record.h"
@@ -38,7 +40,6 @@
 
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsMiscGeo.h"
-#include "multio/mars2grib/api/RawAPI.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/Print.h"
 
@@ -1011,7 +1012,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     // optDict.set("print-whole-error-stack", std::to_string(verbosity_ > 1 ? 1 : 0));
     // optDict.set("print-dictionaries", std::to_string(verbosity_ > 1 ? 1 : 0));
 
-    mars2grib::Mars2GribRaw mars2grib{};
+    metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
     while ((msg = reader.next())) {
@@ -1135,9 +1136,12 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             datamod::applyRecordDefaults(misc);
             datamod::validateRecord(misc);
 
-            std::unique_ptr<metkit::codes::CodesHandle> preparedHandle = mars2grib.getHandle(mars, misc, geo);
-            preparedHandle->set("values", values);
+            // Convert mars/misc to eckit::LocalConfiguration
+            const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
+            const auto miscConfig = dm::dumpRecord<eckit::LocalConfiguration>(misc);
 
+            // Call the GRIB2 encoder in metkit
+            auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
 
             // Apply more changes
             extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());

@@ -81,7 +81,7 @@ foreach(_test ${_statistics_tests_names} )
                         TARGET        ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
                         TEST_REQUIRES ${PREFIX}_run_${_kind}_${_start}_${_test}
                         COMMAND       grib_compare
-                        ARGS          -H -b hoursAfterDataCutoff,minutesAfterDataCutoff ${_reference} ${_result}
+                        ARGS          -H ${_reference} ${_result}
                    )
 
                     ecbuild_add_test(

@@ -183,12 +183,13 @@ int EncodeBitsPerValue::hack(int paramid, const std::string& levtype) {
     const int NGRBCIWC = 247;     // NGRBCIWC - 247 Cloud ice water content
     const int NGRBCLBT = 260510;  // NGRBCLBT - 260510 Cloudy brightness temperature
     const int NGRBCSBT = 260511;  // NGRBCSBT - 260511 Clear-sky brightness temperature
+    const int NGRBROL = 260688;   // NGRBROL  - 260688 Reciprocal Obukhow Length
 
     if (paramid == NGRBCC) {
         return 8;
     }
 
-    if (paramid == NGRBSD or paramid == NGRBFSR) {
+    if (paramid == NGRBSD or paramid == NGRBFSR or paramid == NGRBROL) {
         return 24;
     }
 

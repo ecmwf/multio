@@ -161,6 +161,8 @@ PP_THREAD_SAFE FUNCTION SIGNIFICANCEOFREFERENCETIME_MAP( &
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_SFB_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_FSOIFB_E
   USE :: ENUMERATORS_MOD,          ONLY: TYPE_FCDFB_E
+  USE :: ENUMERATORS_MOD,          ONLY: STREAM_CLTE_E
+  USE :: ENUMERATORS_MOD,          ONLY: STREAM_CLMN_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -227,8 +229,12 @@ IMPLICIT NONE
     ! 4d variational gradients
     SORT = 0_JPIB_K
   CASE( TYPE_FC_E )
-    ! Forecast
-    SORT = 1_JPIB_K
+    ! Forecast for clte/clmn streams will need to set a different significance of reference time,
+    if (MSG%STREAM == STREAM_CLTE_E .OR. MSG%STREAM == STREAM_CLMN_E) THEN
+      SORT = 2_JPIB_K ! Verifying time of forecast 
+    ELSE
+      SORT = 1_JPIB_K ! Start of forecast 
+    END IF
   CASE( TYPE_CF_E )
     ! Control forecast
     SORT = 1_JPIB_K

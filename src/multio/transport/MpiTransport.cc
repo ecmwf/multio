@@ -251,8 +251,6 @@ void MpiTransport::abort(std::exception_ptr ptr) {
 void MpiTransport::send(const Message& msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
-    auto msg_tag = static_cast<int>(msg.tag());
-
     // TODO: find available buffer instead
     // Add 4K for header/footer etc. Should be plenty
     eckit::Buffer buffer{eckit::round(msg.size(), 8) + 4096};
@@ -268,7 +266,7 @@ void MpiTransport::send(const Message& msg) {
 
     // eckit::Log::info() << " *** MpiTransport::send from " << local_.group() << " " << local_.id
     // << std::endl;
-    comm().send<void>(buffer, sz, dest, msg_tag);
+    comm().send<void>(buffer, sz, dest, 0);
 
     ++statistics_.sendCount_;
     statistics_.sendSize_ += sz;

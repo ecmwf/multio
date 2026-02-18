@@ -18,33 +18,31 @@
 
 #include <atomic>
 #include <memory>
+#include <set>
 
 #include "eckit/container/Queue.h"
-#include "eckit/log/Statistics.h"
-#include "eckit/memory/NonCopyable.h"
-#include "multio/util/FailureHandling.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/util/Timing.h"
-
-#include "multio/transport/Transport.h"
+#include "multio/message/Peer.h"
+#include "multio/util/FailureHandling.h"
 
 namespace eckit {
 class Configuration;
-class Timer;
-}  // namespace eckit
+}
 
 namespace multio {
 
-namespace action {
-class Plan;
+namespace transport {
+class Transport;
 }
 
 namespace server {
 
-struct DispatcherFailureTraits {
-    using OnErrorType = util::OnDispatchError;
+class Dispatcher;
+
+struct ReceiverFailureTraits {
+    using OnErrorType = util::OnReceiveError;
     using FailureOptions = util::DefaultFailureOptions;
     using FailureState = util::DefaultFailureState;
     using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate>;
@@ -52,34 +50,42 @@ struct DispatcherFailureTraits {
         return util::parseErrorTag<OnErrorType, TagSequence>(str);
     }
     static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
-    static inline std::string configKey() { return std::string("on-dispatch-error"); };
+    static inline std::string configKey() { return std::string("on-receive-error"); };
     static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
         return util::parseDefaultFailureOptions(conf);
     };
-    static inline std::string componentName() { return std::string("Dispatcher"); };
+    static inline std::string componentName() { return std::string("Receiver"); };
 };
 
 
-class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
+class Listener : public util::FailureAware<ReceiverFailureTraits> {
 public:
-    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue, multio::transport::Transport& transport);
-    ~Dispatcher();
+    Listener(const config::ComponentConfiguration& compConf, transport::Transport& trans);
+    ~Listener();
 
-    void dispatch();
+    void start();
 
-    util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&,
+    void listen();
+
+    util::FailureHandlerResponse handleFailure(util::OnReceiveError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
 
-    void handle(message::Message msg) const;
-
 private:
+    bool moreConnections() const;
+    void checkConnection(const message::Peer& conn) const;
 
-    eckit::Queue<message::Message>& queue_;
-    std::vector<std::unique_ptr<action::Plan>> plans_;
+    std::unique_ptr<Dispatcher> dispatcher_;
 
-    multio::transport::Transport& transport_;
+    transport::Transport& transport_;
 
-    util::Timing<> timing_;
+    size_t openedCount_ = 0;
+    size_t clientCount_ = 0;
+
+    size_t syncCount_ = 0;
+
+    std::set<message::Peer> connections_;
+    mutable eckit::Queue<message::Message>
+        msgQueue_;  // Mark mutable to be able to close when handling failure in const function
 };
 
 }  // namespace server

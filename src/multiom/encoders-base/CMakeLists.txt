@@ -20,7 +20,6 @@ set( MULTIOM_ENCODERS_BASE_MAIN_SOURCES
 # Collect source files in module2
 set( MULTIOM_ENCODERS_BASE_SOURCES
   ${MULTIOM_ENCODERS_BASE_MAIN_SOURCES}
-  ${MULTIOM_ENCODER_GRIB2_SOURCES}
   CACHE INTERNAL "List of all sources in operations directory"
 )
 

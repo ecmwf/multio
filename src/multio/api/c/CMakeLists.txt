@@ -75,6 +75,7 @@ ecbuild_add_library(
     PUBLIC_LIBS
         ${multio_action_plugins}
         multio
+        hwloc
 )
 
 else()
@@ -89,5 +90,6 @@ ecbuild_add_library(
     PUBLIC_LIBS
         ${multio_action_plugins}
         multio
+        hwloc
 )
 endif()

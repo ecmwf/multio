@@ -19,6 +19,10 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string.h>   /* memset */
+#include <sched.h>    /* sched_getcpu */
+#include <hwloc.h>
+#include <mpi.h>
 
 using multio::message::Message;
 using multio::message::Metadata;
@@ -69,6 +73,112 @@ const char* multio_error_string(int err) {
 #else
     return "DUMMY API ENABLED";
 #endif
+}
+
+
+static int safe_sched_getcpu(void) {
+#if defined(__linux__)
+    int c = sched_getcpu();
+    return (c >= 0) ? c : -1;
+#else
+    return -1;
+#endif
+}
+
+void get_topology_c(int* nvals, int* v)
+{
+    int idx = 0;
+    if (!nvals || !v) return;
+
+    /* ---------- defaults (no MPI) ---------- */
+    int worldSize = 1, worldRank = 0;
+    int nodeSize  = 1, nodeRank  = 0;
+
+    /* ---------- MPI guard ---------- */
+    int mpi_initialized = 0;
+    MPI_Initialized(&mpi_initialized);
+
+    if (mpi_initialized) {
+        MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
+        MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+        MPI_Comm local;
+        MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED,
+                            worldRank, MPI_INFO_NULL, &local);
+        MPI_Comm_rank(local, &nodeRank);
+        MPI_Comm_size(local, &nodeSize);
+        MPI_Comm_free(&local);
+    }
+
+    v[idx++] = worldSize;
+    v[idx++] = worldRank;
+    v[idx++] = nodeSize;
+    v[idx++] = nodeRank;
+
+    /* ---------- hwloc topology ---------- */
+    hwloc_topology_t topo;
+    hwloc_topology_init(&topo);
+    hwloc_topology_load(topo);
+
+    const int socketSize = hwloc_get_nbobjs_by_type(topo, HWLOC_OBJ_SOCKET);
+    const int numaSize   = hwloc_get_nbobjs_by_type(topo, HWLOC_OBJ_NUMANODE);
+    const int coreSize   = hwloc_get_nbobjs_by_type(topo, HWLOC_OBJ_CORE);
+
+    int socketRank = -1, numaRank = -1, coreRank = -1;
+
+    /* Determine current CPU -> locate containing objects */
+    const int cpu = safe_sched_getcpu();
+    if (cpu >= 0) {
+        hwloc_cpuset_t cpuset = hwloc_bitmap_alloc();
+        hwloc_bitmap_zero(cpuset);
+        hwloc_bitmap_set(cpuset, cpu);
+
+        hwloc_obj_t pu = hwloc_get_obj_covering_cpuset(topo, cpuset);
+        if (pu) {
+            hwloc_obj_t core   = hwloc_get_ancestor_obj_by_type(topo, HWLOC_OBJ_CORE, pu);
+            hwloc_obj_t socket = hwloc_get_ancestor_obj_by_type(topo, HWLOC_OBJ_SOCKET, pu);
+            hwloc_obj_t numa   = hwloc_get_ancestor_obj_by_type(topo, HWLOC_OBJ_NUMANODE, pu);
+
+            coreRank   = core   ? (int)core->logical_index   : -1;
+            socketRank = socket ? (int)socket->logical_index : -1;
+            numaRank   = numa   ? (int)numa->logical_index   : -1;
+        }
+
+        hwloc_bitmap_free(cpuset);
+    }
+
+    v[idx++] = socketSize;
+    v[idx++] = socketRank;
+    v[idx++] = numaSize;
+    v[idx++] = numaRank;
+    v[idx++] = coreSize;
+    v[idx++] = coreRank;
+
+    /* ---------- LLC caches (L3 as “last level” on most systems) ---------- */
+    int nllc = hwloc_get_nbobjs_by_type(topo, HWLOC_OBJ_L3CACHE);
+    if (nllc < 0) nllc = 0;
+
+    v[idx++] = nllc;
+
+    /* llcSizeKB */
+    for (int i = 0; i < nllc; ++i) {
+        hwloc_obj_t l3 = hwloc_get_obj_by_type(topo, HWLOC_OBJ_L3CACHE, i);
+        int kb = -1;
+        if (l3 && l3->attr && l3->attr->cache.size > 0) {
+            kb = (int)(l3->attr->cache.size / 1024);
+        }
+        v[idx++] = kb;
+    }
+
+    /* llcRank */
+    for (int i = 0; i < nllc; ++i) {
+        hwloc_obj_t l3 = hwloc_get_obj_by_type(topo, HWLOC_OBJ_L3CACHE, i);
+        v[idx++] = l3 ? (int)l3->logical_index : -1;
+    }
+
+    hwloc_topology_destroy(topo);
+
+    *nvals = idx;
 }
 
 struct multio_configuration_t : public MultioConfiguration {

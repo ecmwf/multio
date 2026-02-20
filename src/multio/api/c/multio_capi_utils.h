@@ -3,6 +3,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+void get_topology_c(int* nvals, int* vals);
+
 /** \defgroup Initialisation */
 /** @{ */
 /** Initialises API, must be called before any other function

@@ -191,6 +191,19 @@ list( APPEND multio_server_srcs
     server/MultioClient.h
     server/MultioServer.cc
     server/MultioServer.h
+    server/MultIOQueue.cc
+    server/MultIOQueue.h
+    server/MultIOProfilerState.h
+    server/MultIOTransportProgress.cc
+    server/MultIOTransportProgress.h
+    server/MultIOReceiver.cc
+    server/MultIOReceiver.h
+    server/MultIOProfiler.cc
+    server/MultIOProfiler.h
+    server/MultIODispatcherRunner.cc
+    server/MultIODispatcherRunner.h
+    server/MultIOComposableServer.cc
+    server/MultIOComposableServer.h
 )
 
 list( APPEND multio_sink_srcs

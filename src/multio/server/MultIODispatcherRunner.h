@@ -1,24 +1,55 @@
 #pragma once
 
-#include "multio/server/Dispatcher.h"
 
 #include "MultIOQueue.h"
-#include "MultIOProfilerDispatcherState.h"
+#include "MultIOProfilerState.h"
+#include "multio/action/Plan.h"
 
+#include "multio/transport/Transport.h"
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/message/Message.h"
+#include "multio/util/FailureHandling.h"
 namespace multio::server {
 
-class MultIODispatcherRunner {
+struct DispatcherRunnerFailureTraits {
+    using OnErrorType = util::OnDispatchError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline std::string configKey() { return std::string("on-dispatch-error"); };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string componentName() { return std::string("Dispatcher"); };
+};
+
+class MultIODispatcherRunner : public util::FailureAware<DispatcherRunnerFailureTraits> {
 public:
 
-    MultIODispatcherRunner( MultIOQueue& queue,
-                            MultIOProfilerDispatcherState& profiler) noexcept;
-
+    MultIODispatcherRunner( const config::ComponentConfiguration& compConf,
+                            multio::transport::Transport& transport,
+                            MultIOQueue& queue,
+                            MultIOProfilerState& profiler,
+                            std::size_t tid ) noexcept;
     void run();
 
+    void handle(message::Message msg) const;
+
+    util::FailureHandlerResponse handleFailure(
+        util::OnDispatchError,
+        const util::FailureContext&,
+        util::DefaultFailureState&) const override;
+
 private:
-    Dispatcher dispatcher_;
     MultIOQueue& queue_;
-    MultIOProfilerDispatcherState& profiler_;
+    MultIOProfilerState& profiler_;
+    multio::transport::Transport& transport_;
+    const std::size_t tid_;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
 };
 
 }  // namespace multio::server

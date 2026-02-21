@@ -14,7 +14,7 @@ MultIOReceiver::MultIOReceiver(
     const config::ComponentConfiguration& compConf,
     transport::Transport& transport,
     MultIOQueue& queue,
-    MultIOProfilerReceiverState& profiler) :
+    MultIOProfilerState& profiler) :
     FailureAware(compConf),
     transport_(transport),
     queue_(queue),
@@ -27,7 +27,7 @@ MultIOReceiver::handleFailure(util::OnReceiveError,
                               const util::FailureContext& ctx,
                               util::DefaultFailureState&) const {
 
-    queue_.impl().interrupt(ctx.eptr);
+    queue_.interrupt(ctx.eptr);
     transport::TransportRegistry::instance().abortAll(ctx.eptr);
 
     return util::FailureHandlerResponse::Rethrow;
@@ -36,11 +36,11 @@ MultIOReceiver::handleFailure(util::OnReceiveError,
 
 void MultIOReceiver::run() {
 
-    util::withFailureHandling([&]() {
+    withFailureHandling([&]() {
 
         do {
 
-            profiler_.receiveLoops.fetch_add(
+            profiler_.receiver().receiveLoops.fetch_add(
                 1, std::memory_order_relaxed);
 
             Message msg = transport_.receive();
@@ -51,7 +51,7 @@ void MultIOReceiver::run() {
                     connections_.insert(msg.source());
                     ++openedCount_;
 
-                    profiler_.openConnections.fetch_add(
+                    profiler_.receiver().openConnections.fetch_add(
                         1, std::memory_order_relaxed);
 
                     break;
@@ -59,7 +59,7 @@ void MultIOReceiver::run() {
                 case Message::Tag::Close:
                     connections_.erase(msg.source());
 
-                    profiler_.closeConnections.fetch_add(
+                    profiler_.receiver().closeConnections.fetch_add(
                         1, std::memory_order_relaxed);
 
                     break;
@@ -68,12 +68,12 @@ void MultIOReceiver::run() {
 
                     checkConnection(msg.source());
 
-                    profiler_.syncMessages.fetch_add(
+                    profiler_.receiver().syncMessages.fetch_add(
                         1, std::memory_order_relaxed);
 
                     if (++syncCount_ == clientCount_) {
                         queue_.emplace(std::move(msg));
-                        profiler_.messagesEnqueued.fetch_add(
+                        profiler_.receiver().messagesEnqueued.fetch_add(
                             1, std::memory_order_relaxed);
                         syncCount_ = 0;
                     }
@@ -90,7 +90,7 @@ void MultIOReceiver::run() {
 
                     queue_.emplace(std::move(msg));
 
-                    profiler_.messagesEnqueued.fetch_add(
+                    profiler_.receiver().messagesEnqueued.fetch_add(
                         1, std::memory_order_relaxed);
 
                     break;
@@ -103,7 +103,7 @@ void MultIOReceiver::run() {
             }
 
         } while (moreConnections() &&
-                 queue_.impl().checkInterrupt());
+                 queue_.checkInterrupt());
 
     });
 

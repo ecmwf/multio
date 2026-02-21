@@ -67,9 +67,25 @@ public:
         return dispatcherStates_[i];
     }
 
+
+    std::vector<impl::MultIOProfilerDispatcherState>& dispatchers() noexcept {
+        return dispatcherStates_;
+    }
+
+
+
+    const impl::MultIOProfilerQueueState& queue() const noexcept { return queueState_; }
+    const impl::MultIOProfilerTransportState& transport() const noexcept { return transportState_; }
+    const impl::MultIOProfilerReceiverState& receiver() const noexcept { return receiverState_; }
+
+    const impl::MultIOProfilerDispatcherState& dispatcher(std::size_t i) const noexcept {
+        return dispatcherStates_[i];
+    }
+
     const std::vector<impl::MultIOProfilerDispatcherState>& dispatchers() const noexcept {
         return dispatcherStates_;
     }
+
 
 private:
 

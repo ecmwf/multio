@@ -9,7 +9,7 @@
 #include "multio/util/FailureHandling.h"
 
 #include "MultIOQueue.h"
-#include "MultIOProfilerReceiverState.h"
+#include "MultIOProfilerState.h"
 
 namespace multio::server {
 
@@ -47,7 +47,7 @@ public:
     MultIOReceiver(const config::ComponentConfiguration& compConf,
                    transport::Transport& transport,
                    MultIOQueue& queue,
-                   MultIOProfilerReceiverState& profiler);
+                   MultIOProfilerState& profiler);
 
     void run();
 
@@ -63,7 +63,7 @@ private:
 private:
     transport::Transport& transport_;
     MultIOQueue& queue_;
-    MultIOProfilerReceiverState& profiler_;
+    MultIOProfilerState& profiler_;
 
     size_t openedCount_{0};
     size_t clientCount_{0};

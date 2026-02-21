@@ -1,7 +1,9 @@
 #include "MultIOTransportProgress.h"
 
-#include "multio/transport/TransportFactory.h"
+#include "multio/transport/Transport.h"
+#include "multio/transport/TransportRegistry.h"
 #include "multio/util/FailureHandling.h"
+
 
 namespace multio::server {
 
@@ -10,7 +12,7 @@ using transport::TransportFactory;
 MultIOTransportProgress::MultIOTransportProgress(
         const config::ComponentConfiguration& compConf,
         MultIOQueue& queue,
-        impl::MultIOProfilerTransportState& profiler) :
+        MultIOProfilerState& profiler) :
 
     transport_(TransportFactory::instance().build(
         compConf.parsedConfig().getString("transport"),
@@ -22,16 +24,12 @@ MultIOTransportProgress::MultIOTransportProgress(
 
 void MultIOTransportProgress::run()
 {
-    util::withFailureHandling([&]() {
+    do {
+        transport_->listen();
+        profiler_.transport().listenIterations.fetch_add(
+            1, std::memory_order_relaxed);
+    } while (queue_.checkInterrupt() && !queue_.closed());
 
-        do {
-            transport_->listen();
-
-            profiler_.listenIterations.fetch_add(
-                1, std::memory_order_relaxed);
-        } while (queue_.impl().checkInterrupt() && !queue_.closed())
-
-    });
 }
 
 

@@ -16,7 +16,7 @@ public:
 
     MultIOTransportProgress(const config::ComponentConfiguration& compConf,
                             MultIOQueue& queue,
-                            impl::MultIOProfilerTransportState& profiler);
+                            MultIOProfilerState& profiler);
 
     transport::Transport& transport() noexcept { return *transport_; }
 
@@ -26,7 +26,7 @@ public:
 private:
     MultIOQueue& queue_;
     std::unique_ptr<transport::Transport> transport_;
-    impl::MultIOProfilerTransportState& profiler_;
+    MultIOProfilerState& profiler_;
 };
 
 }

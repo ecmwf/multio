@@ -5,14 +5,15 @@
 #include "eckit/config/Resource.h"
 
 #include "multio/LibMultio.h"
-#include "multio/transport/TransportFactory.h"
+#include "multio/transport/Transport.h"
+#include "multio/transport/TransportRegistry.h"
 
 namespace multio::server {
 
 using config::ComponentConfiguration;
 using transport::TransportFactory;
 
-namespace {
+namespace impl {
 
 std::size_t queueSize()
 {
@@ -46,11 +47,42 @@ std::size_t profilerBuckets(const eckit::LocalConfiguration& c)
            10;
 }
 
-}  // namespace
+std::vector<std::unique_ptr<MultIODispatcherRunner>>
+makeDispatchers(const config::ComponentConfiguration& compConf,
+                multio::transport::Transport& transport,
+                MultIOQueue& queue,
+                MultIOProfilerState& profiler,
+                std::size_t count)
+{
+    std::vector<std::unique_ptr<MultIODispatcherRunner>> dispatchers;
+    dispatchers.reserve(count);
 
+    for (std::size_t i = 0; i < count; ++i) {
+        dispatchers.emplace_back(
+            std::make_unique<MultIODispatcherRunner>(
+                compConf,
+                transport,
+                queue,
+                profiler,
+                i));
+    }
+
+    return dispatchers;
+}
+
+MultIOProfiler makeProfiler(const MultIOProfilerState& profiler,
+                            std::size_t queueCapacity,
+                            const eckit::LocalConfiguration& c)
+{
+    return MultIOProfiler(
+        profiler,
+        queueCapacity,
+        profilerPeriod(c),
+        profilerBuckets(c));
+}
 
 eckit::LocalConfiguration
-MultIOComposableServer::getServerConf(const config::MultioConfiguration& multioConf)
+getServerConf(const config::MultioConfiguration& multioConf)
 {
     if (multioConf.parsedConfig().has("server")) {
         return multioConf.parsedConfig().getSubConfiguration("server");
@@ -59,56 +91,45 @@ MultIOComposableServer::getServerConf(const config::MultioConfiguration& multioC
     throw eckit::UserError("Missing 'server' configuration");
 }
 
+}  // namespace impl
+
+
+
+
 
 MultIOComposableServer::MultIOComposableServer(config::MultioConfiguration&& multioConf) :
 
     MultioConfigurationHolder(std::move(multioConf),
                               config::LocalPeerTag::Server),
 
-    serverConf_(getServerConf(multioConfig())),
+    serverConf_(impl::getServerConf(multioConfig())),
     compConf_(serverConf_, multioConfig()),
 
     FailureAware(compConf_),
 
-    profilerState_(numDispatchers(serverConf_)),
-    queue_(queueSize(), profilerState_),
+    hasProfiler_(impl::enableProfiler(serverConf_)),
+    dispatcherCount_(impl::numDispatchers(serverConf_)),
 
-    transportProgress_(compConf_, queue_, profilerState_.transport()),
+    profilerState_(dispatcherCount_),
+    queue_(impl::queueSize(), profilerState_),
+
+    transportProgress_(compConf_, queue_, profilerState_),
     receiver_(compConf_,
           transportProgress_.transport(),
           queue_,
-          profilerState_.receiver())
-{
-    const auto nDisp = numDispatchers(serverConf_);
-
-    dispatchers_.reserve(nDisp);
-
-    for (std::size_t i = 0; i < nDisp; ++i) {
-
-        dispatchers_.emplace_back(
-            std::make_unique<MultIODispatcherRunner>(
-                compConf_,
-                queue_,
-                transportProgress_.transport(),
-                profilerState_.dispatcher(i)));
-    }
-
-    if (enableProfiler(serverConf_)) {
-
-        profilerRunner_ = std::make_unique<MultIOQueueProfiler>(
-            profilerState_,
-            queue_.capacity(),
-            profilerPeriod(serverConf_),
-            profilerBuckets(serverConf_));
-    }
-}
+          profilerState_),
+    dispatchers_(impl::makeDispatchers(compConf_,
+                                 transportProgress_.transport(),
+                                 queue_,
+                                 profilerState_,
+                                 dispatcherCount_)),
+    profilerRunner_(impl::makeProfiler(profilerState_, queue_.capacity(), serverConf_))
+{}
 
 
 MultIOComposableServer::~MultIOComposableServer()
 {
-    if (profilerRunner_) {
-        profilerRunner_->stop();
-    }
+    profilerRunner_.stop();
 
     queue_.close();
 
@@ -132,8 +153,8 @@ void MultIOComposableServer::run()
         threads_.emplace_back([&] { d->run(); });
     }
 
-    if (profilerRunner_) {
-        threads_.emplace_back([&] { profilerRunner_->run(); });
+    if (hasProfiler_) {
+        threads_.emplace_back([&] { profilerRunner_.run(); });
     }
 
     for (auto& t : threads_) {
@@ -155,6 +176,7 @@ MultIOComposableServer::handleFailure(util::OnServerError t,
     if (t == util::OnServerError::AbortTransport) {
         transportProgress_.transport().abort(c.eptr);
     }
+    queue_.interrupt(c.eptr);
 
     return util::FailureHandlerResponse::Rethrow;
 }

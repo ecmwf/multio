@@ -28,16 +28,15 @@ public:
     long pop(value_type& msg);
 
     void close();
-    bool closed() const;
-
-    // needed by existing Dispatcher without refactor
-    eckit::Queue<value_type>& impl() noexcept;
+    bool closed();
+    bool checkInterrupt();
+    void interrupt(std::exception_ptr expn);
 
     size_t capacity() const noexcept;
 
 private:
-    struct Impl;
-    std::unique_ptr<Impl> impl_;
+
+    eckit::Queue<message::Message> queue_;
 
     MultIOProfilerState& profiler_;
 };

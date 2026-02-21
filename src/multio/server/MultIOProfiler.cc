@@ -1,4 +1,4 @@
-#include "MultIOQueueProfiler.h"
+#include "MultIOProfiler.h"
 
 #include <thread>
 #include <algorithm>

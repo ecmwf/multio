@@ -16,16 +16,14 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "metkit/codes/GribHandle.h"
-
 #include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/PathConfiguration.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
-#include "multio/datamod/Glossary.h"
 #include "multio/server/Listener.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/transport/MpiTransport.h"

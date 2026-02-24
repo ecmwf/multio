@@ -18,7 +18,6 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LibEcKit.h"
-#include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
@@ -32,18 +31,12 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/ifsio/EncodeBitsPerValue.h"
 #include "multio/ifsio/ifsio_internals.h"
-#include "multio/multio_version.h"
 #include "multio/util/FailureHandling.h"
-// #include "multio/action/Sink.h"
 
 #include "multio/LibMultio.h"
 
-#include "metkit/codes/CodesContent.h"
-#include "multio/sink/MultIO.h"
-
 
 using namespace eckit;
-using namespace metkit;
 using namespace multio;
 using namespace multio::util;
 using namespace multio::config;

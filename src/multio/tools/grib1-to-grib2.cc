@@ -28,7 +28,6 @@
 #include "eckit/message/Reader.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "metkit/codes/CodesContent.h"
 #include "metkit/codes/api/CodesAPI.h"
 #include "metkit/codes/api/CodesTypes.h"
 #include "metkit/mars2grib/api/Mars2Grib.h"
@@ -387,9 +386,8 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm
     // Thats why if class is ai, we let the mapping determine it.
     if (mars.klass.get() != "ai") {
         // The parser in datamod cannot handle the string 'missing', so we handle it here.
-        if (!(h.has("typeOfProcessedData") &&
-              h.type("typeOfProcessedData") == metkit::codes::NativeType::String &&
-              h.getString("typeOfProcessedData") == "missing")) {
+        if (!(h.has("typeOfProcessedData") && h.type("typeOfProcessedData") == metkit::codes::NativeType::String
+              && h.getString("typeOfProcessedData") == "missing")) {
             misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedDataEntry, h);
         }
     }

@@ -23,6 +23,7 @@ list( APPEND multio_action_plugins
     multio-action-renumber-healpix
     multio-action-scale
     multio-action-average-rate
+    multio-action-encode-mtg2
 )
 
 if( HAVE_MIR )
@@ -34,12 +35,6 @@ endif()
 if ( HAVE_ECKIT_CODEC )
     list( APPEND multio_action_plugins
         multio-action-interpolate-fesom
-    )
-endif()
-
-if( BUILD_MULTIOM )
-    list( APPEND multio_action_plugins
-        multio-action-encode-mtg2
     )
 endif()
 

@@ -112,7 +112,7 @@ constexpr auto BitmapPresent = KV<bool>{"bitmapPresent"};
 // Grib general
 constexpr auto TypeOfGeneratingProcess = KV<std::int64_t>{"typeOfGeneratingProcess"};  // Analog to mars type
 constexpr auto GeneratingProcessIdentifier = KV<std::int64_t>{"generatingProcessIdentifier"};
-constexpr auto SubCentre = KV<std::string>{"subCentre"};
+constexpr auto SubCentre = KV<std::int64_t>{"subCentre"};
 
 constexpr auto PerturbationNumber = KV<std::int64_t>{"perturbationNumber"};
 constexpr auto NumberOfForecastsInEnsemble = KV<std::int64_t>{"numberOfForecastsInEnsemble"};

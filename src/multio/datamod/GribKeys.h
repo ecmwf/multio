@@ -51,7 +51,12 @@ constexpr auto ProductionStatusOfProcessedData =
     EntryDef<std::int64_t>{"productionStatusOfProcessedData"}  
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.productionStatusOfProcessedData; });
-        
+
+constexpr auto SubCentre =
+    EntryDef<std::int64_t>{"subCentre"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.subCentre; });
+
 constexpr auto TypeOfProcessedDataEntry =
     EntryDef<TypeOfProcessedData>{"typeOfProcessedData"}  
         .tagOptional()

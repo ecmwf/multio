@@ -9,6 +9,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/Glossary.h"
 #include "multio/datamod/MarsKeys.h"
@@ -115,6 +116,42 @@ std::optional<double> readMissingValue(const message::Metadata& md) {
     return std::nullopt;
 }
 
+OutputTimeReference readOutputTimeReference(const message::Metadata& md, const StatisticsOptions& opt) {
+    // Check if output-time-reference has been explicitly overwritten
+    if (auto parsedOutRef = opt.outputTimeReference(); parsedOutRef) {
+        return *parsedOutRef;
+    }
+
+    // Look up for stream in metadata or in configuration
+    std::optional<std::string> stream = md.getOpt<std::string>("stream");
+    if (!stream) {
+        // Look for stream in options
+        const auto& omd = opt.setMetadata();
+        auto it = std::find_if(omd.begin(), omd.end(), [](const auto& pair) { return pair.first == "stream"; });
+
+        if (it != omd.end()) {
+            stream = it->second;
+        }
+    }
+
+    // Hard defaults for given streams
+    static const std::vector<std::pair<std::string, OutputTimeReference>> outputTimeRefForStream{
+        {{"clmn", OutputTimeReference::StartOfWindow}, {"clte", OutputTimeReference::StartOfWindow}}};
+
+    // If stream is given, use hard defaults
+    if (stream) {
+        auto it = std::find_if(outputTimeRefForStream.begin(), outputTimeRefForStream.end(),
+                               [&](const auto& pair) { return pair.first == *stream; });
+
+        if (it != outputTimeRefForStream.end()) {
+            return it->second;
+        }
+    }
+
+    // Return general default
+    return OutputTimeReference::StartOfForecast;
+}
+
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src,
                                                  const StatisticsOptions& opt) :
@@ -132,7 +169,8 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     missingValue_{readMissingValue(md)},
     key_{generateKey(src)},
     epoch_{computeEpoch()},
-    curr_{computeCurr()} {}
+    curr_{computeCurr()},
+    outputTimeReference_{readOutputTimeReference(md, opt)} {}
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     StatisticsConfiguration(msg.metadata(), msg.source(), opt) {};
@@ -213,6 +251,10 @@ const eckit::DateTime& StatisticsConfiguration::epoch() const {
 }
 const eckit::DateTime& StatisticsConfiguration::curr() const {
     return curr_;
+}
+
+OutputTimeReference StatisticsConfiguration::outputTimeReference() const {
+    return outputTimeReference_;
 }
 
 }  // namespace multio::action::statistics_mtg2

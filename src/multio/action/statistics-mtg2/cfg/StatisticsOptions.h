@@ -10,9 +10,16 @@
 namespace multio::action::statistics_mtg2 {
 
 
-enum class WindowType : std::int64_t {
+enum class WindowType : std::int64_t
+{
     ForwardOffset = 0,
     BackwardOffset = 1,
+};
+
+enum class OutputTimeReference : std::int64_t
+{
+    StartOfForecast = 0,
+    StartOfWindow,
 };
 
 
@@ -41,6 +48,8 @@ private:
     const bool disableSquashing_;
     const std::vector<std::pair<std::string, std::string>> setMetadata_;
 
+    const std::optional<OutputTimeReference> outputTimeReference_;
+
 public:
     StatisticsOptions(const eckit::LocalConfiguration& cfg);
 
@@ -63,6 +72,8 @@ public:
     bool disableStrictMapping() const;
     bool disableSquashing() const;
     const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
+    
+    std::optional<OutputTimeReference> outputTimeReference() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

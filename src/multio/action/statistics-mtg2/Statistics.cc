@@ -19,6 +19,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
+#include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/Glossary.h"
 #include "multio/datamod/MarsMiscGeo.h"
@@ -394,8 +395,8 @@ void Statistics::executeImpl(message::Message msg) {
     // The incomming message must occur AFTER the current point in the window!
     if (cfg.curr() <= ts.cwin().currPoint()) {
         std::ostringstream os;
-        os << "Current time is before or equal to the current point in the window :: "
-           << cfg.curr() << " > " << ts.cwin().currPoint() << std::endl;
+        os << "Current time is before or equal to the current point in the window :: " << cfg.curr() << " > "
+           << ts.cwin().currPoint() << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
 
@@ -460,7 +461,9 @@ const std::map<const std::string, const std::string> opname_to_stattype{
 void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
     for (auto it = ts.begin(); it != ts.end(); ++it) {
         // Skip if there was no input to base this message on in the first place
-        if (ts.win().count() == 0) { continue; }
+        if (ts.win().count() == 0) {
+            continue;
+        }
 
         eckit::Buffer payload;
         payload.resize((*it)->byte_size());
@@ -482,8 +485,6 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         ASSERT(timespan.isSet() || !stattype.isSet());  // Cannot have stattype without timespan set!
         int currentLoop = 1 + (timespan.isSet() ? 1 : 0) + (stattype.isSet() ? 1 : 0);
 
-        const std::int64_t step = ts.win().currPointInSteps();
-        md.set(dm::legacy::Step, step);
 
         auto opname = (*it)->operation();
         if (opname != "instant") {
@@ -493,20 +494,25 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
             else {
-                if (!opt_.disableSquashing() && (((*it)->isComposable() && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(), opname)) ||
-                                                 (opname == "difference" && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(), "accumulate")))) {
+                if (!opt_.disableSquashing()
+                    && (((*it)->isComposable()
+                         && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(), opname))
+                        || (opname == "difference"
+                            && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(),
+                                                              "accumulate")))) {
                     if (currentLoop > 2) {
                         throw eckit::NotImplemented(
-                            "Squashing is not implemented for fields with stattype, consider setting option 'disable-squashing'.",
+                            "Squashing is not implemented for fields with stattype, consider setting option "
+                            "'disable-squashing'.",
                             Here());
                     }
                     // Squash means we don't map (already done in previous loop), but extend the timespan
-                    const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
-                    dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                    timespan.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
-                                                            operationNameToStatTypeOperation(opname)};
+                                                              operationNameToStatTypeOperation(opname)};
 
                     if (currentLoop == 2) {
                         stattype.set(dm::StatType{currentStatType});
@@ -517,6 +523,38 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                         dm::dumpEntry(dm::STATTYPE, stattype, md);
                     }
                 }
+            }
+        }
+
+        switch (cfg.outputTimeReference()) {
+            case OutputTimeReference::StartOfForecast: {
+                const std::int64_t step = ts.win().currPointInHours();
+                md.set(dm::legacy::Step, step);
+                break;
+            }
+            case OutputTimeReference::StartOfWindow: {
+                auto lengthOfWindow = timespan;
+
+                // For instant fields or on flushes, timespan is not set yet
+                if (!lengthOfWindow.isSet()) {
+                    // The window spaws between creationPoint to endPoint
+                    // Prev & Current point describe the last updated data points.
+                    // In this case we are explicitly interested in creation to current point
+                    lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                }
+
+                md.set(dm::legacy::Step, lengthOfWindow.get().toHours());
+                // We explicitly take the creation point - alternative would be the start point.
+                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a month.
+                // To not confuse the output, we explicitly just output the window for which data has been received.
+                // As discussed with DGOV and scientist, half months are typically not of interest and should be ignored.
+                // Some additional mechanism has to make sure that these do not occur in the output (i.e. additional action).
+                auto dt = ts.win().creationPoint();
+
+                md.set(dm::legacy::Date, dt.date().yyyymmdd());
+                md.set(dm::legacy::Time,
+                       dt.time().hhmmss());  // Official MARS time is in hhmm, in multio hhmmss is used
+                break;
             }
         }
 

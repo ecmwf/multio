@@ -126,6 +126,23 @@ bool parseDisableSquashing(const eckit::LocalConfiguration& cfg) {
     throw eckit::SeriousBug{"Unable to read boolean disable-squashing", Here()};
 }
 
+std::optional<OutputTimeReference> parseOutputTimeRef(const eckit::LocalConfiguration& cfg) {
+    const auto outputTimeRef = cfg.getString("output-time-reference", "");
+    if (outputTimeRef.empty()) {
+        return {};
+    }
+    if (outputTimeRef == "start-of-window") {
+        return OutputTimeReference::StartOfWindow;
+    }
+    if (outputTimeRef == "start-of-forecast") {
+        return OutputTimeReference::StartOfForecast;
+    }
+
+    std::ostringstream os;
+    os << "Invalid output time reference :: " << outputTimeRef << std::endl;
+    throw eckit::UserError(os.str(), Here());
+}
+
 std::vector<std::pair<std::string, std::string>> parseSetMetadata(const eckit::LocalConfiguration& cfg) {
     if (!cfg.has("set-metadata")) {
         return {};
@@ -156,7 +173,8 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     valueCountThreshold_{parseValueCountThreshold(cfg)},
     disableStrictMapping_{parseDisableStrictMapping(cfg)},
     disableSquashing_{parseDisableSquashing(cfg)},
-    setMetadata_{parseSetMetadata(cfg)} {}
+    setMetadata_{parseSetMetadata(cfg)},
+    outputTimeReference_{parseOutputTimeRef(cfg)} {}
 
 
 std::int64_t StatisticsOptions::timeStep() const {
@@ -207,6 +225,10 @@ bool StatisticsOptions::disableSquashing() const {
 }
 const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {
     return setMetadata_;
+}
+
+std::optional<OutputTimeReference> StatisticsOptions::outputTimeReference() const {
+    return outputTimeReference_;
 }
 
 }  // namespace multio::action::statistics_mtg2

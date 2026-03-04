@@ -35,6 +35,8 @@ private:
     // Timing utils
     const eckit::DateTime epoch_;
     const eckit::DateTime curr_;
+    
+    const OutputTimeReference outputTimeReference_;
 
     // ---------------------------------------------------------------------------------------------
 
@@ -70,6 +72,8 @@ public:
 
     const eckit::DateTime& epoch() const;
     const eckit::DateTime& curr() const;
+    
+    OutputTimeReference outputTimeReference() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

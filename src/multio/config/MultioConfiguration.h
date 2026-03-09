@@ -29,6 +29,7 @@
 #include <queue>
 #include <tuple>
 #include <unordered_map>
+#include <cstdint>
 
 //-----------------------------------------------------------------------------
 
@@ -108,6 +109,10 @@ public:
     void setConfigDir(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
+
+    addCommunicator( const std::string& name, eckit::mpi::Comm parentComm, eckit::mpi::Comm serverComm, eckit::mpi::Comm clientComm ) {};
+    std::size_t getCommunicatorCount() const {return 1;};
+    std::string getCommunicatorNameById() const {return {"test"};};
 
     void setLocalPeerTag(LocalPeerTag clientOrServer);
 

@@ -215,6 +215,8 @@ list( APPEND multio_transport_srcs
     transport/MpiStream.h
     transport/MpiTransport.cc
     transport/MpiTransport.h
+    transport/MpiXTransport.cc
+    transport/MpiXTransport.h
     transport/TcpTransport.cc
     transport/TcpTransport.h
     transport/Transport.cc

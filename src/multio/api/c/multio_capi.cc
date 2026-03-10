@@ -401,6 +401,22 @@ int multio_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
 #endif
 };
 
+int multio_mpi_add_comm(multio_configuration_t* cc, const char* base_name,
+int parent_comm, int server_comm, int client_comm )
+ {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [cc, base_name, parent_comm, server_comm, client_comm]() {
+            ASSERT(cc != nullptr);
+            ASSERT(cc->getCommunicatorCount() == 0);
+            cc->addCommunicator( base_name, parent_comm, server_comm, client_comm );
+        },
+        cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
+};
+
 int multio_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(

@@ -46,6 +46,7 @@ implicit none
         generic,   public :: mpi_allow_world_default_comm       => mpi_allow_world_default_comm_logical, &
                                                                 &  mpi_allow_world_default_comm_cbool
 
+        procedure, public, pass :: mpi_add_comm                 => multio_mpi_add_comm
         procedure, public, pass :: mpi_parent_comm              => multio_mpi_parent_comm
         procedure, public, pass :: mpi_return_client_comm       => multio_mpi_return_client_comm
         procedure, public, pass :: mpi_return_server_comm       => multio_mpi_return_server_comm
@@ -523,6 +524,58 @@ contains
         ! Exit point
         return
     end function multio_mpi_parent_comm
+
+
+    function multio_mpi_add_comm(cc, comm_name, parent_comm, server_comm, client_comm) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        use, intrinsic :: iso_c_binding, only: c_char
+        use, intrinsic :: iso_c_binding, only: c_loc
+        use, intrinsic :: iso_c_binding, only: c_null_char
+        ! Variable references from the project
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_configuration), intent(inout) :: cc
+        character(len=*),            intent(in)    :: comm_name
+        integer(c_int),              intent(in)    :: parent_comm
+        integer(c_int),              intent(in)    :: server_comm
+        integer(c_int),              intent(in)    :: client_comm
+        ! Function Result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        character(:,kind=c_char), allocatable, target :: c_comm_name
+        ! Private interface to the c API
+        interface
+            function c_multio_mpi_add_comm(cc, comm_name, parent_comm, server_comm, client_comm) result(err) &
+                bind(c, name='multio_mpi_add_comm')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr),    value, intent(in) :: cc
+                type(c_ptr),    value, intent(in) :: comm_name
+                integer(c_int), value, intent(in) :: parent_comm
+                integer(c_int), value, intent(in) :: server_comm
+                integer(c_int), value, intent(in) :: client_comm
+                integer(c_int) :: err
+            end function c_multio_mpi_add_comm
+        end interface
+        ! initialize and allocate
+        c_comm_name = trim(comm_name) // c_null_char
+        ! Call the c API
+        c_err = c_multio_mpi_add_comm(cc%impl, c_loc(c_comm_name), parent_comm, server_comm, client_comm)
+        ! Output cast and cleanup
+        if (allocated(c_comm_name)) deallocate(c_comm_name)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_mpi_add_comm
+
 
 
     !> @brief Set the MPI client communicator.

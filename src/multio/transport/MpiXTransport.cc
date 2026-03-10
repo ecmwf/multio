@@ -59,6 +59,7 @@ std::string makeServerName(const std::string& base) {
     return base + "-server";
 }
 
+
 MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
     const auto& multioConf = compConf.multioConfig();
 

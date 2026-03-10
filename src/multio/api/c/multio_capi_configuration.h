@@ -83,6 +83,14 @@ int multio_mpi_return_client_comm(multio_configuration_t* cc, int* return_client
  */
 int multio_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm);
 
+/** Set MPI specific initalization parameters
+ *
+ * \param return_server_comm Pointer to an integer specifying the server communicator that the multio may set on
+ * initialization \param cc Handle to the multio configuration  object \returns Return code (#MultioErrorValues)
+ */
+int multio_mpi_add_comm(multio_configuration_t* cc, const char* base_name, int parent_comm, int server_comm, int client_comm );
+
+
 /** @} */
 
 #ifdef __cplusplus

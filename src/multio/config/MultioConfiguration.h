@@ -19,7 +19,7 @@
 #include "multio/message/Message.h"
 
 #include "eckit/config/LocalConfiguration.h"
-
+#include "eckit/mpi/Comm.h"
 #include "eckit/utils/Translator.h"
 
 
@@ -30,6 +30,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <cstdint>
+#include <string_view>
 
 //-----------------------------------------------------------------------------
 
@@ -110,9 +111,34 @@ public:
 
     LocalPeerTag localPeerTag() const;
 
-    addCommunicator( const std::string& name, eckit::mpi::Comm parentComm, eckit::mpi::Comm serverComm, eckit::mpi::Comm clientComm ) {};
-    std::size_t getCommunicatorCount() const {return 1;};
-    std::string getCommunicatorNameById() const {return {"test"};};
+    void addCommunicator(const std::string& name,
+                                          int parentComm,
+                                          int serverComm,
+                                          int clientComm) {
+        if (std::find(in_comms_.begin(), in_comms_.end(), name) != in_comms_.end()) {
+            throw eckit::SeriousBug("Communicator base name \"" + name + "\" already exists in MultioConfiguration",
+                                Here());
+        }
+
+        const std::string_view parentName = name + "-parent";
+        const std::string_view serverName = name + "-server";
+        const std::string_view clientName = name + "-client";
+
+        eckit::mpi::addComm(parentName, parentComm);
+        eckit::mpi::addComm(serverName, serverComm);
+        eckit::mpi::addComm(clientName, clientComm);
+
+        in_comms_.push_back(name);
+    }
+
+    std::size_t getCommunicatorCount() const {return in_comms_.size();};
+
+    std::string getCommunicatorNameById( int commId ) const {
+        if (commId >= in_comms_.size()) {
+            throw eckit::SeriousBug("Communicator id out of range", Here());
+        }
+        return in_comms_[commId];
+    };
 
     void setLocalPeerTag(LocalPeerTag clientOrServer);
 
@@ -155,6 +181,8 @@ private:
 
     mutable std::unordered_map<std::string, ConfigFile> referencedConfigFiles_;
     MetadataMappings metadataMappings_;
+
+    mutable std::vector<std::string> in_comms_;
 
     // Ugly way to retrieve messages through a debug sink
     mutable std::queue<message::Message> debugSink_;

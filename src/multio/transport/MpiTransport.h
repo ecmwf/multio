@@ -17,18 +17,21 @@
 #pragma once
 
 #include <queue>
-#include <tuple>
+#include <string>
 
 #include "eckit/container/Queue.h"
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
-#include "eckit/mpi/Comm.h"
-#include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
-
 
 #include "multio/transport/StreamPool.h"
 #include "multio/transport/Transport.h"
+
+namespace eckit {
+namespace mpi {
+class Comm;
+}
+}  // namespace eckit
 
 namespace multio::transport {
 

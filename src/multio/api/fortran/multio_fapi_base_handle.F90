@@ -406,7 +406,7 @@ contains
         return
     end function multio_base_handle_close_connections
 
-    !> @brief Block until a server-side processing is complete
+    !> @brief Ensure server-side is synchronized
     !!
     !! This function will ensure that all server-side processing is
     !! complete and data are persisted on the filesystem before

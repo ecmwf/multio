@@ -15,6 +15,7 @@
 
 #include "eckit/maths/Functions.h"
 #include "eckit/mpi/Comm.h"
+#include "eckit/mpi/Group.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 #include "eckit/utils/Translator.h"
@@ -181,19 +182,16 @@ void MpiTransport::closeConnections() {
 }
 
 void MpiTransport::synchronize() {
-    // TODO: Maybe we can restructure this a bit as clearly the behaviour is different
-    //       depending on which side (client or server) is calling this method.
-
     if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
         for (auto& server : serverPeers()) {
             Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
             bufferedSend(msg);
             pool_.sendBuffer(msg.destination());
         }
-        pool_.waitAll();
     }
-
-    comm().barrier();
+    else {
+        serverComm().barrier();
+    }
 }
 
 Message MpiTransport::receive() {

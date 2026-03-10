@@ -70,6 +70,8 @@ public:  // methods
     virtual size_t serverCount() const;
 
 protected:
+    bool peersMissing() const;
+
     const ComponentConfiguration compConf_;
 
     mutable PeerList serverPeers_;
@@ -80,8 +82,6 @@ protected:
     std::mutex mutex_;
 
 private:  // methods
-    bool peersMissing() const;
-
     virtual void createPeers() const = 0;
 
     virtual void print(std::ostream& os) const = 0;

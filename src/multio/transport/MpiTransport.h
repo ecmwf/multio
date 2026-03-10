@@ -37,7 +37,12 @@ struct ReceivedBuffer {
     size_t size;
 };
 
-using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
+struct MpiPeerSetup {
+    MpiPeer localPeer;
+    std::string parentCommName;
+    std::string clientCommName;
+    std::string serverCommName;
+};
 
 class MpiTransport final : public Transport {
 public:
@@ -70,8 +75,6 @@ private:
 
     PeerList createServerPeers() const override;
 
-    const eckit::mpi::Comm& comm() const;
-
     eckit::mpi::Status probe();
     size_t blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer);
 
@@ -80,10 +83,14 @@ private:
     size_t getMpiPoolSize(const ComponentConfiguration& compConf);
     size_t getMpiBufferSize(const ComponentConfiguration& compConf);
 
+    const eckit::mpi::Comm& comm() const;
+    const eckit::mpi::Comm& clientComm() const;
+    const eckit::mpi::Comm& serverComm() const;
+
     MpiPeer local_;
-    eckit::mpi::Group parentGroup_;
-    eckit::mpi::Group clientGroup_;
-    eckit::mpi::Group serverGroup_;
+    std::string parentCommName_;
+    std::string clientCommName_;
+    std::string serverCommName_;
 
     StreamPool pool_;
 

@@ -175,9 +175,7 @@ list( APPEND multio_datamod_srcs
     datamod/ContainerInterop.h
     datamod/Mapper.cc
     datamod/Mapper.h
-    datamod/AtlasGeo.h
     datamod/MarsMiscGeo.h
-    datamod/MarsMiscGeo.cc
     datamod/GribKeys.h
     datamod/Glossary.h
 )

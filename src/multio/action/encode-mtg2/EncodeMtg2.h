@@ -23,11 +23,9 @@ namespace cf = multio::util::config;
 
 struct EncodeMtg2Options {
     bool cached = false;
-    bool geoFromAtlas = false;
 
     static constexpr auto fields_
-        = std::make_tuple(cf::optionalEntry("cached", &EncodeMtg2Options::cached),
-                          cf::optionalEntry("geo-from-atlas", &EncodeMtg2Options::geoFromAtlas));
+        = std::make_tuple(cf::optionalEntry("cached", &EncodeMtg2Options::cached));
 };
 
 //----------------------------------------------------------------------------------------------------------------------

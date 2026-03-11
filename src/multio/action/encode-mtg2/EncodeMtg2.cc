@@ -15,12 +15,13 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/action/encode-mtg2/AtlasGeoSetter.h"
-#include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
+#include "multio/datamod/ContainerInterop.h"
+
+#include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/PrecisionTag.h"
@@ -62,27 +63,6 @@ void EncodeMtg2::executeImpl(Message msg) {
     // Write unscoped misc keys
     auto miscRec = dm::unscopeRecord(std::move(scopedMiscRec));
 
-    auto scopedGeom = dm::getGeometryRecord(marsRec);
-
-    // If grid.. check if atlas is given.
-    if (marsRec.grid.isSet()) {
-        std::string scope{std::visit([](const auto& k) { return dm::getRecordScope(k); }, scopedGeom)};
-        const auto& global = message::Parametrization::instance().get();
-        // Fetch atlas and store in global parametrization (by scoping keys...)
-        // Scoping here may be refactored
-        if (opts_.geoFromAtlas && (global.find(scope) == global.end())) {
-            extract::AtlasGeoSetter::handleGrid(scope, marsRec.grid.get());
-        }
-    }
-
-    // Read & unscope geo keys from metadata
-    auto geomRec = std::visit(
-        [&](auto&& scopedGeom) -> dm::Geometry {
-            dm::readRecord(scopedGeom, md);
-            return unscopeRecord(std::move(scopedGeom));
-        },
-        std::move(scopedGeom));
-
     // Apply mappings
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
@@ -118,8 +98,7 @@ void EncodeMtg2::executeImpl(Message msg) {
 }
 
 void EncodeMtg2::print(std::ostream& os) const {
-    os << "EncodeMtg2{cached=" << (opts_.cached ? "true" : "false")
-       << ", geo-from-atlas=" << (opts_.geoFromAtlas ? "true" : "false") << "}";
+    os << "EncodeMtg2{cached=" << (opts_.cached ? "true" : "false") << "}";
 }
 
 static ActionBuilder<EncodeMtg2> EncodeMtg2Builder("encode-mtg2");

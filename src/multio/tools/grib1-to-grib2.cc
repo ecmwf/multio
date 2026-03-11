@@ -33,11 +33,13 @@
 #include "metkit/mars2grib/api/Mars2Grib.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/AtlasGeo.h"
-#include "multio/datamod/core/Record.h"
 #include "multio/tools/MultioTool.h"
 
+#include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/core/EntryParser.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/datamod/ContainerInterop.h"
+
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/Print.h"

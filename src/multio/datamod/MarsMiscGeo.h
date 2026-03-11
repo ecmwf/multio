@@ -463,8 +463,6 @@ using Geometry = std::variant<GeoGGRecord, GeoLLRecord, GeoSHRecord, GeoHEALPixR
 using ScopedGeometry = std::variant<ScopedRecord<GeoGGRecord>, ScopedRecord<GeoLLRecord>, ScopedRecord<GeoSHRecord>,
                                     ScopedRecord<GeoHEALPixRecord>>;
 
-ScopedGeometry getGeometryRecord(const FullMarsRecord& mars);
-
 
 //-----------------------------------------------------------------------------
 

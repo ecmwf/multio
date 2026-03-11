@@ -174,19 +174,18 @@ struct MarsField : ComposedRecord<MarsFieldId, MarsFieldDetails, MarsSatellite> 
 
 
 //-----------------------------------------------------------------------------
-// Additional information on data representationi and compression
+// Additional information on data representation and compression
 //-----------------------------------------------------------------------------
 
 struct MarsEncodingDetails {
     EntryType_t<decltype(GRID)> grid;
     EntryType_t<decltype(TRUNCATION)> truncation;
-    EntryType_t<decltype(REPRES)> repres;
 
     EntryType_t<decltype(PACKING)> packing;
 
 
     static constexpr std::string_view record_name_ = "mars-encoding";
-    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, REPRES, PACKING);
+    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, PACKING);
 };
 
 
@@ -210,7 +209,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
     static void applyDefaults(FullMarsRecord& mars) {
         const auto& grid = mars.grid;
         const auto& trunc = mars.truncation;
-        auto& repres = mars.repres;
 
         if (!grid.isSet() && !trunc.isSet()) {
             std::ostringstream oss;
@@ -225,33 +223,6 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
                    "given: ";
             util::print(oss, mars);
             throw DataModellingException(oss.str(), Here());
-        }
-
-        if (grid.isSet()) {
-            auto detRepres = represFromGrid(grid.get());
-            if (repres.isSet() && (detRepres != repres.get())) {
-                std::ostringstream oss;
-                oss << "Passed value for repres is ";
-                util::print(oss, repres.get());
-                oss << " but derived value  ";
-                util::print(oss, detRepres);
-                oss << " from grid " << grid.get();
-                throw DataModellingException(oss.str(), Here());
-            }
-            repres.set(detRepres);
-        }
-        else if (trunc.isSet()) {
-            auto detRepres = Repres::SH;
-            if (repres.isSet() && (detRepres != repres.get())) {
-                std::ostringstream oss;
-                oss << "Passed value for repres is ";
-                util::print(oss, repres.get());
-                oss << " but derived value  ";
-                util::print(oss, detRepres);
-                oss << " from truncation " << std::to_string(trunc.get());
-                throw DataModellingException(oss.str(), Here());
-            }
-            repres.set(detRepres);
         }
     }
 };

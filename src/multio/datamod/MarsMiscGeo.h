@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <sstream>
+
 #include "multio/datamod/Glossary.h"
 #include "multio/datamod/GribKeys.h"
 #include "multio/datamod/MarsKeys.h"
@@ -19,12 +21,7 @@
 #include "multio/datamod/core/Hash.h"
 #include "multio/datamod/core/Print.h"
 #include "multio/datamod/core/Record.h"
-
 #include "multio/util/Print.h"
-
-
-#include <sstream>
-#include <variant>
 
 
 namespace multio::datamod {
@@ -378,106 +375,9 @@ struct MiscRecord {
 };
 
 
-//-----------------------------------------------------------------------------
-// Geometry keys - gg
-//-----------------------------------------------------------------------------
-
-struct GeoGGRecord {
-    EntryType_t<decltype(TruncateDegrees)> truncateDegrees;
-    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
-    EntryType_t<decltype(NumberOfParallelsBetweenAPoleAndTheEquator)> numberOfParallelsBetweenAPoleAndTheEquator;
-    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(Pl)> pl;
-
-
-    static constexpr std::string_view record_name_ = "geo-gg";
-    static constexpr auto record_entries_
-        = std::make_tuple(TruncateDegrees, NumberOfPointsAlongAMeridian, NumberOfParallelsBetweenAPoleAndTheEquator,
-                          LatitudeOfFirstGridPointInDegrees, LongitudeOfFirstGridPointInDegrees,
-                          LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees, Pl);
-};
-
-//
-//-----------------------------------------------------------------------------
-// Geometry keys - sh
-//-----------------------------------------------------------------------------
-
-
-struct GeoSHRecord {
-    EntryType_t<decltype(PentagonalResolutionParameterJ)> pentagonalResolutionParameterJ;
-    EntryType_t<decltype(PentagonalResolutionParameterK)> pentagonalResolutionParameterK;
-    EntryType_t<decltype(PentagonalResolutionParameterM)> pentagonalResolutionParameterM;
-
-    static constexpr std::string_view record_name_ = "geo-sh";
-    static constexpr auto record_entries_ = std::make_tuple(
-        PentagonalResolutionParameterJ, PentagonalResolutionParameterK, PentagonalResolutionParameterM);
-};
-
-
-//-----------------------------------------------------------------------------
-// Geometry keys - ll
-//-----------------------------------------------------------------------------
-
-struct GeoLLRecord {
-    EntryType_t<decltype(NumberOfPointsAlongAParallel)> numberOfPointsAlongAParallel;
-    EntryType_t<decltype(NumberOfPointsAlongAMeridian)> numberOfPointsAlongAMeridian;
-
-    EntryType_t<decltype(LatitudeOfFirstGridPointInDegrees)> latitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
-    EntryType_t<decltype(LatitudeOfLastGridPointInDegrees)> latitudeOfLastGridPointInDegrees;
-    EntryType_t<decltype(LongitudeOfLastGridPointInDegrees)> longitudeOfLastGridPointInDegrees;
-
-    EntryType_t<decltype(IDirectionIncrementInDegrees)> iDirectionIncrementInDegrees;
-    EntryType_t<decltype(JDirectionIncrementInDegrees)> jDirectionIncrementInDegrees;
-
-    static constexpr std::string_view record_name_ = "geo-ll";
-    static constexpr auto record_entries_ = std::make_tuple(
-        NumberOfPointsAlongAParallel, NumberOfPointsAlongAMeridian, LatitudeOfFirstGridPointInDegrees,
-        LongitudeOfFirstGridPointInDegrees, LatitudeOfLastGridPointInDegrees, LongitudeOfLastGridPointInDegrees,
-        IDirectionIncrementInDegrees, JDirectionIncrementInDegrees);
-};
-
-//-----------------------------------------------------------------------------
-// Geometry keys - HEALPix
-//-----------------------------------------------------------------------------
-
-struct GeoHEALPixRecord {
-    EntryType_t<decltype(NSide)> nside;
-    EntryType_t<decltype(OrderingConvention)> orderingConvention;
-    EntryType_t<decltype(LongitudeOfFirstGridPointInDegrees)> longitudeOfFirstGridPointInDegrees;
-
-    static constexpr std::string_view record_name_ = "geo-healpix";
-    static constexpr auto record_entries_
-        = std::make_tuple(NSide, OrderingConvention, LongitudeOfFirstGridPointInDegrees.tagOptional());
-};
-
-
-//-----------------------------------------------------------------------------
-// Evaluate geometry from mars
-//-----------------------------------------------------------------------------
-
-using Geometry = std::variant<GeoGGRecord, GeoLLRecord, GeoSHRecord, GeoHEALPixRecord>;
-using ScopedGeometry = std::variant<ScopedRecord<GeoGGRecord>, ScopedRecord<GeoLLRecord>, ScopedRecord<GeoSHRecord>,
-                                    ScopedRecord<GeoHEALPixRecord>>;
-
-
-//-----------------------------------------------------------------------------
-
-
 }  // namespace multio::datamod
 
 namespace multio::util {
 template <>
 struct Print<multio::datamod::MiscRecord> : multio::datamod::PrintRecord {};
-template <>
-struct Print<multio::datamod::GeoGGRecord> : multio::datamod::PrintRecord {};
-template <>
-struct Print<multio::datamod::GeoLLRecord> : multio::datamod::PrintRecord {};
-template <>
-struct Print<multio::datamod::GeoSHRecord> : multio::datamod::PrintRecord {};
-template <>
-struct Print<multio::datamod::GeoHEALPixRecord> : multio::datamod::PrintRecord {};
 };  // namespace multio::util

@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "eckit/mpi/Comm.h"
 #include "eckit/exception/Exceptions.h"
 
@@ -31,7 +32,12 @@ int main(int argc, char** argv) {
     handleError(multio_open_connections(multio_handle));
 
     if (synchronize) {
-        handleError(multio_synchronize(multio_handle));
+        multio_metadata_t* md = nullptr;
+        handleError(multio_new_metadata(&md, multio_handle));
+        handleError(multio_metadata_set_int(md, "step", 42));
+        handleError(multio_metadata_set_int(md, "timeStep", 3600));
+        handleError(multio_synchronize(multio_handle, md));
+        handleError(multio_delete_metadata(md));
     }
 
     handleError(multio_close_connections(multio_handle));

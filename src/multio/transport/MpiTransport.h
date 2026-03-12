@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <optional>
 #include <queue>
 #include <string>
 
@@ -24,6 +25,7 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
+#include "multio/server/StepMeter.h"
 #include "multio/transport/StreamPool.h"
 #include "multio/transport/Transport.h"
 
@@ -58,7 +60,9 @@ private:
     void openConnections() override;
     void closeConnections() override;
 
-    void synchronize() override;
+    void synchronize(const Message& msg = Message{}) override;
+
+    void reportStep(const Message& msg);
 
     Message receive() override;
 
@@ -100,6 +104,18 @@ private:
     eckit::Queue<ReceivedBuffer> streamQueue_;
 
     std::queue<Message> msgPack_;
+
+    std::optional<server::StepMeter> stepMeter_ = std::nullopt;  // Only used by servers!
+
+#ifdef HAVE_ECFLOW_LIGHT
+    // Pacing state (persistent across synchronize calls)
+    double startTime_ = 0.0;
+    double lastTime_ = 0.0;
+    double paceLastStep_ = 0.0;
+    int lastForecastHour_ = 0;
+    bool firstReportCall_ = true;
+    double paceWarnThreshold_ = 0.0;
+#endif
 };
 
 }  // namespace multio::transport

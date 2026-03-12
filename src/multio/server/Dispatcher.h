@@ -30,6 +30,10 @@
 
 #include "multio/transport/Transport.h"
 
+#ifdef HAVE_ECFLOW_LIGHT
+#include "multio/server/EcflowReporting.h"
+#endif
+
 namespace eckit {
 class Configuration;
 class Timer;

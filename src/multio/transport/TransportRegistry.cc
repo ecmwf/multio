@@ -43,7 +43,7 @@ void TransportRegistry::abortAll(std::exception_ptr ptr) {
     }
 }
 
-void TransportRegistry::synchronize() {
+void TransportRegistry::synchronize(const Message& msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
     if (transports_.size() != 1) {
@@ -51,7 +51,7 @@ void TransportRegistry::synchronize() {
     }
 
     for (const auto& tr : transports_) {
-        tr.second->synchronize();
+        tr.second->synchronize(msg);
     }
 }
 

@@ -66,6 +66,10 @@ if ( HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
     list(APPEND multio_utils_definitions "MULTIO_CLIENT_MEMORY_PROFILE_ENABLED")
 endif()
 
+if ( HAVE_ECFLOW_LIGHT )
+    list(APPEND multio_utils_definitions "HAVE_ECFLOW_LIGHT")
+endif()
+
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
     config/ComponentConfiguration.h
@@ -187,7 +191,16 @@ list( APPEND multio_server_srcs
     server/MultioClient.h
     server/MultioServer.cc
     server/MultioServer.h
+    server/StepMeter.cc
+    server/StepMeter.h
 )
+
+if( HAVE_ECFLOW_LIGHT )
+    list( APPEND multio_server_srcs
+        server/EcflowReporting.cc
+        server/EcflowReporting.h
+    )
+endif()
 
 list( APPEND multio_sink_srcs
     sink/DataSink.cc
@@ -221,6 +234,7 @@ list( APPEND multio_transport_srcs
     transport/TransportStatistics.h
     transport/StreamPool.cc
     transport/StreamPool.h
+
 )
 
 list( APPEND multio_srcs
@@ -265,7 +279,10 @@ ecbuild_add_library(
     PRIVATE_DEFINITIONS ${multio_utils_definitions}
 
     PUBLIC_LIBS
-        metkit eckit eckit_mpi)
+        metkit eckit eckit_mpi
+
+    PRIVATE_LIBS
+        $<$<BOOL:${HAVE_ECFLOW_LIGHT}>:ecflow_light>)
 
 add_subdirectory(fdb5)
 add_subdirectory(maestro)

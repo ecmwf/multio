@@ -60,6 +60,12 @@ ecbuild_add_option( FEATURE PGEN
                     DESCRIPTION "Use pgen for Maestro product-generation workflow"
                     REQUIRED_PACKAGES "NAME pgen VERSION 1.13.0" )
 
+### ecflow-light (optional, for ecFlow reporting from the server)
+ecbuild_add_option( FEATURE ECFLOW_LIGHT
+                    DEFAULT OFF
+                    DESCRIPTION "Enable ecFlow reporting from the multio server"
+                    REQUIRED_PACKAGES "NAME ecflow_light VERSION 1.1.1" )
+
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
                     DESCRIPTION "Build Fortran API and examples" )

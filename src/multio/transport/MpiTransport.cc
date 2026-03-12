@@ -11,7 +11,9 @@
 #include "MpiTransport.h"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
+#include <iomanip>
 
 #include "eckit/maths/Functions.h"
 #include "eckit/mpi/Comm.h"
@@ -19,6 +21,11 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 #include "eckit/utils/Translator.h"
+#include "multio/server/StepMeter.h"
+
+#ifdef HAVE_ECFLOW_LIGHT
+#include "ecflow/light/API.h"
+#endif
 
 #include "multio/transport/MpiCommSetup.h"
 #include "multio/util/Environment.h"
@@ -181,18 +188,115 @@ void MpiTransport::closeConnections() {
     pool_.waitAll();
 }
 
-void MpiTransport::synchronize() {
+void MpiTransport::synchronize(const Message& msg) {
     if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
         for (auto& server : serverPeers()) {
-            Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
-            bufferedSend(msg);
-            pool_.sendBuffer(msg.destination());
+            Message syncMsg{Message::Header{Message::Tag::Synchronization, local_, *server, std::move(msg.metadata())}};
+            bufferedSend(syncMsg);
+            pool_.sendBuffer(syncMsg.destination());
         }
     }
     else {
-        serverComm().barrier();
+        if (!stepMeter_) {
+            stepMeter_.emplace(serverComm(), clientPeers().size());
+        }
+        const auto clientRank = msg.source().id();
+        const auto step = msg.metadata().get("step").get<long>();  // TODO: Handle case where step is not set?
+        (*stepMeter_).update(clientRank, step);
     }
 }
+
+void MpiTransport::reportStep(const Message& msg) {
+#ifdef HAVE_ECFLOW_LIGHT
+    // Only the first rank in the server communicator reports to ecFlow
+    if (serverComm().rank() != 0) {
+        return;
+    }
+
+    // Extract step and timestep from the message metadata.
+    // The Flush message dispatched by multio_synchronize carries this info.
+    const auto& md = msg.metadata();
+
+    auto stepOpt = md.getOpt<std::int64_t>("step");
+    if (!stepOpt) {
+        // No step information in the message — nothing to report
+        return;
+    }
+
+    // timestep in seconds (default to 3600 if not provided)
+    auto tstepOpt = md.getOpt<std::int64_t>("timeStep");
+    double tstep = tstepOpt ? static_cast<double>(*tstepOpt) : 3600.0;
+
+    int forecastHour = static_cast<int>(std::round(*stepOpt * tstep / 3600.0));
+
+    // --- ecFlow meter update ---
+    int err = ecflow_light_update_meter("step", forecastHour);
+    if (err != EXIT_SUCCESS) {
+        eckit::Log::error() << "MpiTransport::reportStep: failed to update ecFlow meter 'step' to " << forecastHour
+                            << std::endl;
+    }
+    else {
+        eckit::Log::info() << "MpiTransport::reportStep: set ecFlow meter 'step' to " << forecastHour << std::endl;
+    }
+
+    // --- Write meter file ---
+    {
+        std::ofstream ofs("../multio_serv_meter");
+        if (ofs) {
+            ofs << std::setw(8) << forecastHour;
+        }
+    }
+
+    // --- Pacing calculation ---
+    auto wallTime = []() {
+        using clock = std::chrono::high_resolution_clock;
+        return std::chrono::duration<double>(clock::now().time_since_epoch()).count();
+    };
+
+    if (firstReportCall_) {
+        if (const char* env = std::getenv("MULTIO_PACE_WARN_THRESHOLD")) {
+            paceWarnThreshold_ = std::atof(env);
+        }
+    }
+
+    if (firstReportCall_ || forecastHour == 0) {
+        startTime_ = wallTime();
+        lastForecastHour_ = 0;
+        lastTime_ = startTime_;
+        paceLastStep_ = 0.0;
+        firstReportCall_ = false;
+    }
+    else {
+        double currentTime = wallTime();
+        double elapsed = currentTime - startTime_;
+        double averagePace = forecastHour / (elapsed / 3600.0);
+
+        double stepElapsed = currentTime - lastTime_;
+        double paceThisStep = (forecastHour - lastForecastHour_) / (stepElapsed / 3600.0);
+
+        std::ostringstream label;
+        label << std::fixed << std::setprecision(2);
+
+        if (paceWarnThreshold_ > 0.0 && averagePace < paceWarnThreshold_) {
+            label << "WARNING: SLOW FORECAST ";
+            eckit::Log::error() << "##IFS_WARNING: SLOW FORECAST Average: " << averagePace
+                                << " Latest step: " << paceThisStep << " (" << std::showpos
+                                << (paceThisStep - paceLastStep_) << ") fc hours/hour" << std::endl;
+            ecflow_light_update_event("ifs_warning", 1);
+        }
+
+        label << "Average: " << averagePace << " Latest step: " << paceThisStep << " (" << std::showpos
+              << (paceThisStep - paceLastStep_) << std::noshowpos << ") fc hours/hour";
+
+        ecflow_light_update_label("Pace", label.str().c_str());
+
+        lastTime_ = currentTime;
+        lastForecastHour_ = forecastHour;
+        paceLastStep_ = paceThisStep;
+    }
+#endif
+}
+
 
 Message MpiTransport::receive() {
     util::ScopedTiming timing{statistics_.totReturnTiming_};

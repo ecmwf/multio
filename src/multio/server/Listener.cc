@@ -128,6 +128,7 @@ void Listener::start() {
     ScopedThread dpatchThread{std::thread{[&]() { dispatcher_->dispatch(); }}};
 
     withFailureHandling([&]() {
+        int cnt = 0;
         do {
             Message msg = transport_.receive();
 
@@ -165,6 +166,22 @@ void Listener::start() {
                 case Message::Tag::Parametrization:
                 case Message::Tag::Mask:
                 case Message::Tag::Notification:
+                    checkConnection(msg.source());
+                    {
+                        const auto& trigger = msg.metadata().getOpt( "trigger" );
+                        if ( trigger.has_value() ){
+                            if ( trigger.value() == "step" ){
+                                cnt++;
+                            }
+                        }
+                    }
+                    // Debug logging
+                    // std::cout << "Listener synchronization on notification:: "
+                    //          << cnt << " :: " << clientCount_ << std::endl;
+                    if ( cnt >= clientCount_ ){
+                        transport_.synchronize();
+                        cnt = 0;
+                    }
                 case Message::Tag::Flush:
                 case Message::Tag::Field:
                     checkConnection(msg.source());

@@ -11,6 +11,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/transport/Transport.h"
+#include "multio/transport/TransportRegistry.h"
 
 namespace multio::server {
 
@@ -38,7 +39,8 @@ MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfigur
     transport_{
         TransportFactory::instance().build(conf.getString("transport"), ComponentConfiguration(conf, multioConfig()))},
     listener_{ComponentConfiguration(conf, multioConfig()), *transport_} {
-    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << conf << std::endl;
+
+
 
     eckit::Log::info() << "Server start listening..." << std::endl;
     withFailureHandling([&]() { listener_.start(); });

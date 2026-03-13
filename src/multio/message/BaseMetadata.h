@@ -110,11 +110,11 @@ public:
     // Find is virtual to allow modifying behaviour for Parametrization
     virtual Iterator find(const KeyType& k) { return values_.find(k); };
     virtual ConstIterator find(const KeyType& k) const { return values_.find(k); };
-    
+
     // Non-virtual version that searches locally only
     Iterator localFind(const KeyType& k) { return values_.find(k); };
     ConstIterator localFind(const KeyType& k) const { return values_.find(k); };
-    
+
     Iterator begin() noexcept { return values_.begin(); };
     ConstIterator begin() const noexcept { return values_.begin(); };
     ConstIterator cbegin() const noexcept { return values_.cbegin(); };

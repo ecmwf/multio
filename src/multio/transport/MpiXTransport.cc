@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 #include "eckit/maths/Functions.h"
 #include "eckit/mpi/Comm.h"
@@ -74,6 +75,10 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
     const std::string clientName = makeClientName(baseName);
     const std::string serverName = makeServerName(baseName);
 
+    // for ( const auto& n : eckit::mpi::listComms() ){
+    //     std::cout << " - Name: " << n << std::endl;
+    // }
+
     if (!eckit::mpi::hasComm(parentName.c_str())) {
         std::ostringstream oss;
         oss << "MpiXTransport: parent communicator \"" << parentName
@@ -102,6 +107,12 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
     eckit::mpi::Group parentGroup = parentComm.group();
     eckit::mpi::Group clientGroup = clientComm.group();
     eckit::mpi::Group serverGroup = serverComm.group();
+    if ( serverGroup.size() == 0 && clientGroup.size() != 0) {
+        serverGroup = parentGroup.difference( clientGroup );
+    }
+    if ( serverGroup.size() != 0 && clientGroup.size() == 0) {
+        clientGroup = parentGroup.difference( serverGroup );
+    }
 
     MpiPeer local{parentName, static_cast<size_t>(parentComm.rank())};
 
@@ -143,6 +154,11 @@ MpiXTransport::MpiXTransport(const ComponentConfiguration& compConf, MpiPeerSetu
             throw eckit::UserError(os.str(), Here());
         }
     }
+
+    // std::cout << "MpiXTransport::MpiXTransport :: parentGroup size=" << parentGroup_.size() << " :: rank="  << parentGroup_.rank() << std::endl;
+    // std::cout << "MpiXTransport::MpiXTransport :: clientGroup size=" << clientGroup_.size() << " :: rank="  << clientGroup_.rank() << std::endl;
+    // std::cout << "MpiXTransport::MpiXTransport :: serverGroup size=" << serverGroup_.size() << " :: rank="  << serverGroup_.rank() << std::endl;
+
 }
 
 MpiXTransport::MpiXTransport(const ComponentConfiguration& compConf) :
@@ -167,13 +183,15 @@ void MpiXTransport::closeConnections() {
 }
 
 void MpiXTransport::synchronize() {
+
     if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
         for (auto& server : serverPeers()) {
-            Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
-            bufferedSend(msg);
-            pool_.sendBuffer(msg.destination());
+            // Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
+            //bufferedSend(msg);
+            // pool_.sendBuffer(msg.destination());
+            pool_.sendBuffer(*server);
         }
-        pool_.waitAll();
+        // pool_.waitAll();
     }
 
     comm().barrier();
@@ -244,15 +262,18 @@ void MpiXTransport::createPeers() const {
     auto clientRankMap = parentGroup_.translate_ranks(parentRanks, clientGroup_);
     auto serverRankMap = parentGroup_.translate_ranks(parentRanks, serverGroup_);
 
+    int cnt = 0;
     for (auto& it : clientRankMap) {
         clientPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), static_cast<unsigned long>(it.first)));
     }
+    cnt = 0;
     for (auto& it : serverRankMap) {
         serverPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), static_cast<unsigned long>(it.first)));
     }
 }
 
 void MpiXTransport::print(std::ostream& os) const {
+
     os << "MpiXTransport(" << local_ << ")";
 }
 
@@ -292,6 +313,7 @@ PeerList MpiXTransport::createServerPeers() const {
 }
 
 const eckit::mpi::Comm& MpiXTransport::comm() const {
+    // std::cout << "MpiXTransport::localGroup :: " << local_.group().c_str() << std::endl;
     return eckit::mpi::comm(local_.group().c_str());
 }
 

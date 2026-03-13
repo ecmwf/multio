@@ -1,6 +1,8 @@
 
 #include "TransportRegistry.h"
 
+#include <iostream>
+
 namespace multio::transport {
 
 TransportRegistry& TransportRegistry::instance() {

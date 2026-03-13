@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <iostream>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
@@ -42,6 +43,7 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
     // TODO
     // Why do we need to store the stream? When we start to share the pool with receiving and sending thread,
     // one of these stored streams might already be used
+
     auto dest = msg.destination();
 
     if (streams_.find(dest) == std::end(streams_)) {
@@ -82,9 +84,10 @@ void StreamPool::sendBuffer(const message::Peer& dest) {
 
     util::ScopedTiming(statistics_.isendTiming_);
 
-    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, 0);
-    strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
-    streams_.erase(dest);
+    comm_.send<void>(strm.buffer().content, sz, destId, 0);
+    // strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, 0);
+    // strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
+    // streams_.erase(dest);
 
     ::gettimeofday(&tstamp, 0);
     mSecs = tstamp.tv_usec;

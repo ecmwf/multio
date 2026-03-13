@@ -11,6 +11,7 @@
 #include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
 #include "multio/message/Parametrization.h"
+#include "multio/transport/TransportRegistry.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
@@ -19,6 +20,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <iostream>
 
 using multio::message::Message;
 using multio::message::Metadata;

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <unordered_set>
+#include <iostream>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/Statistics.h"
@@ -198,6 +199,18 @@ void MultioClient::dispatch(message::Message msg) {
                 msg2.modifyMetadata().set("clientPlanName", plan->name());
 
                 plan->process(std::move(msg2));
+            }
+        }
+        else if (msg.tag() == message::Message::Tag::Notification){
+            for (const auto& plan : plans_) {
+                plan->process(msg);
+            }
+            const auto& trigger = msg.metadata().getOpt( "trigger" );
+            if ( trigger.has_value() ){
+                if ( trigger.value() == "step" ){
+                    // std::cout << "Synchronize client side" << std::endl;
+                    synchronize();
+                }
             }
         }
         else {

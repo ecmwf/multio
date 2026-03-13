@@ -112,23 +112,47 @@ public:
     LocalPeerTag localPeerTag() const;
 
     void addCommunicator(const std::string& name,
-                                          int parentComm,
-                                          int serverComm,
-                                          int clientComm) {
+                         int parentComm,
+                         int serverComm,
+                         int clientComm) {
         if (std::find(in_comms_.begin(), in_comms_.end(), name) != in_comms_.end()) {
             throw eckit::SeriousBug("Communicator base name \"" + name + "\" already exists in MultioConfiguration",
                                 Here());
         }
 
-        const std::string_view parentName = name + "-parent";
-        const std::string_view serverName = name + "-server";
-        const std::string_view clientName = name + "-client";
+        const std::string parentName = name + "-parent";
+        const std::string serverName = name + "-server";
+        const std::string clientName = name + "-client";
 
-        eckit::mpi::addComm(parentName, parentComm);
-        eckit::mpi::addComm(serverName, serverComm);
-        eckit::mpi::addComm(clientName, clientComm);
+        if ( !eckit::mpi::hasComm(parentName) ){
+            eckit::mpi::addComm(parentName, parentComm);
+        }
+
+        if ( !eckit::mpi::hasComm(serverName) ){
+            eckit::mpi::addComm(serverName, serverComm);
+        }
+
+        if ( !eckit::mpi::hasComm(clientName) ){
+            eckit::mpi::addComm(clientName, clientComm);
+        }
+
+        // BEGIN DEBUG
+        auto& parentComm1 = eckit::mpi::comm(parentName.c_str());
+        auto& clientComm1 = eckit::mpi::comm(clientName.c_str());
+        auto& serverComm1 = eckit::mpi::comm(serverName.c_str());
+
+        eckit::mpi::Group parentGroup1 = parentComm1.group();
+        eckit::mpi::Group clientGroup1 = clientComm1.group();
+        eckit::mpi::Group serverGroup1 = serverComm1.group();
+
+        // std::cout << "MultioConfiguration::AddCommunicator :: parentGroup size=" << parentGroup1.size() << " :: rank="  << parentGroup1.rank() << std::endl;
+        // std::cout << "MultioConfiguration::AddCommunicator :: clientGroup size=" << clientGroup1.size() << " :: rank="  << clientGroup1.rank() << std::endl;
+        // std::cout << "MultioConfiguration::AddCommunicator :: serverGroup size=" << serverGroup1.size() << " :: rank="  << serverGroup1.rank() << std::endl;
+
+        // END DEBUG
 
         in_comms_.push_back(name);
+
     }
 
     std::size_t getCommunicatorCount() const {return in_comms_.size();};

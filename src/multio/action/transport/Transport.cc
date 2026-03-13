@@ -12,6 +12,9 @@
 
 #include <algorithm>
 #include <sstream>
+#include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "eckit/config/Resource.h"
 
@@ -53,7 +56,11 @@ void Transport::executeImpl(Message msg) {
     util::ScopedTiming timing{statistics_.actionTiming_};
 
     auto md = msg.metadata();
-    if (md.get<bool>("toAllServers")) {
+
+    bool l = md.get<bool>("toAllServers");
+
+    if ( l ) {
+
         for (auto& server : serverPeers_) {
             auto md = msg.metadata();
             Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.payload()};
@@ -80,9 +87,12 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
     auto getMetadataValue = [&](const std::string& hashKey) -> const message::MetadataValue& {
         auto searchHashKey = metadata.find(hashKey);
         if (searchHashKey == metadata.end()) {
-            std::ostringstream os;
-            os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
-            throw multio::transport::TransportException(os.str(), Here());
+            return "";
+            // std::cout << "TransportAction: chooseServer::GetMetadata01=" << hashKey
+            //       << " :: " << metadata << std::endl;
+            // std::ostringstream os;
+            // os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
+            // throw multio::transport::TransportException(os.str(), Here());
         }
         return searchHashKey->second;
     };
@@ -95,7 +105,9 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
                 [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), MetadataTypes::Scalars> {
                     throw message::MetadataWrongTypeException(s, Here());
                 },
-                [&os](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Scalars> { os << v; },
+                [&os](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Scalars> {
+                    os << v;
+                },
             });
         }
         return os.str();
@@ -114,12 +126,22 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
             return *serverPeers_[id];
         }
         case DistributionType::hashed_to_single: {
-            std::string hashString = constructHash();
-            auto id = std::hash<std::string>{}(hashString) % serverCount_;
-
-            ASSERT(id < serverPeers_.size());
-
-            return *serverPeers_[id];
+            // std::cout << "TransportAction: chooseServer02: " << serverCount_ << " :: " << serverPeers_.size() << std::endl;
+            // auto t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+            // std::this_thread::sleep_until(t);
+            // std::string hashString = constructHash();
+            // t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+            // std::this_thread::sleep_until(t);
+            // std::cout << "TransportAction: chooseServer02.1:: " << hashString << std::endl;
+            // auto id = std::hash<std::string>{}(hashString) % serverCount_;
+            // t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+            // std::this_thread::sleep_until(t);
+            //
+            // std::cout << "TransportAction: chooseServer02.2:: " << id
+            //           << " :: " << serverPeers_.size() << std::endl;
+            // ASSERT(id < serverPeers_.size());
+            // return *serverPeers_[id];
+            return *serverPeers_[0];
         }
         case DistributionType::even: {
             std::string hashString = constructHash();

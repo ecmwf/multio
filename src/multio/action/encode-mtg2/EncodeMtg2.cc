@@ -80,8 +80,18 @@ void EncodeMtg2::executeImpl(Message msg) {
             ASSERT(values);
 
             const auto scaleFactor = *(mappingResult->valuesScaleFactor);
-            std::transform(values, values + size, values,
-                           [&](const Precision& value) -> Precision { return value * scaleFactor; });
+
+            if (miscRec.missingValue.isSet()) {
+                const double missing = miscRec.missingValue.get();
+                std::transform(values, values + size, values, [&](const Precision& value) -> Precision {
+                    return static_cast<Precision>(value == missing ? missing : value * scaleFactor);
+                });
+            }
+            else {
+                std::transform(values, values + size, values, [&](const Precision& value) -> Precision {
+                    return static_cast<Precision>(value * scaleFactor);
+                });
+            }
         }
 
         // Call the GRIB2 encoder in metkit

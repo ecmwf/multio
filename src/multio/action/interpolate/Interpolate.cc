@@ -173,6 +173,15 @@ std::string generateKey(const message::Message& msg, const std::string& cache_pa
 
 }  // namespace
 
+
+Interpolate::Interpolate(const ComponentConfiguration& compConf) :
+    ChainedAction(compConf),
+    additionalMetadata_{message::toMetadata(
+        compConf.parsedConfig().has("additional-metadata")
+            ? eckit::LocalConfiguration{compConf.parsedConfig().getSubConfiguration("additional-metadata")}
+            : eckit::LocalConfiguration{})} {}
+
+
 void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md) {
     for (const auto& kv : in_md) {
         if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), kv.first)
@@ -181,6 +190,7 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
         }
     }
 };
+
 
 message::MetadataValue getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
     auto searchAtlasGridKind = md.find("atlas-grid-kind");
@@ -402,7 +412,8 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 }
                 const auto& options = cfg.getSubConfiguration("options");
                 const auto cache_path = cfg.getString("cache-path", "");
-                const auto weights_file = generateKey<double>(msg, cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
+                const auto weights_file
+                    = generateKey<double>(msg, cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
         }
@@ -425,6 +436,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     message::Metadata md;
     fill_out_metadata(msg.metadata(), md);
+    md.updateOverwrite(additionalMetadata_);
     md.set(dm::legacy::Precision, "double");
 
     mir::param::SimpleParametrisation inputPar;
@@ -432,7 +444,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     fill_input(config, inputPar, size, msg.metadata().getOpt<std::string>(dm::legacy::Domain).value_or(""), inp);
     auto searchMissingValue = msg.metadata().find("missingValue");
     auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
-    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end() && searchBitmapPresent->second.get<bool>()) {
+    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end()
+        && searchBitmapPresent->second.get<bool>()) {
         inputPar.set("missing_value", searchMissingValue->second.get<double>());
     }
     else if (config.getSubConfiguration("options").has("missing_value")) {

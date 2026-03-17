@@ -306,6 +306,119 @@ auto ruleWaveBitsPerValue() {
 
 
 //-----------------------------------------------------------------------------
+// Atmospheric Composition parameter mappings
+//-----------------------------------------------------------------------------
+
+// clang-format off
+const RuleList& mapAtmosphericComposition() {
+    static auto rules_ = ruleList(
+        rule(all(matchParams(210207)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 550)),
+        rule(all(matchParams(210213)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 469)),
+        rule(all(matchParams(210214)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 670)),
+        rule(all(matchParams(210215)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 865)),
+        rule(all(matchParams(210216)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1240)),
+        rule(all(matchParams(210217)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 340)),
+        rule(all(matchParams(210218)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 355)),
+        rule(all(matchParams(210219)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 380)),
+        rule(all(matchParams(210220)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 400)),
+        rule(all(matchParams(210221)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 440)),
+        rule(all(matchParams(210222)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 500)),
+        rule(all(matchParams(210223)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 532)),
+        rule(all(matchParams(210224)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 645)),
+        rule(all(matchParams(210225)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 800)),
+        rule(all(matchParams(210226)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 858)),
+        rule(all(matchParams(210227)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1020)),
+        rule(all(matchParams(210228)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1064)),
+        rule(all(matchParams(210229)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1640)),
+        rule(all(matchParams(210230)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 2130)),
+        rule(all(matchParams(215096)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 340)),
+        rule(all(matchParams(215097)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 355)),
+        rule(all(matchParams(215098)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 380)),
+        rule(all(matchParams(215099)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 400)),
+        rule(all(matchParams(215100)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 440)),
+        rule(all(matchParams(215101)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 469)),
+        rule(all(matchParams(215102)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 500)),
+        rule(all(matchParams(215103)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 532)),
+        rule(all(matchParams(215104)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 550)),
+        rule(all(matchParams(215105)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 645)),
+        rule(all(matchParams(215106)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 670)),
+        rule(all(matchParams(215107)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 800)),
+        rule(all(matchParams(215108)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 858)),
+        rule(all(matchParams(215109)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 865)),
+        rule(all(matchParams(215110)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1020)),
+        rule(all(matchParams(215111)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1064)),
+        rule(all(matchParams(215112)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1240)),
+        rule(all(matchParams(215113)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1640)),
+        rule(all(matchParams(215114)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 340)),
+        rule(all(matchParams(215115)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 355)),
+        rule(all(matchParams(215116)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 380)),
+        rule(all(matchParams(215117)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 400)),
+        rule(all(matchParams(215118)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 440)),
+        rule(all(matchParams(215119)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 469)),
+        rule(all(matchParams(215120)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 500)),
+        rule(all(matchParams(215121)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 532)),
+        rule(all(matchParams(215122)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 550)),
+        rule(all(matchParams(215123)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 645)),
+        rule(all(matchParams(215124)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 670)),
+        rule(all(matchParams(215125)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 800)),
+        rule(all(matchParams(215126)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 858)),
+        rule(all(matchParams(215127)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 865)),
+        rule(all(matchParams(215128)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 1020)),
+        rule(all(matchParams(215129)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 1064)),
+        rule(all(matchParams(215130)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 1240)),
+        rule(all(matchParams(215131)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 1640)),
+        rule(all(matchParams(215132)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 340)),
+        rule(all(matchParams(215133)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 355)),
+        rule(all(matchParams(215134)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 380)),
+        rule(all(matchParams(215135)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 400)),
+        rule(all(matchParams(215136)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 440)),
+        rule(all(matchParams(215137)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 469)),
+        rule(all(matchParams(215138)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 500)),
+        rule(all(matchParams(215139)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 532)),
+        rule(all(matchParams(215140)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 550)),
+        rule(all(matchParams(215141)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 645)),
+        rule(all(matchParams(215142)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 670)),
+        rule(all(matchParams(215143)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 800)),
+        rule(all(matchParams(215144)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 858)),
+        rule(all(matchParams(215145)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 865)),
+        rule(all(matchParams(215146)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1020)),
+        rule(all(matchParams(215147)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1064)),
+        rule(all(matchParams(215148)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1240)),
+        rule(all(matchParams(215149)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1640)),
+        rule(all(matchParams(215150)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 340)),
+        rule(all(matchParams(215151)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 355)),
+        rule(all(matchParams(215152)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 380)),
+        rule(all(matchParams(215153)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 400)),
+        rule(all(matchParams(215154)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 440)),
+        rule(all(matchParams(215155)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 469)),
+        rule(all(matchParams(215156)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 500)),
+        rule(all(matchParams(215157)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 532)),
+        rule(all(matchParams(215158)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 550)),
+        rule(all(matchParams(215159)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 645)),
+        rule(all(matchParams(215160)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 670)),
+        rule(all(matchParams(215161)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 800)),
+        rule(all(matchParams(215162)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 858)),
+        rule(all(matchParams(215163)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 865)),
+        rule(all(matchParams(215164)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1020)),
+        rule(all(matchParams(215165)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1064)),
+        rule(all(matchParams(215166)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1240)),
+        rule(all(matchParams(215167)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 1640)),
+        rule(all(matchParams(215176)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 2130)),
+        rule(all(matchParams(215177)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 2130)),
+        rule(all(matchParams(215178)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 2130)),
+        rule(all(matchParams(215179)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 2130)),
+        rule(all(matchParams(216008)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 10000)),
+        rule(all(matchParams(216009)), setKey(&dm::FullMarsRecord::param, 472000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 10000)),
+        rule(all(matchParams(216010)), setKey(&dm::FullMarsRecord::param, 457000), setKey(&dm::FullMarsRecord::chem, 923), setKey(&dm::FullMarsRecord::wavelength, 10000)),
+        rule(all(matchParams(216011)), setKey(&dm::FullMarsRecord::param, 458000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 10000)),
+        rule(all(matchParams(216012)), setKey(&dm::FullMarsRecord::param, 459000), setKey(&dm::FullMarsRecord::chem, 922), setKey(&dm::FullMarsRecord::wavelength, 10000))
+    );
+    return rules_;
+}
+// clang-format on
+
+
+//-----------------------------------------------------------------------------
 // Map incremental fields for type=4i
 //-----------------------------------------------------------------------------
 
@@ -401,13 +514,14 @@ const RuleList& mapBitsPerValue() {
 
 
 const RuleList& allRulesNoWMOMapping() {
-    static auto all_ = ruleList(incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
+    static auto all_
+        = ruleList(incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2(), mapAtmosphericComposition());
     return all_;
 }
 
 const RuleList& allRules() {
-    static auto all_
-        = ruleList(wmoUnitMapping(), incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2());
+    static auto all_ = ruleList(wmoUnitMapping(), incrementalType4IRules(), fixIFSOutput(), mapDeprecatedGrib1ToGrib2(),
+                                mapAtmosphericComposition());
     return all_;
 }
 

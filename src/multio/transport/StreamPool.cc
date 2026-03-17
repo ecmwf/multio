@@ -84,10 +84,10 @@ void StreamPool::sendBuffer(const message::Peer& dest) {
 
     util::ScopedTiming(statistics_.isendTiming_);
 
-    comm_.send<void>(strm.buffer().content, sz, destId, 0);
-    // strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, 0);
-    // strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
-    // streams_.erase(dest);
+    // comm_.send<void>(strm.buffer().content, sz, destId, 0);
+    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, 0);
+    strm.buffer().status.store(BufferStatus::transmitting, std::memory_order_release);
+    streams_.erase(dest);
 
     ::gettimeofday(&tstamp, 0);
     mSecs = tstamp.tv_usec;

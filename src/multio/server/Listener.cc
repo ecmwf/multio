@@ -179,7 +179,7 @@ void Listener::start() {
                     // std::cout << "Listener synchronization on notification:: "
                     //          << cnt << " :: " << clientCount_ << std::endl;
                     if ( cnt >= clientCount_ ){
-                        transport_.synchronize();
+                        // transport_.synchronize();
                         cnt = 0;
                     }
                 case Message::Tag::Flush:

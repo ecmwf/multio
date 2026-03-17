@@ -191,7 +191,7 @@ void MpiXTransport::synchronize() {
             // pool_.sendBuffer(msg.destination());
             pool_.sendBuffer(*server);
         }
-        // pool_.waitAll();
+        pool_.waitAll();
     }
 
     comm().barrier();

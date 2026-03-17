@@ -35,7 +35,8 @@ std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
     if (conf.has("hash-keys")) {
         return conf.getStringVector("hash-keys");
     }
-    return std::vector<std::string>{"category", "name", "level"};
+    // return std::vector<std::string>{"category", "name", "level"};
+    return std::vector<std::string>{"param", "levtype", "levelist"};
 }
 
 }  // namespace
@@ -87,12 +88,10 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
     auto getMetadataValue = [&](const std::string& hashKey) -> const message::MetadataValue& {
         auto searchHashKey = metadata.find(hashKey);
         if (searchHashKey == metadata.end()) {
-            return "";
-            // std::cout << "TransportAction: chooseServer::GetMetadata01=" << hashKey
-            //       << " :: " << metadata << std::endl;
-            // std::ostringstream os;
-            // os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
-            // throw multio::transport::TransportException(os.str(), Here());
+            // return "";
+            std::ostringstream os;
+            os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
+            throw multio::transport::TransportException(os.str(), Here());
         }
         return searchHashKey->second;
     };
@@ -126,22 +125,11 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
             return *serverPeers_[id];
         }
         case DistributionType::hashed_to_single: {
-            // std::cout << "TransportAction: chooseServer02: " << serverCount_ << " :: " << serverPeers_.size() << std::endl;
-            // auto t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
-            // std::this_thread::sleep_until(t);
-            // std::string hashString = constructHash();
-            // t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
-            // std::this_thread::sleep_until(t);
-            // std::cout << "TransportAction: chooseServer02.1:: " << hashString << std::endl;
-            // auto id = std::hash<std::string>{}(hashString) % serverCount_;
-            // t = std::chrono::steady_clock::now() + std::chrono::seconds(10);
-            // std::this_thread::sleep_until(t);
-            //
-            // std::cout << "TransportAction: chooseServer02.2:: " << id
-            //           << " :: " << serverPeers_.size() << std::endl;
-            // ASSERT(id < serverPeers_.size());
-            // return *serverPeers_[id];
-            return *serverPeers_[0];
+            std::string hashString = constructHash();
+            auto id = std::hash<std::string>{}(hashString) % serverCount_;
+            ASSERT(id < serverPeers_.size());
+            return *serverPeers_[id];
+            // return *serverPeers_[0];
         }
         case DistributionType::even: {
             std::string hashString = constructHash();

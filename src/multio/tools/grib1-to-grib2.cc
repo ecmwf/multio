@@ -33,11 +33,13 @@
 #include "metkit/mars2grib/api/Mars2Grib.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/AtlasGeo.h"
-#include "multio/datamod/core/Record.h"
 #include "multio/tools/MultioTool.h"
 
+#include "multio/datamod/core/EntryDumper.h"
+#include "multio/datamod/core/EntryParser.h"
+#include "multio/datamod/core/Record.h"
 #include "multio/datamod/ContainerInterop.h"
+
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/Print.h"
@@ -77,71 +79,6 @@ KeySet iterateMarsNamespace(const metkit::codes::CodesHandle& handle) {
 
 
 namespace extract {
-
-using GridTypeFunction = std::function<dm::Geometry(metkit::codes::CodesHandle&, dm::FullMarsRecord&, dm::MiscRecord&)>;
-
-dm::Geometry handleReducedGG(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    mars.repres.set(dm::Repres::GG);
-    return dm::readRecord<dm::GeoGGRecord>(h);
-}
-
-dm::Geometry handleReducedGGAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    dm::GeoGGRecord geoGG;
-    mars.repres.set(dm::Repres::GG);
-    mars.grid.set(h.getString("gridName"));
-    dm::setKeysFromAtlas(geoGG, mars.grid.get());
-    return geoGG;
-}
-
-dm::Geometry handleSH(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    // TODO pgeier implement with details
-    mars.repres.set(dm::Repres::SH);
-    return dm::readRecord<dm::GeoSHRecord>(h);
-}
-
-dm::Geometry handleLL(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    mars.repres.set(dm::Repres::LL);
-    mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
-    dm::GeoLLRecord res;
-    res.numberOfPointsAlongAParallel.set(h.getLong("Ni"));
-    res.numberOfPointsAlongAMeridian.set(h.getLong("Nj"));
-    res.latitudeOfFirstGridPointInDegrees.set(h.getDouble("latitudeOfFirstGridPointInDegrees"));
-    res.longitudeOfFirstGridPointInDegrees.set(h.getDouble("longitudeOfFirstGridPointInDegrees"));
-    res.latitudeOfLastGridPointInDegrees.set(h.getDouble("latitudeOfLastGridPointInDegrees"));
-    res.longitudeOfLastGridPointInDegrees.set(h.getDouble("longitudeOfLastGridPointInDegrees"));
-    res.iDirectionIncrementInDegrees.set(h.getDouble("iDirectionIncrementInDegrees"));
-    res.jDirectionIncrementInDegrees.set(h.getDouble("jDirectionIncrementInDegrees"));
-    dm::applyRecordDefaults(res);
-    dm::validateRecord(res);
-    return res;
-}
-
-dm::Geometry handleRegularLLAtlas(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
-    dm::GeoLLRecord geoLL;
-    mars.repres.set(dm::Repres::LL);
-    mars.grid.set(std::string("L") + h.getString("Ni") + std::string("x") + h.getString("Nj"));
-    dm::setKeysFromAtlas(geoLL, mars.grid.get());
-
-    return geoLL;
-}
-
-// TODO(pgeier) Add option to the tool to specific if geometry should be infered by atlas
-dm::Geometry handleGridType(metkit::codes::CodesHandle& h, const std::string& gridType, dm::FullMarsRecord& mars,
-                            dm::MiscRecord& misc) {
-    // TODO(pgeier) add HealPpx
-    const static std::unordered_map<std::string, GridTypeFunction> gridMap{
-        {"reduced_gg", &handleReducedGGAtlas},
-        {"regular_ll", &handleRegularLLAtlas},
-        // {"regular_ll", &handleLL}, // Works as well
-        {"sh", &handleSH},
-    };
-
-    const auto gridTypeFunc = gridMap.find(gridType);
-    if (gridTypeFunc == gridMap.cend()) {
-        throw std::runtime_error(std::string("Unhandled gridType '") + gridType + std::string("'"));
-    }
-    return gridTypeFunc->second(h, mars, misc);
-};
 
 void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
@@ -305,7 +242,7 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
+void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
                              dm::MiscRecord& misc, int verbosity) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
@@ -473,9 +410,6 @@ dm::Geometry mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm
         std::string setPackingType = h.getString("setPackingType");
         handlePackingType(h, setPackingType, mars);
     }
-
-    std::string gridType = h.getString("gridType");
-    return handleGridType(h, gridType, mars, misc);
 }
 
 void postFixToolOnly(const metkit::codes::CodesHandle& in, metkit::codes::CodesHandle& out) {
@@ -1079,7 +1013,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
 
-            auto geo = extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
+            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
 
 
             if (overwritePacking_) {

@@ -44,8 +44,7 @@ CASE("Test encode-mtg2 with AIFS single ") {
             "name": "MULTIO_TEST",
             "actions": [
                 {
-                    "type": "encode-mtg2",
-                    "geo-from-atlas": true
+                    "type": "encode-mtg2"
                 },
                 {
                     "type": "debug-sink"
@@ -84,8 +83,7 @@ CASE("Test encode-mtg2 with AIFS ens") {
             "name": "MULTIO_TEST",
             "actions": [
                 {
-                    "type": "encode-mtg2",
-                    "geo-from-atlas": true
+                    "type": "encode-mtg2"
                 },
                 {
                     "type": "debug-sink"

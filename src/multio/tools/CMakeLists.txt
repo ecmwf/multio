@@ -83,7 +83,6 @@ ecbuild_add_executable(
   LIBS
       multio
       multio-mars2mars
-      atlas
       eckit
       metkit
       eccodes

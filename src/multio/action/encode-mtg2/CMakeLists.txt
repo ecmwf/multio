@@ -8,7 +8,6 @@ ecbuild_add_library(
         EncodeMtg2.h
         EncodeMtg2Exception.cc
         EncodeMtg2Exception.h
-        AtlasGeoSetter.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -19,6 +18,5 @@ ecbuild_add_library(
         multio
         multio-mars2mars
         eccodes
-        atlas
         metkit
 )

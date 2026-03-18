@@ -29,7 +29,7 @@ def test_allow_dash():
         (Print, "print", {"stream": "cout", "prefix": " ++ MULTIO-PRINT-ALL-DEBUG :: ", "only-fields": False}),
         (Mask, "mask", {}),
         (Encode, "encode", {"format": "grib", "template": "template", "grid-type": "grid_type"}),
-        (EncodeMTG, "encode-mtg2", {"geo-from-atlas": True, "cached": True}),
+        (EncodeMTG, "encode-mtg2", {"cached": True}),
         (Transport, "transport", {"target": "target"}),
         (Aggregation, "aggregation", {}),
         (Sink, "sink", {"sinks": [{"append": True, "path": "debug.grib", "per-server": False, "type": "file"}]}),

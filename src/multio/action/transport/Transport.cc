@@ -35,8 +35,7 @@ std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
     if (conf.has("hash-keys")) {
         return conf.getStringVector("hash-keys");
     }
-    // return std::vector<std::string>{"category", "name", "level"};
-    return std::vector<std::string>{"param", "levtype", "levelist"};
+    return std::vector<std::string>{"category", "name", "level"};
 }
 
 }  // namespace

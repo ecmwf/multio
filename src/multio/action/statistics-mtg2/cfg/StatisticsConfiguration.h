@@ -54,14 +54,11 @@ public:
 
     std::int64_t date() const;
     std::int64_t time() const;
-    std::int64_t level() const;
     std::int64_t timeStep() const;
     std::int64_t step() const;
     std::optional<std::int64_t> timespan() const;
 
     std::int64_t param() const;
-    const std::string& levType() const;
-    const std::string& gridType() const;
     const std::string& precision() const;
 
     // Handle missing values

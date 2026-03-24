@@ -220,18 +220,6 @@ void StatisticsIO::createCurrentDir() const {
     return;
 };
 
-void StatisticsIO::createDateTimeDir() const {
-    if (!hasValidDateTime_) {
-        std::ostringstream os;
-        os << "ERROR : no valid datetime found";
-        throw eckit::SeriousBug{os.str(), Here()};
-    }
-    std::ostringstream dir;
-    dir << basePath_ << "/" << uniqueID_ << "/" << dateTime_;
-    eckit::PathName{dir.str()}.mkdir();
-    return;
-};
-
 std::string StatisticsIO::generateCurrFileName(const std::string& name) const {
     std::ostringstream os;
     os << getCurrentDir() << "/" << name << "." << ext_;

@@ -300,22 +300,6 @@ bool Statistics::HasRestartKey(const std::string& key) {
 }
 
 
-message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& cfg,
-                                             const std::string& key) const {
-    auto& win = fieldStats_.at(key)->cwin();
-    // if (win.endPointInSeconds() % 3600 != 0L) {
-    //     std::ostringstream os;
-    //     os << "Step in seconds needs to be a multiple of 3600 :: " << fieldStats_.at(key)->win().endPointInSeconds()
-    //        << std::endl;
-    //     throw eckit::SeriousBug(os.str(), Here());
-    // }
-    auto md = inputMetadata;
-
-    md.set(dm::legacy::StartDate, win.epochPoint().date().yyyymmdd());
-    md.set(dm::legacy::StartTime, win.epochPoint().time().hhmmss());
-
-    return md;
-}
 
 
 void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
@@ -454,8 +438,6 @@ dm::StatTypeOperation operationNameToStatTypeOperation(std::string_view opName) 
 }
 
 
-const std::map<const std::string, const std::string> opname_to_stattype{
-    {"average", "av"}, {"maximum", "mx"}, {"minimum", "mn"}, {"stddev", "st"}};
 }  // namespace
 
 void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {

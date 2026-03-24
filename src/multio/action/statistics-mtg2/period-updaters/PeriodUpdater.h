@@ -4,7 +4,6 @@
 
 #include "eckit/types/DateTime.h"
 #include "multio/action/statistics-mtg2/StatisticsIO.h"
-#include "multio/action/statistics-mtg2/TimeUtils.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
 #include "multio/message/Message.h"
 

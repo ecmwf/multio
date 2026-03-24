@@ -206,9 +206,6 @@ std::int64_t StatisticsConfiguration::date() const {
 std::int64_t StatisticsConfiguration::time() const {
     return time_;
 }
-std::int64_t StatisticsConfiguration::level() const {
-    return level_;
-}
 std::int64_t StatisticsConfiguration::timeStep() const {
     return timeStep_;
 }
@@ -221,12 +218,6 @@ std::optional<std::int64_t> StatisticsConfiguration::timespan() const {
 
 int64_t StatisticsConfiguration::param() const {
     return param_;
-}
-const std::string& StatisticsConfiguration::levType() const {
-    return levType_;
-}
-const std::string& StatisticsConfiguration::gridType() const {
-    return gridType_;
 }
 const std::string& StatisticsConfiguration::precision() const {
     return precision_;

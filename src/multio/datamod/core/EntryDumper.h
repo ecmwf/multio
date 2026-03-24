@@ -107,5 +107,33 @@ Container dumpRecord(RecordType&& rec, const DumpOptions& opts = DumpOptions{}) 
 
 
 //-----------------------------------------------------------------------------
+// Dumping a record with the record-name prefix stripped from keys
+//-----------------------------------------------------------------------------
+
+template <typename RecordType, typename Container,
+          std::enable_if_t<EntryDumperIsSpecialized_v<std::decay_t<Container>>, bool> = true>
+void dumpUnscopedRecord(RecordType&& rec, Container& cont, const DumpOptions& opts = DumpOptions{}) {
+    const std::string prefix = std::string(RecordName_v<std::decay_t<RecordType>>) + "-";
+    std::apply(
+        [&](const auto&... entryDef) {
+            auto stripPrefix = [&](const auto& ed) -> std::string {
+                std::string k{ed.key()};
+                return (k.compare(0, prefix.size(), prefix) == 0) ? k.substr(prefix.size()) : k;
+            };
+            (dumpEntry(scopedEntryDef(entryDef, stripPrefix(entryDef)),
+                       entryDef.get(std::forward<RecordType>(rec)), cont, opts), ...);
+        },
+        recordEntries(rec));
+}
+
+template <typename Container, typename RecordType, std::enable_if_t<EntryDumperIsSpecialized_v<Container>, bool> = true>
+Container dumpUnscopedRecord(RecordType&& rec, const DumpOptions& opts = DumpOptions{}) {
+    Container ret;
+    dumpUnscopedRecord(std::forward<RecordType>(rec), ret, opts);
+    return ret;
+}
+
+
+//-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod

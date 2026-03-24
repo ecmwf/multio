@@ -252,22 +252,22 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
 // TypeOfProcessedData defined in GribKeys
 
 constexpr auto InitialStep =               //
-    EntryDef<std::int64_t>{"initialStep"}  //
+    EntryDef<std::int64_t>{"misc-initialStep"}  //
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.initialStep; });
 
 constexpr auto TimeIncrementInSeconds =               //
-    EntryDef<std::int64_t>{"timeIncrementInSeconds"}  //
+    EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}  //
         .withDefault(3600)
         .withAccessor([](auto&& v) { return &v.timeIncrementInSeconds; });
 
 constexpr auto LengthOfTimeWindow =               //
-    EntryDef<std::int64_t>{"lengthOfTimeWindow"}  //
+    EntryDef<std::int64_t>{"misc-lengthOfTimeWindow"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindow; });
 
 constexpr auto LengthOfTimeWindowInSeconds =               //
-    EntryDef<std::int64_t>{"lengthOfTimeWindowInSeconds"}  //
+    EntryDef<std::int64_t>{"misc-lengthOfTimeWindowInSeconds"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
 
@@ -288,22 +288,22 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
 // Pv defined in GribKeys
 
 constexpr auto ScaleFactorOfWaveDirections =               //
-    EntryDef<std::int64_t>{"scaleFactorOfWaveDirections"}  //
+    EntryDef<std::int64_t>{"misc-scaleFactorOfWaveDirections"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveDirections; });
 
 constexpr auto ScaleFactorOfWaveFrequencies =               //
-    EntryDef<std::int64_t>{"scaleFactorOfWaveFrequencies"}  //
+    EntryDef<std::int64_t>{"misc-scaleFactorOfWaveFrequencies"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveFrequencies; });
 
 constexpr auto WaveDirections =                      //
-    EntryDef<std::vector<double>>{"waveDirections"}  //
+    EntryDef<std::vector<double>>{"misc-waveDirections"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.waveDirections; });
 
 constexpr auto WaveFrequencies =                      //
-    EntryDef<std::vector<double>>{"waveFrequencies"}  //
+    EntryDef<std::vector<double>>{"misc-waveFrequencies"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.waveFrequencies; });
 

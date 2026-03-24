@@ -61,7 +61,6 @@ public:
     std::string getUniqueRestartDir() const;
     bool currentDirExists() const;
     void createCurrentDir() const;
-    void createDateTimeDir() const;
 
     IOBuffer getBuffer(std::size_t size);
     std::vector<eckit::PathName> getFiles();

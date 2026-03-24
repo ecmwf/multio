@@ -35,8 +35,6 @@ class Statistics : public ChainedAction {
 public:
     explicit Statistics(const ComponentConfiguration& compConf);
     void executeImpl(message::Message msg) override;
-    message::Metadata outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& opt,
-                                     const std::string& key) const;
 
 private:
     bool needRestart_;

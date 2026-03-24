@@ -6,7 +6,6 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 
-#include "multio/action/statistics-mtg2/TimeUtils.h"
 #include "multio/config/ComponentConfiguration.h"
 
 #include "multio/action/statistics-mtg2/synoptic-filters/AllTimesFilter.h"

@@ -81,18 +81,16 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     auto& md = msg.metadata();
 
-    // Read and set unscoped mars keys
+    // Read mars and misc keys from the message metadata
     auto marsRec = dm::readRecord<dm::FullMarsRecord>(md);
-
-    // Read scoped misc keys
-    auto scopedMiscRec = dm::scopeRecord(dm::MiscRecord{});
-    dm::readRecord(scopedMiscRec, md);
-    // Write unscoped misc keys
-    auto miscRec = dm::unscopeRecord(std::move(scopedMiscRec));
+    auto miscRec = dm::readRecord<dm::MiscRecord>(md);
 
     // Apply mappings
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
+    // Dump (mapped) mars and misc keys to local configurations
+    const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
+    const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
 
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;

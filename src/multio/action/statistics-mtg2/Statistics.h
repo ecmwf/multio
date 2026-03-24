@@ -16,6 +16,7 @@
 #pragma once
 
 
+#include "MetadataKeys.h"
 #include "PeriodUpdaters.h"
 #include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
@@ -39,8 +40,8 @@ public:
 private:
     bool needRestart_;
     std::string lastDateTime_;
-    void TryDumpRestart(const message::Message& msg);
-    std::string generateRestartNameFromFlush(const message::Message& msg) const;
+    void TryDumpRestart(const message::Message& msg, const FlushMetadataKeys& flush);
+    std::string generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const;
     void DeleteLatestSymLink();
     void CreateLatestSymLink();
     void CreateMainRestartDirectory(const std::string& restartFolderName, bool is_master);

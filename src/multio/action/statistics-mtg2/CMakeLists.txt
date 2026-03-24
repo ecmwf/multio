@@ -39,6 +39,8 @@ list( APPEND _statistics_sources
     TemporalStatistics.h
     Statistics.cc
     Statistics.h
+    MetadataKeys.cc
+    MetadataKeys.h
     # SynopticCollection.cc
     # SynopticCollection.h
     # SynopticFilters.cc

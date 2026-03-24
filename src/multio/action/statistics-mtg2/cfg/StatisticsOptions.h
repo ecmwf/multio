@@ -28,7 +28,6 @@ enum class OutputTimeReference : std::int64_t
  */
 class StatisticsOptions {
 private:
-    const std::int64_t timeStep_;
     const bool initialConditionPresent_;
 
     const bool readRestart_;
@@ -53,7 +52,6 @@ private:
 public:
     StatisticsOptions(const eckit::LocalConfiguration& cfg);
 
-    std::int64_t timeStep() const;
     bool initialConditionPresent() const;
 
     bool readRestart() const;

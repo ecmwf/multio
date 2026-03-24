@@ -7,11 +7,6 @@
 
 namespace multio::action::statistics_mtg2 {
 
-std::int64_t parseTimeStep(const eckit::LocalConfiguration& cfg) {
-    // How many seconds in a timestep
-    return cfg.getLong("time-step", 3600L);
-}
-
 bool parseInitialConditionPresent(const eckit::LocalConfiguration& cfg) {
     // Used to determine if the solver emit the initial condition.
     // This is a relevant information for statistics computations.
@@ -159,7 +154,6 @@ std::vector<std::pair<std::string, std::string>> parseSetMetadata(const eckit::L
 
 
 StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
-    timeStep_{parseTimeStep(cfg)},
     initialConditionPresent_{parseInitialConditionPresent(cfg)},
     readRestart_{parseReadRestart(cfg)},
     writeRestart_{parseWriteRestart(cfg)},
@@ -177,9 +171,6 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     outputTimeReference_{parseOutputTimeRef(cfg)} {}
 
 
-std::int64_t StatisticsOptions::timeStep() const {
-    return timeStep_;
-}
 bool StatisticsOptions::initialConditionPresent() const {
     return initialConditionPresent_;
 }

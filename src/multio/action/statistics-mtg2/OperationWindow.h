@@ -21,7 +21,7 @@ public:
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                     const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                    long timeStepInSeconds, WindowType windowType);
+                    long timeIncrementInSeconds, WindowType windowType);
 
     long count() const;
     const std::vector<long>& counts() const;
@@ -85,7 +85,7 @@ public:
     long prevPointInSteps(const eckit::DateTime& refPoint) const;
     long endPointInSteps(const eckit::DateTime& refPoint) const;
 
-    long timeStepInSeconds() const;
+    long timeIncrementInSeconds() const;
 
 
     eckit::DateTime epochPoint() const;
@@ -115,7 +115,7 @@ private:
     eckit::DateTime endPoint_;
     eckit::DateTime lastFlush_;
 
-    long timeStepInSeconds_;
+    long timeIncrementInSeconds_;
     long count_;
     mutable std::vector<long> counts_;
     WindowType windowType_;

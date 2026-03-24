@@ -12,7 +12,7 @@ eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsConfi
 
 
 eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return epochDateTime(msg, cfg) + static_cast<eckit::Second>(cfg.step() * cfg.timeStep());
+    return epochDateTime(msg, cfg) + static_cast<eckit::Second>(cfg.step() * cfg.timeIncrementInSeconds());
 }
 
 

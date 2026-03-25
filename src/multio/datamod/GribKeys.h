@@ -247,13 +247,14 @@ struct HorizontalGribKeys {
 
 constexpr auto BitmapPresent =
     EntryDef<bool>{"misc-bitmapPresent"}
-        .tagOptional()
+        .withDefault(false)
         .withAccessor([](auto&& v) { return &v.bitmapPresent; });
 
 constexpr auto MissingValue =
     EntryDef<double>{"misc-missingValue"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.missingValue; });
+
 constexpr auto BitsPerValue =
     EntryDef<std::int64_t>{"misc-bitsPerValue"}
         .tagOptional()

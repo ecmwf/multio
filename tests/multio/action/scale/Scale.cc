@@ -165,6 +165,7 @@ CASE("local-to-wmo mapping with missing value") {
         auto md = Metadata({
             {"param", 228},
             {"misc-precision", "double"},
+            {"misc-bitmapPresent", true},
             {"misc-missingValue", 999.0}
         });
         std::vector<double> values = {0.0, 999.0, 1.0};

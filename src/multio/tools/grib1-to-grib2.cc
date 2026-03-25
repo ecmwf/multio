@@ -805,6 +805,7 @@ private:
 
     bool copyGrib2Messages_ = true;
     long verbosity_ = 0;
+    long ncycle_ = 0;
 
     std::optional<FieldValueMap> excludeMap_ = {};
     std::optional<FieldValueMap> filterMap_ = {};
@@ -840,6 +841,8 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "packing", "Enforce a specific packing type. Valid values are `ccsds` and `simple`."));
     options_.push_back(new eckit::option::SimpleOption<std::string>("model", "Inject the MARS key \"model\""));
+    options_.push_back(
+        new eckit::option::SimpleOption<long>("ncycle", "Inject the generatingProcessIdentifier (aka NCYCLE)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "discipline-192",
         "Options on handling fields with discipline 192 (field that are ill-formed). Values: \"log-and-ignore\" "
@@ -853,6 +856,8 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
         verbosity_ = 2;
     }
     args.get("verbosity", verbosity_);
+
+    args.get("ncycle", ncycle_);
 
     bool all = false;
     args.get("all", all);
@@ -1028,6 +1033,13 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                     std::cout << "Set model " << *setModel_ << std::endl;
                 }
                 mars.model.set(*setModel_);
+            }
+
+            if (ncycle_ > 0) {
+                if (verbosity_ > 2) {
+                    std::cout << "Set generatingProcessIdentifier " << ncycle_ << std::endl;
+                }
+                misc.generatingProcessIdentifier.set(ncycle_);
             }
 
             if (verbosity_ > 2) {

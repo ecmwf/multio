@@ -8,6 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
+#include <algorithm>
 #include "multio/mars2grib/sections/SectionTypes.h"
 #include "multio/mars2grib/Mars2GribException.h"
 
@@ -55,4 +56,3 @@ std::ostream& operator<<(std::ostream& os, const TimeRangeType& t) {
     return os;
 }
 }  // namespace multio::mars2grib::sections
-

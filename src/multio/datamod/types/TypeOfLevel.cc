@@ -8,6 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
+#include <algorithm>
 #include "TypeOfLevel.h"
 #include "multio/datamod/core/DataModellingException.h"
 
@@ -335,4 +336,3 @@ void util::Print<datamod::TypeOfLevel>::print(PrintStream& ps, const datamod::Ty
 }
 
 }  // namespace multio
-

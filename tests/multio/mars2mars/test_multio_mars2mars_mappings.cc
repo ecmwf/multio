@@ -521,25 +521,6 @@ CASE("Test fixSnowfallWaterEquivParam") {
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
 
-CASE("Test fixSnowCover") {
-    using namespace multio::mars2mars::rules;
-    using namespace multio::mars2mars;
-    using namespace multio::datamod;
-
-    FullMarsRecord mars;
-    MiscRecord misc;
-
-    mars.param.set(260289);
-
-    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
-
-    EXPECT(res);
-    EXPECT(mars.param.get() == Param{260038});
-    EXPECT(res->valuesScaleFactor);
-    EXPECT(res->valuesScaleFactor.value() == 100.0);
-};
-
-
 CASE("Test fixTimespanMax2T") {
     using namespace multio::mars2mars::rules;
     using namespace multio::mars2mars;

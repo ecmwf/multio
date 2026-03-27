@@ -184,12 +184,6 @@ auto fixSnowfallWaterEquivParam() {
 }
 
 
-auto fixSnowCover() {
-    return rule(all(matchParams(260289)),                                            //
-                setKey(&dm::FullMarsRecord::param, 260038), SetScaleFactor{100.0});  //
-}
-
-
 //-----------------------------------------------------------------------------
 // Fix Timespan
 //-----------------------------------------------------------------------------
@@ -333,8 +327,7 @@ const RuleList& wmoUnitMapping() {
         fixConvectivePrecip143(),      //
         fixTotalPrecip228(),           //
         fixRunOffWaterParam205(),      //
-        fixSnowfallWaterEquivParam(),  //
-        fixSnowCover()                 //
+        fixSnowfallWaterEquivParam()
     );
     return wmo_;
 }

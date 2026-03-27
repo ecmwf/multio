@@ -11,14 +11,21 @@
 #include "MpiTransport.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <fstream>
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/mpi/Group.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 #include "eckit/utils/Translator.h"
+
+#ifdef HAVE_ECFLOW_LIGHT
+#include "ecflow/light/API.h"
+#endif
 
 #include "multio/transport/MpiCommSetup.h"
 #include "multio/util/Environment.h"
@@ -181,16 +188,69 @@ void MpiTransport::closeConnections() {
     pool_.waitAll();
 }
 
-void MpiTransport::synchronize() {
+void MpiTransport::synchronize(const Message& msg) {
     if (compConf_.multioConfig().localPeerTag() == config::LocalPeerTag::Client) {
         for (auto& server : serverPeers()) {
-            Message msg{Message::Header{Message::Tag::Synchronization, local_, *server}};
-            bufferedSend(msg);
-            pool_.sendBuffer(msg.destination());
+            Message syncMsg{Message::Header{Message::Tag::Synchronization, local_, *server, std::move(msg.metadata())}};
+            bufferedSend(syncMsg);
+            pool_.sendBuffer(syncMsg.destination());
         }
     }
     else {
+        reportStep(msg);
+    }
+}
+
+void MpiTransport::reportStep(const Message& msg) {
+    static auto nClients = clientPeers().size();
+    static std::vector<size_t> stepCounters(nClients, 0);
+
+    const auto clientRank = msg.source().id();
+    ASSERT(clientRank < nClients);
+
+    // Calculate the step (in hours) based on the step and timeStep keys
+    const auto stepInTimeStepSize = msg.metadata().get<std::int64_t>("step");
+    const auto timeStepSize = msg.metadata().getOpt<std::int64_t>("timeStep").value_or(3600);
+    const auto stepInHours = stepInTimeStepSize * timeStepSize / 3600;
+    ASSERT(stepCounters[clientRank] == 0 || stepCounters[clientRank] < stepInHours);  // Step should increase!
+
+    // Update the step counter and keep track of the minimum step value across all counters before and after the update
+    const auto oldMinStep = *std::min_element(stepCounters.begin(), stepCounters.end());
+    stepCounters[clientRank] = stepInHours;
+    const auto newMinStep = *std::min_element(stepCounters.begin(), stepCounters.end());
+
+    // If the minimum step value has increased, we must update the global meter
+    if (newMinStep > oldMinStep) {
+        // Wait for other servers before updating the meter
         serverComm().barrier();
+
+        // Only one server should upate the meter
+        if (serverComm().rank() == 0) {
+            eckit::Log::info() << "UPDATE STEP METER " << oldMinStep << " -> " << newMinStep << std::endl;
+
+
+            // Update ecFlow meter
+            #ifdef HAVE_ECFLOW_LIGHT
+            const int err = ecflow_light_update_meter("step", newMinStep);
+            if (err != EXIT_SUCCESS) {
+                eckit::Log::error() << "MpiTransport::reportStep: failed to update ecFlow meter 'step' to " << newMinStep << std::endl;
+            }
+            else {
+                eckit::Log::info() << "MpiTransport::reportStep: update ecFlow meter 'step' to " << newMinStep << std::endl;
+            }
+            #endif
+
+            // Update meter file
+            const auto meterFile = "../multio_step.meter";  // TODO: Make this configurable
+            std::ofstream ofs(meterFile);
+            if (!ofs) {
+                eckit::Log::info() << "MpiTransport::reportStep: failed to update meter file '" << meterFile << "' to " << newMinStep << std::endl;
+            }
+            else {
+                ofs << newMinStep << std::endl;
+                eckit::Log::info() << "MpiTransport::reportStep: update meter file '" << meterFile << "' to " << newMinStep << std::endl;
+            }
+        }
     }
 }
 

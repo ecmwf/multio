@@ -58,7 +58,9 @@ private:
     void openConnections() override;
     void closeConnections() override;
 
-    void synchronize() override;
+    void synchronize(const Message& msg = Message{}) override;
+
+    void reportStep(const Message& msg);
 
     Message receive() override;
 

@@ -53,7 +53,7 @@ private:
 
     void bufferedSend(const Message& msg) override;
 
-    void synchronize() override;
+    void synchronize(const Message& msg = Message{}) override;
 
     void print(std::ostream& os) const override;
 

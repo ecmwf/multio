@@ -65,6 +65,10 @@ if ( HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
     list(APPEND multio_utils_definitions "MULTIO_CLIENT_MEMORY_PROFILE_ENABLED")
 endif()
 
+if ( HAVE_ECFLOW_LIGHT )
+    list(APPEND multio_utils_definitions "HAVE_ECFLOW_LIGHT")
+endif()
+
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
     config/ComponentConfiguration.h
@@ -264,7 +268,10 @@ ecbuild_add_library(
     PRIVATE_DEFINITIONS ${multio_utils_definitions}
 
     PUBLIC_LIBS
-        metkit eckit eckit_mpi)
+        metkit eckit eckit_mpi
+
+    PRIVATE_LIBS
+        $<$<BOOL:${HAVE_ECFLOW_LIGHT}>:ecflow_light>)
 
 add_subdirectory(fdb5)
 add_subdirectory(maestro)

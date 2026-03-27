@@ -13,7 +13,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
+#include <string>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
@@ -203,16 +205,20 @@ void MpiTransport::synchronize(const Message& msg) {
 
 void MpiTransport::reportStep(const Message& msg) {
     static auto nClients = clientPeers().size();
-    static std::vector<size_t> stepCounters(nClients, 0);
+    static std::vector<std::int64_t> stepCounters(nClients, -1);
 
     const auto clientRank = msg.source().id();
-    ASSERT(clientRank < nClients);
+    if (clientRank >= nClients) {
+        throw eckit::SeriousBug{"clientRank (" + std::to_string(clientRank) + ") is out of range!", Here()};
+    }
 
     // Calculate the step (in hours) based on the step and timeStep keys
     const auto stepInTimeStepSize = msg.metadata().get<std::int64_t>("step");
     const auto timeStepSize = msg.metadata().getOpt<std::int64_t>("timeStep").value_or(3600);
     const auto stepInHours = stepInTimeStepSize * timeStepSize / 3600;
-    ASSERT(stepCounters[clientRank] == 0 || stepCounters[clientRank] < stepInHours);  // Step should increase!
+    if (stepCounters[clientRank] >= stepInHours) {
+        throw eckit::UserError{"Provided step is too low! Must be higher than " + std::to_string(stepCounters[clientRank]) + " but is " + std::to_string(stepInHours), Here()};
+    }
 
     // Update the step counter and keep track of the minimum step value across all counters before and after the update
     const auto oldMinStep = *std::min_element(stepCounters.begin(), stepCounters.end());

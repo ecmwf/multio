@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <regex>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -307,13 +308,22 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
 
     handleStepRange(h, mars, verbosity);
 
-    // ... key truncation is not given officially ??
-    if (h.has("J")) {
-        mars.truncation.set(h.getLong("J"));
+    // Set either MARS grid or truncation
+    const auto gridType = h.getString("gridType");
+    if (gridType == "sh") {
+        const auto truncation = h.getLong("J");
+        mars.truncation.set(truncation);
     }
-
-    if (h.has("gridName")) {
-        mars.grid.set(h.getString("gridName"));
+    else if (gridType == "regular_ll") {
+        const auto dx = h.getDouble("iDirectionIncrementInDegrees");
+        const auto dy = h.getDouble("jDirectionIncrementInDegrees");
+        const auto grid = std::to_string(dx) + "/" + std::to_string(dy);
+        mars.grid.set(grid);
+    }
+    else {
+        // Fallback on gridName
+        const auto gridName = h.getString("gridName");
+        mars.grid.set(gridName);
     }
 
     misc.generatingProcessIdentifier = dm::parseEntry(dm::GeneratingProcessIdentifier, h);

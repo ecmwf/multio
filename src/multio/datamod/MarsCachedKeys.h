@@ -28,7 +28,7 @@ namespace multio::datamod {
 // However with this approach it is made explicit that there is a further logic happening
 // that should be distinguished from the existing FullMarsRecord.
 
-struct MarsCacheRecord: FullMarsRecord {
+struct MarsCacheRecord : FullMarsRecord {
     static constexpr std::string_view record_name_ = "mars-cache";
 
     static void applyDefaults(MarsCacheRecord& cacheKeys) {
@@ -36,7 +36,21 @@ struct MarsCacheRecord: FullMarsRecord {
             cacheKeys.levelist.unset();
         }
 
-        cacheKeys.step.unset();
+        // For the grib structure, it is just important if timespan is set or not - the actual value does not affect the
+        // structure Time keys will always get set later
+        if (cacheKeys.timespan.isSet()) {
+            cacheKeys.timespan.set(0);
+        }
+
+        if (cacheKeys.step.isSet()) {
+            cacheKeys.step.set(0);
+        }
+        if (cacheKeys.date.isSet()) {
+            cacheKeys.date.set(19700101);
+        }
+        if (cacheKeys.time.isSet()) {
+            cacheKeys.time.set(0);
+        }
         cacheKeys.direction.unset();
         cacheKeys.frequency.unset();
 
@@ -45,7 +59,7 @@ struct MarsCacheRecord: FullMarsRecord {
     }
 };
 
-}  // namespace multio::mars2grib
+}  // namespace multio::datamod
 
 
 namespace std {

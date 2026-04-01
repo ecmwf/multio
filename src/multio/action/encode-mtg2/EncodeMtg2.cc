@@ -15,10 +15,10 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/datamod/ContainerInterop.h"
 
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/datamod/MarsMiscGeo.h"
@@ -35,10 +35,37 @@ using message::Peer;
 
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, opts_{cf::parseActionConfig<EncodeMtg2Options>(compConf)}, encoder_{} {
-    if (opts_.cached) {
-        throw eckit::NotImplemented{"Encoder cache is currently not implemented!", Here()};
+    ChainedAction{compConf},
+    opts_{cf::parseActionConfig<EncodeMtg2Options>(compConf)},
+    encoder_{},
+    cache_{opts_.cached ? std::optional<Cache>{Cache{}} : std::optional<Cache>{}} {}
+
+
+template <typename T>
+std::unique_ptr<metkit::codes::CodesHandle> encode(metkit::mars2grib::Mars2Grib& encoder, std::optional<Cache>& cache,
+                                                   T* values, size_t size, const dm::FullMarsRecord& marsRec,
+                                                   const dm::MiscRecord& miscRec) {
+    const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
+    const auto misc = dm::dumpRecord<eckit::LocalConfiguration>(miscRec);
+
+    if (!cache) {
+        return encoder.encode(values, size, mars, misc);
     }
+
+    // Select caching keys and prehash
+    PrehashedMarsKeys cacheKeySet = dm::readRecord<dm::MarsCacheRecord>(marsRec);
+
+    // Search and return if entry already exists
+    if (auto search = cache->find(cacheKeySet); search != cache->end()) {
+        return encoder.finaliseEncoding(search->second, std::vector<T>(values, values + size), mars, misc);
+    }
+
+    // Otherwise prepare a new entry
+
+    // Searching for rule...
+    auto it = cache->emplace(std::move(cacheKeySet), encoder.prepare(mars, misc)).first;
+
+    return encoder.finaliseEncoding(it->second, std::vector<T>(values, values + size), mars, misc);
 }
 
 
@@ -66,8 +93,6 @@ void EncodeMtg2::executeImpl(Message msg) {
     // Apply mappings
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
-    const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
-    const auto misc = dm::dumpRecord<eckit::LocalConfiguration>(miscRec);
 
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
@@ -95,7 +120,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         }
 
         // Call the GRIB2 encoder in metkit
-        const auto sample = encoder_.encode(values, size, mars, misc);
+        const auto sample = encode(encoder_, cache_, values, size, marsRec, miscRec);
 
         eckit::Buffer buf{sample->messageSize()};
         sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());

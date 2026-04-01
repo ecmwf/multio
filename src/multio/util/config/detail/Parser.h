@@ -48,6 +48,12 @@ bool containsKey(const std::string& key) {
 }
 
 template <typename TConfig>
+std::string configKeysString() {
+    return std::apply([&](const auto&... field) { return ((std::string(field.key) + ", ") + ... + ""); },
+                      TConfig::fields_);
+}
+
+template <typename TConfig>
 TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
     for (const auto& key : localConfig.keys()) {
         if (!containsKey<TConfig>(key)) {
@@ -59,8 +65,9 @@ TConfig parseConfig(const eckit::LocalConfiguration& localConfig) {
                 }
                 oss << "'" << key << "'";
             }
-            throw eckit::UserError{
-                "Found unknown key '" + key + "' in the configuration, allowed keys are: [" + oss.str() + "]", Here()};
+            throw eckit::UserError{"Found unknown key '" + key + "' in the configuration, allowed keys are: ["
+                                       + configKeysString<TConfig>() + "]. Contained keys: [" + oss.str() + "]",
+                                   Here()};
         }
     }
 

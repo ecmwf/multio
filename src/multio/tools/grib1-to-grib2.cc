@@ -838,8 +838,10 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "wmo-units", "If specified params with local units will be mapped to params with WMO units"));
     options_.push_back(new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 2"));
-    options_.push_back(
-        new eckit::option::SimpleOption<bool>("control", "If set, this is treated as a control forecast (number=0)"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "control",
+        "Treat input as a control forecast: sets number=0, adjusts ensemble-related keys, and may enforce "
+        "specific stream/type constraints"));
     options_.push_back(
         new eckit::option::SimpleOption<long>("verbosity",
                                               "Verbosity level: 0 (print nothing), 1 (print mars keys per message), 2 "

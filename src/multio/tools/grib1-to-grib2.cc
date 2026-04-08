@@ -1058,7 +1058,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             // TODO: Move this logic into the encoder
             // TODO: numberOfForecastsInEnsemble needs a default in the encoder
             if (control_) {
-                if (not(mars.stream.get() == "oper") and (mars.type.get() == "fc")) {
+                if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
                     throw eckit::UserError(
                         "Setting forecast member to control is only supported for stream=oper and type=fc", Here());
                 }

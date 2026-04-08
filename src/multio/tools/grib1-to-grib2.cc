@@ -1060,7 +1060,9 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             if (control_) {
                 if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
                     throw eckit::UserError(
-                        "Setting forecast member to control is only supported for stream=oper and type=fc", Here());
+                        "Setting forecast member to control is only supported for stream=oper and type=fc; got stream=" +
+                            mars.stream.get() + ", type=" + mars.type.get(),
+                        Here());
                 }
                 mars.number.set(0);
                 misc.typeOfEnsembleForecast.set(1);

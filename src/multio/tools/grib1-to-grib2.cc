@@ -823,6 +823,8 @@ private:
     std::optional<std::string> setModel_ = {};
     bool mapWMOUnits_ = false;
     bool noOutput_ = false;
+    bool control_ = false;
+
     std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules_ = mars2mars::allRulesNoWMOMapping();
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
 };
@@ -836,6 +838,10 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
     options_.push_back(new eckit::option::SimpleOption<bool>(
         "wmo-units", "If specified params with local units will be mapped to params with WMO units"));
     options_.push_back(new eckit::option::SimpleOption<bool>("verbose", "Sets verbosity to 2"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "control",
+        "Treat input as a control forecast: sets number=0, adjusts ensemble-related keys, and may enforce "
+        "specific stream/type constraints"));
     options_.push_back(
         new eckit::option::SimpleOption<long>("verbosity",
                                               "Verbosity level: 0 (print nothing), 1 (print mars keys per message), 2 "
@@ -873,8 +879,8 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     args.get("all", all);
     copyGrib2Messages_ = !all;
 
-    noOutput_ = false;
     args.get("no-output", noOutput_);
+    args.get("control", control_);
 
     std::string packing;
     args.get("packing", packing);
@@ -886,7 +892,6 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
             throw std::runtime_error(std::string("Unsupported packing: ") + packing);
         }
     }
-
     std::string model;
     args.get("model", model);
     if (!model.empty()) {
@@ -1050,6 +1055,20 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                     std::cout << "Set generatingProcessIdentifier " << ncycle_ << std::endl;
                 }
                 misc.generatingProcessIdentifier.set(ncycle_);
+            }
+
+            // TODO: Move this logic into the encoder
+            // TODO: numberOfForecastsInEnsemble needs a default in the encoder
+            if (control_) {
+                if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
+                    throw eckit::UserError(
+                        "Setting forecast member to control is only supported for stream=oper and type=fc; got stream=" +
+                            mars.stream.get() + ", type=" + mars.type.get(),
+                        Here());
+                }
+                mars.number.set(0);
+                misc.typeOfEnsembleForecast.set(1);
+                misc.numberOfForecastsInEnsemble.set(51);
             }
 
             if (verbosity_ > 2) {

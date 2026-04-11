@@ -36,10 +36,10 @@
 #include "multio/LibMultio.h"
 #include "multio/tools/MultioTool.h"
 
+#include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/datamod/ContainerInterop.h"
 
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2mars/Rules.h"
@@ -243,8 +243,8 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
-                             dm::MiscRecord& misc, int verbosity) {
+void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
+                     int verbosity) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -397,7 +397,9 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     if (h.has("scaledValuesOfWaveDirections")) {
         constexpr double rad2deg = 57.29577951308232087679815481410517033240547246656432154916;
         auto waveDirections = h.getDoubleArray("scaledValuesOfWaveDirections");
-        auto directionScalingFactor = h.getDouble("directionScalingFactor");
+        auto directionScalingFactor = h.has("scaleFactorOfWaveDirections")
+                                        ? std::pow(10, h.getDouble("scaleFactorOfWaveDirections"))
+                                        : h.getDouble("directionScalingFactor");
         std::for_each(begin(waveDirections), end(waveDirections),
                       [directionScalingFactor, rad2deg](double& val) { val /= directionScalingFactor * rad2deg; });
         misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
@@ -405,7 +407,9 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
     if (h.has("scaledValuesOfWaveFrequencies")) {
         auto waveFrequencies = h.getDoubleArray("scaledValuesOfWaveFrequencies");
-        auto frequencyScalingFactor = h.getDouble("frequencyScalingFactor");
+        auto frequencyScalingFactor = h.has("scaleFactorOfWaveFrequencies")
+                                        ? std::pow(10, h.getDouble("scaleFactorOfWaveFrequencies"))
+                                        : h.getDouble("frequencyScalingFactor");
         std::for_each(begin(waveFrequencies), end(waveFrequencies),
                       [frequencyScalingFactor](double& val) { val /= frequencyScalingFactor; });
         misc.scaleFactorOfWaveFrequencies.set(std::log10(frequencyScalingFactor));
@@ -1062,8 +1066,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             if (control_) {
                 if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
                     throw eckit::UserError(
-                        "Setting forecast member to control is only supported for stream=oper and type=fc; got stream=" +
-                            mars.stream.get() + ", type=" + mars.type.get(),
+                        "Setting forecast member to control is only supported for stream=oper and type=fc; got stream="
+                            + mars.stream.get() + ", type=" + mars.type.get(),
                         Here());
                 }
                 mars.number.set(0);

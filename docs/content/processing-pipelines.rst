@@ -233,8 +233,9 @@ Key                   Allowed Values            Default               Descriptio
                                                                       (empty string disables)
 ``bits-per-value``    Integer (1-64)            ``16``                Bits per value for simple_packing
                                                                       (higher = more precision)
-``decimal-scale-      Integer                   ``0``                 Decimal scale factor for simple_packing
-factor``                                                              (multiplier = 10^factor)
+``decimal-scale-factor``
+                      Integer                   ``0``                 Decimal scale factor for simple_packing
+                                                                      (multiplier = 10^factor)
 ====================  ========================  ====================  ============================================
 
 Example configurations:

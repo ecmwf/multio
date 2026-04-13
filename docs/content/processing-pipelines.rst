@@ -220,23 +220,18 @@ verification (xxh3 hashing).
 
 Configuration options:
 
-====================  ========================  ====================  ============================================
-Key                   Allowed Values            Default               Description
-====================  ========================  ====================  ============================================
-``encoding``          ``none``,                 ``simple_packing``    Encoding method: ``none`` (raw float64) or
-                      ``simple_packing``                              ``simple_packing`` (quantized integers)
-``compression``       ``none``, ``szip``,       ``szip``              Compression algorithm applied after
-                      ``zstd``, ``lz4``                               encoding
-``filter``            ``none``, ``shuffle``     ``none``              Pre-compression filter (shuffle improves
-                                                                      compression ratio)
-``hash``              ``xxh3``, (empty string)  ``xxh3``              Hash algorithm for integrity checking
-                                                                      (empty string disables)
-``bits-per-value``    Integer (1-64)            ``16``                Bits per value for simple_packing
-                                                                      (higher = more precision)
-``decimal-scale-factor``
-                      Integer                   ``0``                 Decimal scale factor for simple_packing
-                                                                      (multiplier = 10^factor)
-====================  ========================  ====================  ============================================
+========================  ========================  ====================  ============================================
+Key                       Allowed Values            Default               Description
+========================  ========================  ====================  ============================================
+``encoding``              ``none``,                 ``simple_packing``    Encoding method: ``none`` (raw) or
+                          ``simple_packing``                              ``simple_packing`` (quantized integers)
+``compression``           ``none``, ``szip``,       ``szip``              Compression algorithm applied after
+                          ``zstd``, ``lz4``                               encoding
+``filter``                ``none``, ``shuffle``     ``none``              Pre-compression filter
+``hash``                  ``xxh3``, ``""``          ``xxh3``              Hash algorithm for integrity checking
+``bits-per-value``        Integer (1--64)           ``16``                Bits per value for simple_packing
+``decimal-scale-factor``  Integer                   ``0``                 Decimal scale factor for simple_packing
+========================  ========================  ====================  ============================================
 
 Example configurations:
 

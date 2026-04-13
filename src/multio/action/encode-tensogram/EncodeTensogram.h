@@ -41,8 +41,8 @@ namespace multio::action::encode_tensogram {
 ///     encoding: simple_packing   # "none" | "simple_packing" (default: simple_packing)
 ///     filter: none               # "none" | "shuffle"          (default: none)
 ///     compression: szip          # "none"|"szip"|"zstd"|"lz4"  (default: szip)
-///     bits-per-value: 16         # uint32, for simple_packing  (default: 16)
-///     decimal-scale-factor: 0    # int32,  for simple_packing  (default: 0)
+///     bits-per-value: 16         # 1-64, for simple_packing    (default: 16)
+///     decimal-scale-factor: 0    # for simple_packing          (default: 0)
 ///     hash: xxh3                 # "xxh3" | "" to disable      (default: xxh3)
 /// @endcode
 

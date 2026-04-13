@@ -2,7 +2,7 @@
 # and writes them to a file.
 #
 # Usage with multio-feed:
-#   MULTIO_SERVER_CONFIG_FILE=testPlan-tensogram.yaml multio-feed --source=<input.grib>
+#   multio-feed <input.grib> --decode --plans=testPlan-tensogram.yaml
 #
 # The output file will contain concatenated Tensogram messages (valid .tgm).
 # Verify with: tensogram info output-tensogram.tgm

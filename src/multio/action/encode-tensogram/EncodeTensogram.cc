@@ -10,7 +10,6 @@
 
 #include "EncodeTensogram.h"
 
-#include <algorithm>
 #include <cmath>
 #include <sstream>
 #include <unordered_set>
@@ -20,6 +19,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
+#include "eckit/utils/Overloaded.h"
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
@@ -272,11 +272,13 @@ void EncodeTensogram::executeImpl(Message msg) {
     }
 
     const auto& md = msg.metadata();
-    const auto globalSize = static_cast<size_t>(msg.globalSize());
+    const auto globalSizeSigned = msg.globalSize();
 
-    if (globalSize == 0) {
-        throw eckit::UserError("EncodeTensogram: globalSize is 0 - nothing to encode", Here());
+    if (globalSizeSigned <= 0) {
+        throw eckit::UserError("EncodeTensogram: globalSize must be positive, got " + std::to_string(globalSizeSigned),
+                               Here());
     }
+    const auto globalSize = static_cast<size_t>(globalSizeSigned);
 
     // Determine byte order for this platform
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__

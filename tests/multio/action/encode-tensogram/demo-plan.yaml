@@ -6,8 +6,7 @@
 #   select → encode-tensogram (simple_packing + szip) → file sink
 #
 # Usage:
-#   export MULTIO_SERVER_CONFIG_FILE=demo-plan.yaml
-#   multio-feed --source=input.grib
+#   multio-feed <input.grib> --decode --plans=demo-plan.yaml
 #
 # Verify output:
 #   tensogram info demo-output.tgm

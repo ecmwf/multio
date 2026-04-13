@@ -11,6 +11,7 @@
 #include "EncodeTensogram.h"
 
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
@@ -83,7 +84,12 @@ void emitJsonValue(eckit::JSON& json, const message::MetadataValue& val) {
         [&](const std::vector<double>& v) {
             json.startList();
             for (auto x : v) {
-                json << x;
+                if (std::isfinite(x)) {
+                    json << x;
+                }
+                else {
+                    json.null();
+                }
             }
             json.endList();
         },
@@ -115,7 +121,7 @@ EncodeTensogram::EncodeTensogram(const ComponentConfiguration& compConf) :
     hashAlgo_{compConf.parsedConfig().getString("hash", "xxh3")},
     useSimplePacking_{false},
     bitsPerValue_{0},
-    decimalScaleFactor_{static_cast<int32_t>(compConf.parsedConfig().getInt("decimal-scale-factor", 0))} {
+    decimalScaleFactor_{0} {
 
     // Validate encoding
     if (encoding_ != "none" && encoding_ != "simple_packing") {
@@ -150,6 +156,14 @@ EncodeTensogram::EncodeTensogram(const ComponentConfiguration& compConf) :
             "EncodeTensogram: bits-per-value must be between 1 and 64, got " + std::to_string(bpvSigned), Here());
     }
     bitsPerValue_ = static_cast<uint32_t>(bpvSigned);
+
+    // Validate decimal-scale-factor fits in int32_t range
+    auto dsfSigned = compConf.parsedConfig().getInt("decimal-scale-factor", 0);
+    if (dsfSigned < std::numeric_limits<int32_t>::min() || dsfSigned > std::numeric_limits<int32_t>::max()) {
+        throw eckit::UserError(
+            "EncodeTensogram: decimal-scale-factor out of int32 range, got " + std::to_string(dsfSigned), Here());
+    }
+    decimalScaleFactor_ = static_cast<int32_t>(dsfSigned);
 
     LOG_DEBUG_LIB(LibMultio) << "EncodeTensogram: encoding=" << encoding_ << " filter=" << filter_
                              << " compression=" << compression_ << " bits-per-value=" << bitsPerValue_
@@ -272,7 +286,16 @@ void EncodeTensogram::executeImpl(Message msg) {
     }
 
     const auto& md = msg.metadata();
-    const auto globalSizeSigned = msg.globalSize();
+
+    // Extract globalSize with context-enriched error
+    std::int64_t globalSizeSigned = 0;
+    try {
+        globalSizeSigned = msg.globalSize();
+    }
+    catch (const std::exception& e) {
+        throw eckit::UserError(
+            std::string("EncodeTensogram: cannot read globalSize from message metadata: ") + e.what(), Here());
+    }
 
     if (globalSizeSigned <= 0) {
         throw eckit::UserError("EncodeTensogram: globalSize must be positive, got " + std::to_string(globalSizeSigned),
@@ -344,7 +367,14 @@ void EncodeTensogram::executeImpl(Message msg) {
             const auto* dataPtr = reinterpret_cast<const uint8_t*>(doublePtr);
             size_t dataLen = numValues * sizeof(double);
 
-            return tensogram::encode(json, {{dataPtr, dataLen}}, tensogram::encode_options{hashAlgo_});
+            try {
+                return tensogram::encode(json, {{dataPtr, dataLen}}, tensogram::encode_options{hashAlgo_});
+            }
+            catch (const std::exception& e) {
+                throw eckit::SeriousBug("EncodeTensogram: tensogram::encode() failed for field with globalSize="
+                                            + std::to_string(globalSize) + ", encoding=" + encoding_ + ": " + e.what(),
+                                        Here());
+            }
         }
         else {
             // encoding = "none" — pass raw data in native precision
@@ -356,7 +386,14 @@ void EncodeTensogram::executeImpl(Message msg) {
             const auto* dataPtr = reinterpret_cast<const uint8_t*>(values);
             size_t dataLen = numValues * sizeof(Precision);
 
-            return tensogram::encode(json, {{dataPtr, dataLen}}, tensogram::encode_options{hashAlgo_});
+            try {
+                return tensogram::encode(json, {{dataPtr, dataLen}}, tensogram::encode_options{hashAlgo_});
+            }
+            catch (const std::exception& e) {
+                throw eckit::SeriousBug("EncodeTensogram: tensogram::encode() failed for field with globalSize="
+                                            + std::to_string(globalSize) + ", encoding=none: " + e.what(),
+                                        Here());
+            }
         }
     });
 

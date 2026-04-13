@@ -193,7 +193,7 @@ CASE("EncodeTensogram: simple_packing encoding produces valid tensogram message"
     for (size_t i = 0; i < fieldSize; ++i) {
         maxError = std::max(maxError, std::abs(decoded[i] - data[i]));
     }
-    // At 16 bits per value with a range of ~20K, tolerance is roughly range / 2^16
+    // At 16 bits per value with this synthetic field's range of ~20 (273.15 +/- 10), 1.0 is a loose tolerance
     EXPECT(maxError < 1.0);
 }
 

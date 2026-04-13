@@ -55,21 +55,22 @@ public:
 private:
     void print(std::ostream& os) const override;
 
-    /// Build the Tensogram metadata+descriptors JSON from multio metadata and field dimensions.
-    /// The JSON follows the tensogram C API contract:
-    ///   { "version": 2, "descriptors": [...], "base": [{"mars": {...}, ...}] }
+    /// Build the Tensogram encode JSON using eckit::JSON.
+    /// Constructs: { "version": 2, "descriptors": [...], "base": [{"mars": {...}, ...}] }
     std::string buildEncodeJson(const multio::message::Metadata& md, size_t globalSize, const std::string& dtype,
-                                const std::string& byteOrder, double referenceValue, int32_t binaryScaleFactor) const;
+                                const std::string& byteOrder, size_t bytesPerElement, double referenceValue,
+                                int32_t binaryScaleFactor) const;
 
-    /// Build the Tensogram metadata+descriptors JSON for unencoded (raw) data.
-    std::string buildEncodeJsonRaw(const multio::message::Metadata& md, size_t globalSize, const std::string& dtype,
-                                   const std::string& byteOrder, size_t bytesPerElement) const;
+    /// Write the metadata "base" array entry using eckit::JSON from the message metadata.
+    /// MARS keys are placed under a "mars" sub-object; other keys at top level.
+    void writeBaseEntry(eckit::JSON& json, const multio::message::Metadata& md) const;
 
     // --- Configuration from YAML ---
     std::string encoding_;        ///< "none" | "simple_packing"
     std::string filter_;          ///< "none" | "shuffle"
     std::string compression_;     ///< "none" | "szip" | "zstd" | "lz4"
     std::string hashAlgo_;        ///< "xxh3" | ""
+    bool useSimplePacking_;       ///< Cached: encoding_ == "simple_packing"
     uint32_t bitsPerValue_;       ///< For simple_packing (default: 16)
     int32_t decimalScaleFactor_;  ///< For simple_packing (default: 0)
 };

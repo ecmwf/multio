@@ -13,12 +13,13 @@
 #include <algorithm>
 #include <cmath>
 #include <sstream>
+#include <unordered_set>
 #include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
-#include "eckit/utils/Overloaded.h"
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
@@ -39,161 +40,65 @@ using message::Peer;
 namespace {
 
 //----------------------------------------------------------------------------------------------------------------------
-// Metadata key constants — well-known MARS keys to extract into base[0].mars
+// Well-known MARS keys to extract into base[0].mars
 //----------------------------------------------------------------------------------------------------------------------
 
-// clang-format off
-const std::vector<std::string> marsKeys = {
-    "class", "type", "stream", "expver",
-    "date", "time", "step",
-    "param", "paramId", "shortName",
-    "levtype", "levelist", "level",
-    "domain", "number",
+const std::unordered_set<std::string> marsKeys = {
+    "class",   "type",      "stream",  "expver",   "date",  "time",   "step",   "param",
+    "paramId", "shortName", "levtype", "levelist", "level", "domain", "number",
 };
-// clang-format on
+
+// Internal/routing keys that should be excluded from tensogram metadata
+const std::unordered_set<std::string> skipKeys = {
+    "misc-globalSize",    "misc-precision", "bitmapPresent", "missingValue",
+    "encoder-overwrites", "globalSize",     "precision",
+};
 
 //----------------------------------------------------------------------------------------------------------------------
-// JSON helpers — minimal escaping for string values
+// Emit a MetadataValue into eckit::JSON.
+// eckit::JSON handles string escaping (including all control characters).
 //----------------------------------------------------------------------------------------------------------------------
 
-/// Escape a string for JSON (handles backslash, double-quote, control characters).
-std::string jsonEscape(const std::string& s) {
-    std::string out;
-    out.reserve(s.size() + 8);
-    for (char c : s) {
-        switch (c) {
-            case '"':
-                out += "\\\"";
-                break;
-            case '\\':
-                out += "\\\\";
-                break;
-            case '\n':
-                out += "\\n";
-                break;
-            case '\r':
-                out += "\\r";
-                break;
-            case '\t':
-                out += "\\t";
-                break;
-            default:
-                out += c;
-                break;
-        }
-    }
-    return out;
-}
-
-/// Emit a single metadata value into JSON.
-/// Dispatches on the MetadataValue type: string → quoted, numeric → raw, bool → true/false.
-void emitJsonValue(std::ostringstream& os, const message::MetadataValue& val) {
+void emitJsonValue(eckit::JSON& json, const message::MetadataValue& val) {
     val.visit(eckit::Overloaded{
-        [&](std::nullptr_t) { os << "null"; },
-        [&](bool v) { os << (v ? "true" : "false"); },
-        [&](std::int64_t v) { os << v; },
+        [&](std::nullptr_t) { json.null(); },
+        [&](bool v) { json << v; },
+        [&](std::int64_t v) { json << v; },
         [&](double v) {
             if (std::isfinite(v)) {
-                os << v;
+                json << v;
             }
             else {
-                os << "null";
+                json.null();
             }
         },
-        [&](const std::string& v) { os << '"' << jsonEscape(v) << '"'; },
-        // For vectors of integers (e.g., levelist), emit as a JSON array
+        [&](const std::string& v) { json << v; },
         [&](const std::vector<std::int64_t>& v) {
-            os << '[';
-            for (size_t i = 0; i < v.size(); ++i) {
-                if (i > 0)
-                    os << ',';
-                os << v[i];
+            json.startList();
+            for (auto x : v) {
+                json << x;
             }
-            os << ']';
+            json.endList();
         },
-        // For vectors of doubles
         [&](const std::vector<double>& v) {
-            os << '[';
-            for (size_t i = 0; i < v.size(); ++i) {
-                if (i > 0)
-                    os << ',';
-                os << v[i];
+            json.startList();
+            for (auto x : v) {
+                json << x;
             }
-            os << ']';
+            json.endList();
         },
-        // For nested metadata, emit as nested JSON object
         [&](const message::BaseMetadata& nested) {
-            os << '{';
-            bool first = true;
+            json.startObject();
             for (const auto& [key, v] : nested) {
-                if (!first)
-                    os << ',';
-                first = false;
-                os << '"' << jsonEscape(key) << "\":";
-                emitJsonValue(os, v);
+                const std::string& keyStr = static_cast<const std::string&>(key);
+                json << keyStr;
+                emitJsonValue(json, v);
             }
-            os << '}';
+            json.endObject();
         },
-        // Catch-all for types we don't handle (e.g., vector<string>)
-        [&](const auto&) { os << "null"; },
+        // Catch-all for types we don't handle
+        [&](const auto&) { json.null(); },
     });
-}
-
-/// Build the "base[0]" metadata object from multio Metadata.
-/// MARS keys go under "mars", everything else goes at the top level.
-std::string buildBaseEntry(const message::Metadata& md) {
-    std::ostringstream marsJson;
-    std::ostringstream extraJson;
-    bool firstMars = true;
-    bool firstExtra = true;
-
-    // Collect known MARS keys → mars sub-object; everything else → top level
-    for (const auto& [key, val] : md) {
-        // The key type is PrehashedKey<std::string>; extract the string for comparisons
-        const std::string& keyStr = static_cast<const std::string&>(key);
-
-        // Skip internal/routing keys that are not meaningful in tensogram metadata
-        if (keyStr == "misc-globalSize" || keyStr == "misc-precision" || keyStr == "bitmapPresent"
-            || keyStr == "missingValue" || keyStr == "encoder-overwrites" || keyStr == "globalSize"
-            || keyStr == "precision") {
-            continue;
-        }
-
-        bool isMarsKey = std::find(marsKeys.begin(), marsKeys.end(), keyStr) != marsKeys.end();
-
-        if (isMarsKey) {
-            if (!firstMars)
-                marsJson << ',';
-            firstMars = false;
-            marsJson << '"' << jsonEscape(keyStr) << "\":";
-            emitJsonValue(marsJson, val);
-        }
-        else {
-            if (!firstExtra)
-                extraJson << ',';
-            firstExtra = false;
-            extraJson << '"' << jsonEscape(keyStr) << "\":";
-            emitJsonValue(extraJson, val);
-        }
-    }
-
-    std::ostringstream entry;
-    entry << '{';
-    bool needsComma = false;
-
-    if (!firstMars) {
-        entry << "\"mars\":{" << marsJson.str() << '}';
-        needsComma = true;
-    }
-
-    if (!firstExtra) {
-        if (needsComma)
-            entry << ',';
-        entry << extraJson.str();
-    }
-
-    entry << '}';
-    return entry.str();
 }
 
 }  // namespace
@@ -208,26 +113,43 @@ EncodeTensogram::EncodeTensogram(const ComponentConfiguration& compConf) :
     filter_{compConf.parsedConfig().getString("filter", "none")},
     compression_{compConf.parsedConfig().getString("compression", "szip")},
     hashAlgo_{compConf.parsedConfig().getString("hash", "xxh3")},
-    bitsPerValue_{static_cast<uint32_t>(compConf.parsedConfig().getInt("bits-per-value", 16))},
+    useSimplePacking_{false},
+    bitsPerValue_{0},
     decimalScaleFactor_{static_cast<int32_t>(compConf.parsedConfig().getInt("decimal-scale-factor", 0))} {
 
-    // Validate configuration
+    // Validate encoding
     if (encoding_ != "none" && encoding_ != "simple_packing") {
         throw eckit::UserError(
             "EncodeTensogram: unsupported encoding '" + encoding_ + "'. Must be 'none' or 'simple_packing'.", Here());
     }
+    useSimplePacking_ = (encoding_ == "simple_packing");
+
+    // Validate filter
     if (filter_ != "none" && filter_ != "shuffle") {
         throw eckit::UserError("EncodeTensogram: unsupported filter '" + filter_ + "'. Must be 'none' or 'shuffle'.",
                                Here());
     }
+
+    // Validate compression
     if (compression_ != "none" && compression_ != "szip" && compression_ != "zstd" && compression_ != "lz4") {
         throw eckit::UserError("EncodeTensogram: unsupported compression '" + compression_
                                    + "'. Must be 'none', 'szip', 'zstd', or 'lz4'.",
                                Here());
     }
-    if (encoding_ == "simple_packing" && bitsPerValue_ == 0) {
-        throw eckit::UserError("EncodeTensogram: bits-per-value must be > 0 for simple_packing encoding.", Here());
+
+    // Validate hash algorithm
+    if (hashAlgo_ != "xxh3" && !hashAlgo_.empty()) {
+        throw eckit::UserError(
+            "EncodeTensogram: unsupported hash '" + hashAlgo_ + "'. Must be 'xxh3' or '' (empty to disable).", Here());
     }
+
+    // Validate bits-per-value: must be in [1, 64] for simple_packing
+    auto bpvSigned = compConf.parsedConfig().getInt("bits-per-value", 16);
+    if (bpvSigned < 1 || bpvSigned > 64) {
+        throw eckit::UserError(
+            "EncodeTensogram: bits-per-value must be between 1 and 64, got " + std::to_string(bpvSigned), Here());
+    }
+    bitsPerValue_ = static_cast<uint32_t>(bpvSigned);
 
     LOG_DEBUG_LIB(LibMultio) << "EncodeTensogram: encoding=" << encoding_ << " filter=" << filter_
                              << " compression=" << compression_ << " bits-per-value=" << bitsPerValue_
@@ -235,89 +157,102 @@ EncodeTensogram::EncodeTensogram(const ComponentConfiguration& compConf) :
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-// JSON builders for the tensogram C API
+// JSON builder using eckit::JSON
 //----------------------------------------------------------------------------------------------------------------------
 
-std::string EncodeTensogram::buildEncodeJson(const message::Metadata& md, size_t globalSize, const std::string& dtype,
-                                             const std::string& byteOrder, double referenceValue,
-                                             int32_t binaryScaleFactor) const {
-    std::ostringstream json;
-    json << '{';
+void EncodeTensogram::writeBaseEntry(eckit::JSON& json, const message::Metadata& md) const {
+    // Partition metadata into MARS keys and extra keys
+    json.startObject();
 
-    // Version (required)
-    json << "\"version\":2,";
-
-    // Descriptors array (one object)
-    json << "\"descriptors\":[{";
-    json << "\"type\":\"ndarray\",";
-    json << "\"ndim\":1,";
-    json << "\"shape\":[" << globalSize << "],";
-    // Strides: for float64 input to simple_packing, stride = 8 bytes (the input dtype)
-    json << "\"strides\":[8],";
-    json << "\"dtype\":\"" << dtype << "\",";
-    json << "\"byte_order\":\"" << byteOrder << "\",";
-    json << "\"encoding\":\"" << encoding_ << "\",";
-    json << "\"filter\":\"" << filter_ << "\",";
-    json << "\"compression\":\"" << compression_ << "\"";
-
-    // Szip compression parameters (required by the szip codec)
-    if (compression_ == "szip") {
-        // Reference Sample Interval: must divide the total number of packed values.
-        // 32 is the most common default (matches GRIB szip usage).
-        json << ",\"szip_rsi\":32";
-        json << ",\"szip_block_size\":8";
-        json << ",\"szip_flags\":4";  // EC (entropy coding)
+    // First pass: collect and write MARS keys under a "mars" sub-object
+    bool hasMars = false;
+    for (const auto& [key, val] : md) {
+        const std::string& keyStr = static_cast<const std::string&>(key);
+        if (marsKeys.count(keyStr)) {
+            if (!hasMars) {
+                json << "mars";
+                json.startObject();
+                hasMars = true;
+            }
+            json << keyStr;
+            emitJsonValue(json, val);
+        }
+    }
+    if (hasMars) {
+        json.endObject();
     }
 
-    // Simple packing parameters
-    if (encoding_ == "simple_packing") {
-        json << ",\"bits_per_value\":" << bitsPerValue_;
-        json << ",\"decimal_scale_factor\":" << decimalScaleFactor_;
-        json << ",\"reference_value\":" << referenceValue;
-        json << ",\"binary_scale_factor\":" << binaryScaleFactor;
+    // Second pass: write non-MARS, non-skip keys at top level
+    for (const auto& [key, val] : md) {
+        const std::string& keyStr = static_cast<const std::string&>(key);
+        if (!marsKeys.count(keyStr) && !skipKeys.count(keyStr)) {
+            json << keyStr;
+            emitJsonValue(json, val);
+        }
     }
 
-    json << "}],";  // end descriptors
-
-    // Base array (per-object metadata — MARS keys + extras)
-    json << "\"base\":[" << buildBaseEntry(md) << "]";
-
-    json << '}';
-    return json.str();
+    json.endObject();
 }
 
-std::string EncodeTensogram::buildEncodeJsonRaw(const message::Metadata& md, size_t globalSize,
-                                                const std::string& dtype, const std::string& byteOrder,
-                                                size_t bytesPerElement) const {
-    std::ostringstream json;
-    json << '{';
+std::string EncodeTensogram::buildEncodeJson(const message::Metadata& md, size_t globalSize, const std::string& dtype,
+                                             const std::string& byteOrder, size_t bytesPerElement,
+                                             double referenceValue, int32_t binaryScaleFactor) const {
+    std::ostringstream oss;
+    {
+        eckit::JSON json(oss);
+        json.startObject();
 
-    json << "\"version\":2,";
+        // Version
+        json << "version" << 2;
 
-    json << "\"descriptors\":[{";
-    json << "\"type\":\"ndarray\",";
-    json << "\"ndim\":1,";
-    json << "\"shape\":[" << globalSize << "],";
-    json << "\"strides\":[" << bytesPerElement << "],";
-    json << "\"dtype\":\"" << dtype << "\",";
-    json << "\"byte_order\":\"" << byteOrder << "\",";
-    json << "\"encoding\":\"none\",";
-    json << "\"filter\":\"" << filter_ << "\",";
-    json << "\"compression\":\"" << compression_ << "\"";
+        // Descriptors array (one tensor object)
+        json << "descriptors";
+        json.startList();
+        json.startObject();
+        json << "type" << "ndarray";
+        json << "ndim" << 1;
+        json << "shape";
+        json.startList();
+        json << globalSize;
+        json.endList();
+        json << "strides";
+        json.startList();
+        json << bytesPerElement;
+        json.endList();
+        json << "dtype" << dtype;
+        json << "byte_order" << byteOrder;
+        json << "encoding" << encoding_;
+        json << "filter" << filter_;
+        json << "compression" << compression_;
 
-    // Szip compression parameters (required by the szip codec)
-    if (compression_ == "szip") {
-        json << ",\"szip_rsi\":32";
-        json << ",\"szip_block_size\":8";
-        json << ",\"szip_flags\":4";
+        // Szip-specific parameters
+        if (compression_ == "szip") {
+            json << "szip_rsi" << 32;
+            json << "szip_block_size" << 8;
+            json << "szip_flags" << 4;  // EC (entropy coding)
+        }
+
+        // Simple packing parameters
+        if (useSimplePacking_) {
+            json << "bits_per_value" << bitsPerValue_;
+            json << "decimal_scale_factor" << decimalScaleFactor_;
+            json.precision(17);  // Full double precision for reference_value
+            json << "reference_value" << referenceValue;
+            json << "binary_scale_factor" << binaryScaleFactor;
+        }
+
+        json.endObject();
+        json.endList();  // end descriptors
+
+        // Base array (per-object metadata)
+        json << "base";
+        json.startList();
+        writeBaseEntry(json, md);
+        json.endList();
+
+        json.endObject();
     }
-
-    json << "}],";
-
-    json << "\"base\":[" << buildBaseEntry(md) << "]";
-
-    json << '}';
-    return json.str();
+    return oss.str();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -339,6 +274,10 @@ void EncodeTensogram::executeImpl(Message msg) {
     const auto& md = msg.metadata();
     const auto globalSize = static_cast<size_t>(msg.globalSize());
 
+    if (globalSize == 0) {
+        throw eckit::UserError("EncodeTensogram: globalSize is 0 - nothing to encode", Here());
+    }
+
     // Determine byte order for this platform
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     const std::string byteOrder = "little";
@@ -350,10 +289,23 @@ void EncodeTensogram::executeImpl(Message msg) {
     auto encoded = dispatchPrecisionTag(msg.precision(), [&](auto pt) -> std::vector<uint8_t> {
         using Precision = typename decltype(pt)::type;
 
+        // Validate payload alignment and size consistency
+        if (msg.payload().size() % sizeof(Precision) != 0) {
+            throw eckit::UserError("EncodeTensogram: payload size (" + std::to_string(msg.payload().size())
+                                       + ") is not aligned to element size (" + std::to_string(sizeof(Precision)) + ")",
+                                   Here());
+        }
+
         const auto* values = reinterpret_cast<const Precision*>(msg.payload().data());
         const size_t numValues = msg.payload().size() / sizeof(Precision);
 
-        if (encoding_ == "simple_packing") {
+        if (numValues != globalSize) {
+            throw eckit::UserError("EncodeTensogram: payload element count (" + std::to_string(numValues)
+                                       + ") does not match globalSize (" + std::to_string(globalSize) + ")",
+                                   Here());
+        }
+
+        if (useSimplePacking_) {
             // simple_packing requires float64 input — convert if needed
             std::vector<double> doubleValues;
             const double* doublePtr = nullptr;
@@ -362,7 +314,6 @@ void EncodeTensogram::executeImpl(Message msg) {
                 doublePtr = values;
             }
             else {
-                // Convert float32 → float64
                 doubleValues.resize(numValues);
                 std::copy(values, values + numValues, doubleValues.begin());
                 doublePtr = doubleValues.data();
@@ -384,8 +335,9 @@ void EncodeTensogram::executeImpl(Message msg) {
                 throw eckit::SeriousBug(oss.str(), Here());
             }
 
-            // Build JSON and encode
-            std::string json = buildEncodeJson(md, globalSize, "float64", byteOrder, referenceValue, binaryScaleFactor);
+            // Build JSON and encode — input stride is always 8 (float64)
+            std::string json = buildEncodeJson(md, globalSize, "float64", byteOrder, sizeof(double), referenceValue,
+                                               binaryScaleFactor);
 
             const auto* dataPtr = reinterpret_cast<const uint8_t*>(doublePtr);
             size_t dataLen = numValues * sizeof(double);
@@ -395,9 +347,9 @@ void EncodeTensogram::executeImpl(Message msg) {
         else {
             // encoding = "none" — pass raw data in native precision
             std::string dtype = std::is_same_v<Precision, double> ? "float64" : "float32";
-            size_t bytesPerElement = sizeof(Precision);
 
-            std::string json = buildEncodeJsonRaw(md, globalSize, dtype, byteOrder, bytesPerElement);
+            std::string json = buildEncodeJson(md, globalSize, dtype, byteOrder, sizeof(Precision), 0.0 /* unused */,
+                                               0 /* unused */);
 
             const auto* dataPtr = reinterpret_cast<const uint8_t*>(values);
             size_t dataLen = numValues * sizeof(Precision);

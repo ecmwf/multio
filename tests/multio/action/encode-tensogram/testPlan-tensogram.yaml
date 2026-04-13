@@ -1,0 +1,26 @@
+# Test plan: Encodes fields into Tensogram format with simple_packing + szip
+# and writes them to a file.
+#
+# Usage with multio-feed:
+#   MULTIO_SERVER_CONFIG_FILE=testPlan-tensogram.yaml multio-feed --source=<input.grib>
+#
+# The output file will contain concatenated Tensogram messages (valid .tgm).
+# Verify with: tensogram info output-tensogram.tgm
+
+plans:
+    - name: tensogram-encode-to-file
+      actions:
+        - type: encode-tensogram
+          encoding: simple_packing
+          compression: szip
+          bits-per-value: 16
+          decimal-scale-factor: 0
+          filter: none
+          hash: xxh3
+          next:
+            type: sink
+            sinks:
+              - type: file
+                append: true
+                per-server: false
+                path: output-tensogram.tgm

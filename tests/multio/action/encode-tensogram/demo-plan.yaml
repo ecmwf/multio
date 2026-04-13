@@ -1,0 +1,62 @@
+# End-to-end demo plan: Selects 2-metre temperature, encodes to Tensogram,
+# and writes to a .tgm file.
+#
+# This plan demonstrates the full multio pipeline with the new encode-tensogram action:
+#
+#   select → encode-tensogram (simple_packing + szip) → file sink
+#
+# Usage:
+#   export MULTIO_SERVER_CONFIG_FILE=demo-plan.yaml
+#   multio-feed --source=input.grib
+#
+# Verify output:
+#   tensogram info demo-output.tgm
+#   tensogram ls demo-output.tgm
+#   tensogram dump demo-output.tgm
+#
+# Python verification (requires pymultio + tensogram Python package):
+#   import tensogram
+#   with tensogram.TensogramFile.open("demo-output.tgm") as f:
+#       for msg in f:
+#           meta, objects = msg
+#           print(f"MARS: {meta.base[0].get('mars', {})}")
+#           desc, data = objects[0]
+#           print(f"Shape: {data.shape}, dtype: {data.dtype}")
+
+plans:
+    # Plan 1: Surface fields → Tensogram with simple_packing + szip
+    - name: surface-to-tensogram
+      actions:
+        - type: select
+          match:
+            - levtype: [sfc]
+        - type: encode-tensogram
+          encoding: simple_packing
+          compression: szip
+          bits-per-value: 16
+          decimal-scale-factor: 0
+          filter: none
+          hash: xxh3
+          next:
+            type: sink
+            sinks:
+              - type: file
+                append: true
+                per-server: false
+                path: demo-output-packed.tgm
+
+    # Plan 2: All fields → Tensogram raw (lossless) to a separate file
+    - name: all-fields-raw-tensogram
+      actions:
+        - type: encode-tensogram
+          encoding: none
+          compression: none
+          filter: none
+          hash: xxh3
+          next:
+            type: sink
+            sinks:
+              - type: file
+                append: true
+                per-server: false
+                path: demo-output-raw.tgm

@@ -77,7 +77,7 @@
 # Design & Purpose
 
 - README.md -- entry level generic information
-- plans/MOTIVATION.md -- why Tensogram exists and what we're building
+- plans/MOTIVATION.md -- why multio exists and what we're building
 - plans/DESIGN.md -- design rationale and key architectural decisions
 
 If they are not present is because we want to still make them.
@@ -89,7 +89,7 @@ This project contains C, C++, Fortran and Python code
 
 
 # Version control
-- Git project in github.com/ecmwf/tensogram
+- Git project in github.com/ecmwf/multio
 - IMPORTANT: 
     - versions are tagged using Semantic Versioning form 'MAJOR.MINOR.MICRO'
     - NEVER update MAJOR unless users says so. 

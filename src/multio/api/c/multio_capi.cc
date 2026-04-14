@@ -521,19 +521,22 @@ int multio_close_connections(multio_handle_t* mio) {
 #endif
 }
 
-int multio_synchronize(multio_handle_t* mio) {
+int multio_synchronize(multio_handle_t* mio, multio_metadata_t* md) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
-        [mio]() {
+        [mio, md]() {
             ASSERT(mio != nullptr);
+            ASSERT(md != nullptr);
 
-            multio::message::Metadata md;
-            md.set("flushKind", "default");
-            md.set("toAllServers", true);
-            md.set("domain", "global");
-            mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+            multio::message::Metadata flushMd;
+            flushMd.set("flushKind", "default");
+            flushMd.set("toAllServers", true);
+            flushMd.set("domain", "global");
+            mio->dispatch(std::move(flushMd), eckit::Buffer{0}, Message::Tag::Flush);
 
-            mio->synchronize();
+            Message syncMsg{Message::Header{Message::Tag::Synchronization, Peer{}, Peer{}, md->md}};
+
+            mio->synchronize(syncMsg);
         },
         mio);
 #else

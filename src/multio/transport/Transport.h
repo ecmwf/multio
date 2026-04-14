@@ -55,7 +55,7 @@ public:  // methods
 
     virtual void bufferedSend(const Message& message) = 0;
 
-    virtual void synchronize() = 0;
+    virtual void synchronize(const Message& msg = Message{}) = 0;
 
     virtual const Peer& localPeer() const = 0;
 
@@ -70,6 +70,8 @@ public:  // methods
     virtual size_t serverCount() const;
 
 protected:
+    bool peersMissing() const;
+
     const ComponentConfiguration compConf_;
 
     mutable PeerList serverPeers_;
@@ -80,8 +82,6 @@ protected:
     std::mutex mutex_;
 
 private:  // methods
-    bool peersMissing() const;
-
     virtual void createPeers() const = 0;
 
     virtual void print(std::ostream& os) const = 0;

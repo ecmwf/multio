@@ -30,7 +30,7 @@ public:
     void abort(const std::string& serverName, std::exception_ptr);
     void abortAll(std::exception_ptr);
 
-    void synchronize();
+    void synchronize(const Message& msg = Message{});
 
 private:
     void add(const std::string& serverName, const ComponentConfiguration& fullConfig);

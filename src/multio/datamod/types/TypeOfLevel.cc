@@ -8,6 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
+#include <algorithm>
 #include "TypeOfLevel.h"
 
 #include "multio/datamod/core/DataModellingException.h"

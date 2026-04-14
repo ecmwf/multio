@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/MarsRecord.h"
+#include "multio/datamod/MiscRecord.h"
 #include "multio/mars2mars/rules/Rule.h"
 
 
@@ -35,6 +36,6 @@ const RuleList& allRulesNoWMOMapping();
 
 const RuleList& allRules();
 
-std::optional<MappingResult> applyMappings(const RuleList&, dm::FullMarsRecord&, dm::MiscRecord&);
+std::optional<MappingResult> applyMappings(const RuleList&, dm::MarsRecord&, dm::MiscRecord&);
 
 }  // namespace multio::mars2mars

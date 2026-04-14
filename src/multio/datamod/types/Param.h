@@ -15,14 +15,12 @@
 #include <ostream>
 #include <string>
 
-#include "multio/datamod/core/TypeParserDumper.h"
-#include "multio/util/Print.h"
-
 
 namespace multio::datamod {
 
 class Param {
 public:
+    Param() = default;
     Param(const Param&);
     Param(const std::int64_t);
     Param(const std::string&);
@@ -34,7 +32,7 @@ public:
     std::int64_t id() const { return id_; };
 
 private:
-    std::int64_t id_;
+    std::int64_t id_ = 0;
 };
 
 bool operator==(const Param&, const Param&) noexcept;
@@ -42,18 +40,7 @@ bool operator<=(const Param&, const Param&) noexcept;
 bool operator>=(const Param&, const Param&) noexcept;
 std::ostream& operator<<(std::ostream&, const Param&);
 
-template <>
-struct DumpType<Param> {
-    static std::int64_t dump(const Param& param) { return param.id(); }
-};
-
 }  // namespace multio::datamod
-
-
-template <>
-struct multio::util::Print<multio::datamod::Param> {
-    static void print(PrintStream& ps, const multio::datamod::Param& v);
-};
 
 
 template <>

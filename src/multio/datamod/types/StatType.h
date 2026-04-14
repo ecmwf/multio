@@ -10,16 +10,15 @@
 
 #pragma once
 
-#include "multio/datamod/core/DataModellingException.h"
-#include "multio/datamod/core/TypeParserDumper.h"
+#include <cstddef>
+#include <optional>
+#include <string>
+#include <string_view>
 
 #include "multio/util/Hash.h"
-#include "multio/util/Print.h"
 
 
 namespace multio::datamod {
-
-//----------------------------------------------------------------------------------------------------------------------
 
 
 enum class StatTypeDuration : std::size_t
@@ -28,11 +27,14 @@ enum class StatTypeDuration : std::size_t
     Month = 1,
 };
 
-// Define an order on StatTypeDuration. For multiple level operations, the first level must have greatest order
 bool operator>=(StatTypeDuration lhs, StatTypeDuration rhs) noexcept;
 bool operator<=(StatTypeDuration lhs, StatTypeDuration rhs) noexcept;
 bool operator>(StatTypeDuration lhs, StatTypeDuration rhs) noexcept;
 bool operator<(StatTypeDuration lhs, StatTypeDuration rhs) noexcept;
+
+std::string statTypeDurationToString(StatTypeDuration v);
+StatTypeDuration statTypeDurationFromString(std::string_view s);
+
 
 enum class StatTypeOperation : std::size_t
 {
@@ -42,23 +44,31 @@ enum class StatTypeOperation : std::size_t
     StandardDeviation
 };
 
+std::string statTypeOperationToString(StatTypeOperation v);
+StatTypeOperation statTypeOperationFromString(std::string_view s);
+
 
 struct SingleStatType {
     StatTypeDuration duration;
     StatTypeOperation operation;
+
+    std::string toString() const;
+    static SingleStatType fromString(std::string_view s);
 };
+
+bool operator==(const SingleStatType& lhs, const SingleStatType& rhs) noexcept;
 
 
 class StatType {
 public:
-    // Only constructor - will validate requirements on StatType
     StatType(SingleStatType first, std::optional<SingleStatType> second = {});
 
     SingleStatType firstLevel() const;
     std::optional<SingleStatType> secondLevel() const;
-
-    // Returns the number of levels (1 or 2)
     std::size_t levels() const;
+
+    std::string toString() const;
+    static StatType fromString(std::string_view s);
 
 private:
     SingleStatType firstLevel_;
@@ -67,7 +77,7 @@ private:
 
 bool operator==(const StatType& lhs, const StatType& rhs) noexcept;
 bool operator!=(const StatType& lhs, const StatType& rhs) noexcept;
-
+std::ostream& operator<<(std::ostream&, const StatType&);
 
 }  // namespace multio::datamod
 
@@ -85,59 +95,3 @@ struct std::hash<multio::datamod::StatType> {
         return multio::util::hashCombine(multio::util::hash(o.firstLevel()), multio::util::hash(o.secondLevel()));
     }
 };
-
-
-template <>
-struct multio::util::Print<multio::datamod::StatType> {
-    static void print(PrintStream& ps, const datamod::StatType& v);
-};
-
-
-
-namespace multio::datamod {
-
-template <>
-struct DumpType<StatTypeDuration> {
-    static std::string dump(StatTypeDuration);
-};
-
-template <>
-struct ParseType<StatTypeDuration> {
-    static StatTypeDuration parse(std::string_view s);
-};
-
-
-template <>
-struct DumpType<StatTypeOperation> {
-    static std::string dump(StatTypeOperation);
-};
-
-template <>
-struct ParseType<StatTypeOperation> {
-    static StatTypeOperation parse(std::string_view s);
-};
-
-
-template <>
-struct DumpType<SingleStatType> {
-    static std::string dump(SingleStatType);
-};
-
-template <>
-struct ParseType<SingleStatType> {
-    static SingleStatType parse(std::string_view s);
-};
-
-
-template <>
-struct DumpType<StatType> {
-    static std::string dump(StatType);
-};
-
-template <>
-struct ParseType<StatType> {
-    static StatType parse(std::string_view s);
-};
-
-
-}  // namespace multio::datamod

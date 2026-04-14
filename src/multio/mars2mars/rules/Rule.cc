@@ -13,6 +13,40 @@
 #include "eckit/utils/Overloaded.h"
 
 
+namespace multio::util {
+
+// Print specialization for the new flat MarsRecord — used in error messages when multiple rules match
+template <>
+struct Print<multio::datamod::MarsRecord> {
+    static void print(PrintStream& ps, const multio::datamod::MarsRecord& rec) {
+        ps << "MarsRecord(";
+        bool first = true;
+        auto field = [&](const char* name, const auto& opt) {
+            if (opt.has_value()) {
+                if (!first)
+                    ps << ", ";
+                first = false;
+                ps << name << "=" << *opt;
+            }
+        };
+        field("param", rec.param);
+        field("levtype", rec.levtype);
+        field("levelist", rec.levelist);
+        field("step", rec.step);
+        field("type", rec.type);
+        field("stream", rec.stream);
+        field("cls", rec.cls);
+        field("expver", rec.expver);
+        field("number", rec.number);
+        field("date", rec.date);
+        field("time", rec.time);
+        ps << ")";
+    }
+};
+
+}  // namespace multio::util
+
+
 namespace multio::mars2mars::rules {
 
 const DynRule* getRulePtr(const RuleList::RuleEntry& re) {
@@ -24,7 +58,7 @@ const DynRule* getRulePtr(const RuleList::RuleEntry& re) {
         re);
 }
 
-std::optional<MappingResult> RuleList::operator()(dm::FullMarsRecord& marsVals, dm::MiscRecord& miscVals) const {
+std::optional<MappingResult> RuleList::operator()(dm::MarsRecord& marsVals, dm::MiscRecord& miscVals) const {
     const DynRule* appliedRule = nullptr;
     std::optional<MappingResult> res;
     for (const auto& ruleEntry : rules) {
@@ -100,4 +134,3 @@ void Print<mars2mars::rules::RuleList>::print(PrintStream& ps, const mars2mars::
 
 
 }  // namespace multio::util
-

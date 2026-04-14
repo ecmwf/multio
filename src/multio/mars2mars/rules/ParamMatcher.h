@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/MarsRecord.h"
 #include "multio/mars2mars/rules/Matcher.h"
 
 #include <vector>
@@ -22,23 +22,24 @@ namespace multio::mars2mars::matcher {
 //-----------------------------------------------------------------------------
 
 auto paramRange(dm::Param start, dm::Param end) {
-    return Range{&dm::FullMarsRecord::param, {start}, {end}};
+    return Range<dm::MarsRecord, std::optional<dm::Param>>{&dm::MarsRecord::param, start, end};
 }
 
-using ParamMatcher = Any<OneOf<dm::MarsFieldId, dm::Entry<dm::Param>>, Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>>;
+using ParamMatcher
+    = Any<OneOf<dm::MarsRecord, std::optional<dm::Param>>, Ranges<dm::MarsRecord, std::optional<dm::Param>>>;
 
 ParamMatcher matchParams(std::vector<dm::Param> params) {
-    return ParamMatcher{std::make_tuple(OneOf{&dm::FullMarsRecord::param, std::move(params)},
-                                        Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>{{}})};
+    return ParamMatcher{std::make_tuple(OneOf{&dm::MarsRecord::param, std::move(params)},
+                                        Ranges<dm::MarsRecord, std::optional<dm::Param>>{{}})};
 }
 
 ParamMatcher matchParams(dm::Param param) {
     return matchParams(std::vector{param});
 }
 
-ParamMatcher matchParams(Range<dm::MarsFieldId, dm::Entry<dm::Param>> range) {
-    return ParamMatcher{
-        std::make_tuple(OneOf{&dm::FullMarsRecord::param, {}}, Ranges<dm::MarsFieldId, dm::Entry<dm::Param>>{{range}})};
+ParamMatcher matchParams(Range<dm::MarsRecord, std::optional<dm::Param>> range) {
+    return ParamMatcher{std::make_tuple(OneOf{&dm::MarsRecord::param, std::vector<dm::Param>{}},
+                                        Ranges<dm::MarsRecord, std::optional<dm::Param>>{{range}})};
 }
 
 ParamMatcher matchParams(ParamMatcher m) {
@@ -68,4 +69,3 @@ ParamMatcher matchParams(Arg&& arg, Arg2&& arg2, More&&... more) {
 
 
 }  // namespace multio::mars2mars::matcher
-

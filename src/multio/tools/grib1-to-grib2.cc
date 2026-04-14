@@ -43,12 +43,177 @@
 #include "multio/datamod/core/Record.h"
 
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/MarsRecord.h"
+#include "multio/datamod/MiscRecord.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/util/Print.h"
 
 namespace multio::grib1ToGrib2 {
 
 namespace dm = multio::datamod;
+
+//----------------------------------------------------------------------------------------------------------------------
+// Adapter to bridge old FullMarsRecord / LegacyMiscRecord with new flat records for mars2mars
+//----------------------------------------------------------------------------------------------------------------------
+
+namespace {
+
+dm::MarsRecord toNewMarsRecord(const dm::FullMarsRecord& old) {
+    dm::MarsRecord r;
+    // IntOrString fields → string
+    if (old.origin.isSet()) {
+        std::visit(eckit::Overloaded{[&](const std::string& s) { r.origin = s; },
+                                     [&](std::int64_t v) { r.origin = std::to_string(v); }},
+                   old.origin.get());
+    }
+    if (old.expver.isSet()) {
+        std::visit(eckit::Overloaded{[&](const std::string& s) { r.expver = s; },
+                                     [&](std::int64_t v) { r.expver = std::to_string(v); }},
+                   old.expver.get());
+    }
+    // String fields
+    if (old.klass.isSet())
+        r.cls = old.klass.get();
+    if (old.stream.isSet())
+        r.stream = old.stream.get();
+    if (old.type.isSet())
+        r.type = old.type.get();
+    if (old.model.isSet())
+        r.model = old.model.get();
+    if (old.packing.isSet())
+        r.packing = old.packing.get();
+    if (old.grid.isSet())
+        r.grid = old.grid.get();
+    if (old.dataset.isSet())
+        r.dataset = old.dataset.get();
+    if (old.resolution.isSet())
+        r.resolution = old.resolution.get();
+    if (old.activity.isSet())
+        r.activity = old.activity.get();
+    if (old.experiment.isSet())
+        r.experiment = old.experiment.get();
+    // Param
+    if (old.param.isSet())
+        r.param = old.param.get();
+    // LevType
+    if (old.levtype.isSet())
+        r.levtype = old.levtype.get();
+    // TimeDuration → int64 (hours) for step; skip timespan (mars2mars doesn't use it)
+    if (old.step.isSet())
+        r.step = old.step.get().toHours();
+    // StatType
+    if (old.stattype.isSet())
+        r.stattype = old.stattype.get();
+    // int64 fields
+    if (old.levelist.isSet())
+        r.levelist = old.levelist.get();
+    if (old.date.isSet())
+        r.date = old.date.get();
+    if (old.time.isSet())
+        r.time = old.time.get();
+    if (old.anoffset.isSet())
+        r.anoffset = old.anoffset.get();
+    if (old.hdate.isSet())
+        r.hdate = old.hdate.get();
+    if (old.refdate.isSet())
+        r.refdate = old.refdate.get();
+    if (old.fcmonth.isSet())
+        r.fcmonth = old.fcmonth.get();
+    if (old.fcperiod.isSet())
+        r.fcperiod = old.fcperiod.get();
+    if (old.number.isSet())
+        r.number = old.number.get();
+    if (old.ident.isSet())
+        r.ident = old.ident.get();
+    if (old.instrument.isSet())
+        r.instrument = old.instrument.get();
+    if (old.channel.isSet())
+        r.channel = old.channel.get();
+    // chem/wavelength: int64 in old → string in new
+    if (old.chem.isSet())
+        r.chem = std::to_string(old.chem.get());
+    if (old.wavelength.isSet())
+        r.wavelength = std::to_string(old.wavelength.get());
+    // Wave spectra
+    if (old.direction.isSet())
+        r.direction = old.direction.get();
+    if (old.frequency.isSet())
+        r.frequency = old.frequency.get();
+    // Seasonal
+    if (old.method.isSet())
+        r.method = old.method.get();
+    if (old.system.isSet())
+        r.system = old.system.get();
+    // Sensitivity
+    if (old.iteration.isSet())
+        r.iteration = old.iteration.get();
+    if (old.diagnostic.isSet())
+        r.diagnostic = old.diagnostic.get();
+    // DestinE
+    if (old.generation.isSet())
+        r.generation = old.generation.get();
+    if (old.realization.isSet())
+        r.realization = old.realization.get();
+    if (old.truncation.isSet())
+        r.truncation = old.truncation.get();
+    return r;
+}
+
+dm::MiscRecord toNewMiscRecord(const dm::LegacyMiscRecord& old) {
+    dm::MiscRecord r;
+    if (old.tablesVersion.isSet())
+        r.tablesVersion = old.tablesVersion.get();
+    if (old.missingValue.isSet())
+        r.missingValue = old.missingValue.get();
+    if (old.bitsPerValue.isSet())
+        r.bitsPerValue = old.bitsPerValue.get();
+    if (old.typeOfEnsembleForecast.isSet())
+        r.typeOfEnsembleForecast = old.typeOfEnsembleForecast.get();
+    if (old.satelliteSeries.isSet())
+        r.satelliteSeries = old.satelliteSeries.get();
+    if (old.scaleFactorOfCentralWaveNumber.isSet())
+        r.scaleFactorOfCentralWaveNumber = old.scaleFactorOfCentralWaveNumber.get();
+    if (old.scaledValueOfCentralWaveNumber.isSet())
+        r.scaledValueOfCentralWaveNumber = old.scaledValueOfCentralWaveNumber.get();
+    if (old.scaleFactorOfWaveDirections.isSet())
+        r.scaleFactorOfWaveDirections = old.scaleFactorOfWaveDirections.get();
+    if (old.scaleFactorOfWaveFrequencies.isSet())
+        r.scaleFactorOfWaveFrequencies = old.scaleFactorOfWaveFrequencies.get();
+    return r;
+}
+
+void copyBackToOld(dm::FullMarsRecord& mars, dm::LegacyMiscRecord& misc, const dm::MarsRecord& r,
+                   const dm::MiscRecord& m) {
+    // Copy back fields that mars2mars might have modified
+    if (r.param.has_value())
+        mars.param.set(*r.param);
+    if (r.levtype.has_value())
+        mars.levtype.set(*r.levtype);
+    if (r.levelist.has_value())
+        mars.levelist.set(*r.levelist);
+    if (r.step.has_value())
+        mars.step.set(static_cast<long>(*r.step));
+    if (r.type.has_value())
+        mars.type.set(*r.type);
+    if (r.stream.has_value())
+        mars.stream.set(*r.stream);
+    if (r.cls.has_value())
+        mars.klass.set(*r.cls);
+    if (r.number.has_value())
+        mars.number.set(*r.number);
+    if (r.direction.has_value())
+        mars.direction.set(*r.direction);
+    if (r.frequency.has_value())
+        mars.frequency.set(*r.frequency);
+    if (m.tablesVersion.has_value())
+        misc.tablesVersion.set(*m.tablesVersion);
+    if (m.bitsPerValue.has_value())
+        misc.bitsPerValue.set(*m.bitsPerValue);
+}
+
+}  // anonymous namespace
+
+//----------------------------------------------------------------------------------------------------------------------
 
 // Extract functionality
 struct KeySet {
@@ -203,7 +368,7 @@ void handleParamId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
     }
 }
 
-void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
+void handleMissingValue(metkit::codes::CodesHandle& h, dm::LegacyMiscRecord& misc) {
     double missingValue = 9999.0;
     h.set("missingValue", missingValue);
     misc.missingValue.set(missingValue);
@@ -244,8 +409,8 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
-                     int verbosity) {
+void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
+                     dm::LegacyMiscRecord& misc, int verbosity) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -1034,7 +1199,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
             // now inputHandle is save to use
             dm::FullMarsRecord mars;
-            dm::MiscRecord misc;
+            dm::LegacyMiscRecord misc;
 
             KeySet marsKeys = iterateMarsNamespace(*inputHandle.get());
             if (verbosity_ > 2) {
@@ -1102,8 +1267,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             }
 
             if (mappingRules_) {
-                // TODO pgeier use upcoming C++ interface
-                auto mappingResult = mars2mars::applyMappings(*mappingRules_, mars, misc);
+                // Bridge old records to new flat records for mars2mars
+                auto newMars = toNewMarsRecord(mars);
+                auto newMisc = toNewMiscRecord(misc);
+                auto mappingResult = mars2mars::applyMappings(*mappingRules_, newMars, newMisc);
+                copyBackToOld(mars, misc, newMars, newMisc);
 
                 if (mappingResult && mappingResult->valuesScaleFactor) {
                     const auto scaleFactor = *(mappingResult->valuesScaleFactor);

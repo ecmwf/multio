@@ -311,7 +311,7 @@ constexpr auto WaveFrequencies =                      //
 
 // LaplacianOperator defined in GribKeys
 
-struct MiscRecord {
+struct LegacyMiscRecord {
     EntryType_t<decltype(TablesVersion)> tablesVersion;
     EntryType_t<decltype(GeneratingProcessIdentifier)> generatingProcessIdentifier;
     EntryType_t<decltype(TypeOfProcessedDataEntry)> typeOfProcessedData;
@@ -350,5 +350,5 @@ struct MiscRecord {
 
 namespace multio::util {
 template <>
-struct Print<multio::datamod::MiscRecord> : multio::datamod::PrintRecord {};
+struct Print<multio::datamod::LegacyMiscRecord> : multio::datamod::PrintRecord {};
 };  // namespace multio::util

@@ -10,32 +10,30 @@
 
 #include "StatType.h"
 
-#include "multio/datamod/core/DataModellingException.h"
+#include "eckit/exception/Exceptions.h"
 
 
 namespace multio::datamod {
 
 StatType::StatType(SingleStatType first, std::optional<SingleStatType> second) :
     firstLevel_(first), secondLevel_(second) {
-    // For multiple levels, the first level must be larger (i.e. moav_damn -> first is month, second is day)
     if (secondLevel_ && !(firstLevel_.duration > secondLevel_->duration)) {
-        throw DataModellingException(
-            std::string("StatType: Invalid level combination: ") + std::string(DumpType<StatType>::dump(*this)),
-            Here());
+        throw eckit::UserError("StatType: Invalid level combination: " + toString(), Here());
     }
 }
 
 SingleStatType StatType::firstLevel() const {
     return firstLevel_;
-};
+}
 std::optional<SingleStatType> StatType::secondLevel() const {
     return secondLevel_;
 }
-
 std::size_t StatType::levels() const {
     return (secondLevel_ ? 2 : 1);
 }
 
+
+// --- StatTypeDuration ---
 
 bool operator>(StatTypeDuration lhs, StatTypeDuration rhs) noexcept {
     return std::size_t(lhs) > std::size_t(rhs);
@@ -50,20 +48,30 @@ bool operator<=(StatTypeDuration lhs, StatTypeDuration rhs) noexcept {
     return std::size_t(lhs) <= std::size_t(rhs);
 }
 
-std::string DumpType<StatTypeDuration>::dump(StatTypeDuration v) {
+std::string statTypeDurationToString(StatTypeDuration v) {
     switch (v) {
         case StatTypeDuration::Day:
             return "da";
         case StatTypeDuration::Month:
             return "mo";
         default:
-            throw DataModellingException("DumpType<StatTypeDuration>::dump: Unexpected enum value for StatTypeDuration"
-                                             + std::to_string(std::int64_t(v)),
-                                         Here());
+            throw eckit::UserError("statTypeDurationToString: Unexpected enum value " + std::to_string(std::int64_t(v)),
+                                   Here());
     }
 }
 
-std::string DumpType<StatTypeOperation>::dump(StatTypeOperation v) {
+StatTypeDuration statTypeDurationFromString(std::string_view val) {
+    if (val == "da")
+        return StatTypeDuration::Day;
+    if (val == "mo")
+        return StatTypeDuration::Month;
+    throw eckit::UserError("statTypeDurationFromString: Unknown value: " + std::string(val), Here());
+}
+
+
+// --- StatTypeOperation ---
+
+std::string statTypeOperationToString(StatTypeOperation v) {
     switch (v) {
         case StatTypeOperation::Average:
             return "av";
@@ -74,99 +82,76 @@ std::string DumpType<StatTypeOperation>::dump(StatTypeOperation v) {
         case StatTypeOperation::StandardDeviation:
             return "sd";
         default:
-            throw DataModellingException(
-                "DumpType<StatTypeOperation>::dump: Unexpected enum value for StatTypeOperation"
-                    + std::to_string(std::int64_t(v)),
-                Here());
+            throw eckit::UserError(
+                "statTypeOperationToString: Unexpected enum value " + std::to_string(std::int64_t(v)), Here());
     }
 }
 
-StatTypeDuration ParseType<StatTypeDuration>::parse(std::string_view val) {
-    if (val == "da") {
-        return StatTypeDuration::Day;
-    }
-    if (val == "mo") {
-        return StatTypeDuration::Month;
-    }
-    throw DataModellingException(
-        std::string("ParseType<StatTypeDuration>::parse Unknown value for StatTypeDuration: ") + std::string(val),
-        Here());
-}
-
-StatTypeOperation ParseType<StatTypeOperation>::parse(std::string_view val) {
-    if (val == "av") {
+StatTypeOperation statTypeOperationFromString(std::string_view val) {
+    if (val == "av")
         return StatTypeOperation::Average;
-    }
-    if (val == "mx") {
+    if (val == "mx")
         return StatTypeOperation::Max;
-    }
-    if (val == "mn") {
+    if (val == "mn")
         return StatTypeOperation::Min;
-    }
-    if (val == "sd") {
+    if (val == "sd")
         return StatTypeOperation::StandardDeviation;
-    }
-    throw DataModellingException(
-        std::string("ParseType<StatTypeOperation>::parse Unknown value for StatTypeOperation: ") + std::string(val),
-        Here());
+    throw eckit::UserError("statTypeOperationFromString: Unknown value: " + std::string(val), Here());
 }
 
-std::string DumpType<SingleStatType>::dump(SingleStatType v) {
-    return DumpType<StatTypeDuration>::dump(v.duration) + DumpType<StatTypeOperation>::dump(v.operation);
+
+// --- SingleStatType ---
+
+std::string SingleStatType::toString() const {
+    return statTypeDurationToString(duration) + statTypeOperationToString(operation);
 }
 
-SingleStatType ParseType<SingleStatType>::parse(std::string_view val) {
+SingleStatType SingleStatType::fromString(std::string_view val) {
     if (val.size() != 4) {
-        throw DataModellingException(
-            std::string("ParseType<SingleStatType>::parse Unknown value for SingleStatType: ") + std::string(val),
-            Here());
+        throw eckit::UserError("SingleStatType::fromString: Expected 4 characters, got: " + std::string(val), Here());
     }
-    return SingleStatType{ParseType<StatTypeDuration>::parse(val.substr(0, 2)),
-                          ParseType<StatTypeOperation>::parse(val.substr(2, 2))};
+    return SingleStatType{statTypeDurationFromString(val.substr(0, 2)), statTypeOperationFromString(val.substr(2, 2))};
+}
+
+bool operator==(const SingleStatType& lhs, const SingleStatType& rhs) noexcept {
+    return lhs.duration == rhs.duration && lhs.operation == rhs.operation;
 }
 
 
-std::string DumpType<StatType>::dump(StatType v) {
-    if (v.secondLevel()) {
-        return DumpType<SingleStatType>::dump(v.firstLevel()) + std::string("_")
-             + DumpType<SingleStatType>::dump(*v.secondLevel());
+// --- StatType ---
+
+std::string StatType::toString() const {
+    if (secondLevel_) {
+        return firstLevel_.toString() + "_" + secondLevel_->toString();
     }
-    return DumpType<SingleStatType>::dump(v.firstLevel());
+    return firstLevel_.toString();
 }
 
-StatType ParseType<StatType>::parse(std::string_view val) {
+StatType StatType::fromString(std::string_view val) {
     switch (val.size()) {
         case 4:
-            return StatType{ParseType<SingleStatType>::parse(val.substr(0, 4)), {}};
+            return StatType{SingleStatType::fromString(val.substr(0, 4)), {}};
         case 9:
             if (val[4] != '_') {
-                throw DataModellingException(std::string("ParseType<StatType>::parse Unknown value for StatType: ")
-                                                 + std::string(val)
-                                                 + std::string(". Expected a '_' as forth character."),
-                                             Here());
+                throw eckit::UserError("StatType::fromString: Expected '_' at position 4 in: " + std::string(val),
+                                       Here());
             }
-            return StatType{ParseType<SingleStatType>::parse(val.substr(0, 4)),
-                            ParseType<SingleStatType>::parse(val.substr(5, 4))};
+            return StatType{SingleStatType::fromString(val.substr(0, 4)), SingleStatType::fromString(val.substr(5, 4))};
+        default:
+            throw eckit::UserError("StatType::fromString: Unknown value: " + std::string(val), Here());
     }
-    throw DataModellingException(
-        std::string("ParseType<StatType>::parse Unknown value for StatType: ") + std::string(val), Here());
 }
-
 
 bool operator==(const StatType& lhs, const StatType& rhs) noexcept {
     return (lhs.firstLevel() == rhs.firstLevel()) && (lhs.secondLevel() == rhs.secondLevel());
-};
+}
 bool operator!=(const StatType& lhs, const StatType& rhs) noexcept {
     return !(lhs == rhs);
-};
-
-}  // namespace multio::datamod
-
-
-namespace multio::util {
-
-void util::Print<datamod::StatType>::print(PrintStream& ps, const datamod::StatType& t) {
-    util::print(ps, datamod::TypeDumper<datamod::StatType>::dump(t));
 }
 
-}  // namespace multio::util
+std::ostream& operator<<(std::ostream& out, const StatType& st) {
+    out << st.toString();
+    return out;
+}
+
+}  // namespace multio::datamod

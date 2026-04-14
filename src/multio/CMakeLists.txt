@@ -45,6 +45,7 @@ list( APPEND multio_util_srcs
     util/TypeToString.h
     util/SampleMetadataGen.h
     util/Print.h
+    util/record/Entry.h
 )
 
 if ( HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE )
@@ -176,6 +177,12 @@ list( APPEND multio_datamod_srcs
     datamod/MarsMiscGeo.h
     datamod/GribKeys.h
     datamod/Glossary.h
+    datamod/MarsCacheKey.h
+    datamod/MarsRecord.h
+    datamod/MiscRecord.h
+    datamod/Parser.h
+    datamod/detail/Parser.h
+    datamod/detail/Parser.cc
 )
 
 list( APPEND multio_server_srcs

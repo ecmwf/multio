@@ -10,13 +10,13 @@
 
 #include "LevType.h"
 
-#include "multio/datamod/core/DataModellingException.h"
+#include "eckit/exception/Exceptions.h"
 
 
 namespace multio::datamod {
 
 
-std::string DumpType<LevType>::dump(LevType v) {
+std::string levTypeToString(LevType v) {
     switch (v) {
         case LevType::ML:
             return "ml";
@@ -51,79 +51,56 @@ std::string DumpType<LevType>::dump(LevType v) {
         case LevType::LAYER:
             return "layer";
         default:
-            throw DataModellingException(
-                "DumpType<LevType>::dump: Unexpected enum value for LevType " + std::to_string(std::int64_t(v)),
-                Here());
+            throw eckit::UserError(
+                "levTypeToString: Unexpected enum value for LevType " + std::to_string(std::int64_t(v)), Here());
     }
 }
 
-LevType ParseType<LevType>::parse(const std::string& val) {
-    if (val == "ml") {
+LevType levTypeFromString(const std::string& val) {
+    if (val == "ml")
         return LevType::ML;
-    }
-    if (val == "pl") {
+    if (val == "pl")
         return LevType::PL;
-    }
-    if (val == "pv") {
+    if (val == "pv")
         return LevType::PV;
-    }
-    if (val == "pt") {
+    if (val == "pt")
         return LevType::PT;
-    }
-    if (val == "sol") {
+    if (val == "sol")
         return LevType::SOL;
-    }
-    if (val == "sfc") {
+    if (val == "sfc")
         return LevType::SFC;
-    }
-    if (val == "o2d") {
+    if (val == "o2d")
         return LevType::O2D;
-    }
-    if (val == "o3d") {
+    if (val == "o3d")
         return LevType::O3D;
-    }
-    if (val == "hl") {
+    if (val == "hl")
         return LevType::HL;
-    }
-    if (val == "hhl") {
+    if (val == "hhl")
         return LevType::HHL;
-    }
-    if (val == "hpl") {
+    if (val == "hpl")
         return LevType::HPL;
-    }
-    if (val == "al") {
+    if (val == "al")
         return LevType::AL;
-    }
-    if (val == "wv") {
+    if (val == "wv")
         return LevType::WV;
-    }
-    if (val == "dp") {
+    if (val == "dp")
         return LevType::DP;
-    }
-    if (val == "cat") {
+    if (val == "cat")
         return LevType::CAT;
-    }
-    if (val == "layer") {
+    if (val == "layer")
         return LevType::LAYER;
-    }
-    throw DataModellingException(std::string("ParseType<LevType>::parse Unknown value for LevType: ") + val, Here());
+    throw eckit::UserError("levTypeFromString: Unknown value for LevType: " + val, Here());
 }
 
 const std::vector<LevType>& allLevTypes() {
     static const std::vector<LevType> all{
         LevType::ML, LevType::PL,  LevType::PV,  LevType::PT, LevType::SOL, LevType::SFC, LevType::O2D, LevType::O3D,
         LevType::HL, LevType::HHL, LevType::HPL, LevType::AL, LevType::WV,  LevType::DP,  LevType::CAT, LevType::LAYER};
-
     return all;
 }
 
-}  // namespace multio::datamod
-
-
-namespace multio::util {
-
-void util::Print<datamod::LevType>::print(PrintStream& ps, const datamod::LevType& t) {
-    util::print(ps, datamod::TypeDumper<datamod::LevType>::dump(t));
+std::ostream& operator<<(std::ostream& os, LevType v) {
+    return os << levTypeToString(v);
 }
 
-}  // namespace multio::util
+}  // namespace multio::datamod

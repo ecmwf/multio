@@ -20,71 +20,71 @@ using namespace multio::mars2mars::matcher;
 // To param 262024
 
 auto fixParam35ToSol1() {
-    return rule(all(matchParams(35), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
-                setKey(&dm::FullMarsRecord::param, 262024));                                                       //
+    return rule(all(matchParams(35), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 1),  //
+                setKey(&dm::MarsRecord::param, 262024));                                                   //
 }
 auto fixParam36ToSol2() {
-    return rule(all(matchParams(36), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
-                setKey(&dm::FullMarsRecord::param, 262024));                                                       //
+    return rule(all(matchParams(36), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 2),  //
+                setKey(&dm::MarsRecord::param, 262024));                                                   //
 }
 auto fixParam37ToSol3() {
-    return rule(all(matchParams(37), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
-                setKey(&dm::FullMarsRecord::param, 262024));                                                       //
+    return rule(all(matchParams(37), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 3),  //
+                setKey(&dm::MarsRecord::param, 262024));                                                   //
 }
 auto fixParam38ToSol4() {
-    return rule(all(matchParams(38), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
-                setKey(&dm::FullMarsRecord::param, 262024));                                                       //
+    return rule(all(matchParams(38), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 4),  //
+                setKey(&dm::MarsRecord::param, 262024));                                                   //
 }
 
 // To param 260199
 
 auto fixParam39ToSol1() {
-    return rule(all(matchParams(39), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
-                setKey(&dm::FullMarsRecord::param, 260199));                                                       //
+    return rule(all(matchParams(39), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 1),  //
+                setKey(&dm::MarsRecord::param, 260199));                                                   //
 }
 auto fixParam40ToSol2() {
-    return rule(all(matchParams(40), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
-                setKey(&dm::FullMarsRecord::param, 260199));                                                       //
+    return rule(all(matchParams(40), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 2),  //
+                setKey(&dm::MarsRecord::param, 260199));                                                   //
 }
 auto fixParam41ToSol3() {
-    return rule(all(matchParams(41), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
-                setKey(&dm::FullMarsRecord::param, 260199));                                                       //
+    return rule(all(matchParams(41), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 3),  //
+                setKey(&dm::MarsRecord::param, 260199));                                                   //
 }
 auto fixParam42ToSol4() {
-    return rule(all(matchParams(42), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                     //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
-                setKey(&dm::FullMarsRecord::param, 260199));                                                       //
+    return rule(all(matchParams(42), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                 //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 4),  //
+                setKey(&dm::MarsRecord::param, 260199));                                                   //
 }
 
 
 // To param 260360
 
 auto fixParam139ToSol1() {
-    return rule(all(matchParams(139), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 1),  //
-                setKey(&dm::FullMarsRecord::param, 260360));                                                       //
+    return rule(all(matchParams(139), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 1),  //
+                setKey(&dm::MarsRecord::param, 260360));                                                   //
 }
 auto fixParam170ToSol2() {
-    return rule(all(matchParams(170), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 2),  //
-                setKey(&dm::FullMarsRecord::param, 260360));                                                       //
+    return rule(all(matchParams(170), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 2),  //
+                setKey(&dm::MarsRecord::param, 260360));                                                   //
 }
 auto fixParam183ToSol3() {
-    return rule(all(matchParams(183), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 3),  //
-                setKey(&dm::FullMarsRecord::param, 260360));                                                       //
+    return rule(all(matchParams(183), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 3),  //
+                setKey(&dm::MarsRecord::param, 260360));                                                   //
 }
 auto fixParam236ToSol4() {
-    return rule(all(matchParams(236), OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}),                    //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL), setKey(&dm::FullMarsRecord::levelist, 4),  //
-                setKey(&dm::FullMarsRecord::param, 260360));                                                       //
+    return rule(all(matchParams(236), OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}),                //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL), setKey(&dm::MarsRecord::levelist, 4),  //
+                setKey(&dm::MarsRecord::param, 260360));                                                   //
 }
 
 
@@ -107,20 +107,20 @@ auto fixTablesVersionChemInstant() {
 //-----------------------------------------------------------------------------
 
 auto fixCloudParam164() {
-    return rule(all(matchParams(164)),                                               //
-                setKey(&dm::FullMarsRecord::param, 228164), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(164)),                                           //
+                setKey(&dm::MarsRecord::param, 228164), SetScaleFactor{100.0});  //
 }
 auto fixCloudParam186() {
-    return rule(all(matchParams(186)),                                             //
-                setKey(&dm::FullMarsRecord::param, 3073), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(186)),                                         //
+                setKey(&dm::MarsRecord::param, 3073), SetScaleFactor{100.0});  //
 }
 auto fixCloudParam187() {
-    return rule(all(matchParams(187)),                                             //
-                setKey(&dm::FullMarsRecord::param, 3074), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(187)),                                         //
+                setKey(&dm::MarsRecord::param, 3074), SetScaleFactor{100.0});  //
 }
 auto fixCloudParam188() {
-    return rule(all(matchParams(188)),                                             //
-                setKey(&dm::FullMarsRecord::param, 3075), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(188)),                                         //
+                setKey(&dm::MarsRecord::param, 3075), SetScaleFactor{100.0});  //
 }
 
 
@@ -129,13 +129,13 @@ auto fixCloudParam188() {
 //-----------------------------------------------------------------------------
 
 auto fixConvectivePrecip143() {
-    return rule(all(matchParams(143)),                                                //
-                setKey(&dm::FullMarsRecord::param, 228143), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(143)),                                            //
+                setKey(&dm::MarsRecord::param, 228143), SetScaleFactor{1000.0});  //
 }
 
 auto fixTotalPrecip228() {
-    return rule(all(matchParams(228)),                                                //
-                setKey(&dm::FullMarsRecord::param, 228228), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(228)),                                            //
+                setKey(&dm::MarsRecord::param, 228228), SetScaleFactor{1000.0});  //
 }
 
 
@@ -144,20 +144,20 @@ auto fixTotalPrecip228() {
 //-----------------------------------------------------------------------------
 
 auto fixHeightAboveGround2m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::FullMarsRecord::levelist, {0}},
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::MarsRecord::levelist, {0}},
                     matchParams(167, 168, 174096, 228037)),  //
-                setKey(&dm::FullMarsRecord::levelist, 2));   //
+                setKey(&dm::MarsRecord::levelist, 2));       //
 }
 
 auto fixHeightAboveGround10m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::FullMarsRecord::levelist, {0}},
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, OneOf{&dm::MarsRecord::levelist, {0}},
                     matchParams(228029, 228131, 228132, 165, 166, 207)),  //
-                setKey(&dm::FullMarsRecord::levelist, 10));               //
+                setKey(&dm::MarsRecord::levelist, 10));                   //
 }
 
 auto fixHeightAboveSea() {
-    return rule(all(matchParams(140233, 140245, 140249)),    //
-                setKey(&dm::FullMarsRecord::levelist, 10));  //
+    return rule(all(matchParams(140233, 140245, 140249)),  //
+                setKey(&dm::MarsRecord::levelist, 10));    //
 }
 
 
@@ -166,22 +166,21 @@ auto fixHeightAboveSea() {
 //-----------------------------------------------------------------------------
 
 auto fixMapToSol() {
-    return rule(
-        all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, Has{&dm::FullMarsRecord::levelist},
-            NoneOf{&dm::FullMarsRecord::levelist, {0}},
-            matchParams(33, 238, 228038, 235080, 237080, 238080, 239080, 260360, 262000, 262024, 260199)),  //
-        setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));                                             //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, Has{&dm::MarsRecord::levelist},
+                    NoneOf{&dm::MarsRecord::levelist, {0}},
+                    matchParams(33, 238, 228038, 235080, 237080, 238080, 239080, 260360, 262000, 262024, 260199)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::SOL));                                                //
 }
 
 
 auto fixRunOffWaterParam205() {
-    return rule(all(matchParams(205)),                                                //
-                setKey(&dm::FullMarsRecord::param, 231002), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(205)),                                            //
+                setKey(&dm::MarsRecord::param, 231002), SetScaleFactor{1000.0});  //
 }
 
 auto fixSnowfallWaterEquivParam() {
-    return rule(all(matchParams(144)),                                                //
-                setKey(&dm::FullMarsRecord::param, 228144), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(144)),                                            //
+                setKey(&dm::MarsRecord::param, 228144), SetScaleFactor{1000.0});  //
 }
 
 
@@ -191,56 +190,56 @@ auto fixSnowfallWaterEquivParam() {
 
 // Surface runoff: sro -> surfro
 auto fixSurfaceRunoff8() {
-    return rule(all(matchParams(8)),                                                  //
-                setKey(&dm::FullMarsRecord::param, 231010), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(8)),                                              //
+                setKey(&dm::MarsRecord::param, 231010), SetScaleFactor{1000.0});  //
 }
 
 // Sub-surface runoff: ssro -> ssurfro
 auto fixSubSurfaceRunoff9() {
-    return rule(all(matchParams(9)),                                                  //
-                setKey(&dm::FullMarsRecord::param, 231012), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(9)),                                              //
+                setKey(&dm::MarsRecord::param, 231012), SetScaleFactor{1000.0});  //
 }
 
 // Snow depth: sd -> sd (water equivalent)
 auto fixSnowDepth141() {
-    return rule(all(matchParams(141)),                                                //
-                setKey(&dm::FullMarsRecord::param, 228141), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(141)),                                            //
+                setKey(&dm::MarsRecord::param, 228141), SetScaleFactor{1000.0});  //
 }
 
 // Large-scale precipitation: lsp -> lsp
 auto fixLargeScalePrecip142() {
-    return rule(all(matchParams(142)),                                              //
-                setKey(&dm::FullMarsRecord::param, 3062), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(142)),                                          //
+                setKey(&dm::MarsRecord::param, 3062), SetScaleFactor{1000.0});  //
 }
 
 // Evaporation: e -> eva
 auto fixEvaporation182() {
-    return rule(all(matchParams(182)),                                                //
-                setKey(&dm::FullMarsRecord::param, 260259), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(182)),                                            //
+                setKey(&dm::MarsRecord::param, 260259), SetScaleFactor{1000.0});  //
 }
 
 // Skin reservoir content: src -> srcon
 auto fixSkinReservoirContent198() {
-    return rule(all(matchParams(198)),                                                //
-                setKey(&dm::FullMarsRecord::param, 160198), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(198)),                                            //
+                setKey(&dm::MarsRecord::param, 160198), SetScaleFactor{1000.0});  //
 }
 
 // Convective snowfall: csf -> csfwe
 auto fixConvectiveSnowfall239() {
-    return rule(all(matchParams(239)),                                                //
-                setKey(&dm::FullMarsRecord::param, 231057), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(239)),                                            //
+                setKey(&dm::MarsRecord::param, 231057), SetScaleFactor{1000.0});  //
 }
 
 // Large-scale snowfall: lsf -> lsfwe
 auto fixLargeScaleSnowfall240() {
-    return rule(all(matchParams(240)),                                                //
-                setKey(&dm::FullMarsRecord::param, 231058), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(240)),                                            //
+                setKey(&dm::MarsRecord::param, 231058), SetScaleFactor{1000.0});  //
 }
 
 // Accumulated freezing rain: fzra -> fzrawe
 auto fixFreezingRain228216() {
-    return rule(all(matchParams(228216)),                                             //
-                setKey(&dm::FullMarsRecord::param, 231001), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(228216)),                                         //
+                setKey(&dm::MarsRecord::param, 231001), SetScaleFactor{1000.0});  //
 }
 
 
@@ -251,80 +250,80 @@ auto fixFreezingRain228216() {
 
 // UV visible albedo for direct radiation: aluvp -> aluvp_p
 auto fixAlbedoUvDirect15() {
-    return rule(all(matchParams(15)),                                                //
-                setKey(&dm::FullMarsRecord::param, 210199), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(15)),                                            //
+                setKey(&dm::MarsRecord::param, 210199), SetScaleFactor{100.0});  //
 }
 
 // UV visible albedo for diffuse radiation: aluvd -> aluvd_p
 auto fixAlbedoUvDiffuse16() {
-    return rule(all(matchParams(16)),                                                //
-                setKey(&dm::FullMarsRecord::param, 210198), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(16)),                                            //
+                setKey(&dm::MarsRecord::param, 210198), SetScaleFactor{100.0});  //
 }
 
 // Near IR albedo for direct radiation: alnip -> alnip_p
 auto fixAlbedoNirDirect17() {
-    return rule(all(matchParams(17)),                                                //
-                setKey(&dm::FullMarsRecord::param, 210261), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(17)),                                            //
+                setKey(&dm::MarsRecord::param, 210261), SetScaleFactor{100.0});  //
 }
 
 // Near IR albedo for diffuse radiation: alnid -> alnid_p
 auto fixAlbedoNirDiffuse18() {
-    return rule(all(matchParams(18)),                                                //
-                setKey(&dm::FullMarsRecord::param, 210260), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(18)),                                            //
+                setKey(&dm::MarsRecord::param, 210260), SetScaleFactor{100.0});  //
 }
 
 // Snow albedo: asn -> asn
 auto fixSnowAlbedo32() {
-    return rule(all(matchParams(32)),                                                //
-                setKey(&dm::FullMarsRecord::param, 228032), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(32)),                                            //
+                setKey(&dm::MarsRecord::param, 228032), SetScaleFactor{100.0});  //
 }
 
 // Albedo (climatological): al -> al
 auto fixAlbedoClimatological174() {
-    return rule(all(matchParams(174)),                                               //
-                setKey(&dm::FullMarsRecord::param, 260509), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(174)),                                           //
+                setKey(&dm::MarsRecord::param, 260509), SetScaleFactor{100.0});  //
 }
 
 // Forecast albedo: fal -> al
 auto fixForecastAlbedo243() {
-    return rule(all(matchParams(243)),                                               //
-                setKey(&dm::FullMarsRecord::param, 260509), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(243)),                                           //
+                setKey(&dm::MarsRecord::param, 260509), SetScaleFactor{100.0});  //
 }
 
 // UV visible albedo for direct radiation, isotropic: aluvpi -> aluvpi_p
 auto fixAlbedoUvDirectIso210186() {
-    return rule(all(matchParams(210186)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210201), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210186)),                                        //
+                setKey(&dm::MarsRecord::param, 210201), SetScaleFactor{100.0});  //
 }
 
 // UV visible albedo for direct radiation, volumetric: aluvpv -> aluvpv_p
 auto fixAlbedoUvDirectVol210187() {
-    return rule(all(matchParams(210187)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210202), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210187)),                                        //
+                setKey(&dm::MarsRecord::param, 210202), SetScaleFactor{100.0});  //
 }
 
 // UV visible albedo for direct radiation, geometric: aluvpg -> aluvpg_p
 auto fixAlbedoUvDirectGeo210188() {
-    return rule(all(matchParams(210188)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210200), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210188)),                                        //
+                setKey(&dm::MarsRecord::param, 210200), SetScaleFactor{100.0});  //
 }
 
 // Near IR albedo for direct radiation, isotropic: alnipi -> alnipi_p
 auto fixAlbedoNirDirectIso210189() {
-    return rule(all(matchParams(210189)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210263), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210189)),                                        //
+                setKey(&dm::MarsRecord::param, 210263), SetScaleFactor{100.0});  //
 }
 
 // Near IR albedo for direct radiation, volumetric: alnipv -> alnipv_p
 auto fixAlbedoNirDirectVol210190() {
-    return rule(all(matchParams(210190)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210264), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210190)),                                        //
+                setKey(&dm::MarsRecord::param, 210264), SetScaleFactor{100.0});  //
 }
 
 // Near IR albedo for direct radiation, geometric: alnipg -> alnipg_p
 auto fixAlbedoNirDirectGeo210191() {
-    return rule(all(matchParams(210191)),                                            //
-                setKey(&dm::FullMarsRecord::param, 210262), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(210191)),                                        //
+                setKey(&dm::MarsRecord::param, 210262), SetScaleFactor{100.0});  //
 }
 
 
@@ -334,26 +333,26 @@ auto fixAlbedoNirDirectGeo210191() {
 
 // Snow evaporation: es -> eswe
 auto fixSnowEvaporation44() {
-    return rule(all(matchParams(44)),                                                 //
-                setKey(&dm::FullMarsRecord::param, 231003), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(44)),                                             //
+                setKey(&dm::MarsRecord::param, 231003), SetScaleFactor{1000.0});  //
 }
 
 // Snowmelt: smlt -> snom
 auto fixSnowmelt45() {
-    return rule(all(matchParams(45)),                                               //
-                setKey(&dm::FullMarsRecord::param, 3099), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(45)),                                           //
+                setKey(&dm::MarsRecord::param, 3099), SetScaleFactor{1000.0});  //
 }
 
 // Total column ozone: tco3 -> tcioz (kg m-2 -> DU, 1 DU = 2.1415e-5 kg m-2)
 auto fixTotalColumnOzone206() {
-    return rule(all(matchParams(206)),                                                  //
-                setKey(&dm::FullMarsRecord::param, 260132), SetScaleFactor{46698.05});  //
+    return rule(all(matchParams(206)),                                              //
+                setKey(&dm::MarsRecord::param, 260132), SetScaleFactor{46698.05});  //
 }
 
 // Potential evaporation: pev -> peva
 auto fixPotentialEvaporation228251() {
-    return rule(all(matchParams(228251)),                                             //
-                setKey(&dm::FullMarsRecord::param, 231005), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(228251)),                                         //
+                setKey(&dm::MarsRecord::param, 231005), SetScaleFactor{1000.0});  //
 }
 
 
@@ -363,68 +362,68 @@ auto fixPotentialEvaporation228251() {
 
 // Time-mean surface runoff rate: msror -> avg_surfror
 auto fixTimeMeanSurfaceRunoffRate172008() {
-    return rule(all(matchParams(172008)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235020), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172008)),                                         //
+                setKey(&dm::MarsRecord::param, 235020), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean sub-surface runoff rate: mssror -> avg_ssurfror
 auto fixTimeMeanSubSurfaceRunoffRate172009() {
-    return rule(all(matchParams(172009)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235021), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172009)),                                         //
+                setKey(&dm::MarsRecord::param, 235021), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean snow evaporation rate: esrate -> avg_esrwe
 auto fixTimeMeanSnowEvapRate172044() {
-    return rule(all(matchParams(172044)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235023), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172044)),                                         //
+                setKey(&dm::MarsRecord::param, 235023), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean snowmelt rate -> avg_smr
 auto fixTimeMeanSnowmeltRate172045() {
-    return rule(all(matchParams(172045)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235024), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172045)),                                         //
+                setKey(&dm::MarsRecord::param, 235024), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean large-scale precipitation rate: mlsprt -> avg_lsprate
 auto fixTimeMeanLargeScalePrecipRate172142() {
-    return rule(all(matchParams(172142)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235029), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172142)),                                         //
+                setKey(&dm::MarsRecord::param, 235029), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean convective precipitation rate: cprate -> avg_cpr
 auto fixTimeMeanConvPrecipRate172143() {
-    return rule(all(matchParams(172143)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235030), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172143)),                                         //
+                setKey(&dm::MarsRecord::param, 235030), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean total snowfall rate: mtsfr -> avg_tsrwe
 auto fixTimeMeanTotalSnowfallRate172144() {
-    return rule(all(matchParams(172144)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235031), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172144)),                                         //
+                setKey(&dm::MarsRecord::param, 235031), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean evaporation rate: erate -> avg_ie
 auto fixTimeMeanEvaporationRate172182() {
-    return rule(all(matchParams(172182)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235043), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172182)),                                         //
+                setKey(&dm::MarsRecord::param, 235043), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean runoff rate: mrort -> avg_rorwe
 auto fixTimeMeanRunoffRate172205() {
-    return rule(all(matchParams(172205)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235048), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172205)),                                         //
+                setKey(&dm::MarsRecord::param, 235048), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean total precipitation rate: tprate -> avg_tprate
 auto fixTimeMeanTotalPrecipRate172228() {
-    return rule(all(matchParams(172228)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235055), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(172228)),                                         //
+                setKey(&dm::MarsRecord::param, 235055), SetScaleFactor{1000.0});  //
 }
 
 // Time-mean snow depth: avg_sd_m -> avg_sd
 auto fixTimeMeanSnowDepth235141() {
-    return rule(all(matchParams(235141)),                                             //
-                setKey(&dm::FullMarsRecord::param, 235078), SetScaleFactor{1000.0});  //
+    return rule(all(matchParams(235141)),                                         //
+                setKey(&dm::MarsRecord::param, 235078), SetScaleFactor{1000.0});  //
 }
 
 
@@ -435,26 +434,26 @@ auto fixTimeMeanSnowDepth235141() {
 
 // Time-mean low cloud cover: avg_lcc_frac -> avg_lcc
 auto fixTimeMeanLowCloudCover235186() {
-    return rule(all(matchParams(235186)),                                            //
-                setKey(&dm::FullMarsRecord::param, 235108), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(235186)),                                        //
+                setKey(&dm::MarsRecord::param, 235108), SetScaleFactor{100.0});  //
 }
 
 // Time-mean medium cloud cover: avg_mcc_frac -> avg_mcc
 auto fixTimeMeanMedCloudCover235187() {
-    return rule(all(matchParams(235187)),                                            //
-                setKey(&dm::FullMarsRecord::param, 235109), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(235187)),                                        //
+                setKey(&dm::MarsRecord::param, 235109), SetScaleFactor{100.0});  //
 }
 
 // Time-mean high cloud cover: avg_hcc_frac -> avg_hcc
 auto fixTimeMeanHighCloudCover235188() {
-    return rule(all(matchParams(235188)),                                            //
-                setKey(&dm::FullMarsRecord::param, 235110), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(235188)),                                        //
+                setKey(&dm::MarsRecord::param, 235110), SetScaleFactor{100.0});  //
 }
 
 // Time-mean forecast albedo: avg_fal_frac -> avg_al
 auto fixTimeMeanForecastAlbedo235243() {
-    return rule(all(matchParams(235243)),                                            //
-                setKey(&dm::FullMarsRecord::param, 235263), SetScaleFactor{100.0});  //
+    return rule(all(matchParams(235243)),                                        //
+                setKey(&dm::MarsRecord::param, 235263), SetScaleFactor{100.0});  //
 }
 
 
@@ -463,53 +462,53 @@ auto fixTimeMeanForecastAlbedo235243() {
 //-----------------------------------------------------------------------------
 
 auto fixTimespanMax2T() {
-    return rule(all(matchParams(121, 228026, 201)),           //
-                setKey(&dm::FullMarsRecord::param, 237167));  //
+    return rule(all(matchParams(121, 228026, 201)),       //
+                setKey(&dm::MarsRecord::param, 237167));  //
 }
 
 auto fixTimespanMaxCape() {
-    return rule(all(matchParams(228035)),                     //
-                setKey(&dm::FullMarsRecord::param, 237117));  //
+    return rule(all(matchParams(228035)),                 //
+                setKey(&dm::MarsRecord::param, 237117));  //
 }
 
 auto fixTimespanMaxMuCapes() {
-    return rule(all(matchParams(228036)),                     //
-                setKey(&dm::FullMarsRecord::param, 237321));  //
+    return rule(all(matchParams(228036)),                 //
+                setKey(&dm::MarsRecord::param, 237321));  //
 }
 
 auto fixTimespanMaxPrecipRate() {
-    return rule(all(matchParams(228222, 228224, 228226)),     //
-                setKey(&dm::FullMarsRecord::param, 237055));  //
+    return rule(all(matchParams(228222, 228224, 228226)),  //
+                setKey(&dm::MarsRecord::param, 237055));   //
 }
 
 auto fixTimespanMaxWindGust() {
-    return rule(all(matchParams(123, 228028, 49)),            //
-                setKey(&dm::FullMarsRecord::param, 237318));  //
+    return rule(all(matchParams(123, 228028, 49)),        //
+                setKey(&dm::MarsRecord::param, 237318));  //
 }
 
 auto fixTimespanMeanFlashDensity() {
-    return rule(all(matchParams(228051, 228057, 228058)),     //
-                setKey(&dm::FullMarsRecord::param, 235326));  //
+    return rule(all(matchParams(228051, 228057, 228058)),  //
+                setKey(&dm::MarsRecord::param, 235326));   //
 }
 
 auto fixTimespanMin2T() {
-    return rule(all(matchParams(122, 228027, 202)),           //
-                setKey(&dm::FullMarsRecord::param, 238167));  //
+    return rule(all(matchParams(122, 228027, 202)),       //
+                setKey(&dm::MarsRecord::param, 238167));  //
 }
 
 auto fixTimespanMinPrecipRate() {
-    return rule(all(matchParams(228223, 228225, 228227)),     //
-                setKey(&dm::FullMarsRecord::param, 238055));  //
+    return rule(all(matchParams(228223, 228225, 228227)),  //
+                setKey(&dm::MarsRecord::param, 238055));   //
 }
 
 auto fixTimespanModePrecip() {
-    return rule(all(matchParams(260320, 260321, 260339)),     //
-                setKey(&dm::FullMarsRecord::param, 260683));  //
+    return rule(all(matchParams(260320, 260321, 260339)),  //
+                setKey(&dm::MarsRecord::param, 260683));   //
 }
 
 auto fixTimespanSeverityPrecip() {
-    return rule(all(matchParams(260318, 260319, 260338)),     //
-                setKey(&dm::FullMarsRecord::param, 260682));  //
+    return rule(all(matchParams(260318, 260319, 260338)),  //
+                setKey(&dm::MarsRecord::param, 260682));   //
 }
 
 
@@ -518,39 +517,39 @@ auto fixTimespanSeverityPrecip() {
 //-----------------------------------------------------------------------------
 
 auto fixWindspeedU100m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228246)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
-                setKey(&dm::FullMarsRecord::param, 131));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228246)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 100),
+                setKey(&dm::MarsRecord::param, 131));  //
 }
 
 auto fixWindspeedU200m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228239)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
-                setKey(&dm::FullMarsRecord::param, 131));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228239)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 200),
+                setKey(&dm::MarsRecord::param, 131));  //
 }
 
 auto fixWindspeedV100m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228247)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
-                setKey(&dm::FullMarsRecord::param, 132));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228247)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 100),
+                setKey(&dm::MarsRecord::param, 132));  //
 }
 
 auto fixWindspeedV200m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228240)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
-                setKey(&dm::FullMarsRecord::param, 132));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228240)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 200),
+                setKey(&dm::MarsRecord::param, 132));  //
 }
 
 auto fixWindspeed100m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228241)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 200),
-                setKey(&dm::FullMarsRecord::param, 10));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228241)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 200),
+                setKey(&dm::MarsRecord::param, 10));  //
 }
 
 auto fixWindspeed200m() {
-    return rule(all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228249)),  //
-                setKey(&dm::FullMarsRecord::levtype, dm::LevType::HL), setKey(&dm::FullMarsRecord::levelist, 100),
-                setKey(&dm::FullMarsRecord::param, 10));  //
+    return rule(all(OneOf{&dm::MarsRecord::levtype, {dm::LevType::SFC}}, matchParams(228249)),  //
+                setKey(&dm::MarsRecord::levtype, dm::LevType::HL), setKey(&dm::MarsRecord::levelist, 100),
+                setKey(&dm::MarsRecord::param, 10));  //
 }
 
 
@@ -560,7 +559,7 @@ auto fixWindspeed200m() {
 
 
 auto ruleWaveBitsPerValueS1() {
-    return rule(all(greaterThan(&dm::FullMarsRecord::step, dm::TimeDuration{std::chrono::hours{1}}),
+    return rule(all(greaterThan(&dm::MarsRecord::step, std::int64_t{1}),
                     matchParams(22824)),                     //
                 setKey(&dm::MiscRecord::bitsPerValue, 24));  //
 }
@@ -578,12 +577,12 @@ auto ruleWaveBitsPerValue() {
 //-----------------------------------------------------------------------------
 
 const RuleList& incrementalType4IRules() {
-    static auto type4i_ = ruleList(rule(matchParams(200130), setKey(&dm::FullMarsRecord::param, 130)),
-                                   rule(matchParams(200133), setKey(&dm::FullMarsRecord::param, 133)),
-                                   rule(matchParams(200138), setKey(&dm::FullMarsRecord::param, 138)),
-                                   rule(matchParams(200152), setKey(&dm::FullMarsRecord::param, 152)),
-                                   rule(matchParams(200155), setKey(&dm::FullMarsRecord::param, 155)),
-                                   rule(matchParams(200203), setKey(&dm::FullMarsRecord::param, 203)));
+    static auto type4i_ = ruleList(rule(matchParams(200130), setKey(&dm::MarsRecord::param, 130)),
+                                   rule(matchParams(200133), setKey(&dm::MarsRecord::param, 133)),
+                                   rule(matchParams(200138), setKey(&dm::MarsRecord::param, 138)),
+                                   rule(matchParams(200152), setKey(&dm::MarsRecord::param, 152)),
+                                   rule(matchParams(200155), setKey(&dm::MarsRecord::param, 155)),
+                                   rule(matchParams(200203), setKey(&dm::MarsRecord::param, 203)));
     return type4i_;
 }
 
@@ -725,7 +724,7 @@ const RuleList& allRules() {
     return all_;
 }
 
-std::optional<MappingResult> applyMappings(const RuleList& rules, dm::FullMarsRecord& mars, dm::MiscRecord& misc) {
+std::optional<MappingResult> applyMappings(const RuleList& rules, dm::MarsRecord& mars, dm::MiscRecord& misc) {
     return rules(mars, misc);
 }
 

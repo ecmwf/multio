@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/core/EntryDef.h"
+#include "multio/datamod/MarsRecord.h"
 #include "multio/util/Print.h"
+#include "multio/util/record/Entry.h"
 
 #include <functional>
 #include <tuple>
@@ -22,6 +22,7 @@
 namespace multio::mars2mars::matcher {
 
 namespace dm = multio::datamod;
+namespace record = multio::util::record;
 
 // Matchers are defined on a key that serves as accessor and transports type information ... this saves defining a lot
 // functions.
@@ -31,18 +32,19 @@ namespace dm = multio::datamod;
 template <typename MarsRec, typename ValueType>
 struct Range {
     ValueType MarsRec::* member;
-    dm::EntryValueType_t<ValueType> first;
-    dm::EntryValueType_t<ValueType> last;
+    record::OptionalValueType_t<ValueType> first;
+    record::OptionalValueType_t<ValueType> last;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         const auto& entry = rec.*member;
 
-        return (entry.isSet() && ((entry.get() >= first) && (entry.get() <= last)));
+        return (entry.has_value() && ((*entry >= first) && (*entry <= last)));
     }
 };
 
-template <typename MarsRec, typename ValueType, typename... Args>
-Range(ValueType MarsRec::*, ValueType, ValueType) -> Range<MarsRec, ValueType>;
+template <typename MarsRec, typename ValueType>
+Range(ValueType MarsRec::*, record::OptionalValueType_t<ValueType>, record::OptionalValueType_t<ValueType>)
+    -> Range<MarsRec, ValueType>;
 
 
 // List of ranges
@@ -50,7 +52,7 @@ template <typename MarsRec, typename ValueType>
 struct Ranges {
     std::vector<Range<MarsRec, ValueType>> ranges;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         for (const auto& range : ranges) {
             if (range(rec)) {
                 return true;
@@ -70,17 +72,17 @@ struct OneOf {
     // Using a vector because the only operation we perform is search, mostly on a few elements.
     // Having contiguous memory access is helpful here
     ValueType MarsRec::* member;
-    std::vector<dm::EntryValueType_t<ValueType>> values;
+    std::vector<record::OptionalValueType_t<ValueType>> values;
 
-    bool operator()(const MarsRec& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         const auto& entry = rec.*member;
 
-        return (entry.isSet() && (std::find(values.begin(), values.end(), entry.get()) != values.end()));
+        return (entry.has_value() && (std::find(values.begin(), values.end(), *entry) != values.end()));
     }
 };
 
 template <typename MarsRec, typename ValueType>
-OneOf(ValueType MarsRec::*, std::vector<dm::EntryValueType_t<ValueType>>) -> OneOf<MarsRec, ValueType>;
+OneOf(ValueType MarsRec::*, std::vector<record::OptionalValueType_t<ValueType>>) -> OneOf<MarsRec, ValueType>;
 
 
 // Check if the value of a field is not in a given exclusion list
@@ -88,16 +90,16 @@ OneOf(ValueType MarsRec::*, std::vector<dm::EntryValueType_t<ValueType>>) -> One
 template <typename MarsRec, typename ValueType>
 struct NoneOf {
     ValueType MarsRec::* member;
-    std::vector<dm::EntryValueType_t<ValueType>> values;
+    std::vector<record::OptionalValueType_t<ValueType>> values;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         const auto& entry = rec.*member;
 
-        return !entry.isSet() || (std::find(values.begin(), values.end(), entry.get()) == values.end());
+        return !entry.has_value() || (std::find(values.begin(), values.end(), *entry) == values.end());
     }
 };
 template <typename MarsRec, typename ValueType>
-NoneOf(ValueType MarsRec::*, std::vector<dm::EntryValueType_t<ValueType>>) -> NoneOf<MarsRec, ValueType>;
+NoneOf(ValueType MarsRec::*, std::vector<record::OptionalValueType_t<ValueType>>) -> NoneOf<MarsRec, ValueType>;
 
 
 // Checks if a field is given
@@ -105,7 +107,7 @@ template <typename MarsRec, typename ValueType>
 struct Has {
     ValueType MarsRec::* member;
 
-    bool operator()(const dm::FullMarsRecord& rec) const { return (rec.*member).isSet(); }
+    bool operator()(const dm::MarsRecord& rec) const { return (rec.*member).has_value(); }
 };
 template <typename MarsRec, typename ValueType>
 Has(ValueType MarsRec::*) -> Has<MarsRec, ValueType>;
@@ -116,7 +118,7 @@ template <typename MarsRec, typename ValueType>
 struct Missing {
     ValueType MarsRec::* member;
 
-    bool operator()(const dm::FullMarsRecord& rec) const { return !(rec.*member).isSet(); }
+    bool operator()(const dm::MarsRecord& rec) const { return !(rec.*member).has_value(); }
 };
 template <typename MarsRec, typename ValueType>
 Missing(ValueType MarsRec::*) -> Missing<MarsRec, ValueType>;
@@ -126,11 +128,11 @@ Missing(ValueType MarsRec::*) -> Missing<MarsRec, ValueType>;
 template <typename MarsRec, typename ValueType, typename OpFunctor>
 struct MatchOp {
     ValueType MarsRec::* member;
-    dm::EntryValueType_t<ValueType> value;
+    record::OptionalValueType_t<ValueType> value;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         const auto& entry = rec.*member;
-        return (entry.isSet() && (OpFunctor{}(entry.get(), value)));
+        return (entry.has_value() && (OpFunctor{}(*entry, value)));
     }
 };
 template <typename MarsRec, typename ValueType, typename OpFunctor>
@@ -139,25 +141,25 @@ MatchOp(ValueType MarsRec::*, OpFunctor&&) -> MatchOp<MarsRec, ValueType, std::d
 template <typename MarsRec, typename ValueType>
 using GreaterThan = MatchOp<MarsRec, ValueType, std::greater<>>;
 template <typename MarsRec, typename ValueType>
-auto greaterThan(ValueType MarsRec::* e, dm::EntryValueType_t<ValueType> v) {
+auto greaterThan(ValueType MarsRec::* e, record::OptionalValueType_t<ValueType> v) {
     return GreaterThan<MarsRec, ValueType>{e, v};
 }
 template <typename MarsRec, typename ValueType>
 using GreaterEqual = MatchOp<MarsRec, ValueType, std::greater_equal<>>;
 template <typename MarsRec, typename ValueType>
-auto greaterEqual(ValueType MarsRec::* e, dm::EntryValueType_t<ValueType> v) {
+auto greaterEqual(ValueType MarsRec::* e, record::OptionalValueType_t<ValueType> v) {
     return GreaterEqual<MarsRec, ValueType>{e, v};
 }
 template <typename MarsRec, typename ValueType>
 using LessThan = MatchOp<MarsRec, ValueType, std::less<>>;
 template <typename MarsRec, typename ValueType>
-auto lessThan(ValueType MarsRec::* e, dm::EntryValueType_t<ValueType> v) {
+auto lessThan(ValueType MarsRec::* e, record::OptionalValueType_t<ValueType> v) {
     return LessThan<MarsRec, ValueType>{e, v};
 }
 template <typename MarsRec, typename ValueType>
 using LessEqual = MatchOp<MarsRec, ValueType, std::less_equal<>>;
 template <typename MarsRec, typename ValueType>
-auto lessEqual(ValueType MarsRec::* e, dm::EntryValueType_t<ValueType> v) {
+auto lessEqual(ValueType MarsRec::* e, record::OptionalValueType_t<ValueType> v) {
     return LessEqual<MarsRec, ValueType>{e, v};
 }
 
@@ -173,7 +175,7 @@ template <typename Matcher, typename... Matchers>
 struct All {
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         return std::apply([&](const auto&... mx) { return (mx(rec) && ... && true); }, matchers);
     }
 };
@@ -190,7 +192,7 @@ template <typename Matcher, typename... Matchers>
 struct Any {
     std::tuple<Matcher, Matchers...> matchers;
 
-    bool operator()(const dm::FullMarsRecord& rec) const {
+    bool operator()(const dm::MarsRecord& rec) const {
         return std::apply([&](const auto&... mx) { return (mx(rec) || ... || false); }, matchers);
     }
 };
@@ -277,11 +279,7 @@ struct Print<mars2mars::matcher::NoneOf<MarsRec, ValueType>> {
 
 template <typename MarsRec, typename ValueType>
 struct Print<mars2mars::matcher::Has<MarsRec, ValueType>> {
-    static void print(PrintStream& ps, const mars2mars::matcher::Has<MarsRec, ValueType>& r) {
-        // TODO(pgeier) pretty printing needs to be fixed once the records use PointerToMember accessor only
-        // then the proper readable key can be retrieved by checkend which entry in `record_entries_.member == r.member`
-        ps << "Has()";
-    }
+    static void print(PrintStream& ps, const mars2mars::matcher::Has<MarsRec, ValueType>& r) { ps << "Has()"; }
 };
 
 template <typename MarsRec, typename ValueType>
@@ -373,4 +371,3 @@ struct Print<mars2mars::matcher::Any<Matchers...>> {
 };
 
 }  // namespace multio::util
-

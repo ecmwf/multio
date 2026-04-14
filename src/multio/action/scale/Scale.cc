@@ -14,7 +14,6 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/ContainerInterop.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/config/Parser.h"
@@ -24,9 +23,8 @@ namespace multio::action::scale {
 
 const Mappings getMappings(const ScalePreset preset) {
     // Load the mapping file
-    eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"
-    }}};
+    eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{
+        eckit::PathName{multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"}}};
 
     // Read the mappings and put them into the map
     // We use the same mapping file for local-to-wmo and wmo-to-local, the
@@ -35,10 +33,10 @@ const Mappings getMappings(const ScalePreset preset) {
     for (const auto& subConfig : mappingConf.getSubConfigurations()) {
         const auto mapping = util::config::parseConfig<ScaleMapping>(subConfig);
         switch (preset) {
-            case ScalePreset::LocalToWmo : {
+            case ScalePreset::LocalToWmo: {
                 mappings[mapping.paramIn] = {mapping.paramOut, mapping.scaling};
             }
-            case ScalePreset::WmoToLocal : {
+            case ScalePreset::WmoToLocal: {
                 mappings[mapping.paramOut] = {mapping.paramIn, 1.0 / mapping.scaling};
             }
         }
@@ -60,7 +58,8 @@ Mappings getMappings(const ScaleConfig& config) {
     }
 
     if (mappings.empty()) {
-        throw eckit::UserError("No scale mapping was found, set 'preset' or 'mappings' in action configuration!", Here());
+        throw eckit::UserError("No scale mapping was found, set 'preset' or 'mappings' in action configuration!",
+                               Here());
     }
     return mappings;
 }
@@ -75,10 +74,12 @@ void Scale::executeImpl(message::Message msg) {
         return;
     }
 
-    auto md = dm::readRecord<ScaleMetadataKeys>(msg.metadata());
+    auto meta = dm::readMetadata<ScaleMetadata>(msg.metadata());
+    meta.applyDefaults();
+    meta.validate();
 
     // Try to find a mapping for the incomming field
-    const auto paramIn = md.param.get().id();
+    const auto paramIn = meta.param.id();
     const auto search = mappings_.find(paramIn);
 
     // Skip if no mapping was found
@@ -92,23 +93,23 @@ void Scale::executeImpl(message::Message msg) {
     msg.acquire();  // We change the message after this line
 
     // Map the param
-    md.param.set(mapping.paramOut);
-    dm::dumpRecord(md, msg.modifyMetadata());
+    meta.param = mapping.paramOut;
+    dm::writeMetadata(meta, msg.modifyMetadata());
 
     // Scale the payload
     util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         auto* data = static_cast<Precision*>(msg.payload().modifyData());
         const auto size = msg.payload().size() / sizeof(Precision);
-        if (md.missingValue.isSet()) {
-            const double missing = md.missingValue.get();
+        if (meta.missingValue.has_value()) {
+            const double missing = *meta.missingValue;
             std::transform(data, data + size, data, [&](Precision value) {
                 return static_cast<Precision>(value == missing ? missing : value * mapping.scaling);
             });
-        } else {
-            std::transform(data, data + size, data, [&](Precision value) {
-                return static_cast<Precision>(value * mapping.scaling);
-            });
+        }
+        else {
+            std::transform(data, data + size, data,
+                           [&](Precision value) { return static_cast<Precision>(value * mapping.scaling); });
         }
     });
 

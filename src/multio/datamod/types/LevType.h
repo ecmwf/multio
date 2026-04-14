@@ -10,17 +10,14 @@
 
 #pragma once
 
-#include "multio/datamod/core/TypeParserDumper.h"
-
-#include "multio/util/Print.h"
+#include <cstddef>
+#include <ostream>
+#include <string>
+#include <vector>
 
 
 namespace multio::datamod {
 
-//----------------------------------------------------------------------------------------------------------------------
-
-
-// To be renamed and kept internal -
 enum class LevType : std::size_t
 {
     ML,
@@ -41,23 +38,17 @@ enum class LevType : std::size_t
     LAYER
 };
 
+/// Convert a string representation to LevType enum
+/// @throws eckit::UserError on unknown value
+LevType levTypeFromString(const std::string& s);
+
+/// Convert a LevType enum to its string representation
+std::string levTypeToString(LevType v);
+
+/// Return a vector of all LevType values
 const std::vector<LevType>& allLevTypes();
 
+/// Stream output operator
+std::ostream& operator<<(std::ostream& os, LevType v);
+
 }  // namespace multio::datamod
-
-
-template <>
-struct multio::util::Print<multio::datamod::LevType> {
-    static void print(PrintStream& ps, const datamod::LevType& v);
-};
-
-template <>
-struct multio::datamod::DumpType<multio::datamod::LevType> {
-    static std::string dump(LevType);
-};
-
-template <>
-struct multio::datamod::ParseType<multio::datamod::LevType> {
-    static LevType parse(const std::string& s);
-};
-

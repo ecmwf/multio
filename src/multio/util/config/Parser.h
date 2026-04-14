@@ -16,30 +16,14 @@
 #include "multio/config/ComponentConfiguration.h"
 
 #include "detail/Parser.h"
+#include "multio/util/record/Entry.h"
 
 
 namespace multio::util::config {
 
-
-/**
- * Register a required field in the configuration
- * @param key String value of this field
- * @param value Location where parsed value will be stored
- */
-template <typename TConfig, typename TValue>
-constexpr detail::Entry<TConfig, TValue> requiredEntry(const std::string_view& key, TValue TConfig::* value) {
-    return {key, value, true};
-}
-
-/**
- * Register an optional (or defaulted) field in the configuration
- * @param key String value of this field
- * @param value Location where parsed value will be stored
- */
-template <typename TConfig, typename TValue>
-constexpr detail::Entry<TConfig, TValue> optionalEntry(const std::string_view& key, TValue TConfig::* value) {
-    return {key, value, false};
-}
+// Re-export shared record entry factories for backward compatibility
+using multio::util::record::optionalEntry;
+using multio::util::record::requiredEntry;
 
 /**
  * Create a parsed configuration object from the eckit::LocalConfiguration

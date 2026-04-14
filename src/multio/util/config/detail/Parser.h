@@ -20,20 +20,16 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/util/record/Entry.h"
 
 
 namespace multio::util::config::detail {
 
-//----------------------------------------------------------------------------------------------------------------------
-
-template <typename TConfig, class = void>
-struct HasFieldsMember : std::false_type {};
-
-template <typename TConfig>
-struct HasFieldsMember<TConfig, std::void_t<decltype(TConfig::fields_)>> : std::true_type {};
-
-template <typename TConfig>
-inline constexpr bool HasFieldsMember_v = HasFieldsMember<TConfig>::value;
+// Re-export shared types from util::record under the config::detail namespace for backward compatibility
+using multio::util::record::containsKey;
+using multio::util::record::Entry;
+using multio::util::record::HasFieldsMember;
+using multio::util::record::HasFieldsMember_v;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -41,11 +37,87 @@ template <typename TEnum, std::enable_if_t<std::is_enum_v<TEnum>, bool> = true>
 struct EnumTrait;
 
 //----------------------------------------------------------------------------------------------------------------------
+// parseEntry overloads — basic types
+//----------------------------------------------------------------------------------------------------------------------
 
-template <typename TConfig>
-bool containsKey(const std::string& key) {
-    return std::apply([&](const auto&... field) { return ((field.key == key) || ... || false); }, TConfig::fields_);
+bool parseEntry(std::string& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(double& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
+bool parseEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (!localConfig.isString(key)) {
+        throw eckit::UserError{"Could not convert value of key '" + key + "' to enum value : value must be a string",
+                               Here()};
+    }
+    const auto configValue = localConfig.getString(key);
+    for (const auto& pair : EnumTrait<T>::values) {
+        if (pair.second == configValue) {
+            value = pair.first;
+            return true;
+        }
+    }
+
+    size_t i = 0;
+    std::ostringstream oss;
+    for (const auto& pair : EnumTrait<T>::values) {
+        if (i++ > 0) {
+            oss << ", ";
+        }
+        oss << "'" << pair.second << "'";
+    }
+    throw eckit::UserError{
+        "Could not convert '" + configValue + "' to enum value : allowed values are: [" + oss.str() + "]", Here()};
 }
+
+template <typename TConfig, std::enable_if_t<HasFieldsMember_v<TConfig>, bool> = true>
+bool parseEntry(std::vector<TConfig>& vector, const std::string& key, const eckit::LocalConfiguration& localConfig);
+
+//----------------------------------------------------------------------------------------------------------------------
+// parseEntry — optional / required / Entry wrappers
+//----------------------------------------------------------------------------------------------------------------------
+
+template <typename T>
+bool parseEntry(std::optional<T>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    T result;
+    if (parseEntry(result, key, localConfig)) {
+        value = result;
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+void parseRequiredEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!parseEntry(value, key, localConfig)) {
+        throw eckit::UserError{"Required entry '" + key + "' is missing from the configuration", Here()};
+    }
+}
+
+template <typename T>
+void parseOptionalEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    parseEntry(value, key, localConfig);
+}
+
+template <typename TConfig, typename TValue>
+void parseEntry(const Entry<TConfig, TValue>& entry, TConfig& config, const eckit::LocalConfiguration& localConfig) {
+    if (entry.required) {
+        parseRequiredEntry(entry.get(config), std::string{entry.key}, localConfig);
+    }
+    else {
+        parseOptionalEntry(entry.get(config), std::string{entry.key}, localConfig);
+    }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+// parseConfig / parseActionConfig — placed AFTER all parseEntry declarations so that
+// ordinary lookup at template definition time finds the Entry-based parseEntry overload.
+// (Entry is now defined in util::record, so ADL alone would not find config::detail::parseEntry.)
+//----------------------------------------------------------------------------------------------------------------------
 
 template <typename TConfig>
 std::string configKeysString() {
@@ -85,42 +157,10 @@ TConfig parseActionConfig(const multio::config::ComponentConfiguration& componen
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+// parseEntry for vector of sub-configs — needs parseConfig which is now defined above
+//----------------------------------------------------------------------------------------------------------------------
 
-bool parseEntry(std::string& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
-bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
-bool parseEntry(double& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
-bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
-
-template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
-bool parseEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
-    if (!localConfig.has(key)) {
-        return false;
-    }
-    if (!localConfig.isString(key)) {
-        throw eckit::UserError{"Could not convert value of key '" + key + "' to enum value : value must be a string",
-                               Here()};
-    }
-    const auto configValue = localConfig.getString(key);
-    for (const auto& pair : EnumTrait<T>::values) {
-        if (pair.second == configValue) {
-            value = pair.first;
-            return true;
-        }
-    }
-
-    size_t i = 0;
-    std::ostringstream oss;
-    for (const auto& pair : EnumTrait<T>::values) {
-        if (i++ > 0) {
-            oss << ", ";
-        }
-        oss << "'" << pair.second << "'";
-    }
-    throw eckit::UserError{
-        "Could not convert '" + configValue + "' to enum value : allowed values are: [" + oss.str() + "]", Here()};
-}
-
-template <typename TConfig, std::enable_if_t<HasFieldsMember_v<TConfig>, bool> = true>
+template <typename TConfig, std::enable_if_t<HasFieldsMember_v<TConfig>, bool>>
 bool parseEntry(std::vector<TConfig>& vector, const std::string& key, const eckit::LocalConfiguration& localConfig) {
     if (!localConfig.has(key)) {
         return false;
@@ -134,49 +174,6 @@ bool parseEntry(std::vector<TConfig>& vector, const std::string& key, const ecki
     }
     throw eckit::UserError{"Could not convert value of key '" + key + "' to vector : no conversion method defined",
                            Here()};
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-template <typename T>
-bool parseEntry(std::optional<T>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
-    T result;
-    if (parseEntry(result, key, localConfig)) {
-        value = result;
-        return true;
-    }
-    return false;
-}
-
-template <typename T>
-void parseRequiredEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
-    if (!parseEntry(value, key, localConfig)) {
-        throw eckit::UserError{"Required entry '" + key + "' is missing from the configuration", Here()};
-    }
-}
-
-template <typename T>
-void parseOptionalEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
-    parseEntry(value, key, localConfig);
-}
-
-template <typename TConfig, typename TValue>
-struct Entry {
-    const std::string_view key;
-    TValue TConfig::* value;
-    const bool required;
-
-    TValue& get(TConfig& obj) const { return obj.*value; }
-};
-
-template <typename TConfig, typename TValue>
-void parseEntry(const Entry<TConfig, TValue>& entry, TConfig& config, const eckit::LocalConfiguration& localConfig) {
-    if (entry.required) {
-        parseRequiredEntry(entry.get(config), std::string{entry.key}, localConfig);
-    }
-    else {
-        parseOptionalEntry(entry.get(config), std::string{entry.key}, localConfig);
-    }
 }
 
 

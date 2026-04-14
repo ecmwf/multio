@@ -13,7 +13,6 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/ContainerInterop.h"
 
 namespace multio::action::average_rate {
 
@@ -22,8 +21,7 @@ namespace dm = multio::datamod;
 namespace {
 Param2ParamMap getMappings() {
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/average_rate_param_mappings.yaml"
-    }}};
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/average_rate_param_mappings.yaml"}}};
 
     Param2ParamMap paramMappings;
     for (auto& mappings : mappingConf.getSubConfigurations()) {
@@ -33,7 +31,7 @@ Param2ParamMap getMappings() {
     }
     return paramMappings;
 }
-}
+}  // namespace
 
 AverageRate::AverageRate(const ComponentConfiguration& compConf) :
     ChainedAction(compConf), paramMappings_{getMappings()} {}
@@ -47,15 +45,18 @@ void AverageRate::executeImpl(message::Message msg) {
 
     msg.acquire();
 
-    auto md = dm::readRecord<AverageRateKeys>(msg.metadata());
+    auto meta = dm::readMetadata<AverageRateMetadata>(msg.metadata());
+    meta.applyDefaults();
+    meta.validate();
 
     // Find and apply the mapping for this param, throw exception if not available
-    if (auto search = paramMappings_.find(md.param.get().id()); search != paramMappings_.end()) {
-        md.param.set(search->second);
-        dm::dumpRecord(md, msg.modifyMetadata());
-    } else {
+    if (auto search = paramMappings_.find(meta.param.id()); search != paramMappings_.end()) {
+        meta.param = search->second;
+        dm::writeMetadata(meta, msg.modifyMetadata());
+    }
+    else {
         std::ostringstream os;
-        os << "Action average-rate cannot find mapping from param " << md.param.get().id() << " : " << msg;
+        os << "Action average-rate cannot find mapping from param " << meta.param.id() << " : " << msg;
         throw eckit::UserError(os.str(), Here());
     }
 
@@ -70,21 +71,21 @@ void AverageRate::executeImpl(message::Message msg) {
 
 template <typename Precision>
 void AverageRate::compute(message::Message& msg) const {
-    auto md = dm::readRecord<AverageRateKeys>(msg.metadata());
+    auto meta = dm::readMetadata<AverageRateMetadata>(msg.metadata());
 
     const size_t size = msg.payload().size() / sizeof(Precision);
     auto* data = static_cast<Precision*>(msg.payload().modifyData());
 
-    const double c = 1.0 / md.timespan.get().toSeconds();
+    const double c = 1.0 / meta.timespanSeconds();
 
     // Compute with/without missing value
-    if (md.missingValue.isSet()) {
-        const auto m = static_cast<Precision>(md.missingValue.get());
+    if (meta.missingValue.has_value()) {
+        const auto m = static_cast<Precision>(*meta.missingValue);
         std::transform(data, data + size, data,
                        [c, m](Precision v) { return static_cast<Precision>(v == m ? m : v * c); });
-    } else {
-        std::transform(data, data + size, data,
-                       [c](Precision v) { return static_cast<Precision>(v * c); });
+    }
+    else {
+        std::transform(data, data + size, data, [c](Precision v) { return static_cast<Precision>(v * c); });
     }
 }
 

@@ -34,184 +34,17 @@
 #include "metkit/mars2grib/api/Mars2Grib.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/GribKeys.h"
 #include "multio/tools/MultioTool.h"
 
-#include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/core/EntryDumper.h"
-#include "multio/datamod/core/EntryParser.h"
-#include "multio/datamod/core/Record.h"
-
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/MarsRecord.h"
 #include "multio/datamod/MiscRecord.h"
+#include "multio/datamod/Parser.h"
+#include "multio/datamod/types/LevType.h"
 #include "multio/mars2mars/Rules.h"
-#include "multio/util/Print.h"
 
 namespace multio::grib1ToGrib2 {
 
 namespace dm = multio::datamod;
-
-//----------------------------------------------------------------------------------------------------------------------
-// Adapter to bridge old FullMarsRecord / LegacyMiscRecord with new flat records for mars2mars
-//----------------------------------------------------------------------------------------------------------------------
-
-namespace {
-
-dm::MarsRecord toNewMarsRecord(const dm::FullMarsRecord& old) {
-    dm::MarsRecord r;
-    // IntOrString fields → string
-    if (old.origin.isSet()) {
-        std::visit(eckit::Overloaded{[&](const std::string& s) { r.origin = s; },
-                                     [&](std::int64_t v) { r.origin = std::to_string(v); }},
-                   old.origin.get());
-    }
-    if (old.expver.isSet()) {
-        std::visit(eckit::Overloaded{[&](const std::string& s) { r.expver = s; },
-                                     [&](std::int64_t v) { r.expver = std::to_string(v); }},
-                   old.expver.get());
-    }
-    // String fields
-    if (old.klass.isSet())
-        r.cls = old.klass.get();
-    if (old.stream.isSet())
-        r.stream = old.stream.get();
-    if (old.type.isSet())
-        r.type = old.type.get();
-    if (old.model.isSet())
-        r.model = old.model.get();
-    if (old.packing.isSet())
-        r.packing = old.packing.get();
-    if (old.grid.isSet())
-        r.grid = old.grid.get();
-    if (old.dataset.isSet())
-        r.dataset = old.dataset.get();
-    if (old.resolution.isSet())
-        r.resolution = old.resolution.get();
-    if (old.activity.isSet())
-        r.activity = old.activity.get();
-    if (old.experiment.isSet())
-        r.experiment = old.experiment.get();
-    // Param
-    if (old.param.isSet())
-        r.param = old.param.get();
-    // LevType
-    if (old.levtype.isSet())
-        r.levtype = old.levtype.get();
-    // TimeDuration → int64 (hours) for step; skip timespan (mars2mars doesn't use it)
-    if (old.step.isSet())
-        r.step = old.step.get().toHours();
-    // StatType
-    if (old.stattype.isSet())
-        r.stattype = old.stattype.get();
-    // int64 fields
-    if (old.levelist.isSet())
-        r.levelist = old.levelist.get();
-    if (old.date.isSet())
-        r.date = old.date.get();
-    if (old.time.isSet())
-        r.time = old.time.get();
-    if (old.anoffset.isSet())
-        r.anoffset = old.anoffset.get();
-    if (old.hdate.isSet())
-        r.hdate = old.hdate.get();
-    if (old.refdate.isSet())
-        r.refdate = old.refdate.get();
-    if (old.fcmonth.isSet())
-        r.fcmonth = old.fcmonth.get();
-    if (old.fcperiod.isSet())
-        r.fcperiod = old.fcperiod.get();
-    if (old.number.isSet())
-        r.number = old.number.get();
-    if (old.ident.isSet())
-        r.ident = old.ident.get();
-    if (old.instrument.isSet())
-        r.instrument = old.instrument.get();
-    if (old.channel.isSet())
-        r.channel = old.channel.get();
-    // chem/wavelength: int64 in old → string in new
-    if (old.chem.isSet())
-        r.chem = std::to_string(old.chem.get());
-    if (old.wavelength.isSet())
-        r.wavelength = std::to_string(old.wavelength.get());
-    // Wave spectra
-    if (old.direction.isSet())
-        r.direction = old.direction.get();
-    if (old.frequency.isSet())
-        r.frequency = old.frequency.get();
-    // Seasonal
-    if (old.method.isSet())
-        r.method = old.method.get();
-    if (old.system.isSet())
-        r.system = old.system.get();
-    // Sensitivity
-    if (old.iteration.isSet())
-        r.iteration = old.iteration.get();
-    if (old.diagnostic.isSet())
-        r.diagnostic = old.diagnostic.get();
-    // DestinE
-    if (old.generation.isSet())
-        r.generation = old.generation.get();
-    if (old.realization.isSet())
-        r.realization = old.realization.get();
-    if (old.truncation.isSet())
-        r.truncation = old.truncation.get();
-    return r;
-}
-
-dm::MiscRecord toNewMiscRecord(const dm::LegacyMiscRecord& old) {
-    dm::MiscRecord r;
-    if (old.tablesVersion.isSet())
-        r.tablesVersion = old.tablesVersion.get();
-    if (old.missingValue.isSet())
-        r.missingValue = old.missingValue.get();
-    if (old.bitsPerValue.isSet())
-        r.bitsPerValue = old.bitsPerValue.get();
-    if (old.typeOfEnsembleForecast.isSet())
-        r.typeOfEnsembleForecast = old.typeOfEnsembleForecast.get();
-    if (old.satelliteSeries.isSet())
-        r.satelliteSeries = old.satelliteSeries.get();
-    if (old.scaleFactorOfCentralWaveNumber.isSet())
-        r.scaleFactorOfCentralWaveNumber = old.scaleFactorOfCentralWaveNumber.get();
-    if (old.scaledValueOfCentralWaveNumber.isSet())
-        r.scaledValueOfCentralWaveNumber = old.scaledValueOfCentralWaveNumber.get();
-    if (old.scaleFactorOfWaveDirections.isSet())
-        r.scaleFactorOfWaveDirections = old.scaleFactorOfWaveDirections.get();
-    if (old.scaleFactorOfWaveFrequencies.isSet())
-        r.scaleFactorOfWaveFrequencies = old.scaleFactorOfWaveFrequencies.get();
-    return r;
-}
-
-void copyBackToOld(dm::FullMarsRecord& mars, dm::LegacyMiscRecord& misc, const dm::MarsRecord& r,
-                   const dm::MiscRecord& m) {
-    // Copy back fields that mars2mars might have modified
-    if (r.param.has_value())
-        mars.param.set(*r.param);
-    if (r.levtype.has_value())
-        mars.levtype.set(*r.levtype);
-    if (r.levelist.has_value())
-        mars.levelist.set(*r.levelist);
-    if (r.step.has_value())
-        mars.step.set(static_cast<long>(*r.step));
-    if (r.type.has_value())
-        mars.type.set(*r.type);
-    if (r.stream.has_value())
-        mars.stream.set(*r.stream);
-    if (r.cls.has_value())
-        mars.klass.set(*r.cls);
-    if (r.number.has_value())
-        mars.number.set(*r.number);
-    if (r.direction.has_value())
-        mars.direction.set(*r.direction);
-    if (r.frequency.has_value())
-        mars.frequency.set(*r.frequency);
-    if (m.tablesVersion.has_value())
-        misc.tablesVersion.set(*m.tablesVersion);
-    if (m.bitsPerValue.has_value())
-        misc.bitsPerValue.set(*m.bitsPerValue);
-}
-
-}  // anonymous namespace
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -247,7 +80,7 @@ KeySet iterateMarsNamespace(const metkit::codes::CodesHandle& handle) {
 
 namespace extract {
 
-void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
+void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::MarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
         {"grid_simple", "simple"},
         {"grid_complex", "complex"},
@@ -259,119 +92,119 @@ void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packing
     if (packingTypeVal == packingMap.cend()) {
         throw std::runtime_error(std::string("Unhandled packingType '") + packingType + std::string("'"));
     }
-    mars.packing.set(packingTypeVal->second);
+    mars.packing = packingTypeVal->second;
 };
 
-void handleChemId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
+void handleChemId(metkit::codes::CodesHandle& h, dm::MarsRecord& mars) {
     const static std::unordered_map<long, long> chemIdMap{{228080, 3}, {228081, 3}, {228082, 3},
                                                           {228083, 3}, {228084, 3}, {228085, 3}};
 
     long paramId = h.getLong("paramId");
     if (auto search = chemIdMap.find(paramId); search != chemIdMap.end()) {
-        mars.chem.set(search->second);
+        mars.chem = std::to_string(search->second);
     }
 }
 
-void handleParamId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
+void handleParamId(metkit::codes::CodesHandle& h, dm::MarsRecord& mars) {
     // Map taken from eccodes
     // https://github.com/ecmwf/eccodes/blob/develop/definitions/grib1/localConcepts/ecmf/paramIdForConversion.def#L28
     long initParamId = h.getLong("paramId");
 
     switch (initParamId) {
         case 55:
-            mars.param.set(228004);
-            mars.timespan.set(24);
+            mars.param = dm::Param{228004};
+            mars.timespan = "24";
             break;
         case 56:
-            mars.param.set(235168);
+            mars.param = dm::Param{235168};
             break;
         case 130232:
-            mars.param.set(235135);
+            mars.param = dm::Param{235135};
             break;
         case 151130:
-            mars.param.set(262100);
+            mars.param = dm::Param{262100};
             break;
         case 151131:
-            mars.param.set(262140);
+            mars.param = dm::Param{262140};
             break;
         case 151132:
-            mars.param.set(262139);
+            mars.param = dm::Param{262139};
             break;
         case 151145:
-            mars.param.set(262124);
+            mars.param = dm::Param{262124};
             break;
         case 151148:
-            mars.param.set(3067);
+            mars.param = dm::Param{3067};
             break;
         case 151163:
-            mars.param.set(262104);
+            mars.param = dm::Param{262104};
             break;
         case 151164:
-            mars.param.set(262144);
+            mars.param = dm::Param{262144};
             break;
         case 151175:
-            mars.param.set(262118);
+            mars.param = dm::Param{262118};
             break;
         case 172146:
-            mars.param.set(235033);
+            mars.param = dm::Param{235033};
             break;
         case 172147:
-            mars.param.set(235034);
+            mars.param = dm::Param{235034};
             break;
         case 172169:
-            mars.param.set(235035);
+            mars.param = dm::Param{235035};
             break;
         case 172175:
-            mars.param.set(235036);
+            mars.param = dm::Param{235036};
             break;
         case 172176:
-            mars.param.set(235037);
+            mars.param = dm::Param{235037};
             break;
         case 172177:
-            mars.param.set(235038);
+            mars.param = dm::Param{235038};
             break;
         case 172178:
-            mars.param.set(235039);
+            mars.param = dm::Param{235039};
             break;
         case 172179:
-            mars.param.set(235040);
+            mars.param = dm::Param{235040};
             break;
         case 174098:
-            mars.param.set(262000);
+            mars.param = dm::Param{262000};
             break;
         case 72:
-            mars.param.set(260087);
+            mars.param = dm::Param{260087};
             break;
         case 73:
-            mars.param.set(260097);
+            mars.param = dm::Param{260097};
             break;
         case 172050:
-            mars.param.set(235026);
+            mars.param = dm::Param{235026};
             break;
         case 172145:
-            mars.param.set(235032);
+            mars.param = dm::Param{235032};
             break;
         case 172189:
-            mars.param.set(235189);
+            mars.param = dm::Param{235189};
             break;
         case 172195:
-            mars.param.set(235045);
+            mars.param = dm::Param{235045};
             break;
         case 172196:
-            mars.param.set(235046);
+            mars.param = dm::Param{235046};
             break;
         case 172197:
-            mars.param.set(235047);
+            mars.param = dm::Param{235047};
             break;
         default:
-            mars.param.set(initParamId);
+            mars.param = dm::Param{initParamId};
     }
 }
 
-void handleMissingValue(metkit::codes::CodesHandle& h, dm::LegacyMiscRecord& misc) {
+void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
     double missingValue = 9999.0;
     h.set("missingValue", missingValue);
-    misc.missingValue.set(missingValue);
+    misc.missingValue = missingValue;
 }
 
 std::optional<std::pair<long, long>> parseRange(const std::string& s) {
@@ -386,11 +219,11 @@ std::optional<std::pair<long, long>> parseRange(const std::string& s) {
     return std::make_pair(start, end);
 }
 
-void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
+void handleStepRange(metkit::codes::CodesHandle& h, dm::MarsRecord& mars, int verbosity = 0) {
     // For some reason mars returns an empty string for step
     if (h.has("endStep")) {
         auto endStep = h.getLong("endStep");
-        mars.step.set(endStep);
+        mars.step = endStep;
 
         auto stepRangeStr = h.getString("stepRange");
         if (verbosity > 1) {
@@ -399,47 +232,57 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 
         // StepRange is a proper steprange - it contains a dash `-`
         if (auto r = parseRange(stepRangeStr)) {
-            mars.timespan.set(r->second - r->first);
+            mars.timespan = std::to_string(r->second - r->first);
         }
         else {
-            mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
+            mars.timespan = std::to_string(h.has("stepRange") ? h.getLong("stepRange") : endStep);
         }
     }
 }
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
-void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars,
-                     dm::LegacyMiscRecord& misc, int verbosity) {
-    mars.stream = dm::parseEntry(dm::STREAM, h);
-    mars.type = dm::parseEntry(dm::TYPE, h);
-    mars.klass = dm::parseEntry(dm::CLASS, h);
-    mars.expver = dm::parseEntry(dm::EXPVER, h);
+void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::MarsRecord& mars, dm::MiscRecord& misc,
+                     int verbosity) {
+    // Required MARS identification keys
+    mars.stream = h.getString("stream");
+    mars.type = h.getString("type");
+    mars.cls = h.getString("class");
+    mars.expver = h.getString("expver");
 
     if (h.has("origin")) {
-        mars.origin.set(dm::parseEntry(dm::ORIGIN, h));
+        mars.origin = h.getString("origin");
     }
     else if (h.has("centre")) {
-        mars.origin.set(h.getString("centre"));
+        mars.origin = h.getString("centre");
     }
 
-    mars.anoffset = dm::parseEntry(dm::ANOFFSET, h);
-    mars.ident = dm::parseEntry(dm::IDENT, h);
-    mars.instrument = dm::parseEntry(dm::INSTRUMENT, h);
-    mars.channel = dm::parseEntry(dm::CHANNEL, h);
+    if (h.has("anoffset"))
+        mars.anoffset = h.getLong("anoffset");
+    if (h.has("ident"))
+        mars.ident = h.getLong("ident");
+    if (h.has("instrument"))
+        mars.instrument = h.getLong("instrument");
+    if (h.has("channel"))
+        mars.channel = h.getLong("channel");
 
-    mars.chem = dm::parseEntry(dm::CHEM, h);
+    if (h.has("chem"))
+        mars.chem = std::to_string(h.getLong("chem"));
 
     handleParamId(h, mars);
     handleChemId(h, mars);
 
-    mars.model = dm::parseEntry(dm::MODEL, h);
-    mars.levtype = dm::parseEntry(dm::LEVTYPE, h);
-    if (mars.levtype.isSet()) {
+    if (h.has("model"))
+        mars.model = h.getString("model");
+
+    if (h.has("levtype")) {
+        mars.levtype = dm::levTypeFromString(h.getString("levtype"));
+    }
+    if (mars.levtype.has_value()) {
         // The encoders expect levtype pl with levelist in Pa - hence we need to convert hPa properly
         if (h.has("level")) {
             std::optional<long> levelist;
-            if (mars.levtype.get() == dm::LevType::PL) {
+            if (*mars.levtype == dm::LevType::PL) {
                 std::string pressureUnits = h.getString("pressureUnits");
                 if (pressureUnits == "hPa") {
                     long levelistVal = h.getLong("level");
@@ -451,17 +294,22 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
                 levelist = h.getLong("level");
             }
 
-            mars.levelist.set(*levelist);
+            mars.levelist = *levelist;
         }
     }
 
-    mars.direction = dm::parseEntry(dm::DIRECTION, h);
-    mars.frequency = dm::parseEntry(dm::FREQUENCY, h);
-    mars.date = dm::parseEntry(dm::DATE, h);
-    mars.hdate = dm::parseEntry(dm::HDATE, h);
+    if (h.has("direction"))
+        mars.direction = h.getLong("direction");
+    if (h.has("frequency"))
+        mars.frequency = h.getLong("frequency");
+    mars.date = h.getLong("date");
+    if (h.has("hdate"))
+        mars.hdate = h.getLong("hdate");
 
-    mars.method = dm::parseEntry(dm::METHOD, h);
-    mars.system = dm::parseEntry(dm::SYSTEM, h);
+    if (h.has("method"))
+        mars.method = h.getLong("method");
+    if (h.has("system"))
+        mars.system = h.getLong("system");
 
     // Handle time explicitly - generate a HHMMSS representation istead of dafult HHMM representation
     {
@@ -469,7 +317,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         long hh = h.getLong("hour");
         long mm = h.getLong("minute");
         long ss = h.getLong("second");
-        mars.time.set(hh * 10000 + mm * 100 + ss);
+        mars.time = hh * 10000 + mm * 100 + ss;
     }
 
     handleStepRange(h, mars, verbosity);
@@ -478,52 +326,61 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     const auto gridType = h.getString("gridType");
     if (gridType == "sh") {
         const auto truncation = h.getLong("J");
-        mars.truncation.set(truncation);
+        mars.truncation = truncation;
     }
     else if (gridType == "regular_ll") {
         const auto dx = h.getDouble("iDirectionIncrementInDegrees");
         const auto dy = h.getDouble("jDirectionIncrementInDegrees");
         const auto grid = std::to_string(dx) + "/" + std::to_string(dy);
-        mars.grid.set(grid);
+        mars.grid = grid;
     }
     else {
         // Fallback on gridName
         const auto gridName = h.getString("gridName");
-        mars.grid.set(gridName);
+        mars.grid = gridName;
     }
 
-    misc.generatingProcessIdentifier
-        = dm::parseEntry(dm::GeneratingProcessIdentifier.withKey("generatingProcessIdentifier"), h);
+    if (h.has("generatingProcessIdentifier")) {
+        misc.generatingProcessIdentifier = h.getLong("generatingProcessIdentifier");
+    }
 
     // Usually typeOfProcessedData is in misc to be overwritten...
     // However, for ai it must be set to 10 and there is some data that explicitly needs this fix
     // Thats why if class is ai, we let the mapping determine it.
-    if (mars.klass.get() != "ai") {
+    if (mars.cls.value_or("") != "ai") {
         // The parser in datamod cannot handle the string 'missing', so we handle it here.
         if (!(h.has("typeOfProcessedData") && h.type("typeOfProcessedData") == metkit::codes::NativeType::String
               && h.getString("typeOfProcessedData") == "missing")) {
-            misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedDataEntry.withKey("typeOfProcessedData"), h);
+            if (h.has("typeOfProcessedData")) {
+                misc.typeOfProcessedData = h.getLong("typeOfProcessedData");
+            }
         }
     }
 
-    misc.initialStep = dm::parseEntry(dm::InitialStep.withKey("initialStep"), h);
-    misc.timeIncrementInSeconds = dm::parseEntry(dm::TimeIncrementInSeconds.withKey("timeIncrement"), h);
-    misc.pv = dm::parseEntry(dm::Pv.withKey("pv"), h);
-    misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
+    if (h.has("initialStep"))
+        misc.initialStep = h.getLong("initialStep");
+    if (h.has("timeIncrement")) {
+        misc.timeIncrementInSeconds = h.getLong("timeIncrement");
+    }
+    if (h.has("pv"))
+        misc.pv = h.getDoubleArray("pv");
+    if (h.has("bitmapPresent"))
+        misc.bitmapPresent = (h.getLong("bitmapPresent") != 0);
 
     handleMissingValue(h, misc);
 
     // TODO pgeier set it again ??
-    misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
+    if (h.has("laplacianOperator"))
+        misc.laplacianOperator = h.getDouble("laplacianOperator");
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
 
     // Check for derivedEnsembleForecast
-    if (mars.type.get() == "es" || mars.type.get() == "em") {
+    if (mars.type.value_or("") == "es" || mars.type.value_or("") == "em") {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
-        misc.numberOfForecastsInEnsemble.set(numForecasts);
+        misc.numberOfForecastsInEnsemble = numForecasts;
     }
     else if (h.has("number") && h.has("numberOfForecastsInEnsemble")) {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
@@ -534,27 +391,27 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
             throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
         }
         if (numForecasts != 0) {
-            mars.number.set(number);
-            misc.numberOfForecastsInEnsemble.set(numForecasts);
+            mars.number = number;
+            misc.numberOfForecastsInEnsemble = numForecasts;
 
-            if (mars.klass.isSet() && mars.klass.get() == "ai") {
+            if (mars.cls.has_value() && *mars.cls == "ai") {
                 // Handled in the encoder
             }
             else if (h.has("typeOfEnsembleForecast")) {
-                misc.typeOfEnsembleForecast.set(
-                    dm::parseEntry(dm::TypeOfEnsembleForecast.withKey("typeOfEnsembleForecast"), h));
+                misc.typeOfEnsembleForecast = h.getLong("typeOfEnsembleForecast");
             }
             else if (h.has("eps")) {
-                misc.typeOfEnsembleForecast.set(h.getLong("eps"));
+                misc.typeOfEnsembleForecast = h.getLong("eps");
             }
         }
     }
 
 
-    misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow.withKey("lengthOfTimeWindow"), h);
-    misc.lengthOfTimeWindowInSeconds
-        = dm::parseEntry(dm::LengthOfTimeWindowInSeconds.withKey("lengthOfTimeWindowInSeconds"), h);
-    misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withKey("bitsPerValue").withDefault(24), h);
+    if (h.has("lengthOfTimeWindow"))
+        misc.lengthOfTimeWindow = h.getLong("lengthOfTimeWindow");
+    if (h.has("lengthOfTimeWindowInSeconds"))
+        misc.lengthOfTimeWindowInSeconds = h.getLong("lengthOfTimeWindowInSeconds");
+    misc.bitsPerValue = h.has("bitsPerValue") ? h.getLong("bitsPerValue") : 24;
 
     // TODO pgeier readd maybe
     // getAndSet(h, parDict, "periodMin");
@@ -569,8 +426,8 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
                                         : h.getDouble("directionScalingFactor");
         std::for_each(begin(waveDirections), end(waveDirections),
                       [directionScalingFactor, rad2deg](double& val) { val /= directionScalingFactor * rad2deg; });
-        misc.scaleFactorOfWaveDirections.set(std::log10(directionScalingFactor));
-        misc.waveDirections.set(waveDirections);
+        misc.scaleFactorOfWaveDirections = static_cast<std::int64_t>(std::log10(directionScalingFactor));
+        misc.waveDirections = waveDirections;
     }
     if (h.has("scaledValuesOfWaveFrequencies")) {
         auto waveFrequencies = h.getDoubleArray("scaledValuesOfWaveFrequencies");
@@ -579,15 +436,16 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
                                         : h.getDouble("frequencyScalingFactor");
         std::for_each(begin(waveFrequencies), end(waveFrequencies),
                       [frequencyScalingFactor](double& val) { val /= frequencyScalingFactor; });
-        misc.scaleFactorOfWaveFrequencies.set(std::log10(frequencyScalingFactor));
-        misc.waveFrequencies.set(waveFrequencies);
+        misc.scaleFactorOfWaveFrequencies = static_cast<std::int64_t>(std::log10(frequencyScalingFactor));
+        misc.waveFrequencies = waveFrequencies;
     }
 
-    misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries.withKey("satelliteSeries"), h);
-    misc.scaleFactorOfCentralWaveNumber
-        = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber.withKey("scaleFactorOfCentralWaveNumber"), h);
-    misc.scaledValueOfCentralWaveNumber
-        = dm::parseEntry(dm::ScaledValueOfCentralWaveNumber.withKey("scaledValueOfCentralWaveNumber"), h);
+    if (h.has("satelliteSeries"))
+        misc.satelliteSeries = h.getLong("satelliteSeries");
+    if (h.has("scaleFactorOfCentralWaveNumber"))
+        misc.scaleFactorOfCentralWaveNumber = h.getLong("scaleFactorOfCentralWaveNumber");
+    if (h.has("scaledValueOfCentralWaveNumber"))
+        misc.scaledValueOfCentralWaveNumber = h.getLong("scaledValueOfCentralWaveNumber");
 
     if (h.has("setPackingType")) {
         std::string setPackingType = h.getString("setPackingType");
@@ -1198,8 +1056,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
         else {
 
             // now inputHandle is save to use
-            dm::FullMarsRecord mars;
-            dm::LegacyMiscRecord misc;
+            dm::MarsRecord mars;
+            dm::MiscRecord misc;
 
             KeySet marsKeys = iterateMarsNamespace(*inputHandle.get());
             if (verbosity_ > 2) {
@@ -1213,52 +1071,43 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 if (verbosity_ > 2) {
                     std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
                 }
-                mars.packing.set(overwritePacking_->c_str());
+                mars.packing = *overwritePacking_;
             }
 
             if (setModel_) {
                 if (verbosity_ > 2) {
                     std::cout << "Set model " << *setModel_ << std::endl;
                 }
-                mars.model.set(*setModel_);
+                mars.model = *setModel_;
             }
 
             if (ncycle_ > 0) {
                 if (verbosity_ > 2) {
                     std::cout << "Set generatingProcessIdentifier " << ncycle_ << std::endl;
                 }
-                misc.generatingProcessIdentifier.set(ncycle_);
+                misc.generatingProcessIdentifier = ncycle_;
             }
 
             // TODO: Move this logic into the encoder
             // TODO: numberOfForecastsInEnsemble needs a default in the encoder
             if (control_) {
-                if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
+                if ((mars.stream.value_or("") != "oper") || (mars.type.value_or("") != "fc")) {
                     throw eckit::UserError(
                         "Setting forecast member to control is only supported for stream=oper and type=fc; got stream="
-                            + mars.stream.get() + ", type=" + mars.type.get(),
+                            + mars.stream.value_or("(unset)") + ", type=" + mars.type.value_or("(unset)"),
                         Here());
                 }
-                mars.number.set(0);
-                misc.typeOfEnsembleForecast.set(1);
-                misc.numberOfForecastsInEnsemble.set(51);
+                mars.number = 0;
+                misc.typeOfEnsembleForecast = 1;
+                misc.numberOfForecastsInEnsemble = 51;
             }
 
             if (verbosity_ > 2) {
-                util::PrintStream ps{std::cout};
-                ps << "Extracted mars dict:" << std::endl;
-                {
-                    util::IndentGuard g{ps};
-                    ps << mars << std::endl;
-                }
-                ps << "Extracted misc dict:" << std::endl;
-                {
-                    util::IndentGuard g{ps};
-                    ps << misc << std::endl;
-                }
+                std::cout << "Extracted mars dict:" << std::endl;
+                std::cout << "  " << dm::writeConfig(mars, "") << std::endl;
+                std::cout << "Extracted misc dict:" << std::endl;
+                std::cout << "  " << dm::writeConfig(misc, "misc-") << std::endl;
             }
-
-            codes_handle* rawOutputCodesHandle = NULL;
 
             std::vector<double> values = inputHandle->getDoubleArray("values");
 
@@ -1267,11 +1116,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             }
 
             if (mappingRules_) {
-                // Bridge old records to new flat records for mars2mars
-                auto newMars = toNewMarsRecord(mars);
-                auto newMisc = toNewMiscRecord(misc);
-                auto mappingResult = mars2mars::applyMappings(*mappingRules_, newMars, newMisc);
-                copyBackToOld(mars, misc, newMars, newMisc);
+                auto mappingResult = mars2mars::applyMappings(*mappingRules_, mars, misc);
 
                 if (mappingResult && mappingResult->valuesScaleFactor) {
                     const auto scaleFactor = *(mappingResult->valuesScaleFactor);
@@ -1280,14 +1125,25 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 }
             }
 
-            datamod::applyRecordDefaults(mars);
-            datamod::validateRecord(mars);
-            datamod::applyRecordDefaults(misc);
-            datamod::validateRecord(misc);
+            // Apply defaults (matching old applyRecordDefaults behavior)
+            if (!mars.origin)
+                mars.origin = "ecmf";
+            if (!misc.initialStep)
+                misc.initialStep = 0;
+            if (!misc.timeIncrementInSeconds)
+                misc.timeIncrementInSeconds = 3600;
+
+            // Validate grid/truncation exclusivity
+            if (!mars.grid && !mars.truncation) {
+                throw std::runtime_error("Either mars key 'grid' (x)or 'truncation' need to be given");
+            }
+            if (mars.grid && mars.truncation) {
+                throw std::runtime_error("Either mars key 'grid' or 'truncation' needs to be given");
+            }
 
             // Convert mars/misc to eckit::LocalConfiguration
-            const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
-            const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
+            const auto marsConfig = dm::writeConfig(mars, "");
+            const auto miscConfig = dm::writeConfig(misc, "misc-");
 
             // Call the GRIB2 encoder in metkit
             auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
@@ -1296,14 +1152,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
 
             if (verbosity_ > 0) {
-                util::PrintStream ps{std::cout};
-
-                ps << "Converted " << std::endl;
-                ;
-                {
-                    util::IndentGuard g{ps};
-                    ps << mars << std::endl;
-                }
+                std::cout << "Converted:" << std::endl;
+                std::cout << "  " << marsConfig << std::endl;
             }
 
             // Output by writing all to the same binary file

@@ -1,11 +1,34 @@
+/*
+ * (C) Copyright 1996- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
+ */
+
+/// @file MetadataKeys.h
+/// @brief Per-action metadata records for the statistics-mtg2 action.
+///
+/// Defines FlushMetadataKeys (for flush messages) and FieldMetadataKeys (for field messages),
+/// using the new datamod framework (fields_ tuple + readMetadata/writeMetadata).
+
 #pragma once
 
-#include "multio/datamod/core/EntryDef.h"
-#include "multio/datamod/GribKeys.h"
-#include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/MarsKeys.h"
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+
+#include "multio/datamod/Parser.h"
+#include "multio/datamod/types/LevType.h"
+#include "multio/datamod/types/Param.h"
+
 
 namespace multio::action::statistics_mtg2 {
+
+namespace dm = multio::datamod;
 
 //----------------------------- FlushKind Enum ------------------------------//
 
@@ -19,100 +42,69 @@ enum class FlushKind : std::size_t
     CloseConnection
 };
 
-}  // namespace multio::action::statistics_mtg2
+//------------------------ Flush Metadata Keys Record -----------------------//
 
-//-------------- FlushKind type parsing/dumping specializations --------------//
+struct FlushMetadataKeys {
+    std::optional<std::int64_t> date;
+    std::optional<std::int64_t> time;
+    std::optional<std::int64_t> step;  // hours
+    FlushKind flushKind = FlushKind::Default;
+    std::optional<std::string> restartDateTime;
+    std::optional<std::int64_t> serverRank;
 
-template <>
-struct multio::datamod::DumpType<multio::action::statistics_mtg2::FlushKind> {
-    static std::string dump(multio::action::statistics_mtg2::FlushKind v);
+    static constexpr auto fields_ = std::make_tuple(
+        dm::optionalEntry("date", &FlushMetadataKeys::date), dm::optionalEntry("time", &FlushMetadataKeys::time),
+        dm::optionalEntry("step", &FlushMetadataKeys::step),
+        dm::optionalEntry("flushKind", &FlushMetadataKeys::flushKind),
+        dm::optionalEntry("restartDateTime", &FlushMetadataKeys::restartDateTime),
+        dm::optionalEntry("serverRank", &FlushMetadataKeys::serverRank));
 };
-
-template <>
-struct multio::datamod::ParseType<multio::action::statistics_mtg2::FlushKind> {
-    static multio::action::statistics_mtg2::FlushKind parse(const std::string& s);
-    static multio::action::statistics_mtg2::FlushKind parse(std::int64_t val);
-};
-
-//--------------------------------- Records ---------------------------------//
-
-namespace multio::action::statistics_mtg2 {
-
-namespace dm = multio::datamod;
-
-//-------------------------- Flush-local EntryDefs --------------------------//
-
-constexpr auto FLUSH_KIND =
-    dm::EntryDef<FlushKind>{"flushKind"}
-        .withDefault(FlushKind::Default)
-        .withAccessor([](auto&& v) { return &v.flushKind; });
-
-constexpr auto RESTART_DATE_TIME =
-    dm::EntryDef<std::string>{"restartDateTime"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.restartDateTime; });
-
-constexpr auto SERVER_RANK =
-    dm::EntryDef<std::int64_t>{"serverRank"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.serverRank; });
 
 //----------------------- Field Metadata Keys Record ------------------------//
 
 struct FieldMetadataKeys {
-    dm::EntryType_t<decltype(dm::DATE)> date;
-    dm::EntryType_t<decltype(dm::TIME)> time;
-    dm::EntryType_t<decltype(dm::STEP)> step;
-    dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
-    dm::EntryType_t<decltype(dm::PARAM)> param;
-    dm::EntryType_t<decltype(dm::STREAM)> stream;
-    dm::EntryType_t<decltype(dm::LEVTYPE)> levtype;
-    dm::EntryType_t<decltype(dm::LEVELIST)> levelist;
-    dm::EntryType_t<decltype(dm::GRID)> grid;
-    dm::EntryType_t<decltype(dm::TRUNCATION)> truncation;
-    dm::EntryType_t<decltype(dm::TimeIncrementInSeconds)> timeIncrementInSeconds;
-    dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
-    dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
+    std::int64_t date = 0;
+    std::int64_t time = 0;
+    std::int64_t step = 0;                 // hours
+    std::optional<std::int64_t> timespan;  // hours
+    dm::Param param;
+    std::optional<std::string> stream;
+    dm::LevType levtype = dm::LevType::SFC;
+    std::optional<std::int64_t> levelist;
+    std::optional<std::string> grid;
+    std::optional<std::int64_t> truncation;
+    std::optional<std::int64_t> timeIncrementInSeconds;
+    std::optional<bool> bitmapPresent;
+    std::optional<double> missingValue;
 
-    static constexpr std::string_view record_name_ = "statistics-mtg2-field";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::DATE,
-        dm::TIME,
-        dm::STEP.tagRequired(),
-        dm::TIMESPAN,
-        dm::PARAM,
-        dm::STREAM.tagOptional(),
-        dm::LEVTYPE.tagRequired(),
-        dm::LEVELIST,
-        dm::GRID,
-        dm::TRUNCATION,
-        dm::TimeIncrementInSeconds,
-        dm::BitmapPresent,
-        dm::MissingValue
-    );
-};
-
-//------------------------ Flush Metadata Keys Record -----------------------//
-
-struct FlushMetadataKeys {
-    dm::EntryType_t<decltype(dm::DATE)> date;
-    dm::EntryType_t<decltype(dm::TIME)> time;
-    dm::EntryType_t<decltype(dm::STEP)> step;
-    dm::EntryType_t<decltype(FLUSH_KIND)> flushKind;
-    dm::EntryType_t<decltype(RESTART_DATE_TIME)> restartDateTime;
-    dm::EntryType_t<decltype(SERVER_RANK)> serverRank;
-
-    static constexpr std::string_view record_name_ = "statistics-mtg2-flush";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::DATE.tagOptional(),
-        dm::TIME.tagOptional(),
-        dm::STEP,
-        FLUSH_KIND,
-        RESTART_DATE_TIME,
-        SERVER_RANK
-    );
+    static constexpr auto fields_ = std::make_tuple(
+        dm::requiredEntry("date", &FieldMetadataKeys::date), dm::requiredEntry("time", &FieldMetadataKeys::time),
+        dm::requiredEntry("step", &FieldMetadataKeys::step),
+        dm::optionalEntry("timespan", &FieldMetadataKeys::timespan),
+        dm::requiredEntry("param", &FieldMetadataKeys::param), dm::optionalEntry("stream", &FieldMetadataKeys::stream),
+        dm::requiredEntry("levtype", &FieldMetadataKeys::levtype),
+        dm::optionalEntry("levelist", &FieldMetadataKeys::levelist),
+        dm::optionalEntry("grid", &FieldMetadataKeys::grid),
+        dm::optionalEntry("truncation", &FieldMetadataKeys::truncation),
+        dm::optionalEntry("misc-timeIncrementInSeconds", &FieldMetadataKeys::timeIncrementInSeconds),
+        dm::optionalEntry("misc-bitmapPresent", &FieldMetadataKeys::bitmapPresent),
+        dm::optionalEntry("misc-missingValue", &FieldMetadataKeys::missingValue));
 };
 
 //---------------------------------------------------------------------------//
 
 }  // namespace multio::action::statistics_mtg2
+
+
+//-------------- FlushKind parseEntry/dumpEntry declarations ----------------//
+// These must be in the multio::datamod::detail namespace so that the template
+// instantiation of readMetadata/writeMetadata can find them via ADL.
+
+namespace multio::datamod::detail {
+
+bool parseEntry(multio::action::statistics_mtg2::FlushKind& value, std::string_view key, const message::Metadata& md);
+void dumpEntry(multio::action::statistics_mtg2::FlushKind value, std::string_view key, message::Metadata& md);
+void dumpConfigEntry(multio::action::statistics_mtg2::FlushKind value, const std::string& key,
+                     eckit::LocalConfiguration& conf);
+
+}  // namespace multio::datamod::detail

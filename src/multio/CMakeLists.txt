@@ -148,34 +148,12 @@ list( APPEND multio_message_srcs
 )
 
 list( APPEND multio_datamod_srcs
-    datamod/core/DataModellingException.cc
-    datamod/core/DataModellingException.h
-    datamod/core/Entry.h
-    datamod/core/EntryDef.h
-    datamod/core/Hash.h
-    datamod/core/Print.h
-    datamod/core/Compare.h
-    datamod/core/Record.h
-    datamod/core/NestedRecord.h
-    datamod/types/TimeDuration.cc
-    datamod/types/TimeDuration.h
     datamod/types/LevType.cc
     datamod/types/LevType.h
     datamod/types/Param.cc
     datamod/types/Param.h
     datamod/types/StatType.cc
     datamod/types/StatType.h
-    datamod/types/TypeOfLevel.cc
-    datamod/types/TypeOfLevel.h
-    datamod/types/TypeOfStatisticalProcessing.cc
-    datamod/types/TypeOfStatisticalProcessing.h
-    datamod/types/TypeOfProcessedData.cc
-    datamod/types/TypeOfProcessedData.h
-    datamod/ContainerInterop.h
-    datamod/Mapper.cc
-    datamod/Mapper.h
-    datamod/MarsMiscGeo.h
-    datamod/GribKeys.h
     datamod/Glossary.h
     datamod/MarsCacheKey.h
     datamod/MarsRecord.h

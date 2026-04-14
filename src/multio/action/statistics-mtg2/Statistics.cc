@@ -19,10 +19,7 @@
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/MarsKeys.h"
-#include "multio/datamod/MarsMiscGeo.h"
-#include "multio/datamod/core/EntryParser.h"
+#include "multio/datamod/Glossary.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
@@ -45,20 +42,21 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
-std::string Statistics::generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const {
+std::string Statistics::generateRestartNameFromFlush(const message::Message& msg,
+                                                     const FlushMetadataKeys& flush) const {
 
     std::string folderName;
 
-    if (flush.restartDateTime.isSet()) {
-        folderName = flush.restartDateTime.get();
+    if (flush.restartDateTime.has_value()) {
+        folderName = *flush.restartDateTime;
     }
 
     // Restart flush provides the step, date and time
-    else if (flush.step.isSet() && flush.date.isSet() && flush.time.isSet()) {
+    else if (flush.step.has_value() && flush.date.has_value() && flush.time.has_value()) {
 
-        std::int64_t flushStepInSeconds = flush.step.get().toSeconds();
-        std::int64_t flushDate = flush.date.get();
-        std::int64_t flushTime = flush.time.get();
+        std::int64_t flushStepInSeconds = *flush.step * 3600;
+        std::int64_t flushDate = *flush.date;
+        std::int64_t flushTime = *flush.time;
 
         // Compute the date and time from the step
         // TODO: Remove this multiple times repeated code
@@ -89,8 +87,8 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
     }
 
     // Restart flush provides the step
-    else if (flush.step.isSet()) {
-        std::int64_t flushStepInHours = flush.step.get().toHours();
+    else if (flush.step.has_value()) {
+        std::int64_t flushStepInHours = *flush.step;
         std::ostringstream tmp;
         tmp << lastDateTime_ << "-";
         tmp << std::setw(6) << std::setfill('0') << flushStepInHours;
@@ -153,7 +151,7 @@ void Statistics::DumpTemporalStatistics() {
 }
 
 void Statistics::TryDumpRestart(const message::Message& msg, const FlushMetadataKeys& flush) {
-    if (flush.flushKind.get() != FlushKind::StepAndRestart) {
+    if (flush.flushKind != FlushKind::StepAndRestart) {
         return;
     }
 
@@ -166,7 +164,7 @@ void Statistics::TryDumpRestart(const message::Message& msg, const FlushMetadata
     // NOTE: This is a bit of a hack, in case no serverRank is provided, we
     // assume that all processors are "master" and rely on atomicity of
     // filesystem operation to avoid race conditions
-    auto is_master = !flush.serverRank.isSet() || flush.serverRank.get() != 0;
+    auto is_master = !flush.serverRank.has_value() || *flush.serverRank != 0;
 
     // Generate name of the main restart directory
     std::string restartFolderName = generateRestartNameFromFlush(msg, flush);
@@ -241,8 +239,6 @@ bool Statistics::HasRestartKey(const std::string& key) {
 }
 
 
-
-
 void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
 
     std::ostringstream tmp;
@@ -259,10 +255,10 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
-        const auto flush = dm::readRecord<FlushMetadataKeys>(msg.metadata());
+        const auto flush = dm::readMetadata<FlushMetadataKeys>(msg.metadata());
         TryDumpRestart(msg, flush);
 
-        if (flush.flushKind.get() == FlushKind::LastStep) {
+        if (flush.flushKind == FlushKind::LastStep) {
             emitAllStatistics(msg.source(), msg.destination());
         }
 
@@ -395,34 +391,38 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto md = ts.metadata();
         auto cfg = StatisticsConfiguration(md, source, opt_);
 
-        auto timespan = dm::parseEntry(dm::TIMESPAN, md);
-        auto stattype = dm::parseEntry(dm::STATTYPE, md);
+        auto timespanOpt = md.getOpt<std::int64_t>("timespan");
+        auto stattypeOpt = [&]() -> std::optional<dm::StatType> {
+            if (auto v = md.getOpt<std::string>("stattype")) {
+                return dm::StatType::fromString(*v);
+            }
+            return std::nullopt;
+        }();
 
-        if (stattype.isSet() && (stattype.get().levels() > 1)) {
+        if (stattypeOpt && (stattypeOpt->levels() > 1)) {
             std::ostringstream os;
-            util::PrintStream ps(os);
-            ps << "StatType already has two levels: " << stattype << std::endl;
+            os << "StatType already has two levels: " << stattypeOpt->toString() << std::endl;
             throw eckit::SeriousBug(os.str(), Here());
         }
 
-        ASSERT(timespan.isSet() || !stattype.isSet());  // Cannot have stattype without timespan set!
-        int currentLoop = 1 + (timespan.isSet() ? 1 : 0) + (stattype.isSet() ? 1 : 0);
+        ASSERT(timespanOpt.has_value() || !stattypeOpt.has_value());  // Cannot have stattype without timespan set!
+        int currentLoop = 1 + (timespanOpt.has_value() ? 1 : 0) + (stattypeOpt.has_value() ? 1 : 0);
 
 
         auto opname = (*it)->operation();
         if (opname != "instant") {
             if (currentLoop == 1) {
-                const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
-                dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                const std::int64_t tsHours = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                md.set("timespan", tsHours);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
             else {
+                auto paramId = md.getOpt<std::int64_t>("param");
+                ASSERT(paramId.has_value());
+
                 if (!opt_.disableSquashing()
-                    && (((*it)->isComposable()
-                         && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(), opname))
-                        || (opname == "difference"
-                            && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(),
-                                                              "accumulate")))) {
+                    && (((*it)->isComposable() && operationMapping_.hasOperation(*paramId, opname))
+                        || (opname == "difference" && operationMapping_.hasOperation(*paramId, "accumulate")))) {
                     if (currentLoop > 2) {
                         throw eckit::NotImplemented(
                             "Squashing is not implemented for fields with stattype, consider setting option "
@@ -430,21 +430,20 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                             Here());
                     }
                     // Squash means we don't map (already done in previous loop), but extend the timespan
-                    timespan.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
-                    dm::dumpEntry(dm::TIMESPAN, timespan, md);
+                    timespanOpt = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                    md.set("timespan", *timespanOpt);
                 }
                 else {
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
                                                               operationNameToStatTypeOperation(opname)};
 
                     if (currentLoop == 2) {
-                        stattype.set(dm::StatType{currentStatType});
-                        dm::dumpEntry(dm::STATTYPE, stattype, md);
+                        stattypeOpt = dm::StatType{currentStatType};
                     }
                     else {
-                        stattype.set(dm::StatType{currentStatType, stattype.get().firstLevel()});
-                        dm::dumpEntry(dm::STATTYPE, stattype, md);
+                        stattypeOpt = dm::StatType{currentStatType, stattypeOpt->firstLevel()};
                     }
+                    md.set("stattype", stattypeOpt->toString());
                 }
             }
         }
@@ -452,30 +451,31 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         switch (cfg.outputTimeReference()) {
             case OutputTimeReference::StartOfForecast: {
                 const std::int64_t step = ts.win().currPointInHours();
-                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
+                md.set(dm::legacy::Step, step);
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
-                auto lengthOfWindow = timespan;
+                std::optional<std::int64_t> lengthOfWindow = timespanOpt;
 
                 // For instant fields or on flushes, timespan is not set yet
-                if (!lengthOfWindow.isSet()) {
-                    // The window spaws between creationPoint to endPoint
+                if (!lengthOfWindow.has_value()) {
+                    // The window spans between creationPoint to endPoint
                     // Prev & Current point describe the last updated data points.
                     // In this case we are explicitly interested in creation to current point
-                    lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    lengthOfWindow = ts.win().currPointInHours() - ts.win().creationPointInHours();
                 }
 
-                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
+                md.set(dm::legacy::Step, *lengthOfWindow);
                 // We explicitly take the creation point - alternative would be the start point.
-                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a month.
-                // To not confuse the output, we explicitly just output the window for which data has been received.
-                // As discussed with DGOV and scientist, half months are typically not of interest and should be ignored.
-                // Some additional mechanism has to make sure that these do not occur in the output (i.e. additional action).
+                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a
+                // month. To not confuse the output, we explicitly just output the window for which data has been
+                // received. As discussed with DGOV and scientist, half months are typically not of interest and should
+                // be ignored. Some additional mechanism has to make sure that these do not occur in the output (i.e.
+                // additional action).
                 auto dt = ts.win().creationPoint();
 
-                dm::dumpEntry(dm::DATE, dm::DATE.makeEntry(dt.date().yyyymmdd()), md);
-                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()), md);  // Official MARS time is in hhmm, in multio hhmmss is used
+                md.set(dm::legacy::Date, dt.date().yyyymmdd());
+                md.set(dm::legacy::Time, dt.time().hhmmss());
                 break;
             }
         }

@@ -10,9 +10,7 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/core/EntryParser.h"
-#include "multio/datamod/core/TypeParserDumper.h"
+#include "multio/datamod/Parser.h"
 
 namespace multio::action::statistics_mtg2 {
 
@@ -20,22 +18,22 @@ namespace dm = multio::datamod;
 
 
 std::int64_t deriveLevel(const FieldMetadataKeys& md) {
-    if (md.levelist.isSet()) {
-        return md.levelist.get();
+    if (md.levelist.has_value()) {
+        return *md.levelist;
     }
     return 0;
 }
 
 std::string deriveLevType(const FieldMetadataKeys& md) {
-    return dm::DumpType<dm::LevType>::dump(md.levtype.get());
+    return dm::levTypeToString(md.levtype);
 }
 
 std::string deriveGridType(const FieldMetadataKeys& md) {
-    if (md.grid.isSet()) {
-        return md.grid.get();
+    if (md.grid.has_value()) {
+        return *md.grid;
     }
     // Truncation is always present when we are dealing with Spherical Harmonics
-    if (md.truncation.isSet()) {
+    if (md.truncation.has_value()) {
         return "none";
     }
     std::ostringstream os;
@@ -52,8 +50,8 @@ std::string derivePrecision(const message::Metadata& rawMd) {
 }
 
 std::optional<double> deriveMissingValue(const FieldMetadataKeys& md) {
-    if (md.missingValue.isSet() && md.bitmapPresent.isSet() && md.bitmapPresent.get()) {
-        return md.missingValue.get();
+    if (md.missingValue.has_value() && md.bitmapPresent.value_or(false)) {
+        return *md.missingValue;
     }
     return std::nullopt;
 }
@@ -65,10 +63,7 @@ OutputTimeReference readOutputTimeReference(const FieldMetadataKeys& md, const S
     }
 
     // Look up for stream in metadata or in configuration
-    std::optional<std::string> stream;
-    if (md.stream.isSet()) {
-        stream = md.stream.get();
-    }
+    std::optional<std::string> stream = md.stream;
     if (!stream) {
         // Look for stream in options
         const auto& omd = opt.setMetadata();
@@ -100,7 +95,7 @@ OutputTimeReference readOutputTimeReference(const FieldMetadataKeys& md, const S
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, const message::Peer& src,
                                                  const StatisticsOptions& opt) :
-    md_{dm::readRecord<FieldMetadataKeys>(md)},
+    md_{dm::readMetadata<FieldMetadataKeys>(md)},
     opt_{opt},
     level_{deriveLevel(md_)},
     levType_{deriveLevType(md_)},
@@ -141,26 +136,23 @@ const StatisticsOptions& StatisticsConfiguration::options() const {
 }
 
 std::int64_t StatisticsConfiguration::date() const {
-    return md_.date.get();
+    return md_.date;
 }
 std::int64_t StatisticsConfiguration::time() const {
-    return md_.time.get();
+    return md_.time;
 }
 std::int64_t StatisticsConfiguration::timeIncrementInSeconds() const {
-    return md_.timeIncrementInSeconds.get();
+    return md_.timeIncrementInSeconds.value_or(0);
 }
 std::int64_t StatisticsConfiguration::step() const {
-    return md_.step.get().toHours();
+    return md_.step;  // already in hours
 }
 std::optional<std::int64_t> StatisticsConfiguration::timespan() const {
-    if (md_.timespan.isSet()) {
-        return md_.timespan.get().toHours();
-    }
-    return std::nullopt;
+    return md_.timespan;  // already in hours
 }
 
 int64_t StatisticsConfiguration::param() const {
-    return md_.param.get().id();
+    return md_.param.id();
 }
 const std::string& StatisticsConfiguration::precision() const {
     return precision_;

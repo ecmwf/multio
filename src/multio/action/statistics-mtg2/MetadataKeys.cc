@@ -9,12 +9,44 @@
  */
 
 #include "MetadataKeys.h"
+
 #include <unordered_map>
-#include "multio/datamod/core/DataModellingException.h"
+
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+
+#include "multio/message/Metadata.h"
+#include "multio/message/MetadataException.h"
+
 
 using FlushKind = multio::action::statistics_mtg2::FlushKind;
 
-std::string multio::datamod::DumpType<FlushKind>::dump(FlushKind v) {
+namespace {
+
+FlushKind parseFlushKindFromString(const std::string& s) {
+    static const std::unordered_map<std::string, FlushKind> map{{"default", FlushKind::Default},
+                                                                {"first-step", FlushKind::FirstStep},
+                                                                {"step-and-restart", FlushKind::StepAndRestart},
+                                                                {"last-step", FlushKind::LastStep},
+                                                                {"end-of-simulation", FlushKind::EndOfSimulation},
+                                                                {"close-connection", FlushKind::CloseConnection}};
+    if (auto it = map.find(s); it != map.end()) {
+        return it->second;
+    }
+    throw multio::message::MetadataException("Unknown FlushKind string: " + s, Here());
+}
+
+FlushKind parseFlushKindFromInt(std::int64_t val) {
+    static const std::unordered_map<std::int64_t, FlushKind> map{
+        {0, FlushKind::FirstStep}, {1, FlushKind::Default},         {2, FlushKind::StepAndRestart},
+        {3, FlushKind::LastStep},  {4, FlushKind::EndOfSimulation}, {5, FlushKind::CloseConnection}};
+    if (auto it = map.find(val); it != map.end()) {
+        return it->second;
+    }
+    throw multio::message::MetadataException("Unknown FlushKind integer: " + std::to_string(val), Here());
+}
+
+std::string flushKindToString(FlushKind v) {
     switch (v) {
         case FlushKind::Default:
             return "default";
@@ -29,34 +61,46 @@ std::string multio::datamod::DumpType<FlushKind>::dump(FlushKind v) {
         case FlushKind::CloseConnection:
             return "close-connection";
         default:
-            throw multio::datamod::DataModellingException(
-                "DumpType<FlushKind>::dump: Unexpected enum value " + std::to_string(static_cast<std::size_t>(v)),
-                Here());
+            throw eckit::SeriousBug(
+                "flushKindToString: Unexpected enum value " + std::to_string(static_cast<std::size_t>(v)), Here());
     }
 }
 
-FlushKind multio::datamod::ParseType<FlushKind>::parse(const std::string& s) {
-    static const std::unordered_map<std::string, FlushKind> map{
-        {"default", FlushKind::Default},
-        {"first-step", FlushKind::FirstStep},
-        {"step-and-restart", FlushKind::StepAndRestart},
-        {"last-step", FlushKind::LastStep},
-        {"end-of-simulation", FlushKind::EndOfSimulation},
-        {"close-connection", FlushKind::CloseConnection}};
-    if (auto it = map.find(s); it != map.end()) {
-        return it->second;
+}  // namespace
+
+
+namespace multio::datamod::detail {
+
+/// Parse FlushKind from metadata — handles both string and int64 representations.
+/// Uses the untyped getOpt() + visit() pattern to avoid the noexcept bug in BaseMetadata::getOpt<T>.
+bool parseEntry(FlushKind& value, std::string_view key, const message::Metadata& md) {
+    const std::string k{key};
+    auto it = md.find(k);
+    if (it == md.end()) {
+        return false;
     }
-    throw multio::datamod::DataModellingException("ParseType<FlushKind>::parse: Unknown FlushKind string: " + s,
-                                                  Here());
+    bool parsed = false;
+    it->second.visit(eckit::Overloaded{[&](const std::string& s) {
+                                           value = parseFlushKindFromString(s);
+                                           parsed = true;
+                                       },
+                                       [&](std::int64_t v) {
+                                           value = parseFlushKindFromInt(v);
+                                           parsed = true;
+                                       },
+                                       [&](const auto&) {
+                                           throw message::MetadataException(
+                                               "FlushKind must be a string or integer, key: " + k, Here());
+                                       }});
+    return parsed;
 }
 
-FlushKind multio::datamod::ParseType<FlushKind>::parse(std::int64_t val) {
-    static const std::unordered_map<std::int64_t, FlushKind> map{
-        {0, FlushKind::FirstStep},     {1, FlushKind::Default},          {2, FlushKind::StepAndRestart},
-        {3, FlushKind::LastStep},      {4, FlushKind::EndOfSimulation},  {5, FlushKind::CloseConnection}};
-    if (auto it = map.find(val); it != map.end()) {
-        return it->second;
-    }
-    throw multio::datamod::DataModellingException(
-        "ParseType<FlushKind>::parse: Unknown FlushKind integer: " + std::to_string(val), Here());
+void dumpEntry(FlushKind value, std::string_view key, message::Metadata& md) {
+    md.set(std::string(key), flushKindToString(value));
 }
+
+void dumpConfigEntry(FlushKind value, const std::string& key, eckit::LocalConfiguration& conf) {
+    conf.set(key, flushKindToString(value));
+}
+
+}  // namespace multio::datamod::detail

@@ -71,24 +71,6 @@ ecbuild_add_test( TARGET    test_multio_select
                   LIBS      multio )
 
 
-# Test Data modelling
-
-ecbuild_add_test( TARGET    test_multio_datamod
-                  TEST_REQUIRES test_multio_metadata
-                  SOURCES   test_multio_datamod.cc
-                  LIBS      multio )
-
-ecbuild_add_test( TARGET    test_multio_datamod_containers
-                  TEST_REQUIRES test_multio_metadata
-                  SOURCES   test_multio_datamod_containers.cc
-                  LIBS      multio )
-
-ecbuild_add_test( TARGET    test_multio_datamod_models
-                  TEST_REQUIRES test_multio_metadata
-                  SOURCES   test_multio_datamod_models.cc
-                  LIBS      multio )
-
-
 # Test Config Parser
 
 ecbuild_add_test( TARGET    test_multio_config_parser
@@ -197,7 +179,7 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
 ecbuild_add_test( TARGET test_multio_hammer_tcp
                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
                   ARGS $<TARGET_FILE:multio-hammer>
-                  TEST_REQUIRES test_multio_hammer_thread 
+                  TEST_REQUIRES test_multio_hammer_thread
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET      test_multio_hammer_mpi
@@ -206,7 +188,7 @@ ecbuild_add_test( TARGET      test_multio_hammer_mpi
                   ARGS        --transport=mpi --nbclients=5 --nbservers=3
                   MPI         8
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                  TEST_REQUIRES test_multio_hammer_tcp 
+                  TEST_REQUIRES test_multio_hammer_tcp
                   ENVIRONMENT "${_test_environment}" )
 
 

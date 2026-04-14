@@ -5,14 +5,10 @@
 #include "eckit/types/DateTime.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/MarsMiscGeo.h"
 
 #include "TimeUtils.h"
 
 namespace multio::action::statistics_mtg2 {
-
-namespace dm = multio::datamod;
 
 TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std::vector<std::string>& operations,
                                        const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
@@ -75,7 +71,7 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
     window_.updateData(currentDateTime(msg, cfg));
     for (auto& stat : statistics_) {
         // Truncation is always present when we are dealing with Spherical Harmonics
-        if (dm::parseEntry(dm::TRUNCATION, msg.metadata()).isSet() && !stat->supportsSH()) {
+        if (msg.metadata().getOpt<std::int64_t>("truncation").has_value() && !stat->supportsSH()) {
             std::ostringstream os;
             os << "Operation " << stat->operation() << " does not support spherical harmonics : " << msg.metadata();
             throw eckit::SeriousBug{os.str(), Here()};

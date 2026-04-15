@@ -142,7 +142,7 @@ std::int64_t StatisticsConfiguration::time() const {
     return md_.time;
 }
 std::int64_t StatisticsConfiguration::timeIncrementInSeconds() const {
-    return md_.timeIncrementInSeconds.value_or(0);
+    return md_.timeIncrementInSeconds.value_or(3600);
 }
 std::int64_t StatisticsConfiguration::step() const {
     return md_.step;  // already in hours

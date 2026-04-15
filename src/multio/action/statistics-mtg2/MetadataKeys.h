@@ -97,14 +97,13 @@ struct FieldMetadataKeys {
 
 
 //-------------- FlushKind parseEntry/dumpEntry declarations ----------------//
-// These must be in the multio::datamod::detail namespace so that the template
-// instantiation of readMetadata/writeMetadata can find them via ADL.
+// These must be in FlushKind's own namespace so that ADL can find them
+// during two-phase lookup from the datamod::detail template functions.
 
-namespace multio::datamod::detail {
+namespace multio::action::statistics_mtg2 {
 
-bool parseEntry(multio::action::statistics_mtg2::FlushKind& value, std::string_view key, const message::Metadata& md);
-void dumpEntry(multio::action::statistics_mtg2::FlushKind value, std::string_view key, message::Metadata& md);
-void dumpConfigEntry(multio::action::statistics_mtg2::FlushKind value, const std::string& key,
-                     eckit::LocalConfiguration& conf);
+bool parseEntry(FlushKind& value, std::string_view key, const multio::message::Metadata& md);
+void dumpEntry(FlushKind value, std::string_view key, multio::message::Metadata& md);
+void dumpConfigEntry(FlushKind value, const std::string& key, eckit::LocalConfiguration& conf);
 
-}  // namespace multio::datamod::detail
+}  // namespace multio::action::statistics_mtg2

@@ -69,7 +69,7 @@ std::string flushKindToString(FlushKind v) {
 }  // namespace
 
 
-namespace multio::datamod::detail {
+namespace multio::action::statistics_mtg2 {
 
 /// Parse FlushKind from metadata — handles both string and int64 representations.
 /// Uses the untyped getOpt() + visit() pattern to avoid the noexcept bug in BaseMetadata::getOpt<T>.
@@ -103,4 +103,4 @@ void dumpConfigEntry(FlushKind value, const std::string& key, eckit::LocalConfig
     conf.set(key, flushKindToString(value));
 }
 
-}  // namespace multio::datamod::detail
+}  // namespace multio::action::statistics_mtg2

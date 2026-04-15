@@ -9,7 +9,6 @@
 #include "multio/action/statistics-mtg2/period-updaters/PeriodUpdater.h"
 
 #include "eckit/types/DateTime.h"
-#include "multio/action/statistics-mtg2/TimeUtils.h"
 #include "multio/message/Message.h"
 
 #include "OperationWindow.h"

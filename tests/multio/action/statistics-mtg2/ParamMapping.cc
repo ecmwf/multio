@@ -94,8 +94,8 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
     for (int64_t step = 0; step <= 1; ++step) {
         auto md = Metadata({
             {"param", param},
-            {"levtype", "none"},
-            {"grid", "none"},
+            {"levtype", "sfc"},
+            {"grid", "O80"},
             {"date", 20200721},
             {"time", 0000},
             {"step", step},

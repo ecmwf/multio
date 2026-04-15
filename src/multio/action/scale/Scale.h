@@ -17,13 +17,30 @@ namespace cf = multio::util::config;
 
 struct ScaleMetadataKeys {
     dm::EntryType_t<decltype(dm::PARAM)> param;
+    dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "scale-action-metadata";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::PARAM,        // access: read/write
-        dm::MissingValue  // access: read only
+        dm::PARAM,          // access: read/write
+        dm::BitmapPresent,  // access: read only
+        dm::MissingValue    // access: read/write (will be unset if bitmapPresent false)
     );
+
+    static void applyDefaults(ScaleMetadataKeys& k) {
+        if (!k.bitmapPresent.get()) {
+            k.missingValue.unset();
+        }
+    }
+
+    static void validate(const ScaleMetadataKeys& k) {
+        if (k.bitmapPresent.get() && !k.missingValue.isSet()) {
+            throw eckit::SeriousBug(
+                "Value for missingValue is required if bitmapPresent is true!",
+                Here()
+            );
+        }
+    }
 };
 
 //------------------------ Action Configuration Keys ------------------------//

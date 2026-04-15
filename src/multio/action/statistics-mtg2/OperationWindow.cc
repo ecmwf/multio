@@ -70,7 +70,7 @@ OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater,
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
     eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), cfg.options().windowType()};
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeIncrementInSeconds(), cfg.options().windowType()};
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -92,7 +92,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     prevPoint_{eckit::Date{0}, eckit::Time{0}},
     endPoint_{eckit::Date{0}, eckit::Time{0}},
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
-    timeStepInSeconds_{0},
+    timeIncrementInSeconds_{0},
     count_{0},
     counts_{},
     windowType_{WindowType::ForwardOffset} {
@@ -102,7 +102,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeStepInSeconds, WindowType windowType) :
+                                 long timeIncrementInSeconds, WindowType windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -110,7 +110,7 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     prevPoint_{creationPoint},
     endPoint_{endPoint},
     lastFlush_{epochPoint},
-    timeStepInSeconds_{timeStepInSeconds},
+    timeIncrementInSeconds_{timeIncrementInSeconds},
     count_{0},
     counts_{},
     windowType_{windowType} {}
@@ -241,7 +241,7 @@ long OperationWindow::timeSpanInSeconds() const {
 }
 
 long OperationWindow::timeSpanInSteps() const {
-    return timeSpanInSeconds() / timeStepInSeconds_;
+    return timeSpanInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::lastPointsDiffInSeconds() const {
@@ -297,23 +297,23 @@ long OperationWindow::prevPointInHours() const {
 
 
 long OperationWindow::startPointInSteps() const {
-    return startPointInSeconds() / timeStepInSeconds_;
+    return startPointInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::creationPointInSteps() const {
-    return creationPointInSeconds() / timeStepInSeconds_;
+    return creationPointInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::endPointInSteps() const {
-    return endPointInSeconds() / timeStepInSeconds_;
+    return endPointInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::currPointInSteps() const {
-    return currPointInSeconds() / timeStepInSeconds_;
+    return currPointInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::prevPointInSteps() const {
-    return prevPointInSeconds() / timeStepInSeconds_;
+    return prevPointInSeconds() / timeIncrementInSeconds_;
 }
 
 long OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
@@ -359,23 +359,23 @@ long OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
 
 
 long OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
-    return startPointInSeconds(refPoint) / timeStepInSeconds_;
+    return startPointInSeconds(refPoint) / timeIncrementInSeconds_;
 }
 
 long OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
-    return creationPointInSeconds(refPoint) / timeStepInSeconds_;
+    return creationPointInSeconds(refPoint) / timeIncrementInSeconds_;
 }
 
 long OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
-    return endPointInSeconds(refPoint) / timeStepInSeconds_;
+    return endPointInSeconds(refPoint) / timeIncrementInSeconds_;
 }
 
 long OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
-    return currPointInSeconds(refPoint) / timeStepInSeconds_;
+    return currPointInSeconds(refPoint) / timeIncrementInSeconds_;
 }
 
 long OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
-    return prevPointInSeconds(refPoint) / timeStepInSeconds_;
+    return prevPointInSeconds(refPoint) / timeIncrementInSeconds_;
 }
 
 eckit::DateTime OperationWindow::epochPoint() const {
@@ -432,7 +432,7 @@ void OperationWindow::updateFlush() {
 }
 
 long OperationWindow::lastFlushInSteps() const {
-    return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
+    return (lastFlush_ - epochPoint_) / timeIncrementInSeconds_;
 }
 
 void OperationWindow::initCountsLazy(size_t size) const {
@@ -460,7 +460,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
@@ -488,7 +488,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[12] = static_cast<std::uint64_t>(lastFlush_.date().yyyymmdd());
     currState[13] = static_cast<std::uint64_t>(lastFlush_.time().hhmmss());
 
-    currState[14] = static_cast<std::uint64_t>(timeStepInSeconds_);
+    currState[14] = static_cast<std::uint64_t>(timeIncrementInSeconds_);
     currState[15] = static_cast<std::uint64_t>(count_);
     currState[16] = static_cast<std::uint64_t>(windowType_);
 
@@ -513,7 +513,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[8]), static_cast<long>(currState[9]));
     currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[10]), static_cast<long>(currState[11]));
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
-    timeStepInSeconds_ = static_cast<long>(currState[14]);
+    timeIncrementInSeconds_ = static_cast<long>(currState[14]);
     count_ = static_cast<long>(currState[15]);
     windowType_ = static_cast<WindowType>(currState[16]);
 
@@ -532,7 +532,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;

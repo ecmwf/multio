@@ -165,7 +165,8 @@ CASE("local-to-wmo mapping with missing value") {
         auto md = Metadata({
             {"param", 228},
             {"misc-precision", "double"},
-            {"missingValue", 999.0}
+            {"misc-bitmapPresent", true},
+            {"misc-missingValue", 999.0}
         });
         std::vector<double> values = {0.0, 999.0, 1.0};
         auto pl = eckit::Buffer(values.data(), values.size() * sizeof(double));

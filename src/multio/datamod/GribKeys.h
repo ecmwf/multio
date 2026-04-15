@@ -32,33 +32,33 @@ namespace multio::datamod {
 //-----------------------------------------------------------------------------
 
 constexpr auto Discipline =
-    EntryDef<std::int64_t>{"discipline"}  
+    EntryDef<std::int64_t>{"misc-discipline"}
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.discipline; });
 
 // Section1
 constexpr auto TablesVersion =
-    EntryDef<std::int64_t>{"tablesVersion"}  
+    EntryDef<std::int64_t>{"misc-tablesVersion"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.tablesVersion; });
-        
+
 constexpr auto LocalTablesVersion =
-    EntryDef<std::int64_t>{"localTablesVersion"}  
+    EntryDef<std::int64_t>{"misc-localTablesVersion"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.localTablesVersion; });
-        
+
 constexpr auto ProductionStatusOfProcessedData =
-    EntryDef<std::int64_t>{"productionStatusOfProcessedData"}  
+    EntryDef<std::int64_t>{"misc-productionStatusOfProcessedData"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.productionStatusOfProcessedData; });
 
 constexpr auto SubCentre =
-    EntryDef<std::int64_t>{"subCentre"}
+    EntryDef<std::int64_t>{"misc-subCentre"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.subCentre; });
 
 constexpr auto TypeOfProcessedDataEntry =
-    EntryDef<TypeOfProcessedData>{"typeOfProcessedData"}  
+    EntryDef<TypeOfProcessedData>{"misc-typeOfProcessedData"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
 
@@ -66,158 +66,158 @@ constexpr auto TypeOfProcessedDataEntry =
 // Section3 (more to be moved here from MarsMiscGeo.h)
 
 constexpr auto ShapeOfTheEarth =
-    EntryDef<std::int64_t>{"shapeOfTheEarth"}  
+    EntryDef<std::int64_t>{"misc-shapeOfTheEarth"}
         .withDefault(6)
         .withAccessor([](auto&& v) { return &v.shapeOfTheEarth; });
 
 // Section 3 - GG
 
 constexpr auto TruncateDegrees =
-    EntryDef<std::int64_t>{"truncateDegrees"}  
+    EntryDef<std::int64_t>{"misc-truncateDegrees"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.truncateDegrees; });
 
 constexpr auto NumberOfPointsAlongAMeridian =
-    EntryDef<std::int64_t>{"numberOfPointsAlongAMeridian"}  
+    EntryDef<std::int64_t>{"misc-numberOfPointsAlongAMeridian"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAMeridian; });
 
 constexpr auto NumberOfParallelsBetweenAPoleAndTheEquator =
-    EntryDef<std::int64_t>{"numberOfParallelsBetweenAPoleAndTheEquator"}  
+    EntryDef<std::int64_t>{"misc-numberOfParallelsBetweenAPoleAndTheEquator"}
         .withAccessor([](auto&& v) { return &v.numberOfParallelsBetweenAPoleAndTheEquator; });
 
 constexpr auto LatitudeOfFirstGridPointInDegrees =
-    EntryDef<double>{"latitudeOfFirstGridPointInDegrees"}  
+    EntryDef<double>{"misc-latitudeOfFirstGridPointInDegrees"}
         .withAccessor([](auto&& v) { return &v.latitudeOfFirstGridPointInDegrees; });
 
 constexpr auto LongitudeOfFirstGridPointInDegrees =
-    EntryDef<double>{"longitudeOfFirstGridPointInDegrees"}  
+    EntryDef<double>{"misc-longitudeOfFirstGridPointInDegrees"}
         .withAccessor([](auto&& v) { return &v.longitudeOfFirstGridPointInDegrees; });
 
 constexpr auto LatitudeOfLastGridPointInDegrees =
-    EntryDef<double>{"latitudeOfLastGridPointInDegrees"}  
+    EntryDef<double>{"misc-latitudeOfLastGridPointInDegrees"}
         .withAccessor([](auto&& v) { return &v.latitudeOfLastGridPointInDegrees; });
 
 constexpr auto LongitudeOfLastGridPointInDegrees =
-    EntryDef<double>{"longitudeOfLastGridPointInDegrees"}  
+    EntryDef<double>{"misc-longitudeOfLastGridPointInDegrees"}
         .withAccessor([](auto&& v) { return &v.longitudeOfLastGridPointInDegrees; });
 
 constexpr auto IDirectionIncrementInDegrees =
-    EntryDef<double>{"iDirectionIncrementInDegrees"}  
+    EntryDef<double>{"misc-iDirectionIncrementInDegrees"}
         .withAccessor([](auto&& v) { return &v.iDirectionIncrementInDegrees; });
 
 constexpr auto JDirectionIncrementInDegrees =
-    EntryDef<double>{"jDirectionIncrementInDegrees"}  
+    EntryDef<double>{"misc-jDirectionIncrementInDegrees"}
         .withAccessor([](auto&& v) { return &v.jDirectionIncrementInDegrees; });
 
 
 constexpr auto Pl =
-    EntryDef<std::vector<std::int64_t>>{"pl"}  
+    EntryDef<std::vector<std::int64_t>>{"misc-pl"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.pl; });
-        
-        
+
+
 // Section 3 - LL
 
 constexpr auto NumberOfPointsAlongAParallel =
-    EntryDef<std::int64_t>{"numberOfPointsAlongAParallel"}  
+    EntryDef<std::int64_t>{"misc-numberOfPointsAlongAParallel"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.numberOfPointsAlongAParallel; });
 
 
 // Section 3 - SH
 
-constexpr auto PentagonalResolutionParameterJ = 
-    EntryDef<std::int64_t>{"pentagonalResolutionParameterJ"}.withAccessor(
+constexpr auto PentagonalResolutionParameterJ =
+    EntryDef<std::int64_t>{"misc-pentagonalResolutionParameterJ"}.withAccessor(
     [](auto&& v) { return &v.pentagonalResolutionParameterJ; });
-constexpr auto PentagonalResolutionParameterK = EntryDef<std::int64_t>{"pentagonalResolutionParameterK"}.withAccessor(
+constexpr auto PentagonalResolutionParameterK = EntryDef<std::int64_t>{"misc-pentagonalResolutionParameterK"}.withAccessor(
     [](auto&& v) { return &v.pentagonalResolutionParameterK; });
-constexpr auto PentagonalResolutionParameterM = EntryDef<std::int64_t>{"pentagonalResolutionParameterM"}.withAccessor(
+constexpr auto PentagonalResolutionParameterM = EntryDef<std::int64_t>{"misc-pentagonalResolutionParameterM"}.withAccessor(
     [](auto&& v) { return &v.pentagonalResolutionParameterM; });
 
 
 // Section 3 - HEALpix
 
 constexpr auto NSide =
-    EntryDef<std::int64_t>{"nside"}  
+    EntryDef<std::int64_t>{"misc-nside"}
         .withAccessor([](auto&& v) { return &v.nside; });
 
 constexpr auto OrderingConvention =
-    EntryDef<std::string>{"orderingConvention"}  
+    EntryDef<std::string>{"misc-orderingConvention"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.orderingConvention; });
 
 
 // Section4
 constexpr auto ProductDefinitionTemplateNumber =
-    EntryDef<std::int64_t>{"productDefinitionTemplateNumber"}
+    EntryDef<std::int64_t>{"misc-productDefinitionTemplateNumber"}
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.productDefinitionTemplateNumber; });  
+        .withAccessor([](auto&& v) { return &v.productDefinitionTemplateNumber; });
 constexpr auto GeneratingProcessIdentifier =
-    EntryDef<std::int64_t>{"generatingProcessIdentifier"}
+    EntryDef<std::int64_t>{"misc-generatingProcessIdentifier"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.generatingProcessIdentifier; });
 constexpr auto TypeOfLevelEntry =
-    EntryDef<TypeOfLevel>{"typeOfLevel"}  
+    EntryDef<TypeOfLevel>{"misc-typeOfLevel"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfLevel; });
 constexpr auto TypeOfStatisticalProcessingEntry =
-    EntryDef<TypeOfStatisticalProcessing>{"typeOfStatisticalProcessing"}
+    EntryDef<TypeOfStatisticalProcessing>{"misc-typeOfStatisticalProcessing"}
         .tagOptional()
-        .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });  
+        .withAccessor([](auto&& v) { return &v.typeOfStatisticalProcessing; });
 constexpr auto ScaleFactorOfCentralWaveNumber =
-    EntryDef<std::int64_t>{"scaleFactorOfCentralWaveNumber"}
+    EntryDef<std::int64_t>{"misc-scaleFactorOfCentralWaveNumber"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaleFactorOfCentralWaveNumber; });
 constexpr auto ScaledValueOfCentralWaveNumber =
-    EntryDef<std::int64_t>{"scaledValueOfCentralWaveNumber"}  
+    EntryDef<std::int64_t>{"misc-scaledValueOfCentralWaveNumber"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaledValueOfCentralWaveNumber; });
 // Ensemble
 
 constexpr auto TypeOfEnsembleForecast =
-    EntryDef<std::int64_t>{"typeOfEnsembleForecast"}  
+    EntryDef<std::int64_t>{"misc-typeOfEnsembleForecast"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfEnsembleForecast; });
 
 constexpr auto NumberOfForecastsInEnsemble =
-    EntryDef<std::int64_t>{"numberOfForecastsInEnsemble"}  
+    EntryDef<std::int64_t>{"misc-numberOfForecastsInEnsemble"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.numberOfForecastsInEnsemble; });
 
-// Satellite 
+// Satellite
 
 constexpr auto SatelliteSeries =
-    EntryDef<std::int64_t>{"satelliteSeries"}  
+    EntryDef<std::int64_t>{"misc-satelliteSeries"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.satelliteSeries; });
 // Horizontal Keys
 constexpr auto PressureUnits
-    = EntryDef<std::string>{"pressureUnits"}  
+    = EntryDef<std::string>{"misc-pressureUnits"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.pressureUnits; });
 constexpr auto TypeOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"typeOfFirstFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-typeOfFirstFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.typeOfFirstFixedSurface; });
 constexpr auto TypeOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"typeOfSecondFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-typeOfSecondFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.typeOfSecondFixedSurface; });
 constexpr auto ScaledValueOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"scaledValueOfFirstFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-scaledValueOfFirstFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.scaledValueOfFirstFixedSurface; });
 constexpr auto ScaledValueOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"scaledValueOfSecondFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-scaledValueOfSecondFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.scaledValueOfSecondFixedSurface; });
 constexpr auto ScaleFactorOfFirstFixedSurface
-    = EntryDef<std::int64_t>{"scaleFactorOfFirstFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-scaleFactorOfFirstFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.scaleFactorOfFirstFixedSurface; });
 constexpr auto ScaleFactorOfSecondFixedSurface
-    = EntryDef<std::int64_t>{"scaleFactorOfSecondFixedSurface"}  
+    = EntryDef<std::int64_t>{"misc-scaleFactorOfSecondFixedSurface"}
           .tagOptional()
           .withAccessor([](auto&& v) { return &v.scaleFactorOfSecondFixedSurface; });
 
@@ -246,21 +246,22 @@ struct HorizontalGribKeys {
 // Data Repres
 
 constexpr auto BitmapPresent =
-    EntryDef<bool>{"bitmapPresent"}  
-        .tagOptional()
+    EntryDef<bool>{"misc-bitmapPresent"}
+        .withDefault(false)
         .withAccessor([](auto&& v) { return &v.bitmapPresent; });
 
 constexpr auto MissingValue =
-    EntryDef<double>{"missingValue"}  
+    EntryDef<double>{"misc-missingValue"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.missingValue; });
+
 constexpr auto BitsPerValue =
-    EntryDef<std::int64_t>{"bitsPerValue"}  
+    EntryDef<std::int64_t>{"misc-bitsPerValue"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.bitsPerValue; });
 
 constexpr auto LaplacianOperator =
-    EntryDef<double>{"laplacianOperator"}
+    EntryDef<double>{"misc-laplacianOperator"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.laplacianOperator; });
 
@@ -269,12 +270,12 @@ constexpr auto LaplacianOperator =
 
 
 constexpr auto PVPresent =
-    EntryDef<bool>{"PVPresent"}  
+    EntryDef<bool>{"misc-PVPresent"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.pvPresent; });
 
 constexpr auto Pv =
-    EntryDef<std::vector<double>>{"pv"}  
+    EntryDef<std::vector<double>>{"misc-pv"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.pv; });
 

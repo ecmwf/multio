@@ -113,7 +113,7 @@ void handleParamId(metkit::codes::CodesHandle& h, dm::MarsRecord& mars) {
     switch (initParamId) {
         case 55:
             mars.param = dm::Param{228004};
-            mars.timespan = "24";
+            mars.timespan = 24;
             break;
         case 56:
             mars.param = dm::Param{235168};
@@ -232,10 +232,10 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::MarsRecord& mars, int ve
 
         // StepRange is a proper steprange - it contains a dash `-`
         if (auto r = parseRange(stepRangeStr)) {
-            mars.timespan = std::to_string(r->second - r->first);
+            mars.timespan = r->second - r->first;
         }
         else {
-            mars.timespan = std::to_string(h.has("stepRange") ? h.getLong("stepRange") : endStep);
+            mars.timespan = h.has("stepRange") ? h.getLong("stepRange") : endStep;
         }
     }
 }

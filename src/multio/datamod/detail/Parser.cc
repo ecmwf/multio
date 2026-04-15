@@ -18,6 +18,7 @@
 #include "multio/datamod/types/Param.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Metadata.h"
+#include "multio/message/MetadataException.h"
 
 
 namespace multio::datamod::detail {
@@ -36,25 +37,68 @@ bool parseEntry(std::string& value, std::string_view key, const message::Metadat
 }
 
 bool parseEntry(std::int64_t& value, std::string_view key, const message::Metadata& md) {
-    if (auto v = md.getOpt<std::int64_t>(std::string(key))) {
-        value = *v;
-        return true;
+    const std::string k{key};
+
+    // Use untyped getOpt to safely inspect the MetadataValue variant without triggering
+    // std::terminate (the typed getOpt<T> is incorrectly marked noexcept but throws on type mismatch).
+    auto opt = md.getOpt(k);
+    if (!opt.has_value()) {
+        return false;  // Key not found
     }
-    // Also accept string representation and parse
-    if (auto v = md.getOpt<std::string>(std::string(key))) {
-        try {
-            size_t pos;
-            value = std::stol(*v, &pos);
-            if (pos == v->size()) {
-                return true;
+
+    auto& mv = *opt;
+    // Try extracting as int64 directly from the variant
+    bool parsed = mv.visit([&](const auto& v) -> bool {
+        using T = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<T, std::int64_t>) {
+            value = v;
+            return true;
+        }
+        else if constexpr (std::is_same_v<T, std::string>) {
+            // Parse numeric string, possibly with time-duration suffix
+            try {
+                size_t pos;
+                auto num = std::stol(v, &pos);
+                if (pos == v.size()) {
+                    value = num;
+                    return true;
+                }
+                // Handle "Xh" (hours) and "Xs" (seconds→hours) suffixes
+                if (pos + 1 == v.size()) {
+                    char suffix = v[pos];
+                    if (suffix == 'h') {
+                        value = num;
+                        return true;
+                    }
+                    if (suffix == 's') {
+                        value = num / 3600;
+                        return true;
+                    }
+                }
             }
+            catch (const std::invalid_argument&) {
+            }
+            catch (const std::out_of_range&) {
+            }
+            return false;  // Conversion failed — will throw below
         }
-        catch (...) {
+        else if constexpr (std::is_same_v<T, double>) {
+            value = static_cast<std::int64_t>(v);
+            return true;
         }
-        throw eckit::UserError("Cannot convert metadata value of key '" + std::string(key) + "' to int64: '" + *v + "'",
-                               Here());
+        else if constexpr (std::is_same_v<T, bool>) {
+            value = v ? 1 : 0;
+            return true;
+        }
+        else {
+            return false;
+        }
+    });
+
+    if (!parsed) {
+        throw eckit::UserError("Cannot convert metadata value of key '" + k + "' to int64", Here());
     }
-    return false;
+    return true;
 }
 
 bool parseEntry(double& value, std::string_view key, const message::Metadata& md) {

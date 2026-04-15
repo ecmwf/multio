@@ -50,7 +50,7 @@ struct MarsRecord {
     std::optional<std::int64_t> date;
     std::optional<std::int64_t> time;
     std::optional<std::int64_t> step;
-    std::optional<std::string> timespan;
+    std::optional<std::int64_t> timespan;  // in hours
     std::optional<StatType> stattype;
     std::optional<std::int64_t> anoffset;
     std::optional<std::int64_t> hdate;

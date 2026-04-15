@@ -48,6 +48,9 @@ void EncodeMtg2::executeImpl(Message msg) {
 
     // Read MARS keys from metadata
     auto marsRec = dm::readMetadata<dm::MarsRecord>(md);
+    if (!marsRec.origin) {
+        marsRec.origin = "ecmf";
+    }
 
     // Read misc keys from metadata (keys are stored with "misc-" prefix)
     auto miscRec = dm::readMetadata<dm::MiscRecord>(md);

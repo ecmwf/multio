@@ -68,7 +68,7 @@ private:
 
         // Time-varying fields: normalize to sentinels so they don't affect cache lookup
         if (mars.timespan.has_value()) {
-            mars.timespan = "0";
+            mars.timespan = 0;
         }
         if (mars.step.has_value()) {
             mars.step = 0;

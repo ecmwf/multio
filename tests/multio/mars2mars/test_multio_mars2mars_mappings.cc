@@ -805,18 +805,19 @@ CASE("Test fixClimatologicalAlbedo174") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    FullMarsRecord mars;
+    MarsRecord mars;
     MiscRecord misc;
 
-    mars.param.set(174);
+    mars.param = Param{174};
 
     auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
 
     EXPECT(res);
-    EXPECT(mars.param.get() == Param{260509});
+    EXPECT(mars.param.value() == Param{260509});
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 100.0);
 };
+
 CASE("Test fixAlbedoComponents") {
     using namespace multio::mars2mars::rules;
     using namespace multio::mars2mars;

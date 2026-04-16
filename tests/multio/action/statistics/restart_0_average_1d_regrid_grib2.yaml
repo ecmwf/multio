@@ -13,7 +13,7 @@ plans:
 
       - type: interpolate
         input: O80
-        grid: [1.0, 1.0]
+        grid: "1.0/1.0"
         area: [90.0, 0.0, -90.0, 360.0]
         interpolation: linear
         options:

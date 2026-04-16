@@ -110,6 +110,24 @@ std::vector<T> requestGetCastArray(const std::string& param, const MarsRequest& 
     return res;
 }
 
+template <typename T>
+std::string requestGetCastArrayAsString(const std::string& param, const MarsRequest& request) {
+    std::string res;
+    std::vector<std::string> values;
+    request.getValues(param, values);
+    bool first = true;
+    for (auto v : values) {
+        if (first) {
+            first = false;
+        }
+        else {
+            res += std::string("/");
+        }
+        res += v;
+    }
+    return res;
+}
+
 
 std::vector<long> requestParseLongArray(const std::string& param, const MarsRequest& request) {
     std::vector<long> val;
@@ -190,7 +208,8 @@ eckit::LocalConfiguration generate_interpolate_action(const metkit::mars::MarsPa
 
     if (request.has("grid")) {
         std::vector<double> grid;
-        interpolate_action.set("grid", requestGetCastArray<double>("grid", request));
+        // Join
+        interpolate_action.set("grid", requestGetCastArrayAsString<double>("grid", request));
     }
     else {
         std::ostringstream oss;

@@ -51,8 +51,10 @@ bool parseEntry(std::string& value, const std::string& key, const eckit::LocalCo
         value = localConfig.getString(key);
         return true;
     }
-    throw eckit::UserError{"Could not convert value of key '" + key + "' to string : no conversion method defined",
-                           Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to string : no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
@@ -67,8 +69,24 @@ bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalC
         parseIntStrict(value, localConfig.getString(key));
         return true;
     }
-    throw eckit::UserError{"Could not convert value of key '" + key + "' to int64 : no conversion method defined",
-                           Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to int64 : no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
+}
+
+bool parseEntry(std::vector<std::string>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isStringList(key)) {
+        value = localConfig.getStringVector(key);
+        return true;
+    }
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to vector<string> : no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 bool parseEntry(double& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
@@ -87,8 +105,10 @@ bool parseEntry(double& value, const std::string& key, const eckit::LocalConfigu
         parseDoubleStrict(value, localConfig.getString(key));
         return true;
     }
-    throw eckit::UserError{"Could not convert value of key '" + key + "' to double : no conversion method defined",
-                           Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" + key + "' to double : no conversion method defined.  Config: "
+        << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
@@ -109,9 +129,10 @@ bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfigura
             value = true;
             return true;
         }
-        throw eckit::UserError{"Integer value of boolean key '" + key + "' must be '1' or '0', given value was '"
-                                   + std::to_string(configValue) + "'",
-                               Here()};
+        std::ostringstream oss;
+        oss << "Integer value of boolean key '" << key << "' must be '1' or '0', given value was '"
+            << std::to_string(configValue) << "'";
+        throw eckit::UserError{oss.str(), Here()};
     }
     if (localConfig.isString(key)) {
         const std::string& configValue = localConfig.getString(key);
@@ -127,8 +148,10 @@ bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfigura
             "String value of boolean key '" + key + "' must be '1' or '0', given value was '" + configValue + "'",
             Here()};
     }
-    throw eckit::UserError{"Could not convert value of key '" + key + "' to double : no conversion method defined",
-                           Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to double : no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 
@@ -141,9 +164,10 @@ bool parseEntry(eckit::LocalConfiguration& value, const std::string& key,
         value = localConfig.getSubConfiguration(key);
         return true;
     }
-    throw eckit::UserError{
-        "Could not convert value of key '" + key + "' to eckit::LocalConfiguration: no conversion method defined",
-        Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to eckit::LocalConfiguration: no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 bool parseEntry(std::vector<double>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
@@ -154,20 +178,10 @@ bool parseEntry(std::vector<double>& value, const std::string& key, const eckit:
         value = localConfig.getDoubleVector(key);
         return true;
     }
-    throw eckit::UserError{
-        "Could not convert value of key '" + key + "' to vector<double>: no conversion method defined", Here()};
-}
-
-bool parseEntry(std::vector<std::string>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
-    if (!localConfig.has(key)) {
-        return false;
-    }
-    if (localConfig.isStringList(key)) {
-        value = localConfig.getStringVector(key);
-        return true;
-    }
-    throw eckit::UserError{
-        "Could not convert value of key '" + key + "' to vector<int64_t>: no conversion method defined", Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to vector<double>: no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 bool parseEntry(std::vector<std::int64_t>& value, const std::string& key,
                 const eckit::LocalConfiguration& localConfig) {
@@ -179,8 +193,10 @@ bool parseEntry(std::vector<std::int64_t>& value, const std::string& key,
         value = std::vector<std::int64_t>{res.begin(), res.end()};
         return true;
     }
-    throw eckit::UserError{
-        "Could not convert value of key '" + key + "' to vector<int64_t>: no conversion method defined", Here()};
+    std::ostringstream oss;
+    oss << "Could not convert value of key '" << key
+        << "' to vector<int64_t>: no conversion method defined.  Config: " << localConfig;
+    throw eckit::UserError{oss.str(), Here()};
 }
 
 }  // namespace multio::util::config::detail

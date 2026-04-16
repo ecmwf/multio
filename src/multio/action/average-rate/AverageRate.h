@@ -36,15 +36,23 @@ struct AverageRateKeys {
     dm::EntryType_t<decltype(dm::PARAM)> param;
     dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
     dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
+    dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "average-rate";
     static constexpr auto record_entries_ = std::make_tuple(
-        dm::PARAM,
-        dm::TIMESPAN.tagRequired(),
-        dm::STATTYPE,
-        dm::MissingValue
+        dm::PARAM,                   // access: read/write
+        dm::TIMESPAN.tagRequired(),  // access: read only
+        dm::STATTYPE,                // access: read only (must be unset)
+        dm::BitmapPresent,           // access: read only
+        dm::MissingValue             // access: read/write (will be unset if bitmapPresent false)
     );
+
+    static void applyDefaults(AverageRateKeys& k) {
+        if (!k.bitmapPresent.get()) {
+            k.missingValue.unset();
+        }
+    }
 
     static void validate(const AverageRateKeys& k) {
         if (k.timespan.get().toSeconds() == 0) {
@@ -57,6 +65,13 @@ struct AverageRateKeys {
         if (k.stattype.isSet()) {
             throw eckit::SeriousBug(
                 "The average-rate action cannot handle messages with stattype set!",
+                Here()
+            );
+        }
+
+        if (k.bitmapPresent.get() && !k.missingValue.isSet()) {
+            throw eckit::SeriousBug(
+                "Value for missingValue is required if bitmapPresent is true!",
                 Here()
             );
         }

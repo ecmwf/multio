@@ -12,7 +12,6 @@
 
 #include <unistd.h>  //currently needed because ECKIT PathName only has hardlinks for for the directories we need a symlink
 #include <algorithm>
-#include <unordered_map>
 
 
 #include "TemporalStatistics.h"
@@ -21,8 +20,9 @@
 #include "multio/LibMultio.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/Glossary.h"
+#include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
 #include "multio/util/Timing.h"
@@ -45,28 +45,20 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
-std::string Statistics::generateRestartNameFromFlush(const message::Message& msg) const {
+std::string Statistics::generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const {
 
     std::string folderName;
 
-    // Restart flush directly provides the folderName
-    auto restartDateTime = msg.metadata().getOpt<std::string>("restartDateTime");
-    auto step = msg.metadata().getOpt<std::int64_t>(dm::legacy::Step);
-    auto timeStep = msg.metadata().getOpt<std::int64_t>(dm::legacy::TimeStep);
-    auto date = msg.metadata().getOpt<std::int64_t>(dm::legacy::Date);
-    auto time = msg.metadata().getOpt<std::int64_t>(dm::legacy::Time);
-
-    if (restartDateTime) {
-        folderName = *restartDateTime;
+    if (flush.restartDateTime.isSet()) {
+        folderName = flush.restartDateTime.get();
     }
 
-    // Restart flush provides the step, timeStep, date and time
-    else if (step && timeStep && date && time) {
+    // Restart flush provides the step, date and time
+    else if (flush.step.isSet() && flush.date.isSet() && flush.time.isSet()) {
 
-        std::int64_t flushStep = *step;
-        std::int64_t flushTimeStep = *timeStep;
-        std::int64_t flushDate = *date;
-        std::int64_t flushTime = *time;
+        std::int64_t flushStepInSeconds = flush.step.get().toSeconds();
+        std::int64_t flushDate = flush.date.get();
+        std::int64_t flushTime = flush.time.get();
 
         // Compute the date and time from the step
         // TODO: Remove this multiple times repeated code
@@ -89,7 +81,7 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
         //     }
         // }
 
-        eckit::DateTime dt = epoch + static_cast<eckit::Second>(flushStep * flushTimeStep);
+        eckit::DateTime dt = epoch + static_cast<eckit::Second>(flushStepInSeconds);
         std::ostringstream tmp;
         tmp << std::setw(8) << std::setfill('0') << dt.date().yyyymmdd() << "-" << std::setw(6) << std::setfill('0')
             << dt.time().hhmmss();
@@ -97,11 +89,11 @@ std::string Statistics::generateRestartNameFromFlush(const message::Message& msg
     }
 
     // Restart flush provides the step
-    else if (step) {
-        std::int64_t flushStep = *step;
+    else if (flush.step.isSet()) {
+        std::int64_t flushStepInHours = flush.step.get().toHours();
         std::ostringstream tmp;
         tmp << lastDateTime_ << "-";
-        tmp << std::setw(6) << std::setfill('0') << flushStep;
+        tmp << std::setw(6) << std::setfill('0') << flushStepInHours;
         folderName = tmp.str();
     }
 
@@ -160,59 +152,8 @@ void Statistics::DumpTemporalStatistics() {
     return;
 }
 
-enum class FlushKind : std::size_t
-{
-    Default,
-    FirstStep,
-    StepAndRestart,
-    LastStep,
-    EndOfSimulation,
-    CloseConnection
-};
-
-FlushKind parseFlushKind(const std::string& str) {
-    static const std::unordered_map<std::string, FlushKind> map{{"first-step", FlushKind::FirstStep},
-                                                                {"default", FlushKind::Default},
-                                                                {"step-and-restart", FlushKind::StepAndRestart},
-                                                                {"last-step", FlushKind::LastStep},
-                                                                {"end-of-simulation", FlushKind::EndOfSimulation},
-                                                                {"close-connection", FlushKind::CloseConnection}};
-    if (auto search = map.find(str); search != map.end()) {
-        return search->second;
-    }
-    throw message::MetadataException(std::string("Unknown FlushKind: ") + str, Here());
-}
-
-
-FlushKind parseFlushKind(std::int64_t val) {
-    static const std::unordered_map<std::int64_t, FlushKind> map{
-        {0, FlushKind::FirstStep}, {1, FlushKind::Default},         {2, FlushKind::StepAndRestart},
-        {3, FlushKind::LastStep},  {4, FlushKind::EndOfSimulation}, {5, FlushKind::CloseConnection}};
-    if (auto search = map.find(val); search != map.end()) {
-        return search->second;
-    }
-    throw message::MetadataException(std::string("Unknown FlushKind: ") + std::to_string(val), Here());
-}
-
-FlushKind parseFlushKind(const message::Message& msg) {
-    if (msg.tag() != message::Message::Tag::Flush) {
-        throw message::MetadataException("Message is not a flush.", Here());
-    }
-    FlushKind flushKind{FlushKind::Default};
-    if (auto search = msg.metadata().find("flushKind"); search != msg.metadata().end()) {
-        search->second.visit(eckit::Overloaded{[&](const std::string& str) { flushKind = parseFlushKind(str); },
-                                               [&](const std::int64_t val) { flushKind = parseFlushKind(val); },
-                                               [&](const auto&) {
-                                                   throw message::MetadataException(
-                                                       "FlushKind needs to be either string or integer.", Here());
-                                               }});
-    }
-    return flushKind;
-}
-
-
-void Statistics::TryDumpRestart(const message::Message& msg) {
-    if (parseFlushKind(msg) != FlushKind::StepAndRestart) {
+void Statistics::TryDumpRestart(const message::Message& msg, const FlushMetadataKeys& flush) {
+    if (flush.flushKind.get() != FlushKind::StepAndRestart) {
         return;
     }
 
@@ -225,10 +166,10 @@ void Statistics::TryDumpRestart(const message::Message& msg) {
     // NOTE: This is a bit of a hack, in case no serverRank is provided, we
     // assume that all processors are "master" and rely on atomicity of
     // filesystem operation to avoid race conditions
-    auto is_master = msg.metadata().getOpt<bool>("serverRank").value_or(true);
+    auto is_master = !flush.serverRank.isSet() || flush.serverRank.get() != 0;
 
     // Generate name of the main restart directory
-    std::string restartFolderName = generateRestartNameFromFlush(msg);
+    std::string restartFolderName = generateRestartNameFromFlush(msg, flush);
 
     // Log for Dump operation
     LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Writing to " << restartFolderName << std::endl;
@@ -300,22 +241,6 @@ bool Statistics::HasRestartKey(const std::string& key) {
 }
 
 
-message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& cfg,
-                                             const std::string& key) const {
-    auto& win = fieldStats_.at(key)->cwin();
-    // if (win.endPointInSeconds() % 3600 != 0L) {
-    //     std::ostringstream os;
-    //     os << "Step in seconds needs to be a multiple of 3600 :: " << fieldStats_.at(key)->win().endPointInSeconds()
-    //        << std::endl;
-    //     throw eckit::SeriousBug(os.str(), Here());
-    // }
-    auto md = inputMetadata;
-
-    md.set(dm::legacy::StartDate, win.epochPoint().date().yyyymmdd());
-    md.set(dm::legacy::StartTime, win.epochPoint().time().hhmmss());
-
-    return md;
-}
 
 
 void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
@@ -334,10 +259,10 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
-        TryDumpRestart(msg);
+        const auto flush = dm::readRecord<FlushMetadataKeys>(msg.metadata());
+        TryDumpRestart(msg, flush);
 
-        FlushKind flushKind = parseFlushKind(msg);
-        if (parseFlushKind(msg) == FlushKind::LastStep) {
+        if (flush.flushKind.get() == FlushKind::LastStep) {
             emitAllStatistics(msg.source(), msg.destination());
         }
 
@@ -454,8 +379,6 @@ dm::StatTypeOperation operationNameToStatTypeOperation(std::string_view opName) 
 }
 
 
-const std::map<const std::string, const std::string> opname_to_stattype{
-    {"average", "av"}, {"maximum", "mx"}, {"minimum", "mn"}, {"stddev", "st"}};
 }  // namespace
 
 void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
@@ -529,7 +452,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         switch (cfg.outputTimeReference()) {
             case OutputTimeReference::StartOfForecast: {
                 const std::int64_t step = ts.win().currPointInHours();
-                md.set(dm::legacy::Step, step);
+                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
@@ -543,7 +466,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                     lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
                 }
 
-                md.set(dm::legacy::Step, lengthOfWindow.get().toHours());
+                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
                 // We explicitly take the creation point - alternative would be the start point.
                 // The start point may be different for the first window, i.e. if the simulation starts in the mid of a month.
                 // To not confuse the output, we explicitly just output the window for which data has been received.
@@ -551,9 +474,8 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 // Some additional mechanism has to make sure that these do not occur in the output (i.e. additional action).
                 auto dt = ts.win().creationPoint();
 
-                md.set(dm::legacy::Date, dt.date().yyyymmdd());
-                md.set(dm::legacy::Time,
-                       dt.time().hhmmss());  // Official MARS time is in hhmm, in multio hhmmss is used
+                dm::dumpEntry(dm::DATE, dm::DATE.makeEntry(dt.date().yyyymmdd()), md);
+                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()), md);  // Official MARS time is in hhmm, in multio hhmmss is used
                 break;
             }
         }

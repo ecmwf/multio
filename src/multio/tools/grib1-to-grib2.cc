@@ -34,6 +34,7 @@
 #include "metkit/mars2grib/api/Mars2Grib.h"
 
 #include "multio/LibMultio.h"
+#include "multio/datamod/GribKeys.h"
 #include "multio/tools/MultioTool.h"
 
 #include "multio/datamod/ContainerInterop.h"
@@ -326,7 +327,8 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         mars.grid.set(gridName);
     }
 
-    misc.generatingProcessIdentifier = dm::parseEntry(dm::GeneratingProcessIdentifier, h);
+    misc.generatingProcessIdentifier
+        = dm::parseEntry(dm::GeneratingProcessIdentifier.withKey("generatingProcessIdentifier"), h);
 
     // Usually typeOfProcessedData is in misc to be overwritten...
     // However, for ai it must be set to 10 and there is some data that explicitly needs this fix
@@ -335,21 +337,19 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         // The parser in datamod cannot handle the string 'missing', so we handle it here.
         if (!(h.has("typeOfProcessedData") && h.type("typeOfProcessedData") == metkit::codes::NativeType::String
               && h.getString("typeOfProcessedData") == "missing")) {
-            misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedDataEntry, h);
+            misc.typeOfProcessedData = dm::parseEntry(dm::TypeOfProcessedDataEntry.withKey("typeOfProcessedData"), h);
         }
     }
 
-    misc.initialStep = dm::parseEntry(dm::InitialStep, h);
-    if (h.has("timeIncrement")) {
-        misc.timeIncrementInSeconds.set(h.getLong("timeIncrement"));
-    }
-    misc.pv = dm::parseEntry(dm::Pv, h);
-    misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent, h);
+    misc.initialStep = dm::parseEntry(dm::InitialStep.withKey("initialStep"), h);
+    misc.timeIncrementInSeconds = dm::parseEntry(dm::TimeIncrementInSeconds.withKey("timeIncrement"), h);
+    misc.pv = dm::parseEntry(dm::Pv.withKey("pv"), h);
+    misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
 
     handleMissingValue(h, misc);
 
     // TODO pgeier set it again ??
-    misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator, h);
+    misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
@@ -376,7 +376,8 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
                 // Handled in the encoder
             }
             else if (h.has("typeOfEnsembleForecast")) {
-                misc.typeOfEnsembleForecast.set(dm::parseEntry(dm::TypeOfEnsembleForecast, h));
+                misc.typeOfEnsembleForecast.set(
+                    dm::parseEntry(dm::TypeOfEnsembleForecast.withKey("typeOfEnsembleForecast"), h));
             }
             else if (h.has("eps")) {
                 misc.typeOfEnsembleForecast.set(h.getLong("eps"));
@@ -385,9 +386,10 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
 
-    misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow, h);
-    misc.lengthOfTimeWindowInSeconds = dm::parseEntry(dm::LengthOfTimeWindowInSeconds, h);
-    misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withDefault(24), h);
+    misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow.withKey("lengthOfTimeWindow"), h);
+    misc.lengthOfTimeWindowInSeconds
+        = dm::parseEntry(dm::LengthOfTimeWindowInSeconds.withKey("lengthOfTimeWindowInSeconds"), h);
+    misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withKey("bitsPerValue").withDefault(24), h);
 
     // TODO pgeier readd maybe
     // getAndSet(h, parDict, "periodMin");
@@ -416,9 +418,11 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         misc.waveFrequencies.set(waveFrequencies);
     }
 
-    misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries, h);
-    misc.scaleFactorOfCentralWaveNumber = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber, h);
-    misc.scaledValueOfCentralWaveNumber = dm::parseEntry(dm::ScaledValueOfCentralWaveNumber, h);
+    misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries.withKey("satelliteSeries"), h);
+    misc.scaleFactorOfCentralWaveNumber
+        = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber.withKey("scaleFactorOfCentralWaveNumber"), h);
+    misc.scaledValueOfCentralWaveNumber
+        = dm::parseEntry(dm::ScaledValueOfCentralWaveNumber.withKey("scaledValueOfCentralWaveNumber"), h);
 
     if (h.has("setPackingType")) {
         std::string setPackingType = h.getString("setPackingType");
@@ -1115,7 +1119,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
             // Convert mars/misc to eckit::LocalConfiguration
             const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
-            const auto miscConfig = dm::dumpRecord<eckit::LocalConfiguration>(misc);
+            const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
 
             // Call the GRIB2 encoder in metkit
             auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);

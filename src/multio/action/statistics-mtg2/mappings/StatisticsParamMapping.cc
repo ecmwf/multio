@@ -1,7 +1,9 @@
 #include "StatisticsParamMapping.h"
 
 #include "multio/LibMultio.h"
-#include "multio/datamod/Glossary.h"
+#include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/core/EntryParser.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -41,10 +43,12 @@ std::optional<std::int64_t> StatisticsParamMapping::getMapping(std::int64_t para
 }
 
 void StatisticsParamMapping::applyMapping(message::Metadata& metadata, std::int64_t typeOfStatisticalProcessing, bool strict) const {
-    if (auto paramOld = metadata.getOpt<std::int64_t>(dm::legacy::Param); paramOld) {
-        auto paramNew = getMapping(*paramOld, typeOfStatisticalProcessing);
+    const auto& param = dm::parseEntry(dm::PARAM, metadata);
+    if (param.isSet()) {
+        auto paramOld = param.get().id();
+        auto paramNew = getMapping(paramOld, typeOfStatisticalProcessing);
         if (paramNew.has_value()) {
-            metadata.set(dm::legacy::Param, *paramNew);
+            dm::dumpEntry(dm::PARAM, dm::PARAM.makeEntry(dm::Param{*paramNew}), metadata);
             return;
         }
         if (!strict) {
@@ -52,7 +56,7 @@ void StatisticsParamMapping::applyMapping(message::Metadata& metadata, std::int6
         }
 
         std::ostringstream os;
-        os << "Mapping for param=" << *paramOld << " and typeOfStatisticalProcessing=" << typeOfStatisticalProcessing << " is undefined!" << std::endl;
+        os << "Mapping for param=" << paramOld << " and typeOfStatisticalProcessing=" << typeOfStatisticalProcessing << " is undefined!" << std::endl;
         throw eckit::SeriousBug(os.str() , Here());
     }
 

@@ -3,6 +3,7 @@
 #include "StatisticsOptions.h"
 
 #include "eckit/types/DateTime.h"
+#include "multio/action/statistics-mtg2/MetadataKeys.h"
 #include "multio/message/Message.h"
 
 namespace multio::action::statistics_mtg2 {
@@ -10,18 +11,16 @@ namespace multio::action::statistics_mtg2 {
 
 class StatisticsConfiguration {
 private:
+    // Metadata record parsed from message
+    const FieldMetadataKeys md_;
+
     // Options
     const StatisticsOptions& opt_;
 
-    // Metadata to be extracted from the message
-    const std::int64_t date_;
-    const std::int64_t time_;
+    // Derived scalar fields
     const std::int64_t level_;
-    const std::int64_t timeStep_;
-    const std::int64_t step_;
-    const std::optional<std::int64_t> timespan_;
 
-    const std::int64_t param_;
+    // Derived string fields
     const std::string levType_;
     const std::string gridType_;
     const std::string precision_;
@@ -35,7 +34,7 @@ private:
     // Timing utils
     const eckit::DateTime epoch_;
     const eckit::DateTime curr_;
-    
+
     const OutputTimeReference outputTimeReference_;
 
     // ---------------------------------------------------------------------------------------------
@@ -54,14 +53,11 @@ public:
 
     std::int64_t date() const;
     std::int64_t time() const;
-    std::int64_t level() const;
-    std::int64_t timeStep() const;
+    std::int64_t timeIncrementInSeconds() const;
     std::int64_t step() const;
     std::optional<std::int64_t> timespan() const;
 
     std::int64_t param() const;
-    const std::string& levType() const;
-    const std::string& gridType() const;
     const std::string& precision() const;
 
     // Handle missing values
@@ -72,7 +68,7 @@ public:
 
     const eckit::DateTime& epoch() const;
     const eckit::DateTime& curr() const;
-    
+
     OutputTimeReference outputTimeReference() const;
 };
 

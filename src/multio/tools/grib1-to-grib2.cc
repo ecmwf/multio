@@ -1115,7 +1115,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
 
             // Convert mars/misc to eckit::LocalConfiguration
             const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
-            const auto miscConfig = dm::dumpRecord<eckit::LocalConfiguration>(misc);
+            const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
 
             // Call the GRIB2 encoder in metkit
             auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);

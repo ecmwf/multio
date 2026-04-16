@@ -90,6 +90,43 @@ bool parseEntry(std::string& value, const std::string& key, const eckit::LocalCo
 bool parseEntry(std::int64_t& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
 bool parseEntry(double& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
 bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(eckit::LocalConfiguration& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+
+bool parseEntry(std::vector<double>& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(std::vector<std::string>& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+bool parseEntry(std::vector<std::int64_t>& value, const std::string& key, const eckit::LocalConfiguration& localConfig);
+
+template <typename T, std::size_t N>
+bool parseEntry(std::array<T, N>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    std::vector<T> res;
+
+    if (!parseEntry(res, key, localConfig)) {
+        return false;
+    }
+
+    if (res.size() != N) {
+        std::ostringstream oss;
+        oss << "Field '" << key << "' is expecting an array with " << N << " values but got " << res.size();
+        throw eckit::UserError{oss.str(), Here()};
+    }
+
+    std::copy(res.begin(), res.end(), value.data());
+    return true;
+};
+
+
+template <typename T, std::enable_if_t<HasFieldsMember_v<T>, bool> = true>
+bool parseEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (!localConfig.isSubConfiguration(key)) {
+        throw eckit::UserError{
+            "Could not convert value of key '" + key + "' to a nested config: value must be a dictionary", Here()};
+    }
+    value = parseConfig<T>(localConfig.getSubConfiguration(key));
+    return true;
+}
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, bool> = true>
 bool parseEntry(T& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
@@ -167,6 +204,7 @@ struct Entry {
     const bool required;
 
     TValue& get(TConfig& obj) const { return obj.*value; }
+    const TValue& get(const TConfig& obj) const { return obj.*value; }
 };
 
 template <typename TConfig, typename TValue>

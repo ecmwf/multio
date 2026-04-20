@@ -2,7 +2,7 @@ mappings:
   - match:
       nemoParam: nemo-id
     map:
-      param: param-id
+      paramId: param-id
       unstructuredGridSubtype: unstructured-grid-subtype
       domain: domain
       gridType: grid-type
@@ -830,6 +830,14 @@ data:
   # Sea-ice growth
   - nemo-id : vfxice
     param-id : 262007
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "iceLayerOnWater"
+
+  # Sea-ice breakup memory
+  - nemo-id : icebreak
+    param-id : 262025
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"

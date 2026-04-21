@@ -281,7 +281,7 @@ data:
 
   # Integral of sea water practical salinity in the upper 300m
   - nemo-id : sal300
-    param-id : 262118
+    param-id : 262146
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
@@ -289,7 +289,7 @@ data:
 
   # Integral of sea water practical salinity in the upper 700m
   - nemo-id : sal700
-    param-id : 262119
+    param-id : 262147
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
@@ -297,6 +297,30 @@ data:
 
   # Integral of sea water practical salinity in the total water column
   - nemo-id : salbtm
+    param-id : 262148
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "oceanSurfaceToBottom"
+
+  # Average of sea water practical salinity in the upper 300m
+  - nemo-id : sal300a
+    param-id : 262118
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "depthBelowSeaLayer"
+
+  # Average of sea water practical salinity in the upper 700m
+  - nemo-id : sal700a
+    param-id : 262119
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "depthBelowSeaLayer"
+
+  # Average of sea water practical salinity in the total water column
+  - nemo-id : salbtma
     param-id : 262120
     grid-type: "unstructured_grid"
     domain : "T grid"
@@ -322,6 +346,30 @@ data:
   # Water column integrated heat content in the total water column
   - nemo-id : hcbtm
     param-id : 262123
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "oceanSurfaceToBottom"
+
+  # Average temperature in the upper 300 m
+  - nemo-id : tem300a
+    param-id : 262144
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "depthBelowSeaLayer"
+
+  # Average temperature in the upper 700m (experimental)
+  - nemo-id : tem700a
+    param-id : 212001
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "depthBelowSeaLayer"
+
+  # Average temperature in the total water column (experimental)
+  - nemo-id : tembtma
+    param-id : 212002
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
@@ -382,6 +430,14 @@ data:
   # Sea water sigma theta
   - nemo-id : sigmat
     param-id : 262502
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "oceanModelLayer"
+
+  # Sea water sigma theta anomalies
+  - nemo-id : sigmatano
+    param-id : 212003
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
@@ -663,16 +719,16 @@ data:
   - nemo-id : iocestrur
     param-id : 262906
     grid-type: "unstructured_grid"
-    domain : "U grid"
-    unstructured-grid-subtype : "U"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   # Wind stress over ice v geographical
   - nemo-id : iocestrvr
     param-id : 262907
     grid-type: "unstructured_grid"
-    domain : "V grid"
-    unstructured-grid-subtype : "V"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   # Snow precipitation

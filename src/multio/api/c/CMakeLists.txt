@@ -32,12 +32,6 @@ if( HAVE_MIR )
     )
 endif()
 
-if ( HAVE_ECKIT_CODEC )
-    list( APPEND multio_action_plugins
-        multio-action-interpolate-fesom
-    )
-endif()
-
 # Source files
 list( APPEND multio_capi_srcs
     multio_capi_types.h

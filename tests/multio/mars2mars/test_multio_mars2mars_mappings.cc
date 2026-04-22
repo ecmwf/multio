@@ -466,7 +466,7 @@ CASE("Test mapToSol") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    std::vector<std::int64_t> paramIds{{33, 238, 228038, 228141, 260360, 262000, 262024, 260199}};
+    std::vector<std::int64_t> paramIds{{33, 238, 228038, 260360, 262000, 262024, 260199}};
 
     for (auto paramId : paramIds) {
         FullMarsRecord mars;
@@ -520,6 +520,498 @@ CASE("Test fixSnowfallWaterEquivParam") {
     EXPECT(res->valuesScaleFactor);
     EXPECT(res->valuesScaleFactor.value() == 1000.0);
 };
+
+// -----------------------------------------------------------------------
+// WMO unit mapping: Runoff and water cycle (m -> mm, scale 1000)
+// -----------------------------------------------------------------------
+
+CASE("Test fixSurfaceRunoff8") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(8);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231010});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixSubSurfaceRunoff9") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(9);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231012});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixSnowDepth141") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(141);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{228141});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixLargeScalePrecip142") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(142);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{3062});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixEvaporation182") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(182);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{260259});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixSkinReservoirContent198") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(198);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{160198});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixConvectiveSnowfall239") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(239);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231057});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixLargeScaleSnowfall240") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(240);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231058});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixFreezingRain228216") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(228216);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231001});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+
+// -----------------------------------------------------------------------
+// WMO unit mapping: Albedo (fraction -> %, scale 100), required for ERA
+// -----------------------------------------------------------------------
+
+CASE("Test fixAlbedoUvDirect15") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(15);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{210199});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixAlbedoUvDiffuse16") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(16);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{210198});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixAlbedoNirDirect17") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(17);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{210261});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixAlbedoNirDiffuse18") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(18);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{210260});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixSnowAlbedo32") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(32);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{228032});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixForecastAlbedo243") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(243);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{260509});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+
+CASE("Test fixClimatologicalAlbedo174") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(174);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{260509});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 100.0);
+};
+CASE("Test fixAlbedoComponents") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    // UV direct: isotropic, volumetric, geometric
+    // NIR direct: isotropic, volumetric, geometric
+    struct AlbedoCase {
+        std::int64_t paramIn;
+        std::int64_t paramOut;
+    };
+
+    std::vector<AlbedoCase> cases{
+        {210186, 210201},  // aluvpi -> aluvpi_p
+        {210187, 210202},  // aluvpv -> aluvpv_p
+        {210188, 210200},  // aluvpg -> aluvpg_p
+        {210189, 210263},  // alnipi -> alnipi_p
+        {210190, 210264},  // alnipv -> alnipv_p
+        {210191, 210262},  // alnipg -> alnipg_p
+    };
+
+    for (const auto& tc : cases) {
+        FullMarsRecord mars;
+        MiscRecord misc;
+
+        mars.param.set(tc.paramIn);
+
+        auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+        EXPECT(res);
+        EXPECT(mars.param.get() == Param{tc.paramOut});
+        EXPECT(res->valuesScaleFactor);
+        EXPECT(res->valuesScaleFactor.value() == 100.0);
+    }
+};
+
+
+// -----------------------------------------------------------------------
+// WMO unit mapping: ERA other water-cycle parameters
+// -----------------------------------------------------------------------
+
+CASE("Test fixSnowEvaporation44") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(44);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231003});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixSnowmelt45") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(45);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{3099});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+CASE("Test fixTotalColumnOzone206") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(206);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{260132});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 46698.05);
+};
+
+CASE("Test fixPotentialEvaporation228251") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    FullMarsRecord mars;
+    MiscRecord misc;
+
+    mars.param.set(228251);
+
+    auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+    EXPECT(res);
+    EXPECT(mars.param.get() == Param{231005});
+    EXPECT(res->valuesScaleFactor);
+    EXPECT(res->valuesScaleFactor.value() == 1000.0);
+};
+
+
+// -----------------------------------------------------------------------
+// WMO unit mapping: Time-mean rate parameters (m/s -> mm/s, scale 1000)
+// -----------------------------------------------------------------------
+
+CASE("Test fixTimeMeanRateParams") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    struct TimeMeanCase {
+        std::int64_t paramIn;
+        std::int64_t paramOut;
+    };
+
+    std::vector<TimeMeanCase> cases{
+        {172008, 235020},  // msror   -> avg_surfror
+        {172009, 235021},  // mssror  -> avg_ssurfror
+        {172044, 235023},  // esrate  -> avg_esrwe
+        {172045, 235024},  //         -> avg_smr (snowmelt rate)
+        {172142, 235029},  // mlsprt  -> avg_lsprate
+        {172143, 235030},  // cprate  -> avg_cpr
+        {172144, 235031},  // mtsfr   -> avg_tsrwe
+        {172182, 235043},  // erate   -> avg_ie
+        {172205, 235048},  // mrort   -> avg_rorwe
+        {172228, 235055},  // tprate  -> avg_tprate
+        {235141, 235078},  // avg_sd_m -> avg_sd
+    };
+
+    for (const auto& tc : cases) {
+        FullMarsRecord mars;
+        MiscRecord misc;
+
+        mars.param.set(tc.paramIn);
+
+        auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+        EXPECT(res);
+        EXPECT(mars.param.get() == Param{tc.paramOut});
+        EXPECT(res->valuesScaleFactor);
+        EXPECT(res->valuesScaleFactor.value() == 1000.0);
+    }
+};
+
+
+// -----------------------------------------------------------------------
+// WMO unit mapping: Time-mean cloud cover and albedo (fraction -> %, scale 100)
+// New in ecCodes 2.38
+// -----------------------------------------------------------------------
+
+CASE("Test fixTimeMeanCloudCoverAndAlbedo") {
+    using namespace multio::mars2mars::rules;
+    using namespace multio::mars2mars;
+    using namespace multio::datamod;
+
+    struct TimeMeanCloudCase {
+        std::int64_t paramIn;
+        std::int64_t paramOut;
+    };
+
+    std::vector<TimeMeanCloudCase> cases{
+        {235186, 235108},  // avg_lcc_frac -> avg_lcc
+        {235187, 235109},  // avg_mcc_frac -> avg_mcc
+        {235188, 235110},  // avg_hcc_frac -> avg_hcc
+        {235243, 235263},  // avg_fal_frac -> avg_al
+    };
+
+    for (const auto& tc : cases) {
+        FullMarsRecord mars;
+        MiscRecord misc;
+
+        mars.param.set(tc.paramIn);
+
+        auto res = mars2mars::applyMappings(mars2mars::allRules(), mars, misc);
+
+        EXPECT(res);
+        EXPECT(mars.param.get() == Param{tc.paramOut});
+        EXPECT(res->valuesScaleFactor);
+        EXPECT(res->valuesScaleFactor.value() == 100.0);
+    }
+};
+
 
 CASE("Test fixTimespanMax2T") {
     using namespace multio::mars2mars::rules;

@@ -390,5 +390,6 @@ endif (eckit_HAVE_MPI)
 add_subdirectory(config)
 
 add_subdirectory(action)
+add_subdirectory(mars2mars)
 
 endif (HAVE_MULTIO_BUILD_TOOLS)

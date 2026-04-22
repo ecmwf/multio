@@ -116,7 +116,7 @@ imbalance on the servers. If you switch to ``hashed_cyclic``, set
 point is ``min(#servers, ceil(#distinct-fields-per-step / #servers))``.
 
 ``MULTIO_MPI_POOL_SIZE`` / ``MULTIO_SERVER_MPI_POOL_SIZE`` / ``MULTIO_CLIENT_MPI_POOL_SIZE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Number of MPI buffers held simultaneously by the ``StreamPool``. Each buffer
 can hold one outstanding non-blocking send (client side) or receive (server
@@ -158,7 +158,7 @@ Defaults:
   partitions of a node.
 
 ``MULTIO_MPI_BUFFER_SIZE`` / ``MULTIO_SERVER_MPI_BUFFER_SIZE`` / ``MULTIO_CLIENT_MPI_BUFFER_SIZE``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Size in **bytes** of every buffer in the pool. Default ``64 × 1024 × 1024``
 = 64 MiB (``defaultBufferSize`` in ``MpiTransport.cc``).

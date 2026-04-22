@@ -1,0 +1,2062 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document (opensource)
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R /F3 4 0 R /F4 5 0 R /F5 6 0 R /F6 8 0 R 
+  /F7 11 0 R /F8 12 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Times-Roman /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F4 /Subtype /Type1 /Type /Font
+>>
+endobj
+6 0 obj
+<<
+/BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding /Name /F5 /Subtype /Type1 /Type /Font
+>>
+endobj
+7 0 obj
+<<
+/Contents 29 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 28 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+8 0 obj
+<<
+/BaseFont /Symbol /Name /F6 /Subtype /Type1 /Type /Font
+>>
+endobj
+9 0 obj
+<<
+/Contents 30 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 28 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+10 0 obj
+<<
+/Contents 31 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 28 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+11 0 obj
+<<
+/BaseFont /Courier-Oblique /Encoding /WinAnsiEncoding /Name /F7 /Subtype /Type1 /Type /Font
+>>
+endobj
+12 0 obj
+<<
+/BaseFont /Courier-Bold /Encoding /WinAnsiEncoding /Name /F8 /Subtype /Type1 /Type /Font
+>>
+endobj
+13 0 obj
+<<
+/Contents 32 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 28 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+14 0 obj
+<<
+/Contents 33 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 28 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+15 0 obj
+<<
+/Outlines 17 0 R /PageLabels 34 0 R /PageMode /UseNone /Pages 28 0 R /Type /Catalog
+>>
+endobj
+16 0 obj
+<<
+/Author () /CreationDate (D:20260422074827+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260422074827+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+  /Subject (\(unspecified\)) /Title (Environment variables) /Trapped /False
+>>
+endobj
+17 0 obj
+<<
+/Count 11 /First 18 0 R /Last 27 0 R /Type /Outlines
+>>
+endobj
+18 0 obj
+<<
+/Dest [ 7 0 R /XYZ 57.02362 633.0236 0 ] /Next 19 0 R /Parent 17 0 R /Title (Quick reference)
+>>
+endobj
+19 0 obj
+<<
+/Dest [ 7 0 R /XYZ 57.02362 114.0236 0 ] /Next 20 0 R /Parent 17 0 R /Prev 18 0 R /Title (Where each variable is read)
+>>
+endobj
+20 0 obj
+<<
+/Count 5 /Dest [ 9 0 R /XYZ 57.02362 543.0236 0 ] /First 21 0 R /Last 25 0 R /Next 26 0 R /Parent 17 0 R 
+  /Prev 19 0 R /Title (Detailed description)
+>>
+endobj
+21 0 obj
+<<
+/Dest [ 9 0 R /XYZ 57.02362 510.0236 0 ] /Next 22 0 R /Parent 20 0 R /Title (MULTIO_SERVER_DISTRIBUTION)
+>>
+endobj
+22 0 obj
+<<
+/Dest [ 9 0 R /XYZ 57.02362 243.0236 0 ] /Next 23 0 R /Parent 20 0 R /Prev 21 0 R /Title (MULTIO_MPI_POOL_SIZE / MULTIO_SERVER_MPI_POOL_SIZE / MULTIO_CLIENT_MPI_POOL_SIZE)
+>>
+endobj
+23 0 obj
+<<
+/Dest [ 10 0 R /XYZ 57.02362 525.0236 0 ] /Next 24 0 R /Parent 20 0 R /Prev 22 0 R /Title (MULTIO_MPI_BUFFER_SIZE / MULTIO_SERVER_MPI_BUFFER_SIZE / MULTIO_CLIENT_MPI_BUFFER_SIZE)
+>>
+endobj
+24 0 obj
+<<
+/Dest [ 13 0 R /XYZ 57.02362 705.0236 0 ] /Next 25 0 R /Parent 20 0 R /Prev 23 0 R /Title (MULTIO_MESSAGE_QUEUE_SIZE)
+>>
+endobj
+25 0 obj
+<<
+/Dest [ 13 0 R /XYZ 57.02362 351.0236 0 ] /Parent 20 0 R /Prev 24 0 R /Title (MULTIO_USED_SERVERS)
+>>
+endobj
+26 0 obj
+<<
+/Dest [ 13 0 R /XYZ 57.02362 279.0236 0 ] /Next 27 0 R /Parent 17 0 R /Prev 20 0 R /Title (Worked example for an HPC run)
+>>
+endobj
+27 0 obj
+<<
+/Dest [ 14 0 R /XYZ 57.02362 599.8236 0 ] /Parent 17 0 R /Prev 26 0 R /Title (Tuning checklist)
+>>
+endobj
+28 0 obj
+<<
+/Count 5 /Kids [ 7 0 R 9 0 R 10 0 R 13 0 R 14 0 R ] /Type /Pages
+>>
+endobj
+29 0 obj
+<<
+/Length 8491
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 741.0236 cm
+q
+.133333 .133333 .133333 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL 149.7942 0 Td (Environment variables) Tj T* -149.7942 0 Td ET
+Q
+Q
+q
+1 0 0 1 57.02362 645.0236 cm
+q
+BT 1 0 0 1 0 50 Tm 1.846556 Tw 12 TL /F1 10 Tf 0 0 0 rg (Multio reads several environment variables at start-up to tune the behaviour of the transport layer \(how) Tj T* 0 Tw 1.041079 Tw (clients talk to the I/O servers\), the in-memory message queue, and the way fields are distributed over the) Tj T* 0 Tw .074168 Tw (available server ranks. This page documents the variables that affect performance on modern HPC systems,) Tj T* 0 Tw 1.33886 Tw (where they are read in the source tree, their defaults, how they interact, and how to choose values as a) Tj T* 0 Tw (function of the message \(field\) size, which in turn is a function of the resolution of the underlying mesh.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 612.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf .133333 .133333 .133333 rg (Quick reference) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 600.0236 cm
+Q
+q
+1 0 0 1 57.02362 228.0236 cm
+q
+1 1 1 rg
+n 0 372 481.2283 -18 re f*
+.878431 .878431 .878431 rg
+n 0 354 481.2283 -30 re f*
+1 1 1 rg
+n 0 324 481.2283 -30 re f*
+.878431 .878431 .878431 rg
+n 0 294 481.2283 -42 re f*
+1 1 1 rg
+n 0 252 481.2283 -30 re f*
+.878431 .878431 .878431 rg
+n 0 222 481.2283 -30 re f*
+1 1 1 rg
+n 0 192 481.2283 -30 re f*
+.878431 .878431 .878431 rg
+n 0 162 481.2283 -30 re f*
+1 1 1 rg
+n 0 132 481.2283 -102 re f*
+.878431 .878431 .878431 rg
+n 0 30 481.2283 -30 re f*
+0 0 0 rg
+BT /F3 10 Tf 12 TL ET
+q
+1 0 0 1 6 357 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 46.72925 0 Td (Variable) Tj T* -46.72925 0 Td ET
+Q
+Q
+q
+1 0 0 1 150.3685 357 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 13.14713 0 Td (Default) Tj T* -13.14713 0 Td ET
+Q
+Q
+q
+1 0 0 1 222.5528 357 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 87.4378 0 Td (Scope / purpose) Tj T* -87.4378 0 Td ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 327 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_SERVER_DISTRIBU) Tj T* (TION) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 327 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (hashed_to_) Tj T* (single) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 327 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL (Strategy used by a client to choose which server) Tj T* (receives a field.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 309 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (MULTIO_MPI_POOL_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 309 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (see below) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 297 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Number of concurrent MPI send/receive buffers \(clients) Tj T* /F5 10 Tf (and) Tj /F1 10 Tf ( servers\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 267 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_SERVER_MPI_POOL) Tj T* (_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 255 cm
+q
+BT 1 0 0 1 0 26 Tm 12 TL /F4 10 Tf 0 0 0 rg (max\(1,) Tj ( ) Tj (min) Tj  T* (\(clients/2) Tj T* (,) Tj ( ) Tj (4\)\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 267 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Same as ) Tj /F4 10 Tf (MULTIO_MPI_POOL_SIZE) Tj /F1 10 Tf ( but only on server) Tj T* (ranks. Takes precedence.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 225 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_CLIENT_MPI_POOL) Tj T* (_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 225 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F4 10 Tf 0 0 0 rg (2) Tj ( ) Tj (\327) Tj ( ) Tj (#serve) Tj  T* (rs) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 225 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Same as ) Tj /F4 10 Tf (MULTIO_MPI_POOL_SIZE) Tj /F1 10 Tf ( but only on client) Tj T* (ranks. Takes precedence.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 207 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (MULTIO_MPI_BUFFER_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 207 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (64) Tj ( ) Tj (MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 195 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Size \(in bytes\) of ) Tj /F5 10 Tf (each) Tj /F1 10 Tf ( MPI buffer in the pool, on clients) Tj T* (and servers.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 165 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_SERVER_MPI_BUFF) Tj T* (ER_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 177 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (64) Tj ( ) Tj (MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 165 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Same as ) Tj /F4 10 Tf (MULTIO_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( but only on) Tj T* (server ranks. Takes precedence.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 135 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_CLIENT_MPI_BUFF) Tj T* (ER_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 147 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (64) Tj ( ) Tj (MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 135 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Same as ) Tj /F4 10 Tf (MULTIO_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( but only on client) Tj T* (ranks. Takes precedence.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 105 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F4 10 Tf 12 TL (MULTIO_MESSAGE_QUEUE_S) Tj T* (IZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 33 cm
+q
+BT 1 0 0 1 0 86 Tm 12 TL /F1 10 Tf 0 0 0 rg (1,048,576) Tj T* (\(server) Tj T* /F4 10 Tf (Listener) Tj /F1 10 Tf (\),) Tj T* (1024 \() Tj /F4 10 Tf (Threa) Tj /F1 10 Tf  T* /F4 10 Tf (dTransport) Tj /F1 10 Tf  T* (and ) Tj /F4 10 Tf (multio) Tj  T* (-maestro-s) Tj T* (yphon) Tj /F1 10 Tf (\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 105 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL (Maximum number of queued messages between the) Tj T* (receiving thread and the dispatcher.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (MULTIO_USED_SERVERS) Tj T* ET
+Q
+Q
+q
+1 0 0 1 150.3685 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (1) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 3 cm
+q
+BT 1 0 0 1 0 14 Tm 12 TL /F1 10 Tf 0 0 0 rg (Number of servers a given client cycles through when) Tj T* /F4 10 Tf (MULTIO_SERVER_DISTRIBUTION=hashed_cyclic) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+0 0 0 RG
+.25 w
+n 0 354 m 481.2283 354 l S
+n 0 324 m 481.2283 324 l S
+n 0 294 m 481.2283 294 l S
+n 0 252 m 481.2283 252 l S
+n 0 222 m 481.2283 222 l S
+n 0 192 m 481.2283 192 l S
+n 0 162 m 481.2283 162 l S
+n 0 132 m 481.2283 132 l S
+n 0 30 m 481.2283 30 l S
+n 144.3685 0 m 144.3685 372 l S
+n 216.5528 0 m 216.5528 372 l S
+n 0 372 m 481.2283 372 l S
+n 0 0 m 481.2283 0 l S
+n 0 0 m 0 372 l S
+n 481.2283 0 m 481.2283 372 l S
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 228.0236 cm
+Q
+q
+1 0 0 1 57.02362 198.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .622556 Tw (Additional Multio environment variables found in the code base that are not performance knobs \(listed here) Tj T* 0 Tw (for completeness\):) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 192.0236 cm
+Q
+q
+1 0 0 1 57.02362 192.0236 cm
+Q
+q
+1 0 0 1 57.02362 180.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_SERVER_CONFIG_PATH) Tj /F1 10 Tf ( \226 base directory for Multio YAML plans.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 174.0236 cm
+Q
+q
+1 0 0 1 57.02362 162.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_SERVER_CONFIG_FILE) Tj /F1 10 Tf ( \226 file name of the active plan.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 156.0236 cm
+Q
+q
+1 0 0 1 57.02362 144.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_CONFIG_TRIGGERS) Tj /F1 10 Tf ( \226 JSON/YAML string with trigger definitions for the ) Tj /F4 10 Tf (Trigger) Tj /F1 10 Tf ( sink.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 138.0236 cm
+Q
+q
+1 0 0 1 57.02362 126.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_SINKS) Tj /F1 10 Tf ( \226 legacy; reported in start-up log messages.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 126.0236 cm
+Q
+q
+1 0 0 1 57.02362 93.02362 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf .133333 .133333 .133333 rg (Where each variable is read) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 81.02362 cm
+Q
+q
+1 0 0 1 57.02362 81.02362 cm
+Q
+ 
+endstream
+endobj
+30 0 obj
+<<
+/Length 8815
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 741.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 4.439587 Tw 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_SERVER_DISTRIBUTION) Tj /F1 10 Tf ( \226 read in ) Tj /F4 10 Tf (src/multio/action/transport/Transport.cc) Tj /F1 10 Tf  T* 0 Tw (inside ) Tj /F4 10 Tf (Transport::distributionType\(\)) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 735.0236 cm
+Q
+q
+1 0 0 1 57.02362 711.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 62.84612 Tw 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_{,SERVER_,CLIENT_}MPI_POOL_SIZE) Tj /F1 10 Tf ( \226 read in) Tj T* 0 Tw /F4 10 Tf (src/multio/transport/MpiTransport.cc) Tj /F1 10 Tf ( inside ) Tj /F4 10 Tf (MpiTransport::getMpiPoolSize\(\)) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 705.0236 cm
+Q
+q
+1 0 0 1 57.02362 669.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 15.21548 Tw 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_{,SERVER_,CLIENT_}MPI_BUFFER_SIZE) Tj /F1 10 Tf ( \226 read in the same file in) Tj T* 0 Tw 4.513543 Tw /F4 10 Tf (MpiTransport::getMpiBufferSize\(\)) Tj /F1 10 Tf (. The pool and buffer size together parameterise the) Tj T* 0 Tw /F4 10 Tf (StreamPool) Tj /F1 10 Tf ( constructor in ) Tj /F4 10 Tf (src/multio/transport/StreamPool.cc) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 663.0236 cm
+Q
+q
+1 0 0 1 57.02362 627.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 31.63967 Tw 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_MESSAGE_QUEUE_SIZE) Tj /F1 10 Tf ( \226 read via ) Tj /F4 10 Tf (eckit::Resource) Tj /F1 10 Tf ( in) Tj T* 0 Tw 12.60417 Tw /F4 10 Tf (src/multio/server/Listener.cc) Tj /F1 10 Tf (, ) Tj /F4 10 Tf (src/multio/transport/ThreadTransport.cc) Tj /F1 10 Tf ( and) Tj T* 0 Tw /F4 10 Tf (src/multio/tools/multio-maestro-syphon.cc) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 621.0236 cm
+Q
+q
+1 0 0 1 57.02362 597.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 38.83967 Tw 12 TL /F4 10 Tf 0 0 0 rg (MULTIO_USED_SERVERS) Tj /F1 10 Tf ( \226 read via ) Tj /F4 10 Tf (eckit::Resource) Tj /F1 10 Tf ( in) Tj T* 0 Tw /F4 10 Tf (src/multio/action/transport/Transport.cc) Tj /F1 10 Tf ( \() Tj /F4 10 Tf (Transport::Transport) Tj /F1 10 Tf (\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 597.0236 cm
+Q
+q
+1 0 0 1 57.02362 555.0236 cm
+q
+BT 1 0 0 1 0 26 Tm 4.18131 Tw 12 TL /F1 10 Tf 0 0 0 rg (All of the ) Tj /F4 10 Tf (*_MPI_*) Tj /F1 10 Tf ( variables follow the same precedence rule: the more specific ) Tj /F4 10 Tf (*_SERVER_*) Tj /F1 10 Tf ( /) Tj T* 0 Tw 2.865223 Tw /F4 10 Tf (*_CLIENT_*) Tj /F1 10 Tf ( variable wins on the matching side; if it is unset, the generic ) Tj /F4 10 Tf (MULTIO_MPI_*) Tj /F1 10 Tf ( is used;) Tj T* 0 Tw (otherwise the compiled in default applies.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 522.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf .133333 .133333 .133333 rg (Detailed description) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 492.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F4 15 Tf 0 0 0 rg (MULTIO_SERVER_DISTRIBUTION) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 462.0236 cm
+q
+BT 1 0 0 1 0 14 Tm .126755 Tw 12 TL /F1 10 Tf 0 0 0 rg (Controls how a client decides to which server a given ) Tj /F4 10 Tf (Message) Tj /F1 10 Tf ( \(a 2-D field or slice\) is sent. Three strategies) Tj T* 0 Tw (are available:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 446.0236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (hashed_to_single) Tj /F3 10 Tf ( \(default\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 407.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 26 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 26 Tm 3.010642 Tw 12 TL /F4 10 Tf 0 0 0 rg (server_id) Tj ( ) Tj (=) Tj ( ) Tj (hash\(metadata\)) Tj ( ) Tj (%) Tj ( ) Tj (#servers) Tj /F1 10 Tf (. All clients that produce a field with the same) Tj T* 0 Tw .61755 Tw (metadata key \(e.g. same parameter and level\) send it to the same server, which is required for correct) Tj T* 0 Tw (aggregation of distributed fields on the server side. This is the right default for production runs.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 391.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (hashed_cyclic) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 352.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 26 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 26 Tm 1.809104 Tw 12 TL /F1 10 Tf 0 0 0 rg (Uses the client's own rank as the base server and walks forward through ) Tj /F4 10 Tf (MULTIO_USED_SERVERS) Tj /F1 10 Tf  T* 0 Tw 2.454168 Tw (consecutive servers, picking one by hashing the field metadata. Useful to spread traffic when the) Tj T* 0 Tw (number of distinct metadata keys is small compared to ) Tj /F4 10 Tf (#servers) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 336.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (even) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 297.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 26 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 26 Tm -0.075728 Tw 12 TL /F1 10 Tf 0 0 0 rg (Assigns each new metadata hash to the server with the current lowest counter, i.e. a pure load-balancer.) Tj T* 0 Tw .14713 Tw (It does ) Tj /F5 10 Tf (not) Tj /F1 10 Tf ( guarantee that clients producing the same field send it to the same server, and can therefore) Tj T* 0 Tw (only be used with actions that do not require global aggregation on the server side.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 255.0236 cm
+q
+BT 1 0 0 1 0 26 Tm 1.244488 Tw 12 TL /F3 10 Tf 0 0 0 rg (HPC guidance.) Tj /F1 10 Tf ( Keep ) Tj /F4 10 Tf (hashed_to_single) Tj /F1 10 Tf ( unless you have measured load imbalance on the servers. If) Tj T* 0 Tw 2.565257 Tw (you switch to ) Tj /F4 10 Tf (hashed_cyclic) Tj /F1 10 Tf (, set ) Tj /F4 10 Tf (MULTIO_USED_SERVERS) Tj /F1 10 Tf ( to a value in ) Tj /F4 10 Tf ([2,) Tj ( ) Tj (#servers]) Tj /F1 10 Tf (; a good) Tj T* 0 Tw (starting point is ) Tj /F4 10 Tf (min\(#servers,) Tj ( ) Tj (ceil\(#distinct-fields-per-step) Tj ( ) Tj (/) Tj ( ) Tj (#servers\)\)) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 207.0236 cm
+q
+BT 1 0 0 1 0 21 Tm 18 TL /F4 15 Tf 0 0 0 rg (MULTIO_MPI_POOL_SIZE) Tj /F2 15 Tf .133333 .133333 .133333 rg ( / ) Tj /F4 15 Tf 0 0 0 rg (MULTIO_SERVER_MPI_POOL_SIZE) Tj /F2 15 Tf .133333 .133333 .133333 rg ( /) Tj T* /F4 15 Tf 0 0 0 rg (MULTIO_CLIENT_MPI_POOL_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 153.0236 cm
+q
+BT 1 0 0 1 0 38 Tm 1.859168 Tw 12 TL /F1 10 Tf 0 0 0 rg (Number of MPI buffers held simultaneously by the ) Tj /F4 10 Tf (StreamPool) Tj /F1 10 Tf (. Each buffer can hold one outstanding) Tj T* 0 Tw .290491 Tw (non-blocking send \(client side\) or receive \(server side\). The pool determines how many peers a rank can be) Tj T* 0 Tw .411529 Tw (communicating with concurrently and therefore how much send/receive parallelism the transport can extract) Tj T* 0 Tw (from the interconnect.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 135.0236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Constraints enforced at start-up by ) Tj /F4 10 Tf (MpiTransport) Tj /F1 10 Tf (:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 129.0236 cm
+Q
+q
+1 0 0 1 57.02362 129.0236 cm
+Q
+q
+1 0 0 1 57.02362 93.02362 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 3.27789 Tw 12 TL /F1 10 Tf 0 0 0 rg (On a ) Tj /F5 10 Tf (client) Tj /F1 10 Tf (, ) Tj /F4 10 Tf (pool_size) Tj ( ) Tj /F6 10 Tf 12 TL (\263) Tj /F4 10 Tf 12 TL ( ) Tj (#servers) Tj /F1 10 Tf ( \227 otherwise not all servers can hold an open stream) Tj T* 0 Tw 1.656835 Tw (simultaneously and the run aborts with a ) Tj /F4 10 Tf (UserError) Tj /F1 10 Tf ( naming ) Tj /F4 10 Tf (MULTIO_CLIENT_MPI_POOL_SIZE) Tj /F1 10 Tf ( /) Tj T* 0 Tw /F4 10 Tf (MULTIO_MPI_POOL_SIZE) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 87.02362 cm
+Q
+q
+1 0 0 1 57.02362 75.02362 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (On a ) Tj /F5 10 Tf (server) Tj /F1 10 Tf (, ) Tj /F4 10 Tf (pool_size) Tj ( ) Tj /F6 10 Tf 12 TL (\263) Tj /F4 10 Tf 12 TL ( ) Tj (1) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 75.02362 cm
+Q
+ 
+endstream
+endobj
+31 0 obj
+<<
+/Length 10898
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 753.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Defaults:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 747.0236 cm
+Q
+q
+1 0 0 1 57.02362 747.0236 cm
+Q
+q
+1 0 0 1 57.02362 735.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Server: ) Tj /F4 10 Tf (max\(1,) Tj ( ) Tj (min\(#clients) Tj ( ) Tj (/) Tj ( ) Tj (2,) Tj ( ) Tj (4\)\)) Tj /F1 10 Tf ( \(capped to 4\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 729.0236 cm
+Q
+q
+1 0 0 1 57.02362 717.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Client: ) Tj /F4 10 Tf (2) Tj ( ) Tj (\327) Tj ( ) Tj (#servers) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 717.0236 cm
+Q
+q
+1 0 0 1 57.02362 699.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (HPC guidance.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 693.0236 cm
+Q
+q
+1 0 0 1 57.02362 693.0236 cm
+Q
+q
+1 0 0 1 57.02362 621.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 62 Tm 1.123917 Tw 12 TL /F1 10 Tf 0 0 0 rg (Client side: the default of ) Tj /F4 10 Tf (2) Tj ( ) Tj (\327) Tj ( ) Tj (#servers) Tj /F1 10 Tf ( is a good lower bound. It lets a client have one buffer "in) Tj T* 0 Tw .572545 Tw (flight" to every server while it fills a second one. Increase it \() Tj /F4 10 Tf (4) Tj ( ) Tj (\327) Tj ( ) Tj (#servers) Tj /F1 10 Tf ( or more\) when fields are) Tj T* 0 Tw 1.688835 Tw (small compared to ) Tj /F4 10 Tf (MULTIO_CLIENT_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( and messages are packed into the same) Tj T* 0 Tw -0.017744 Tw (buffer \227 more slots reduce the probability that a client stalls because every stream has an in-flight send) Tj T* 0 Tw 4.373223 Tw (on the same destination. Do not exceed ) Tj /F4 10 Tf (#servers) Tj /F1 10 Tf ( by a large factor: each slot costs one) Tj T* 0 Tw /F4 10 Tf (MULTIO_CLIENT_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( worth of resident memory per client rank.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 615.0236 cm
+Q
+q
+1 0 0 1 57.02362 579.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 1.058647 Tw 12 TL /F1 10 Tf 0 0 0 rg (Server side: the default is intentionally small. The server pool is used mainly for outbound statistics /) Tj T* 0 Tw .133432 Tw (control traffic, so 2\2264 is almost always enough. Increase only if you see ) Tj /F4 10 Tf (MPI_Wait) Tj /F1 10 Tf ( time growing on the) Tj T* 0 Tw (server.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 573.0236 cm
+Q
+q
+1 0 0 1 57.02362 537.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm -0.098853 Tw 12 TL /F1 10 Tf 0 0 0 rg (Memory budget per rank: ) Tj /F4 10 Tf (pool_size) Tj ( ) Tj (\327) Tj ( ) Tj (buffer_size) Tj /F1 10 Tf (. For the defaults on a client with 8 servers that) Tj T* 0 Tw 1.06947 Tw (is ) Tj /F4 10 Tf (16) Tj ( ) Tj (\327) Tj ( ) Tj (64) Tj ( ) Tj (MiB) Tj ( ) Tj (=) Tj ( ) Tj (1) Tj ( ) Tj (GiB) Tj /F1 10 Tf ( of resident MPI buffer, so this is a real cost when clients are pinned to) Tj T* 0 Tw (small partitions of a node.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 537.0236 cm
+Q
+q
+1 0 0 1 57.02362 489.0236 cm
+q
+BT 1 0 0 1 0 21 Tm 18 TL /F4 15 Tf 0 0 0 rg (MULTIO_MPI_BUFFER_SIZE) Tj /F2 15 Tf .133333 .133333 .133333 rg ( / ) Tj /F4 15 Tf 0 0 0 rg (MULTIO_SERVER_MPI_BUFFER_SIZE) Tj /F2 15 Tf .133333 .133333 .133333 rg ( /) Tj T* /F4 15 Tf 0 0 0 rg (MULTIO_CLIENT_MPI_BUFFER_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 459.0236 cm
+q
+BT 1 0 0 1 0 14 Tm .499387 Tw 12 TL /F1 10 Tf 0 0 0 rg (Size in ) Tj /F3 10 Tf (bytes) Tj /F1 10 Tf ( of every buffer in the pool. Default ) Tj /F4 10 Tf (64) Tj ( ) Tj (\327) Tj ( ) Tj (1024) Tj ( ) Tj (\327) Tj ( ) Tj (1024) Tj /F1 10 Tf ( = 64 MiB \() Tj /F4 10 Tf (defaultBufferSize) Tj /F1 10 Tf ( in) Tj T* 0 Tw /F4 10 Tf (MpiTransport.cc) Tj /F1 10 Tf (\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 429.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 2.217025 Tw (Multio packs consecutive serialised messages addressed to the same server into the same buffer and) Tj T* 0 Tw (flushes it as a single MPI send when either) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 423.0236 cm
+Q
+q
+1 0 0 1 57.02362 423.0236 cm
+Q
+q
+1 0 0 1 57.02362 411.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (a new message would not fit in the remaining space, or) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 405.0236 cm
+Q
+q
+1 0 0 1 57.02362 393.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (a probabilistic criterion in ) Tj /F4 10 Tf (StreamPool::getStream) Tj /F1 10 Tf ( fires \(more likely the fuller the buffer is\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 393.0236 cm
+Q
+q
+1 0 0 1 57.02362 363.0236 cm
+q
+BT 1 0 0 1 0 14 Tm .900522 Tw 12 TL /F1 10 Tf 0 0 0 rg (For correctness, ) Tj /F3 10 Tf (one individual serialised message must fit inside one buffer) Tj /F1 10 Tf (. If a single field is larger) Tj T* 0 Tw (than ) Tj /F4 10 Tf (buffer_size) Tj /F1 10 Tf (, the run will fail. The ) Tj /F5 10 Tf (serialised) Tj /F1 10 Tf ( size of a field is approximately) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 329.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 480.0283 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (msg_bytes ) Tj /F6 10 Tf 12 TL (\273) Tj /F4 10 Tf 12 TL ( N_points \327 bytes_per_value + header_bytes) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 297.8236 cm
+q
+BT 1 0 0 1 0 14 Tm .582025 Tw 12 TL /F1 10 Tf 0 0 0 rg (with ) Tj /F4 10 Tf (bytes_per_value) Tj ( ) Tj (=) Tj ( ) Tj (8) Tj /F1 10 Tf ( for double precision and ) Tj /F4 10 Tf (header_bytes) Tj ( ) Tj /F6 10 Tf 12 TL (\273) Tj /F4 10 Tf 12 TL ( ) Tj (512) Tj ( ) Tj /F6 10 Tf 12 TL (-) Tj /F4 10 Tf 12 TL ( ) Tj (2048) Tj /F1 10 Tf ( bytes \(metadata,) Tj T* 0 Tw (fieldId, framing\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 279.8236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Reference points for atmospheric global grids \(single field, ) Tj /F4 10 Tf (float64) Tj /F1 10 Tf (\):) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 273.8236 cm
+Q
+q
+1 0 0 1 57.02362 183.8236 cm
+q
+1 1 1 rg
+n 0 90 481.2283 -18 re f*
+.878431 .878431 .878431 rg
+n 0 72 481.2283 -18 re f*
+1 1 1 rg
+n 0 54 481.2283 -18 re f*
+.878431 .878431 .878431 rg
+n 0 36 481.2283 -18 re f*
+1 1 1 rg
+n 0 18 481.2283 -18 re f*
+0 0 0 rg
+BT /F3 10 Tf 12 TL ET
+q
+1 0 0 1 6 75 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 28.31854 0 Td (Resolution) Tj T* -28.31854 0 Td ET
+Q
+Q
+q
+1 0 0 1 126.3071 75 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 18.12283 0 Td (N_points) Tj T* -18.12283 0 Td ET
+Q
+Q
+q
+1 0 0 1 222.5528 75 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 16.63854 0 Td (Single field size) Tj T* -16.63854 0 Td ET
+Q
+Q
+q
+1 0 0 1 342.8598 75 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL 14.22925 0 Td (Suggested buffer size) Tj T* -14.22925 0 Td ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (TCo639 \(~18 km\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 126.3071 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL /F6 10 Tf 12 TL (\273) Tj /F1 10 Tf 12 TL ( 6.6 M) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (~50 MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 342.8598 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (128 MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 39 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (TCo1279 \(~9 km\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 126.3071 39 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL /F6 10 Tf 12 TL (\273) Tj /F1 10 Tf 12 TL ( 26 M) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 39 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (~200 MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 342.8598 39 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (256\226512 MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (TCo2559 \(~4 km\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 126.3071 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL /F6 10 Tf 12 TL (\273) Tj /F1 10 Tf 12 TL ( 105 M) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (~800 MiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 342.8598 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (1 GiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (TCo3999 \(~2.5 km\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 126.3071 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL /F6 10 Tf 12 TL (\273) Tj /F1 10 Tf 12 TL ( 250 M) Tj T* ET
+Q
+Q
+q
+1 0 0 1 222.5528 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (~2 GiB) Tj T* ET
+Q
+Q
+q
+1 0 0 1 342.8598 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (2\2264 GiB) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+0 0 0 RG
+.25 w
+n 0 72 m 481.2283 72 l S
+n 0 54 m 481.2283 54 l S
+n 0 36 m 481.2283 36 l S
+n 0 18 m 481.2283 18 l S
+n 120.3071 0 m 120.3071 90 l S
+n 216.5528 0 m 216.5528 90 l S
+n 336.8598 0 m 336.8598 90 l S
+n 0 90 m 481.2283 90 l S
+n 0 0 m 481.2283 0 l S
+n 0 0 m 0 90 l S
+n 481.2283 0 m 481.2283 90 l S
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 183.8236 cm
+Q
+q
+1 0 0 1 57.02362 129.8236 cm
+q
+BT 1 0 0 1 0 38 Tm .540596 Tw 12 TL /F3 10 Tf 0 0 0 rg (Rule of thumb.) Tj /F1 10 Tf ( Set ) Tj /F4 10 Tf (buffer_size) Tj /F1 10 Tf ( to roughly ) Tj /F4 10 Tf (4) Tj ( ) Tj (\327) Tj ( ) Tj (max\(single_field_bytes\)) Tj /F1 10 Tf (, rounded up to a power) Tj T* 0 Tw 2.496962 Tw (of two. A factor of ~4 leaves room for packing a few consecutive small fields \(2-D surface variables,) Tj T* 0 Tw 2.687565 Tw (coefficients\) in the same send and amortises the per-message MPI overhead, while the power-of-two) Tj T* 0 Tw (rounding matches the page/NIC MTU boundaries used by most HPC interconnects.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 87.82362 cm
+q
+BT 1 0 0 1 0 26 Tm .42989 Tw 12 TL /F3 10 Tf 0 0 0 rg (Memory budget.) Tj /F1 10 Tf ( The total resident MPI memory per rank is ) Tj /F4 10 Tf (pool_size) Tj ( ) Tj (\327) Tj ( ) Tj (buffer_size) Tj /F1 10 Tf (, doubled if you) Tj T* 0 Tw .989913 Tw (also raise the pool on both sides. Always check this against the memory available to a single MPI rank in) Tj T* 0 Tw (your batch allocation, especially on the client side where the pool is by default ) Tj /F4 10 Tf (2) Tj ( ) Tj (\327) Tj ( ) Tj (#servers) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+ 
+endstream
+endobj
+32 0 obj
+<<
+/Length 11981
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 717.0236 cm
+q
+BT 1 0 0 1 0 38 Tm .32402 Tw 12 TL /F3 10 Tf 0 0 0 rg (Asymmetry.) Tj /F1 10 Tf ( The server side value may be larger than the client side value \(a server typically receives from) Tj T* 0 Tw .434123 Tw (many clients and may want bigger receive staging\), but it must never be smaller than the size of the largest) Tj T* 0 Tw .798797 Tw (packed payload a client will send it, otherwise the receive will fail. The simplest safe configuration is to set) Tj T* 0 Tw /F4 10 Tf (MULTIO_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( once and let both sides inherit it.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 687.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F4 15 Tf 0 0 0 rg (MULTIO_MESSAGE_QUEUE_SIZE) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 645.0236 cm
+q
+BT 1 0 0 1 0 26 Tm 1.24131 Tw 12 TL /F1 10 Tf 0 0 0 rg (Capacity of the in-process, lock-free ) Tj /F4 10 Tf (eckit::Queue) Tj /F1 10 Tf ( that sits between the transport receive loop and the) Tj T* 0 Tw 2.15589 Tw (dispatcher thread on each server. Incoming ) Tj /F4 10 Tf (Message) Tj /F1 10 Tf (s are pushed onto the queue by the listener and) Tj T* 0 Tw (popped by the dispatcher that then runs the action plan.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 627.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Defaults vary by entry point:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 621.0236 cm
+Q
+q
+1 0 0 1 57.02362 621.0236 cm
+Q
+q
+1 0 0 1 57.02362 609.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (server/Listener.cc) Tj /F1 10 Tf ( \(I/O servers\) \227 ) Tj /F4 10 Tf (1024) Tj ( ) Tj (*) Tj ( ) Tj (1024) Tj ( ) Tj (=) Tj ( ) Tj (1) Tj ( ) Tj (048) Tj ( ) Tj (576) Tj /F1 10 Tf ( slots.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 603.0236 cm
+Q
+q
+1 0 0 1 57.02362 579.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .638543 Tw 12 TL /F4 10 Tf 0 0 0 rg (transport/ThreadTransport.cc) Tj /F1 10 Tf ( \(in-process threaded transport used by tests and single-process) Tj T* 0 Tw (runs\) \227 ) Tj /F4 10 Tf (1024) Tj /F1 10 Tf ( slots.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 573.0236 cm
+Q
+q
+1 0 0 1 57.02362 561.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F4 10 Tf 0 0 0 rg (tools/multio-maestro-syphon.cc) Tj /F1 10 Tf ( \227 ) Tj /F4 10 Tf (1024) Tj /F1 10 Tf ( slots.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 561.0236 cm
+Q
+q
+1 0 0 1 57.02362 507.0236 cm
+q
+BT 1 0 0 1 0 38 Tm .068917 Tw 12 TL /F1 10 Tf 0 0 0 rg (A "slot" is a move-only ) Tj /F4 10 Tf (Message) Tj /F1 10 Tf ( wrapper; it does ) Tj /F5 10 Tf (not) Tj /F1 10 Tf ( by itself hold the payload buffer, so the memory cost of) Tj T* 0 Tw .765834 Tw (a queue slot is small. The server default of ~1M is therefore not expensive in RAM, but it is a hard cap on) Tj T* 0 Tw .029897 Tw (how many unprocessed messages can pile up when the action plan \(encoding, GRIB writing, statistics, \205\) is) Tj T* 0 Tw (slower than the incoming rate.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 489.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (HPC guidance.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 483.0236 cm
+Q
+q
+1 0 0 1 57.02362 483.0236 cm
+Q
+q
+1 0 0 1 57.02362 447.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 1.142256 Tw 12 TL /F1 10 Tf 0 0 0 rg (Servers: keep the default \(~1M\) unless you have a specific reason to shrink it. If the dispatcher falls) Tj T* 0 Tw .629272 Tw (behind and the queue fills, clients will eventually block in ) Tj /F4 10 Tf (MPI_Send) Tj /F1 10 Tf ( \227 lowering this value just moves) Tj T* 0 Tw (the back-pressure earlier and rarely helps.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 441.0236 cm
+Q
+q
+1 0 0 1 57.02362 417.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 26.75306 Tw 12 TL /F4 10 Tf 0 0 0 rg (ThreadTransport) Tj /F1 10 Tf ( / ) Tj /F4 10 Tf (multio-maestro-syphon) Tj /F1 10 Tf (: raise to at least) Tj T* 0 Tw /F4 10 Tf (#clients) Tj ( ) Tj (\327) Tj ( ) Tj (#fields-per-step) Tj /F1 10 Tf ( if you see stalls in the receive loop during a time step.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 411.0236 cm
+Q
+q
+1 0 0 1 57.02362 363.0236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 33 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 8 0 Td (\177) Tj T* -8 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 38 Tm .72189 Tw 12 TL /F1 10 Tf 0 0 0 rg (Memory note: the queue holds at most ) Tj /F4 10 Tf (queue_size) Tj /F1 10 Tf ( live messages; the ) Tj /F5 10 Tf (payload) Tj /F1 10 Tf ( memory used in the) Tj T* 0 Tw 2.719104 Tw (worst case is bounded by ) Tj /F4 10 Tf (queue_size) Tj ( ) Tj (\327) Tj ( ) Tj (avg_payload_bytes) Tj /F1 10 Tf (. At very high resolutions it is) Tj T* 0 Tw 1.287397 Tw (therefore worth reducing the queue size \(e.g. to ) Tj /F4 10 Tf (64k) Tj /F1 10 Tf ( on the server\) to keep the worst-case memory) Tj T* 0 Tw (footprint under control.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 363.0236 cm
+Q
+q
+1 0 0 1 57.02362 333.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F4 15 Tf 0 0 0 rg (MULTIO_USED_SERVERS) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 291.0236 cm
+q
+BT 1 0 0 1 0 26 Tm .877594 Tw 12 TL /F1 10 Tf 0 0 0 rg (Only relevant when ) Tj /F4 10 Tf (MULTIO_SERVER_DISTRIBUTION=hashed_cyclic) Tj /F1 10 Tf (. Default ) Tj /F4 10 Tf (1) Tj /F1 10 Tf (. It defines the window) Tj T* 0 Tw .202397 Tw (of consecutive servers that a given client cycles through when placing fields. Larger values spread load over) Tj T* 0 Tw (more servers at the cost of less locality of reference on the server side.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 258.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf .133333 .133333 .133333 rg (Worked example for an HPC run) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 228.0236 cm
+q
+BT 1 0 0 1 0 14 Tm .707686 Tw 12 TL /F1 10 Tf 0 0 0 rg (Assume a global TCo1279 run \() Tj /F4 10 Tf (N_points) Tj ( ) Tj /F6 10 Tf 12 TL (\273) Tj /F4 10 Tf 12 TL ( ) Tj (26) Tj ( ) Tj (M) Tj /F1 10 Tf (, double precision, so one field ) Tj /F6 10 Tf 12 TL (\273) Tj /F1 10 Tf 12 TL ( 200 MiB\) using 4096) Tj T* 0 Tw (client ranks and 64 I/O server ranks. A reasonable starting configuration is:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 71.42108 cm
+q
+q
+.945309 0 0 .945309 0 0 cm
+q
+1 0 0 1 6.6 6.981846 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 507.87 156 re B*
+Q
+q
+.941176 .972549 1 rg
+n 0 132 102 12 re f*
+.941176 .972549 1 rg
+n 0 120 36 12 re f*
+.941176 .972549 1 rg
+n 36 120 6 12 re f*
+.941176 .972549 1 rg
+n 42 120 156 12 re f*
+.941176 .972549 1 rg
+n 198 120 6 12 re f*
+.941176 .972549 1 rg
+n 300 120 0 12 re f*
+.941176 .972549 1 rg
+n 0 108 0 12 re f*
+.941176 .972549 1 rg
+n 0 96 444 12 re f*
+.941176 .972549 1 rg
+n 0 84 36 12 re f*
+.941176 .972549 1 rg
+n 36 84 6 12 re f*
+.941176 .972549 1 rg
+n 42 84 132 12 re f*
+.941176 .972549 1 rg
+n 174 84 6 12 re f*
+.941176 .972549 1 rg
+n 180 84 18 12 re f*
+.941176 .972549 1 rg
+n 198 84 24 12 re f*
+.941176 .972549 1 rg
+n 222 84 6 12 re f*
+.941176 .972549 1 rg
+n 228 84 6 12 re f*
+.941176 .972549 1 rg
+n 234 84 6 12 re f*
+.941176 .972549 1 rg
+n 240 84 24 12 re f*
+.941176 .972549 1 rg
+n 264 84 6 12 re f*
+.941176 .972549 1 rg
+n 270 84 6 12 re f*
+.941176 .972549 1 rg
+n 276 84 6 12 re f*
+.941176 .972549 1 rg
+n 282 84 24 12 re f*
+.941176 .972549 1 rg
+n 306 84 12 12 re f*
+.941176 .972549 1 rg
+n 318 84 18 12 re f*
+.941176 .972549 1 rg
+n 336 84 42 12 re f*
+.941176 .972549 1 rg
+n 0 72 0 12 re f*
+.941176 .972549 1 rg
+n 0 60 444 12 re f*
+.941176 .972549 1 rg
+n 0 48 36 12 re f*
+.941176 .972549 1 rg
+n 36 48 6 12 re f*
+.941176 .972549 1 rg
+n 42 48 162 12 re f*
+.941176 .972549 1 rg
+n 204 48 6 12 re f*
+.941176 .972549 1 rg
+n 210 48 18 12 re f*
+.941176 .972549 1 rg
+n 228 48 6 12 re f*
+.941176 .972549 1 rg
+n 234 48 6 12 re f*
+.941176 .972549 1 rg
+n 240 48 6 12 re f*
+.941176 .972549 1 rg
+n 246 48 6 12 re f*
+.941176 .972549 1 rg
+n 252 48 12 12 re f*
+.941176 .972549 1 rg
+n 264 48 12 12 re f*
+.941176 .972549 1 rg
+n 276 48 60 12 re f*
+.941176 .972549 1 rg
+n 336 48 159.87 12 re f*
+.941176 .972549 1 rg
+n 0 36 456 12 re f*
+.941176 .972549 1 rg
+n 0 24 264 12 re f*
+.941176 .972549 1 rg
+n 0 12 30 12 re f*
+.941176 .972549 1 rg
+n 30 12 6 12 re f*
+.941176 .972549 1 rg
+n 198 12 0 12 re f*
+.941176 .972549 1 rg
+n 0 0 36 12 re f*
+.941176 .972549 1 rg
+n 36 0 6 12 re f*
+.941176 .972549 1 rg
+n 42 0 132 12 re f*
+.941176 .972549 1 rg
+n 174 0 6 12 re f*
+.941176 .972549 1 rg
+n 180 0 18 12 re f*
+.941176 .972549 1 rg
+n 198 0 18 12 re f*
+.941176 .972549 1 rg
+n 216 0 6 12 re f*
+.941176 .972549 1 rg
+n 222 0 6 12 re f*
+.941176 .972549 1 rg
+n 228 0 6 12 re f*
+.941176 .972549 1 rg
+n 234 0 24 12 re f*
+.941176 .972549 1 rg
+n 258 0 6 12 re f*
+.941176 .972549 1 rg
+n 264 0 6 12 re f*
+.941176 .972549 1 rg
+n 270 0 6 12 re f*
+.941176 .972549 1 rg
+n 276 0 24 12 re f*
+.941176 .972549 1 rg
+n 300 0 12 12 re f*
+.941176 .972549 1 rg
+n 312 0 24 12 re f*
+.941176 .972549 1 rg
+n 336 0 153.87 12 re f*
+BT 1 0 0 1 0 134 Tm 12 TL /F7 10 Tf .25098 .501961 .501961 rg (# Field placement) Tj T* /F4 10 Tf 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_SERVER_DISTRIBUTION) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg (hashed_to_single) Tj .733333 .733333 .733333 rg  T*  T* /F7 10 Tf .25098 .501961 .501961 rg (# Size each MPI buffer to ~4\327 the largest field, rounded to a power of two) Tj T* /F4 10 Tf 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_MPI_BUFFER_SIZE) Tj .4 .4 .4 rg (=) Tj /F8 10 Tf 0 .501961 0 rg ($\(\() Tj /F4 10 Tf .4 .4 .4 rg (1024) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj /F8 10 Tf 0 .501961 0 rg (\)\)) Tj /F4 10 Tf .733333 .733333 .733333 rg (   ) Tj /F7 10 Tf .25098 .501961 .501961 rg (# 1 GiB) Tj T* /F4 10 Tf .733333 .733333 .733333 rg  T* /F7 10 Tf .25098 .501961 .501961 rg (# Allow clients to have one outstanding send to every server and then some) Tj T* /F4 10 Tf 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_CLIENT_MPI_POOL_SIZE) Tj .4 .4 .4 rg (=) Tj /F8 10 Tf 0 .501961 0 rg ($\(\() Tj /F4 10 Tf .4 .4 .4 rg (4) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (64) Tj /F8 10 Tf 0 .501961 0 rg (\)\)) Tj /F4 10 Tf .733333 .733333 .733333 rg (          ) Tj /F7 10 Tf .25098 .501961 .501961 rg (# 256 ) Tj /F6 10 Tf 12 TL (\256) Tj /F7 10 Tf 12 TL ( 256 GiB/client \(!\)) Tj T* (# \205 which is unrealistic; drop back to the default \(2\327 #servers\) and instead) Tj T* (# reduce the buffer size if memory is tight:) Tj T* /F4 10 Tf 0 .501961 0 rg (unset) Tj .733333 .733333 .733333 rg ( ) Tj 0 0 0 rg (MULTIO_CLIENT_MPI_POOL_SIZE) Tj .733333 .733333 .733333 rg  T* 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_MPI_BUFFER_SIZE) Tj .4 .4 .4 rg (=) Tj /F8 10 Tf 0 .501961 0 rg ($\(\() Tj /F4 10 Tf .4 .4 .4 rg (512) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj /F8 10 Tf 0 .501961 0 rg (\)\)) Tj /F4 10 Tf .733333 .733333 .733333 rg (    ) Tj /F7 10 Tf .25098 .501961 .501961 rg (# 512 MiB ) Tj /F6 10 Tf 12 TL (\256) Tj /F7 10 Tf 12 TL ( 64 GiB/client) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+ 
+endstream
+endobj
+33 0 obj
+<<
+/Length 6414
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 57.02362 679.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.941176 .972549 1 rg
+n -6 -6 480.0283 84 re B*
+Q
+q
+.941176 .972549 1 rg
+n 0 60 0 12 re f*
+.941176 .972549 1 rg
+n 0 48 419.49 12 re f*
+.941176 .972549 1 rg
+n 0 36 36 12 re f*
+.941176 .972549 1 rg
+n 36 36 6 12 re f*
+.941176 .972549 1 rg
+n 42 36 174 12 re f*
+.941176 .972549 1 rg
+n 216 36 6 12 re f*
+.941176 .972549 1 rg
+n 222 36 18 12 re f*
+.941176 .972549 1 rg
+n 240 36 18 12 re f*
+.941176 .972549 1 rg
+n 258 36 6 12 re f*
+.941176 .972549 1 rg
+n 264 36 6 12 re f*
+.941176 .972549 1 rg
+n 270 36 6 12 re f*
+.941176 .972549 1 rg
+n 276 36 24 12 re f*
+.941176 .972549 1 rg
+n 300 36 6 12 re f*
+.941176 .972549 1 rg
+n 306 36 6 12 re f*
+.941176 .972549 1 rg
+n 312 36 6 12 re f*
+.941176 .972549 1 rg
+n 318 36 24 12 re f*
+.941176 .972549 1 rg
+n 342 36 12 12 re f*
+.941176 .972549 1 rg
+n 354 36 0 12 re f*
+.941176 .972549 1 rg
+n 0 24 0 12 re f*
+.941176 .972549 1 rg
+n 0 12 426 12 re f*
+.941176 .972549 1 rg
+n 0 0 36 12 re f*
+.941176 .972549 1 rg
+n 36 0 6 12 re f*
+.941176 .972549 1 rg
+n 42 0 150 12 re f*
+.941176 .972549 1 rg
+n 192 0 6 12 re f*
+.941176 .972549 1 rg
+n 198 0 30 12 re f*
+.941176 .972549 1 rg
+n 228 0 0 12 re f*
+BT 1 0 0 1 0 62 Tm 12 TL /F4 10 Tf .733333 .733333 .733333 rg  T* /F7 10 Tf .25098 .501961 .501961 rg (# Servers: default pool \() Tj /F6 10 Tf 12 TL (\243) Tj /F7 10 Tf 12 TL (4\) is fine, but grow buffer to match clients) Tj T* /F4 10 Tf 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_SERVER_MPI_BUFFER_SIZE) Tj .4 .4 .4 rg (=) Tj /F8 10 Tf 0 .501961 0 rg ($\(\() Tj /F4 10 Tf .4 .4 .4 rg (512) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (*) Tj .733333 .733333 .733333 rg ( ) Tj .4 .4 .4 rg (1024) Tj /F8 10 Tf 0 .501961 0 rg (\)\)) Tj /F4 10 Tf .733333 .733333 .733333 rg  T*  T* /F7 10 Tf .25098 .501961 .501961 rg (# Leave the server queue at its default \(~1M\) or cap it to bound memory) Tj T* /F4 10 Tf 0 .501961 0 rg (export) Tj .733333 .733333 .733333 rg ( ) Tj .098039 .090196 .486275 rg (MULTIO_MESSAGE_QUEUE_SIZE) Tj .4 .4 .4 rg (=) Tj (65536) Tj .733333 .733333 .733333 rg  T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 611.8236 cm
+q
+BT 1 0 0 1 0 50 Tm 15.42982 Tw 12 TL /F1 10 Tf 0 0 0 rg (The example shows the most important trade-off on modern supercomputers:) Tj T* 0 Tw .149314 Tw /F4 10 Tf (pool_size) Tj ( ) Tj (\327) Tj ( ) Tj (buffer_size) Tj /F1 10 Tf ( is ) Tj /F5 10 Tf (the) Tj /F1 10 Tf ( resident memory bill of the transport, and it is multiplied by the number) Tj T* 0 Tw .153731 Tw (of MPI ranks per node. Always size the buffer to the field first, then pick the smallest pool that keeps the NIC) Tj T* 0 Tw -0.105877 Tw (busy \() Tj /F4 10 Tf /F6 10 Tf 12 TL (\263) Tj /F4 10 Tf 12 TL ( ) Tj (#servers) Tj /F1 10 Tf ( on the client, ) Tj /F4 10 Tf (1\2264) Tj /F1 10 Tf ( on the server\), and only then increase either knob if profiling shows the) Tj T* 0 Tw (transport is the bottleneck.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 578.8236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf .133333 .133333 .133333 rg (Tuning checklist) Tj T* ET
+Q
+Q
+q
+1 0 0 1 57.02362 566.8236 cm
+Q
+q
+1 0 0 1 57.02362 566.8236 cm
+Q
+q
+1 0 0 1 57.02362 554.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (1.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Compute the largest field size from the mesh: ) Tj /F4 10 Tf (msg_bytes) Tj ( ) Tj /F6 10 Tf 12 TL (\273) Tj /F4 10 Tf 12 TL ( ) Tj (N_points) Tj ( ) Tj (\327) Tj ( ) Tj (8) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 548.8236 cm
+Q
+q
+1 0 0 1 57.02362 536.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (2.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Set ) Tj /F4 10 Tf (MULTIO_MPI_BUFFER_SIZE) Tj /F1 10 Tf ( to ) Tj /F4 10 Tf (next_pow2\(4) Tj ( ) Tj (\327) Tj ( ) Tj (msg_bytes\)) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 530.8236 cm
+Q
+q
+1 0 0 1 57.02362 518.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (3.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Leave the pool sizes at their defaults \(server ) Tj /F6 10 Tf 12 TL (\243) Tj /F1 10 Tf 12 TL ( 4, client = ) Tj /F4 10 Tf (2) Tj ( ) Tj (\327) Tj ( ) Tj (#servers) Tj /F1 10 Tf (\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 512.8236 cm
+Q
+q
+1 0 0 1 57.02362 476.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (4.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm .231079 Tw 12 TL /F1 10 Tf 0 0 0 rg (Check ) Tj /F4 10 Tf (pool) Tj ( ) Tj (\327) Tj ( ) Tj (buffer) Tj /F1 10 Tf ( fits in the per-rank memory budget; if not, halve the buffer before touching the) Tj T* 0 Tw 1.616147 Tw (pool \227 a smaller buffer only costs extra MPI messages, while a smaller pool can cost correctness) Tj T* 0 Tw (\(client-side lower bound ) Tj /F4 10 Tf (#servers) Tj /F1 10 Tf (\) or throughput.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 470.8236 cm
+Q
+q
+1 0 0 1 57.02362 446.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (5.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 2.482621 Tw 12 TL /F1 10 Tf 0 0 0 rg (Keep ) Tj /F4 10 Tf (MULTIO_SERVER_DISTRIBUTION=hashed_to_single) Tj /F1 10 Tf ( unless a profiler shows server load) Tj T* 0 Tw (imbalance; in that case switch to ) Tj /F4 10 Tf (hashed_cyclic) Tj /F1 10 Tf ( and tune ) Tj /F4 10 Tf (MULTIO_USED_SERVERS) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 440.8236 cm
+Q
+q
+1 0 0 1 57.02362 416.8236 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL 2 0 Td (6.) Tj T* -2 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 2.156529 Tw 12 TL /F1 10 Tf 0 0 0 rg (Leave ) Tj /F4 10 Tf (MULTIO_MESSAGE_QUEUE_SIZE) Tj /F1 10 Tf ( at its default on servers; reduce it only to cap worst-case) Tj T* 0 Tw (memory on very-high-resolution runs.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 0 0 1 57.02362 416.8236 cm
+Q
+ 
+endstream
+endobj
+34 0 obj
+<<
+/Nums [ 0 35 0 R 1 36 0 R 2 37 0 R 3 38 0 R 4 39 0 R ]
+>>
+endobj
+35 0 obj
+<<
+/S /D /St 1
+>>
+endobj
+36 0 obj
+<<
+/S /D /St 2
+>>
+endobj
+37 0 obj
+<<
+/S /D /St 3
+>>
+endobj
+38 0 obj
+<<
+/S /D /St 4
+>>
+endobj
+39 0 obj
+<<
+/S /D /St 5
+>>
+endobj
+xref
+0 40
+0000000000 65535 f 
+0000000061 00000 n 
+0000000167 00000 n 
+0000000274 00000 n 
+0000000383 00000 n 
+0000000495 00000 n 
+0000000600 00000 n 
+0000000715 00000 n 
+0000000920 00000 n 
+0000000997 00000 n 
+0000001202 00000 n 
+0000001408 00000 n 
+0000001522 00000 n 
+0000001633 00000 n 
+0000001839 00000 n 
+0000002045 00000 n 
+0000002151 00000 n 
+0000002427 00000 n 
+0000002502 00000 n 
+0000002618 00000 n 
+0000002759 00000 n 
+0000002932 00000 n 
+0000003059 00000 n 
+0000003253 00000 n 
+0000003454 00000 n 
+0000003594 00000 n 
+0000003715 00000 n 
+0000003859 00000 n 
+0000003977 00000 n 
+0000004064 00000 n 
+0000012607 00000 n 
+0000021474 00000 n 
+0000032425 00000 n 
+0000044459 00000 n 
+0000050925 00000 n 
+0000051002 00000 n 
+0000051036 00000 n 
+0000051070 00000 n 
+0000051104 00000 n 
+0000051138 00000 n 
+trailer
+<<
+/ID 
+[<24759a31f6c9122c4300a96377a79448><24759a31f6c9122c4300a96377a79448>]
+% ReportLab generated PDF document -- digest (opensource)
+
+/Info 16 0 R
+/Root 15 0 R
+/Size 40
+>>
+startxref
+51172
+%%EOF

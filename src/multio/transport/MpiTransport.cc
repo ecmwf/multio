@@ -207,6 +207,13 @@ void MpiTransport::reportStep(const Message& msg) {
     static auto nClients = clientPeers().size();
     static std::vector<std::int64_t> stepCounters(nClients, -1);
 
+    static auto ecflowStepMeterName = compConf_.parsedConfig().has("ecflow-step-meter-name")
+                                                 ? compConf_.parsedConfig().getString("ecflow-step-meter-name")
+                                                 : std::string{"multio_step"};
+    static auto stepMeterFilename = compConf_.parsedConfig().has("step-meter-file")
+                                               ? compConf_.parsedConfig().getString("step-meter-file")
+                                               : std::string{"../multio_step_meter"};
+
     const auto clientRank = msg.source().id();
     if (clientRank >= nClients) {
         throw eckit::SeriousBug{"clientRank (" + std::to_string(clientRank) + ") is out of range!", Here()};
@@ -234,27 +241,25 @@ void MpiTransport::reportStep(const Message& msg) {
         if (serverComm().rank() == 0) {
             eckit::Log::info() << "UPDATE STEP METER " << oldMinStep << " -> " << newMinStep << std::endl;
 
-
             // Update ecFlow meter
             #ifdef HAVE_ECFLOW_LIGHT
-            const int err = ecflow_light_update_meter("step", newMinStep);
+            const int err = ecflow_light_update_meter(ecflowStepMeterName.c_str(), newMinStep);
             if (err != EXIT_SUCCESS) {
-                eckit::Log::error() << "MpiTransport::reportStep: failed to update ecFlow meter 'step' to " << newMinStep << std::endl;
+                eckit::Log::error() << "MpiTransport::reportStep: failed to update ecFlow meter '" << ecflowStepMeterName << "' to " << newMinStep << std::endl;
             }
             else {
-                eckit::Log::info() << "MpiTransport::reportStep: update ecFlow meter 'step' to " << newMinStep << std::endl;
+                eckit::Log::info() << "MpiTransport::reportStep: update ecFlow meter '" << ecflowStepMeterName << "' to " << newMinStep << std::endl;
             }
             #endif
 
             // Update meter file
-            const auto meterFile = "../multio_step.meter";  // TODO: Make this configurable
-            std::ofstream ofs(meterFile);
+            std::ofstream ofs(stepMeterFilename);
             if (!ofs) {
-                eckit::Log::info() << "MpiTransport::reportStep: failed to update meter file '" << meterFile << "' to " << newMinStep << std::endl;
+                eckit::Log::info() << "MpiTransport::reportStep: failed to update meter file '" << stepMeterFilename << "' to " << newMinStep << std::endl;
             }
             else {
                 ofs << newMinStep << std::endl;
-                eckit::Log::info() << "MpiTransport::reportStep: update meter file '" << meterFile << "' to " << newMinStep << std::endl;
+                eckit::Log::info() << "MpiTransport::reportStep: update meter file '" << stepMeterFilename << "' to " << newMinStep << std::endl;
             }
         }
     }

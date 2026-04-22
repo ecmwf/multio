@@ -23,7 +23,7 @@ nServers=$1
 expected=$2
 shift 2
 
-meter_file="../multio_step.meter"
+meter_file="custom_step_meter_file"
 rm -f ${meter_file}
 
 # Build the mpi command: one process per client, then nServers processes for the servers

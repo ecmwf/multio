@@ -101,13 +101,13 @@
   param-out: 3099
   scaling:   1000
 
-# - param-in:  174
-#   param-out: ???
-#   scaling:   100
+- param-in:  174
+  param-out: 260509
+  scaling:   100
 
 - param-in:  206
   param-out: 260132
-  scaling:   1000
+  scaling:   46698.05
 
 - param-in:  243
   param-out: 260509

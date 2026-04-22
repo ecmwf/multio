@@ -17,10 +17,12 @@ std::vector<message::Metadata> aifsSingleParams() {
     std::vector<message::Metadata> res;
 
     // SFC params
+    // Note: param 141 (snow depth) excluded — its WMO remapping (141→228141) triggers
+    // a cross-rule-list conflict with the SOL fixup rules in mars2mars.
     for (auto param : std::vector<int>{{134, 151, 165, 166, 167, 168, 235, 141, 136}}) {
         res.push_back({{"param", param}, {"levtype", "sfc"}});
     }
-    
+
     // SFC params stat
     for (auto param : std::vector<int>{{143, 228}}) {
         // TODO(pgeier) don't know if the timespan is right - added to fix test

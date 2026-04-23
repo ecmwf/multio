@@ -6,7 +6,7 @@ plans:
           - param: "133"
       - type: interpolate
         input: O1280
-        grid: [1.0, 1.0]
+        grid: "1.0/1.0"
         area: [80.0, 0.0, -80.0, 360.0]
         interpolation: linear
         options:

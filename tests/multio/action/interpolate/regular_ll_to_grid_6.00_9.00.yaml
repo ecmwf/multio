@@ -6,7 +6,7 @@ plans:
           - param: "133"
       - type: interpolate
         input: 1/1
-        grid: [6., 9.]
+        grid: "6.0/9.0"
         interpolation: linear
         options:
           # dont-compress-plan: true

@@ -23,7 +23,7 @@ namespace multio::action::interpolate {
  */
 class Interpolate final : public ChainedAction {
 public:
-    using ChainedAction::ChainedAction;
+    explicit Interpolate(const ComponentConfiguration& compConf);
 
 private:
     template <typename T>
@@ -31,6 +31,8 @@ private:
 
     void print(std::ostream&) const override;
     void executeImpl(message::Message) override;
+
+    message::Metadata additionalMetadata_;
 };
 
 

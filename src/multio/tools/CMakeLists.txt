@@ -44,11 +44,16 @@ ecbuild_add_executable( TARGET    multio-legacy-hammer
 
 # tools for testing the multio API
 
+set( _multio_feed_extra_libs "" )
+if( HAVE_TENSOGRAM )
+    list( APPEND _multio_feed_extra_libs multio-action-encode-tensogram )
+endif()
+
 ecbuild_add_executable( TARGET    multio-feed
                         CONDITION HAVE_FDB5
                         SOURCES   multio-feed.cc MultioTool.cc
                         NO_AS_NEEDED
-                        LIBS      multio-api )
+                        LIBS      multio-api ${_multio_feed_extra_libs} )
 
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN

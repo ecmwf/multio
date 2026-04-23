@@ -245,7 +245,7 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
 void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
-                     int verbosity) {
+                     int verbosity, long defaultEnsembleSize = 0) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -366,7 +366,16 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
 
         // If both are 0 it is likely a control forecast or no ensemble...
         if (number != 0 && numForecasts == 0) {
-            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+            if (defaultEnsembleSize > 0) {
+                std::cout << "Warning: numberOfForecastsInEnsemble is 0 but number=" << number
+                          << "; applying --default-ensemble-size=" << defaultEnsembleSize << std::endl;
+                numForecasts = defaultEnsembleSize;
+            }
+            else {
+                throw std::runtime_error(
+                    "The value for key numberOfForecastsInEnsemble must not be 0 (use --default-ensemble-size "
+                    "to supply a fallback, or --on-error log-and-skip to skip such messages)");
+            }
         }
         if (numForecasts != 0) {
             mars.number.set(number);
@@ -795,6 +804,30 @@ Discipline192Handling parseDiscipline192Handling(const std::string& str) {
 }
 
 
+enum class OnErrorHandling : std::size_t
+{
+    Abort,
+    LogAndSkip,
+    Skip,
+};
+
+const std::unordered_map<std::string, OnErrorHandling>& onErrorHandlingMap() {
+    static const std::unordered_map<std::string, OnErrorHandling> map{
+        {"abort", OnErrorHandling::Abort},
+        {"log-and-skip", OnErrorHandling::LogAndSkip},
+        {"skip", OnErrorHandling::Skip}};
+    return map;
+}
+
+OnErrorHandling parseOnErrorHandling(const std::string& str) {
+    const auto& map = onErrorHandlingMap();
+    if (auto search = map.find(str); search != map.end()) {
+        return search->second;
+    }
+    throw std::runtime_error(std::string("Unsupported --on-error value: ") + str);
+}
+
+
 class Grib1ToGrib2 final : public multio::MultioTool {
 public:  // methods
     Grib1ToGrib2(int argc, char** argv);
@@ -835,6 +868,8 @@ private:
 
     std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules_ = mars2mars::allRulesNoWMOMapping();
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
+    OnErrorHandling onErrorHandling_ = OnErrorHandling::LogAndSkip;
+    long defaultEnsembleSize_ = 0;
 };
 
 Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, argv} {
@@ -871,6 +906,13 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
         "discipline-192",
         "Options on handling fields with discipline 192 (field that are ill-formed). Values: \"log-and-ignore\" "
         "(default), \"ignore\", \"try-to-handle\""));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "on-error",
+        "How to handle per-message conversion errors. Values: \"abort\" (stop on first error), \"log-and-skip\" "
+        "(default, log the error and continue), \"skip\" (silently skip failing messages)"));
+    options_.push_back(new eckit::option::SimpleOption<long>(
+        "default-ensemble-size",
+        "Fallback value used when numberOfForecastsInEnsemble is 0 but number is non-zero. Default: 0 (throw)"));
 }
 
 void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
@@ -928,6 +970,14 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     if (!discipline192.empty()) {
         discipline192Handling_ = parseDiscipline192Handling(discipline192);
     }
+
+    std::string onError;
+    args.get("on-error", onError);
+    if (!onError.empty()) {
+        onErrorHandling_ = parseOnErrorHandling(onError);
+    }
+
+    args.get("default-ensemble-size", defaultEnsembleSize_);
 }
 
 void Grib1ToGrib2::finish(const eckit::option::CmdArgs&) {}
@@ -975,7 +1025,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
+    std::size_t msgIndex = 0;
+    std::size_t skippedCount = 0;
     while ((msg = reader.next())) {
+        ++msgIndex;
+        try {
         // Extract message from datahandle... we expect it to be a memory handle
         // TODO pgeier: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
         std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
@@ -1041,7 +1095,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
 
-            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
+            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_, defaultEnsembleSize_);
 
 
             if (overwritePacking_) {
@@ -1143,6 +1197,23 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 write(*preparedHandle.get(), *outputFileHandle);
             }
         }
+        }
+        catch (const std::exception& e) {
+            if (onErrorHandling_ == OnErrorHandling::Abort) {
+                throw;
+            }
+            ++skippedCount;
+            if (onErrorHandling_ == OnErrorHandling::LogAndSkip) {
+                std::cerr << "Error converting message #" << msgIndex << ": " << e.what()
+                          << " -- skipping" << std::endl;
+            }
+            continue;
+        }
+    }
+
+    if (skippedCount > 0) {
+        std::cerr << "grib1-to-grib2: skipped " << skippedCount << " message(s) due to conversion errors"
+                  << std::endl;
     }
 
     if (outputFileHandle) {

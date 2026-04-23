@@ -24,6 +24,7 @@ namespace dm = multio::datamod;
 const RuleList& wmoUnitMapping();
 const RuleList& fixIFSOutput();
 const RuleList& mapDeprecatedGrib1ToGrib2();
+const RuleList& mapAtmosphericComposition();
 const RuleList& waveBitsPerValue();
 
 // Groups

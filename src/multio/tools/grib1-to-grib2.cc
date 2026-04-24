@@ -344,6 +344,19 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     misc.initialStep = dm::parseEntry(dm::InitialStep.withKey("initialStep"), h);
     misc.timeIncrementInSeconds = dm::parseEntry(dm::TimeIncrementInSeconds.withKey("timeIncrement"), h);
     misc.pv = dm::parseEntry(dm::Pv.withKey("pv"), h);
+    // Signal explicit absence of vertical-coordinate parameters to the
+    // encoder. Without this, mars2grib's `resolve_PvArray_or_throw` falls back
+    // to its PV137 default and writes a 1002-double PV array into the output
+    // for hybrid-level fields whose source GRIB had NV=0 (e.g. lnsp on ml).
+    // Detect "no PV" via the input handle's NV key and forward as
+    // `misc.pvPresent=false`; metkit's LevelOp suppresses PV emission when
+    // it sees this flag.
+    if (!misc.pv.isSet()) {
+        long nv = h.has("NV") ? h.getLong("NV") : 0;
+        if (nv == 0) {
+            misc.pvPresent.set(false);
+        }
+    }
     misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
 
     handleMissingValue(h, misc);

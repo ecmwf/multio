@@ -238,7 +238,8 @@ void MpiTransport::reportStep(const Message& msg) {
         serverComm().barrier();
 
         // Only one server should upate the meter
-        if (serverComm().rank() == 0) {
+        // Meter reporting can also be disabled by passing 'updateMeter=false' in the metadata
+        if (serverComm().rank() == 0 && msg.metadata().getOpt<bool>("updateMeter").value_or(true)) {
             eckit::Log::info() << "UPDATE STEP METER " << oldMinStep << " -> " << newMinStep << std::endl;
 
             // Update ecFlow meter

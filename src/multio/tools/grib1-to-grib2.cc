@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -207,6 +209,59 @@ void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
     double missingValue = 9999.0;
     h.set("missingValue", missingValue);
     misc.missingValue.set(missingValue);
+}
+
+// Spectral_complex packing in ecCodes pre-multiplies each spherical harmonic
+// coefficient (m,n) by `(n*(n+1))^laplacianOperator` before quantising it.
+// The packed referenceValue and the unpacked low-order subset are stored as
+// IEEE 32-bit floats; any product that exceeds FLT_MAX (~3.4e38) trips an
+// unrecoverable assertion inside `grib_ieee_to_long` and aborts the whole
+// process - bypassing the per-message --on-error handling.
+//
+// IFS occasionally writes type=al SPP random fields with the sentinel value
+// `laplacianOperator=9.9` even though the source data carries no
+// pre-laplacian scaling. Combined with the truncation=399 of those fields,
+// this yields (399*400)^9.9 ~= 1.6e51, easily overflowing FLT_MAX once
+// multiplied by the actual coefficient values. Verified by `grib_set
+// laplacianOperator=0` on such a message: re-encoding then succeeds and the
+// codedValues match the input exactly, confirming the source data is not
+// pre-laplacian-scaled.
+//
+// We can't compute a tight overflow bound generically from the values array
+// (the largest coefficient lives at low n while the largest scaling lives at
+// high n; without traversing the spectral (m,n) layout we'd get too many
+// false positives). Instead, refuse to encode messages whose laplacianOperator
+// is the known IFS sentinel `9.9` by throwing eckit::BadValue. The exception
+// is recoverable: --on-error=log-and-skip will skip the offending message and
+// continue, while --on-error=abort will propagate and stop the conversion.
+//
+// NOTE (revisit): the underlying issue is an upstream IFS encoding bug; once
+// IFS stops emitting `laplacianOperator=9.9` for non-laplacian-scaled SPP
+// random fields this guard becomes dead code and can be removed.
+void validateSpectralComplexNoOverflow(const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+                                       const std::vector<double>& /*values*/) {
+    if (!mars.packing.isSet() || mars.packing.get() != "complex") {
+        return;
+    }
+    if (!misc.laplacianOperator.isSet()) {
+        return;
+    }
+
+    constexpr double kIfsSentinel = 9.9;
+    constexpr double kEpsilon = 1.0e-3;
+    const double p = misc.laplacianOperator.get();
+    if (std::fabs(p - kIfsSentinel) > kEpsilon) {
+        return;
+    }
+
+    std::ostringstream oss;
+    oss << "spectral_complex message carries IFS sentinel laplacianOperator=" << p
+        << " (truncation=" << (mars.truncation.isSet() ? mars.truncation.get() : -1L)
+        << ", type=" << (mars.type.isSet() ? mars.type.get() : std::string{"<unset>"})
+        << ", paramId=" << (mars.param.isSet() ? mars.param.get() : -1L) << "). Re-encoding such messages would "
+        << "trigger an unrecoverable ecCodes IEEE32 overflow in `grib_ieee_to_long` because the "
+        << "stored data is not actually pre-laplacian-scaled. Refusing to encode.";
+    throw eckit::BadValue(oss.str(), Here());
 }
 
 std::optional<std::pair<long, long>> parseRange(const std::string& s) {
@@ -1218,6 +1273,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             // Convert mars/misc to eckit::LocalConfiguration
             const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
             const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
+
+            // Pre-encode validation: catch spectral_complex laplacian-scaling
+            // overflows before they reach ecCodes (where they would trip an
+            // unrecoverable assertion in `grib_ieee_to_long`).
+            extract::validateSpectralComplexNoOverflow(mars, misc, values);
 
             // Call the GRIB2 encoder in metkit
             auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);

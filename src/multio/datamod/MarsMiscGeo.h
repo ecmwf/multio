@@ -336,6 +336,7 @@ struct MiscRecord {
     EntryType_t<decltype(SubCentre)> subCentre;
     EntryType_t<decltype(NumberOfComponents)> numberOfComponents;
     EntryType_t<decltype(ModelErrorType)> modelErrorType;
+    EntryType_t<decltype(PVPresent)> pvPresent;
 
 
     static constexpr std::string_view record_name_ = "misc";
@@ -345,7 +346,7 @@ struct MiscRecord {
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
         Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
-        LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType);
+        LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType, PVPresent);
 };
 
 

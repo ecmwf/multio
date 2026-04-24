@@ -62,6 +62,18 @@ constexpr auto TypeOfProcessedDataEntry =
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
 
+// Section 2 - local definition 39 (4D-var model errors, type=eme)
+
+constexpr auto NumberOfComponents =
+    EntryDef<std::int64_t>{"misc-numberOfComponents"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfComponents; });
+
+constexpr auto ModelErrorType =
+    EntryDef<std::int64_t>{"misc-modelErrorType"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.modelErrorType; });
+
 
 // Section3 (more to be moved here from MarsMiscGeo.h)
 

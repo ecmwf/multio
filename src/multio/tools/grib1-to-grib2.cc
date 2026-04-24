@@ -398,6 +398,22 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow.withKey("lengthOfTimeWindow"), h);
     misc.lengthOfTimeWindowInSeconds
         = dm::parseEntry(dm::LengthOfTimeWindowInSeconds.withKey("lengthOfTimeWindowInSeconds"), h);
+
+    // Fallback: for classic 4D-Var analysis messages, the window length is
+    // carried in the GRIB1 local-section key `lengthOf4DvarWindow` (in hours)
+    // rather than in `lengthOfTimeWindow`. If the primary source did not
+    // populate `misc.lengthOfTimeWindow`, read the 4D-Var key directly.
+    //
+    // No derivation from `anoffset` is performed: we only mirror what the
+    // producer placed in the input handle. The ecCodes "missing" sentinel
+    // (0xFFFF for a 16-bit unsigned field) is explicitly ignored so that
+    // metkit's analysis deduction keeps writing GRIB "missing" downstream.
+    if (!misc.lengthOfTimeWindow.isSet() && h.has("lengthOf4DvarWindow")) {
+        long lengthOf4DvarWindowHours = h.getLong("lengthOf4DvarWindow");
+        if (lengthOf4DvarWindowHours != 0xFFFF) {
+            misc.lengthOfTimeWindow.set(lengthOf4DvarWindowHours);
+        }
+    }
     misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withKey("bitsPerValue").withDefault(24), h);
 
     // TODO pgeier readd maybe

@@ -351,6 +351,21 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     // TODO pgeier set it again ??
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
 
+    // For type=eme (4D-var model errors, EDA long-window system) the GRIB1
+    // input carries local definition 39 with componentIndex (= mars.number),
+    // numberOfComponents and modelErrorType. The metkit encoder deduces
+    // componentIndex from mars.number, but numberOfComponents and
+    // modelErrorType have no MARS equivalent and must be forwarded from the
+    // input handle.
+    if (mars.type.get() == "eme") {
+        if (h.has("numberOfComponents")) {
+            misc.numberOfComponents.set(h.getLong("numberOfComponents"));
+        }
+        if (h.has("modelErrorType")) {
+            misc.modelErrorType.set(h.getLong("modelErrorType"));
+        }
+    }
+
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())

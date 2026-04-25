@@ -432,6 +432,14 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         if (h.has("modelErrorType")) {
             misc.modelErrorType.set(h.getLong("modelErrorType"));
         }
+        // mars.number == componentIndex for eme; the encoder reads it via the
+        // analysis ModelErrors path (see metkit analysisEncoding.h).
+        // Forwarded here unconditionally because the standard ensemble branch
+        // below requires `numberOfForecastsInEnsemble` (absent for eme) and
+        // would otherwise leave `mars.number` unset.
+        if (h.has("number")) {
+            mars.number.set(h.getLong("number"));
+        }
     }
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number

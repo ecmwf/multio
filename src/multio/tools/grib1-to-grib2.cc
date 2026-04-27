@@ -314,6 +314,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     mars.anoffset = dm::parseEntry(dm::ANOFFSET, h);
+    mars.iteration = dm::parseEntry(dm::ITERATION, h);
     mars.ident = dm::parseEntry(dm::IDENT, h);
     mars.instrument = dm::parseEntry(dm::INSTRUMENT, h);
     mars.channel = dm::parseEntry(dm::CHANNEL, h);
@@ -439,6 +440,17 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         // and would otherwise leave `mars.number` unset.
         if (h.has("number")) {
             mars.number.set(h.getLong("number"));
+        }
+    }
+
+    // For type=4i (4D-var analysis iterations) the GRIB1 input carries
+    // local definition 38 with iterationNumber and totalNumberOfIterations.
+    // `iterationNumber` is forwarded directly through MARS as
+    // `mars.iteration` (set above); only `totalNumberOfIterations` has no
+    // MARS equivalent and must be forwarded through misc.
+    if (mars.type.get() == "4i") {
+        if (h.has("totalNumberOfIterations")) {
+            misc.totalNumberOfIterations.set(h.getLong("totalNumberOfIterations"));
         }
     }
 

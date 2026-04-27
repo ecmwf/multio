@@ -419,24 +419,24 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     // TODO pgeier set it again ??
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
 
-    // For type=eme (4D-var model errors, EDA long-window system) the GRIB1
-    // input carries local definition 39 with componentIndex (= mars.number),
-    // numberOfComponents and modelErrorType. The metkit encoder deduces
-    // componentIndex from mars.number, but numberOfComponents and
-    // modelErrorType have no MARS equivalent and must be forwarded from the
-    // input handle.
-    if (mars.type.get() == "eme") {
+    // For type=eme (ensemble model errors) or type=me (model errors) the
+    // GRIB1 input carries local definition 39 with componentIndex
+    // (= mars.number), numberOfComponents and modelErrorType. The metkit
+    // encoder deduces componentIndex from mars.number, but
+    // numberOfComponents and modelErrorType have no MARS equivalent and
+    // must be forwarded from the input handle.
+    if (mars.type.get() == "eme" || mars.type.get() == "me") {
         if (h.has("numberOfComponents")) {
             misc.numberOfComponents.set(h.getLong("numberOfComponents"));
         }
         if (h.has("modelErrorType")) {
             misc.modelErrorType.set(h.getLong("modelErrorType"));
         }
-        // mars.number == componentIndex for eme; the encoder reads it via the
-        // analysis ModelErrors path (see metkit analysisEncoding.h).
+        // mars.number == componentIndex for eme/me; the encoder reads it via
+        // the analysis ModelErrors path (see metkit analysisEncoding.h).
         // Forwarded here unconditionally because the standard ensemble branch
-        // below requires `numberOfForecastsInEnsemble` (absent for eme) and
-        // would otherwise leave `mars.number` unset.
+        // below requires `numberOfForecastsInEnsemble` (absent for eme/me)
+        // and would otherwise leave `mars.number` unset.
         if (h.has("number")) {
             mars.number.set(h.getLong("number"));
         }

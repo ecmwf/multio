@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -209,6 +211,59 @@ void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
     misc.missingValue.set(missingValue);
 }
 
+// Spectral_complex packing in ecCodes pre-multiplies each spherical harmonic
+// coefficient (m,n) by `(n*(n+1))^laplacianOperator` before quantising it.
+// The packed referenceValue and the unpacked low-order subset are stored as
+// IEEE 32-bit floats; any product that exceeds FLT_MAX (~3.4e38) trips an
+// unrecoverable assertion inside `grib_ieee_to_long` and aborts the whole
+// process - bypassing the per-message --on-error handling.
+//
+// IFS occasionally writes type=al SPP random fields with the sentinel value
+// `laplacianOperator=9.9` even though the source data carries no
+// pre-laplacian scaling. Combined with the truncation=399 of those fields,
+// this yields (399*400)^9.9 ~= 1.6e51, easily overflowing FLT_MAX once
+// multiplied by the actual coefficient values. Verified by `grib_set
+// laplacianOperator=0` on such a message: re-encoding then succeeds and the
+// codedValues match the input exactly, confirming the source data is not
+// pre-laplacian-scaled.
+//
+// We can't compute a tight overflow bound generically from the values array
+// (the largest coefficient lives at low n while the largest scaling lives at
+// high n; without traversing the spectral (m,n) layout we'd get too many
+// false positives). Instead, refuse to encode messages whose laplacianOperator
+// is the known IFS sentinel `9.9` by throwing eckit::BadValue. The exception
+// is recoverable: --on-error=log-and-skip will skip the offending message and
+// continue, while --on-error=abort will propagate and stop the conversion.
+//
+// NOTE (revisit): the underlying issue is an upstream IFS encoding bug; once
+// IFS stops emitting `laplacianOperator=9.9` for non-laplacian-scaled SPP
+// random fields this guard becomes dead code and can be removed.
+void validateSpectralComplexNoOverflow(const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+                                       const std::vector<double>& /*values*/) {
+    if (!mars.packing.isSet() || mars.packing.get() != "complex") {
+        return;
+    }
+    if (!misc.laplacianOperator.isSet()) {
+        return;
+    }
+
+    constexpr double kIfsSentinel = 9.9;
+    constexpr double kEpsilon = 1.0e-3;
+    const double p = misc.laplacianOperator.get();
+    if (std::fabs(p - kIfsSentinel) > kEpsilon) {
+        return;
+    }
+
+    std::ostringstream oss;
+    oss << "spectral_complex message carries IFS sentinel laplacianOperator=" << p
+        << " (truncation=" << (mars.truncation.isSet() ? mars.truncation.get() : -1L)
+        << ", type=" << (mars.type.isSet() ? mars.type.get() : std::string{"<unset>"})
+        << ", paramId=" << (mars.param.isSet() ? mars.param.get() : -1L) << "). Re-encoding such messages would "
+        << "trigger an unrecoverable ecCodes IEEE32 overflow in `grib_ieee_to_long` because the "
+        << "stored data is not actually pre-laplacian-scaled. Refusing to encode.";
+    throw eckit::BadValue(oss.str(), Here());
+}
+
 std::optional<std::pair<long, long>> parseRange(const std::string& s) {
     static const std::regex re(R"(^\s*([+-]?\d+)\s*-\s*([+-]?\d+)\s*$)");
     std::smatch m;
@@ -245,7 +300,7 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
 void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
-                     int verbosity) {
+                     int verbosity, long defaultEnsembleSize = 0) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -259,6 +314,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     mars.anoffset = dm::parseEntry(dm::ANOFFSET, h);
+    mars.iteration = dm::parseEntry(dm::ITERATION, h);
     mars.ident = dm::parseEntry(dm::IDENT, h);
     mars.instrument = dm::parseEntry(dm::INSTRUMENT, h);
     mars.channel = dm::parseEntry(dm::CHANNEL, h);
@@ -344,12 +400,59 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     misc.initialStep = dm::parseEntry(dm::InitialStep.withKey("initialStep"), h);
     misc.timeIncrementInSeconds = dm::parseEntry(dm::TimeIncrementInSeconds.withKey("timeIncrement"), h);
     misc.pv = dm::parseEntry(dm::Pv.withKey("pv"), h);
+    // Signal explicit absence of vertical-coordinate parameters to the
+    // encoder. Without this, mars2grib's `resolve_PvArray_or_throw` falls back
+    // to its PV137 default and writes a 1002-double PV array into the output
+    // for hybrid-level fields whose source GRIB had NV=0 (e.g. lnsp on ml).
+    // Detect "no PV" via the input handle's NV key and forward as
+    // `misc.pvPresent=false`; metkit's LevelOp suppresses PV emission when
+    // it sees this flag.
+    if (!misc.pv.isSet()) {
+        long nv = h.has("NV") ? h.getLong("NV") : 0;
+        if (nv == 0) {
+            misc.pvPresent.set(false);
+        }
+    }
     misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
 
     handleMissingValue(h, misc);
 
     // TODO pgeier set it again ??
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
+
+    // For type=eme (ensemble model errors) or type=me (model errors) the
+    // GRIB1 input carries local definition 39 with componentIndex
+    // (= mars.number), numberOfComponents and modelErrorType. The metkit
+    // encoder deduces componentIndex from mars.number, but
+    // numberOfComponents and modelErrorType have no MARS equivalent and
+    // must be forwarded from the input handle.
+    if (mars.type.get() == "eme" || mars.type.get() == "me") {
+        if (h.has("numberOfComponents")) {
+            misc.numberOfComponents.set(h.getLong("numberOfComponents"));
+        }
+        if (h.has("modelErrorType")) {
+            misc.modelErrorType.set(h.getLong("modelErrorType"));
+        }
+        // mars.number == componentIndex for eme/me; the encoder reads it via
+        // the analysis ModelErrors path (see metkit analysisEncoding.h).
+        // Forwarded here unconditionally because the standard ensemble branch
+        // below requires `numberOfForecastsInEnsemble` (absent for eme/me)
+        // and would otherwise leave `mars.number` unset.
+        if (h.has("number")) {
+            mars.number.set(h.getLong("number"));
+        }
+    }
+
+    // For type=4i (4D-var analysis iterations) the GRIB1 input carries
+    // local definition 38 with iterationNumber and totalNumberOfIterations.
+    // `iterationNumber` is forwarded directly through MARS as
+    // `mars.iteration` (set above); only `totalNumberOfIterations` has no
+    // MARS equivalent and must be forwarded through misc.
+    if (mars.type.get() == "4i") {
+        if (h.has("totalNumberOfIterations")) {
+            misc.totalNumberOfIterations.set(h.getLong("totalNumberOfIterations"));
+        }
+    }
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
@@ -366,7 +469,16 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
 
         // If both are 0 it is likely a control forecast or no ensemble...
         if (number != 0 && numForecasts == 0) {
-            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+            if (defaultEnsembleSize > 0) {
+                std::cout << "Warning: numberOfForecastsInEnsemble is 0 but number=" << number
+                          << "; applying --default-ensemble-size=" << defaultEnsembleSize << std::endl;
+                numForecasts = defaultEnsembleSize;
+            }
+            else {
+                throw std::runtime_error(
+                    "The value for key numberOfForecastsInEnsemble must not be 0 (use --default-ensemble-size "
+                    "to supply a fallback, or --on-error log-and-skip to skip such messages)");
+            }
         }
         if (numForecasts != 0) {
             mars.number.set(number);
@@ -389,6 +501,22 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow.withKey("lengthOfTimeWindow"), h);
     misc.lengthOfTimeWindowInSeconds
         = dm::parseEntry(dm::LengthOfTimeWindowInSeconds.withKey("lengthOfTimeWindowInSeconds"), h);
+
+    // Fallback: for classic 4D-Var analysis messages, the window length is
+    // carried in the GRIB1 local-section key `lengthOf4DvarWindow` (in hours)
+    // rather than in `lengthOfTimeWindow`. If the primary source did not
+    // populate `misc.lengthOfTimeWindow`, read the 4D-Var key directly.
+    //
+    // No derivation from `anoffset` is performed: we only mirror what the
+    // producer placed in the input handle. The ecCodes "missing" sentinel
+    // (0xFFFF for a 16-bit unsigned field) is explicitly ignored so that
+    // metkit's analysis deduction keeps writing GRIB "missing" downstream.
+    if (!misc.lengthOfTimeWindow.isSet() && h.has("lengthOf4DvarWindow")) {
+        long lengthOf4DvarWindowHours = h.getLong("lengthOf4DvarWindow");
+        if (lengthOf4DvarWindowHours != 0xFFFF) {
+            misc.lengthOfTimeWindow.set(lengthOf4DvarWindowHours);
+        }
+    }
     misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withKey("bitsPerValue").withDefault(24), h);
 
     // TODO pgeier readd maybe
@@ -795,6 +923,30 @@ Discipline192Handling parseDiscipline192Handling(const std::string& str) {
 }
 
 
+enum class OnErrorHandling : std::size_t
+{
+    Abort,
+    LogAndSkip,
+    Skip,
+};
+
+const std::unordered_map<std::string, OnErrorHandling>& onErrorHandlingMap() {
+    static const std::unordered_map<std::string, OnErrorHandling> map{
+        {"abort", OnErrorHandling::Abort},
+        {"log-and-skip", OnErrorHandling::LogAndSkip},
+        {"skip", OnErrorHandling::Skip}};
+    return map;
+}
+
+OnErrorHandling parseOnErrorHandling(const std::string& str) {
+    const auto& map = onErrorHandlingMap();
+    if (auto search = map.find(str); search != map.end()) {
+        return search->second;
+    }
+    throw std::runtime_error(std::string("Unsupported --on-error value: ") + str);
+}
+
+
 class Grib1ToGrib2 final : public multio::MultioTool {
 public:  // methods
     Grib1ToGrib2(int argc, char** argv);
@@ -835,6 +987,8 @@ private:
 
     std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules_ = mars2mars::allRulesNoWMOMapping();
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
+    OnErrorHandling onErrorHandling_ = OnErrorHandling::LogAndSkip;
+    long defaultEnsembleSize_ = 0;
 };
 
 Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, argv} {
@@ -871,6 +1025,13 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
         "discipline-192",
         "Options on handling fields with discipline 192 (field that are ill-formed). Values: \"log-and-ignore\" "
         "(default), \"ignore\", \"try-to-handle\""));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "on-error",
+        "How to handle per-message conversion errors. Values: \"abort\" (stop on first error), \"log-and-skip\" "
+        "(default, log the error and continue), \"skip\" (silently skip failing messages)"));
+    options_.push_back(new eckit::option::SimpleOption<long>(
+        "default-ensemble-size",
+        "Fallback value used when numberOfForecastsInEnsemble is 0 but number is non-zero. Default: 0 (throw)"));
 }
 
 void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
@@ -928,6 +1089,14 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     if (!discipline192.empty()) {
         discipline192Handling_ = parseDiscipline192Handling(discipline192);
     }
+
+    std::string onError;
+    args.get("on-error", onError);
+    if (!onError.empty()) {
+        onErrorHandling_ = parseOnErrorHandling(onError);
+    }
+
+    args.get("default-ensemble-size", defaultEnsembleSize_);
 }
 
 void Grib1ToGrib2::finish(const eckit::option::CmdArgs&) {}
@@ -975,7 +1144,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
+    std::size_t msgIndex = 0;
+    std::size_t skippedCount = 0;
     while ((msg = reader.next())) {
+        ++msgIndex;
+        try {
         // Extract message from datahandle... we expect it to be a memory handle
         // TODO pgeier: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
         std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
@@ -1041,7 +1214,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 std::cout << "Extracting metadata..." << std::endl;
             }
 
-            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
+            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_, defaultEnsembleSize_);
 
 
             if (overwritePacking_) {
@@ -1121,6 +1294,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
             const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
 
+            // Pre-encode validation: catch spectral_complex laplacian-scaling
+            // overflows before they reach ecCodes (where they would trip an
+            // unrecoverable assertion in `grib_ieee_to_long`).
+            extract::validateSpectralComplexNoOverflow(mars, misc, values);
+
             // Call the GRIB2 encoder in metkit
             auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
 
@@ -1143,6 +1321,23 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 write(*preparedHandle.get(), *outputFileHandle);
             }
         }
+        }
+        catch (const std::exception& e) {
+            if (onErrorHandling_ == OnErrorHandling::Abort) {
+                throw;
+            }
+            ++skippedCount;
+            if (onErrorHandling_ == OnErrorHandling::LogAndSkip) {
+                std::cerr << "Error converting message #" << msgIndex << ": " << e.what()
+                          << " -- skipping" << std::endl;
+            }
+            continue;
+        }
+    }
+
+    if (skippedCount > 0) {
+        std::cerr << "grib1-to-grib2: skipped " << skippedCount << " message(s) due to conversion errors"
+                  << std::endl;
     }
 
     if (outputFileHandle) {

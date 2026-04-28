@@ -29,6 +29,7 @@ list( APPEND multio_action_plugins
 if( HAVE_MIR )
     list( APPEND multio_action_plugins
         multio-action-interpolate
+        multio-action-interpolate-mtg2
     )
 endif()
 

@@ -167,7 +167,7 @@ bool parseEntry(std::vector<std::string>& value, const std::string& key, const e
         return true;
     }
     throw eckit::UserError{
-        "Could not convert value of key '" + key + "' to vector<int64_t>: no conversion method defined", Here()};
+        "Could not convert value of key '" + key + "' to vector<string>: no conversion method defined", Here()};
 }
 bool parseEntry(std::vector<std::int64_t>& value, const std::string& key,
                 const eckit::LocalConfiguration& localConfig) {

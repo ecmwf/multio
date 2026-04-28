@@ -228,6 +228,166 @@ CASE("parse configuration -- unknown key") {
 }
 
 
+// Configuration to nested and vector parsing
+
+struct MySuperConfig {
+    MyConfig nestedConfig;
+    std::vector<MyConfig> nestedConfigs;
+    std::array<MyConfig, 3> fixedConfigs;
+
+    static constexpr auto fields_
+        = std::make_tuple(multio::util::config::requiredEntry("nestedConfig", &MySuperConfig::nestedConfig),
+                          multio::util::config::requiredEntry("nestedConfigs", &MySuperConfig::nestedConfigs),
+                          multio::util::config::requiredEntry("fixedConfigs", &MySuperConfig::fixedConfigs));
+};
+
+
+CASE("parse nested config -- valid") {
+    auto makeConfigName = [](const std::string& name) {
+        eckit::LocalConfiguration nestedConfig;
+        nestedConfig.set("name", name);
+        return nestedConfig;
+    };
+
+    eckit::LocalConfiguration superConfig;
+    superConfig.set("nestedConfig", makeConfigName("my-config"));
+
+    std::vector<eckit::LocalConfiguration> nestedConfigs;
+    nestedConfigs.push_back(makeConfigName("my-config1"));
+    nestedConfigs.push_back(makeConfigName("my-config2"));
+    nestedConfigs.push_back(makeConfigName("my-config3"));
+    superConfig.set("nestedConfigs", nestedConfigs);
+
+    std::vector<eckit::LocalConfiguration> fixedConfigs;
+    fixedConfigs.push_back(makeConfigName("my-config4"));
+    fixedConfigs.push_back(makeConfigName("my-config5"));
+    fixedConfigs.push_back(makeConfigName("my-config6"));
+    superConfig.set("fixedConfigs", fixedConfigs);
+
+    const auto myConfig = util::config::parseConfig<MySuperConfig>(superConfig);
+    EXPECT(myConfig.nestedConfig.name == "my-config");
+    EXPECT(myConfig.nestedConfigs.size() == 3);
+    EXPECT(myConfig.nestedConfigs[0].name == "my-config1");
+    EXPECT(myConfig.nestedConfigs[1].name == "my-config2");
+    EXPECT(myConfig.nestedConfigs[2].name == "my-config3");
+    EXPECT(myConfig.fixedConfigs[0].name == "my-config4");
+    EXPECT(myConfig.fixedConfigs[1].name == "my-config5");
+    EXPECT(myConfig.fixedConfigs[2].name == "my-config6");
+}
+
+
+CASE("parse nested config -- invalid fixed size (to few)") {
+    auto makeConfigName = [](const std::string& name) {
+        eckit::LocalConfiguration nestedConfig;
+        nestedConfig.set("name", name);
+        return nestedConfig;
+    };
+
+    eckit::LocalConfiguration superConfig;
+    superConfig.set("nestedConfig", makeConfigName("my-config"));
+
+    std::vector<eckit::LocalConfiguration> nestedConfigs;
+    nestedConfigs.push_back(makeConfigName("my-config1"));
+    nestedConfigs.push_back(makeConfigName("my-config2"));
+    nestedConfigs.push_back(makeConfigName("my-config3"));
+    superConfig.set("nestedConfigs", nestedConfigs);
+
+    {
+        std::vector<eckit::LocalConfiguration> fixedConfigs;
+        nestedConfigs.push_back(makeConfigName("my-config4"));
+        superConfig.set("fixedConfigs", fixedConfigs);
+
+        EXPECT_THROWS(util::config::parseConfig<MySuperConfig>(superConfig));
+    }
+
+
+    {
+        std::vector<eckit::LocalConfiguration> fixedConfigs;
+        nestedConfigs.push_back(makeConfigName("my-config4"));
+        nestedConfigs.push_back(makeConfigName("my-config5"));
+        nestedConfigs.push_back(makeConfigName("my-config6"));
+        nestedConfigs.push_back(makeConfigName("my-config7"));
+        superConfig.set("fixedConfigs", fixedConfigs);
+        EXPECT_THROWS(util::config::parseConfig<MySuperConfig>(superConfig));
+    }
+}
+
+
+struct VectorConfig {
+    std::vector<double> doubles;
+    std::vector<std::string> strings;
+    std::vector<std::int64_t> ints;
+
+    static constexpr auto fields_
+        = std::make_tuple(multio::util::config::requiredEntry("doubles", &VectorConfig::doubles),
+                          multio::util::config::requiredEntry("strings", &VectorConfig::strings),
+                          multio::util::config::requiredEntry("ints", &VectorConfig::ints));
+};
+
+
+CASE("parse vectors -- valid") {
+    eckit::LocalConfiguration config;
+    config.set("doubles", std::vector<double>{0.1, 0.2});
+    config.set("strings", std::vector<std::string>{"1", "2"});
+    config.set("ints", std::vector<std::int64_t>{1, 2});
+
+
+    const auto myConfig = util::config::parseConfig<VectorConfig>(config);
+    EXPECT(myConfig.doubles[0] == 0.1);
+    EXPECT(myConfig.doubles[1] == 0.2);
+    EXPECT(myConfig.strings[0] == "1");
+    EXPECT(myConfig.strings[1] == "2");
+    EXPECT(myConfig.ints[0] == 1);
+    EXPECT(myConfig.ints[1] == 2);
+}
+
+struct ArrayConfig {
+    std::array<double, 2> doubles;
+    std::array<std::string, 2> strings;
+    std::array<std::int64_t, 2> ints;
+
+    static constexpr auto fields_
+        = std::make_tuple(multio::util::config::requiredEntry("doubles", &ArrayConfig::doubles),
+                          multio::util::config::requiredEntry("strings", &ArrayConfig::strings),
+                          multio::util::config::requiredEntry("ints", &ArrayConfig::ints));
+};
+
+CASE("parse fixed size arrays -- valid") {
+    eckit::LocalConfiguration config;
+    config.set("doubles", std::vector<double>{0.1, 0.2});
+    config.set("strings", std::vector<std::string>{"1", "2"});
+    config.set("ints", std::vector<std::int64_t>{1, 2});
+
+
+    const auto myConfig = util::config::parseConfig<ArrayConfig>(config);
+    EXPECT(myConfig.doubles[0] == 0.1);
+    EXPECT(myConfig.doubles[1] == 0.2);
+    EXPECT(myConfig.strings[0] == "1");
+    EXPECT(myConfig.strings[1] == "2");
+    EXPECT(myConfig.ints[0] == 1);
+    EXPECT(myConfig.ints[1] == 2);
+}
+
+
+CASE("parse fixed size arrays -- invalid (too few)") {
+    eckit::LocalConfiguration config;
+    config.set("doubles", std::vector<double>{0.1});
+    config.set("strings", std::vector<std::string>{"1", "2"});
+    config.set("ints", std::vector<std::int64_t>{1, 2});
+
+    EXPECT_THROWS(util::config::parseConfig<ArrayConfig>(config));
+}
+
+CASE("parse fixed size arrays -- invalid (too many)") {
+    eckit::LocalConfiguration config;
+    config.set("doubles", std::vector<double>{0.1, 0.2, 0.3});
+    config.set("strings", std::vector<std::string>{"1", "2"});
+    config.set("ints", std::vector<std::int64_t>{1, 2});
+
+    EXPECT_THROWS(util::config::parseConfig<ArrayConfig>(config));
+}
+
+
 }  // namespace multio::test
 
 

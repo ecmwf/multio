@@ -1,0 +1,23 @@
+set(PREFIX multio_tests_action_interpolate-mtg2)
+
+# Set IFS_INSTALL_DIR to the Multio source root directory.
+file(REAL_PATH "../../../../" IFS_INSTALL_DIR BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_initialize
+    SOURCES test_initialize.cc
+    NO_AS_NEEDED
+    LIBS multio-action-interpolate-mtg2 multio-action-sink
+    ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
+)
+
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_with_sample_data
+    SOURCES test_interpolate-mtg2_with_data.cc
+    NO_AS_NEEDED
+    LIBS multio-action-interpolate-mtg2 multio-action-debug-sink
+    ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
+)
+
+

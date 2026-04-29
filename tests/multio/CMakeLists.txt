@@ -201,11 +201,6 @@ ecbuild_add_test( TARGET      test_multio_hammer_mpi
                   TEST_REQUIRES test_multio_hammer_tcp
                   ENVIRONMENT "${_test_environment}" )
 
-ecbuild_add_test( TARGET test_multio_hammer_tcp
-                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
-                  ARGS $<TARGET_FILE:multio-hammer>
-                  ENVIRONMENT "${_test_environment}" )
-
 list( APPEND _hammer_test_data
   "single-field.grib"
 )

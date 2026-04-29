@@ -38,9 +38,6 @@ const std::unordered_map<std::string, int> lonParamIds{
 std::unique_ptr<multio::action::encode::GribEncoder> createEncoder(
     const multio::config::ComponentConfiguration& compConf) {
     if (not compConf.parsedConfig().has("grid-downloader-template")) {
-        eckit::Log::warning() << "Multio GridDownloader: configuration is missing the coordinates encoder template, "
-                                 "running without encoding!"
-                              << std::endl;
         return nullptr;
     }
 

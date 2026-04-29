@@ -30,7 +30,6 @@ namespace {
 std::string create_path(const config::ComponentConfiguration& compConf) {
     const auto& cfg = compConf.parsedConfig();
     auto path = cfg.getString("path");
-    eckit::Log::info() << "path = " << path << std::endl;
     if (cfg.getBool("per-server", false)) {
         eckit::PathName tmp = path;
         auto dirName = tmp.baseName().asString() == path ? "" : tmp.dirName().asString() + "/";
@@ -61,9 +60,6 @@ void FileSink::write(eckit::message::Message msg) {
 }
 
 void FileSink::flush() {
-    eckit::Log::info() << "Flushing ";
-    print(eckit::Log::info());
-    eckit::Log::info() << std::endl;
     handle_->flush();
 }
 

@@ -370,9 +370,6 @@ void MpiTransport::createPeers() const {
     for (auto& it : serverRankMap) {
         serverPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), (unsigned long)it.first));
     }
-
-    eckit::Log::info() << " *** MpiTransport::createPeers clientCount: " << clientPeers_.size()
-                       << ", serverCount: " << serverPeers_.size() << ", commSize: " << parentSize << std::endl;
 }
 
 void MpiTransport::print(std::ostream& os) const {

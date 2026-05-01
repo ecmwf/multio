@@ -60,6 +60,12 @@ ecbuild_add_option( FEATURE PGEN
                     DESCRIPTION "Use pgen for Maestro product-generation workflow"
                     REQUIRED_PACKAGES "NAME pgen VERSION 1.13.0" )
 
+### ecflow-light (optional, for ecFlow reporting from the server)
+ecbuild_add_option( FEATURE ECFLOW_LIGHT
+                    DEFAULT OFF
+                    DESCRIPTION "Enable ecFlow reporting from the multio server"
+                    REQUIRED_PACKAGES "NAME ecflow_light VERSION 1.1.1" )
+
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
                     DESCRIPTION "Build Fortran API and examples" )
@@ -164,13 +170,7 @@ set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINAR
 set( MULTIO_LIBRARIES      multio )
 
 if ( HAVE_MULTIO_OUTPUT_MANAGER )
-    if (HAVE_FORTRAN AND (NOT (CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")))
-        message(STATUS "Building multiom")
-        set( BUILD_MULTIOM 1)
-    else ()
-        message(WARNING "Skipping multiom because the GNU Fortran compiler is too slow.")
-        set( BUILD_MULTIOM 0)
-    endif()
+    set( BUILD_MULTIOM 1)
 else()
     set( BUILD_MULTIOM 0)
 endif()

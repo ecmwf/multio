@@ -197,7 +197,7 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
 ecbuild_add_test( TARGET test_multio_hammer_tcp
                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
                   ARGS $<TARGET_FILE:multio-hammer>
-                  TEST_REQUIRES test_multio_hammer_thread 
+                  TEST_REQUIRES test_multio_hammer_thread
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET      test_multio_hammer_mpi
@@ -206,7 +206,7 @@ ecbuild_add_test( TARGET      test_multio_hammer_mpi
                   ARGS        --transport=mpi --nbclients=5 --nbservers=3
                   MPI         8
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                  TEST_REQUIRES test_multio_hammer_tcp 
+                  TEST_REQUIRES test_multio_hammer_tcp
                   ENVIRONMENT "${_test_environment}" )
 
 
@@ -330,58 +330,51 @@ ecbuild_add_test( TARGET          test_multio_replay_nemo_capi_partial_agg
 )
 
 
-# Synchronization
+# Step Meter Reporting
 
-ecbuild_add_executable( TARGET    test_multio_synchronize
-                        SOURCES   test_multio_synchronize.cc
+ecbuild_add_executable( TARGET    test_multio_step_meter
+                        SOURCES   test_multio_step_meter.cc
                         LIBS      multio-api
                         NOINSTALL
 )
 
-ecbuild_add_test( TARGET          test_multio_synchronize_fail_no_mpi
-                  COMMAND         ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize
+ecbuild_add_test( TARGET          test_multio_step_meter_fail_no_mpi
+                  COMMAND         ${CMAKE_CURRENT_BINARY_DIR}/test_multio_step_meter
                   ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
                   TEST_PROPERTIES  WILL_FAIL TRUE
 )
 
-ecbuild_add_test( TARGET          test_multio_synchronize_fail_no_sync
-                  COMMAND         ${CMAKE_CURRENT_SOURCE_DIR}/expect-timeout.sh
-                  ARGS            2 ${MPIEXEC_EXECUTABLE} -n 3 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize : -n 1 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize --skip-sync : -n 4 ${CMAKE_BINARY_DIR}/bin/multio-probe --test
-                  ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
-                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
-                  TEST_PROPERTIES RESOURCE_LOCK mpi
+list( APPEND _step_meter_environment
+    "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
+    ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
+    "MPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}"
+    "MULTIO_PROBE_PATH=${CMAKE_BINARY_DIR}/bin/multio-probe"
+    "TEST_BINARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_multio_step_meter"
 )
 
-ecbuild_add_test( TARGET          test_multio_synchronize_client_only
-                  COMMAND         ${MPIEXEC_EXECUTABLE}
-                  ARGS            -n 1 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize
-                  ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
-                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
+ecbuild_add_test( TARGET          test_multio_step_meter_synced
+                  COMMAND         ${CMAKE_CURRENT_SOURCE_DIR}/test_multio_step_meter.sh
+                  ARGS            2 12 0,1,2,3,4,5,6,7,8,9,10,11,12 0,1,2,3,4,5,6,7,8,9,10,11,12
+                  ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       5
+                                  TIMEOUT       10
 )
 
-ecbuild_add_test( TARGET          test_multio_synchronize_2_clients
-                  COMMAND         ${MPIEXEC_EXECUTABLE}
-                  ARGS            -n 2 ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize
-                  ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
-                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
+ecbuild_add_test( TARGET          test_multio_step_meter_asymmetric
+                  COMMAND         ${CMAKE_CURRENT_SOURCE_DIR}/test_multio_step_meter.sh
+                  ARGS            2 12 0,1,2,3,4,5,6,7,8,9,10,11,12 0,3,6,9,12
+                  ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       5
+                                  TIMEOUT       10
 )
 
-foreach (N_CLIENTS 1 4)
-foreach (N_SERVERS 1 4)
-ecbuild_add_test( TARGET          test_multio_synchronize_${N_CLIENTS}_clients_${N_SERVERS}_servers
-                  COMMAND         ${MPIEXEC_EXECUTABLE}
-                  ARGS            -n ${N_CLIENTS} ${CMAKE_CURRENT_BINARY_DIR}/test_multio_synchronize : -n ${N_SERVERS} ${CMAKE_BINARY_DIR}/bin/multio-probe --test
-                  ENVIRONMENT     "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-simple-client-server.yaml"
-                                  ECKIT_MPI_INIT_THREAD=MPI_THREAD_MULTIPLE
+ecbuild_add_test( TARGET          test_multio_step_meter_stalled
+                  COMMAND         ${CMAKE_CURRENT_SOURCE_DIR}/test_multio_step_meter.sh
+                  ARGS            2 8 0,4,8 0,3,6,9,12
+                  ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       5
+                                  TIMEOUT       10
 )
-endforeach()
-endforeach()
 
 endif (eckit_HAVE_MPI)
 

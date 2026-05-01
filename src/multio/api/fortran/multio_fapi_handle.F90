@@ -33,6 +33,7 @@ implicit none
         ! Signalling
         procedure, public,  pass :: flush                => multio_handle_flush
         procedure, public,  pass :: notify               => multio_handle_notify
+        procedure, public,  pass :: synchronize          => multio_handle_synchronize
 
         ! Domain handling
         procedure, public,  pass :: write_domain         => multio_handle_write_domain
@@ -190,6 +191,55 @@ contains
         return
     end function multio_handle_notify
 
+
+ !> @brief Block until a server-side processing is complete
+    !!
+    !! This function will ensure that all server-side processing is
+    !! complete and data are persisted on the filesystem before
+    !! returning. Its intended use is for checkpointing.
+    !!
+    !! @param [in,out] handle   - Pointer to the handle object
+    !! @param [in,out] metadata - Metadata containing step information
+    !!
+    !! @return Error code indicating the operation's success
+    !!
+    function multio_handle_synchronize(handle, metadata) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        ! Variable references from the project
+        use :: multio_api_metadata_mod,  only: multio_metadata
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata),    intent(inout) :: metadata
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        ! Private interface to the c API
+        interface
+            function c_multio_synchronize(handle, metadata) result(err) &
+                    bind(c, name='multio_synchronize')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr), value, intent(in) :: handle
+                type(c_ptr), value, intent(in) :: metadata
+                integer(c_int) :: err
+            end function c_multio_synchronize
+        end interface
+        ! implementation
+        c_err = c_multio_synchronize(handle%c_ptr(), metadata%c_ptr())
+        ! Setting return value
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_handle_synchronize
 
     !> @brief Send domain information to multio.
     !!

@@ -17,18 +17,21 @@
 #pragma once
 
 #include <queue>
-#include <tuple>
+#include <string>
 
 #include "eckit/container/Queue.h"
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
-#include "eckit/mpi/Comm.h"
-#include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
-
 
 #include "multio/transport/StreamPool.h"
 #include "multio/transport/Transport.h"
+
+namespace eckit {
+namespace mpi {
+class Comm;
+}
+}  // namespace eckit
 
 namespace multio::transport {
 
@@ -37,7 +40,12 @@ struct ReceivedBuffer {
     size_t size;
 };
 
-using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
+struct MpiPeerSetup {
+    MpiPeer localPeer;
+    std::string parentCommName;
+    std::string clientCommName;
+    std::string serverCommName;
+};
 
 class MpiTransport final : public Transport {
 public:
@@ -50,7 +58,9 @@ private:
     void openConnections() override;
     void closeConnections() override;
 
-    void synchronize() override;
+    void synchronize(const Message& msg = Message{}) override;
+
+    void reportStep(const Message& msg);
 
     Message receive() override;
 
@@ -70,8 +80,6 @@ private:
 
     PeerList createServerPeers() const override;
 
-    const eckit::mpi::Comm& comm() const;
-
     eckit::mpi::Status probe();
     size_t blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer);
 
@@ -80,10 +88,14 @@ private:
     size_t getMpiPoolSize(const ComponentConfiguration& compConf);
     size_t getMpiBufferSize(const ComponentConfiguration& compConf);
 
+    const eckit::mpi::Comm& comm() const;
+    const eckit::mpi::Comm& clientComm() const;
+    const eckit::mpi::Comm& serverComm() const;
+
     MpiPeer local_;
-    eckit::mpi::Group parentGroup_;
-    eckit::mpi::Group clientGroup_;
-    eckit::mpi::Group serverGroup_;
+    std::string parentCommName_;
+    std::string clientCommName_;
+    std::string serverCommName_;
 
     StreamPool pool_;
 

@@ -64,7 +64,7 @@ void ThreadTransport::bufferedSend(const Message&) {
     throw eckit::NotImplemented{Here()};
 }
 
-void ThreadTransport::synchronize() {
+void ThreadTransport::synchronize(const Message& msg) {
     throw eckit::NotImplemented{Here()};
 }
 

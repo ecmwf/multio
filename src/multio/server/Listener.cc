@@ -151,13 +151,8 @@ void Listener::start() {
 
                 case Message::Tag::Synchronization: {
                     checkConnection(msg.source());
-                    LOG_DEBUG_LIB(LibMultio)
-                        << "*** SYNCHRONIZATION received from " << msg.source() << ":    Received "
-                        << syncCount_ + 1 << " / " << clientCount_ << " synchronization messages" << std::endl;
-                    if (++syncCount_ == clientCount_) {
-                        msgQueue_.emplace(std::move(msg));
-                        syncCount_ = 0;
-                    }
+                    LOG_DEBUG_LIB(LibMultio) << "*** SYNCHRONIZATION received from " << msg.source() << std::endl;
+                    msgQueue_.emplace(std::move(msg));
                     break;
                 }
 

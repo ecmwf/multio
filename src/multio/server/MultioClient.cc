@@ -173,8 +173,8 @@ void MultioClient::closeConnections() {
                         []() { return std::string("MultioClient::closeConnections"); });
 }
 
-void MultioClient::synchronize() {
-    withFailureHandling([]() { transport::TransportRegistry::instance().synchronize(); },
+void MultioClient::synchronize(const message::Message& msg) {
+    withFailureHandling([&msg]() { transport::TransportRegistry::instance().synchronize(msg); },
                         []() { return std::string("MultioClient::synchronize"); });
 }
 

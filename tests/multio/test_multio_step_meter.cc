@@ -1,5 +1,6 @@
-#include "eckit/mpi/Comm.h"
+#include <unistd.h>
 #include "eckit/exception/Exceptions.h"
+#include "eckit/mpi/Comm.h"
 
 #include "multio/api/c/multio_c.h"
 
@@ -10,13 +11,6 @@ void handleError(int error) {
 }
 
 int main(int argc, char** argv) {
-    ASSERT(argc <= 2);
-
-    bool synchronize = true;
-    if (argc == 2 && std::string(argv[1]) == "--skip-sync") {
-        synchronize = false;
-    }
-
     multio_handle_t* multio_handle = nullptr;
     multio_configuration_t* multio_cc = nullptr;
 
@@ -30,8 +24,13 @@ int main(int argc, char** argv) {
 
     handleError(multio_open_connections(multio_handle));
 
-    if (synchronize) {
-        handleError(multio_synchronize(multio_handle));
+    for (size_t i = 1; i < argc; ++i) {
+        multio_metadata_t* md = nullptr;
+        handleError(multio_new_metadata(&md, multio_handle));
+        handleError(multio_metadata_set_int(md, "step", std::stol(argv[i])));
+        handleError(multio_metadata_set_int(md, "timeStep", 3600));
+        handleError(multio_synchronize(multio_handle, md));
+        handleError(multio_delete_metadata(md));
     }
 
     handleError(multio_close_connections(multio_handle));

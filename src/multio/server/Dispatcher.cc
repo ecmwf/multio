@@ -6,12 +6,11 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
-#include "multio/message/Parametrization.h"
-
-#include "multio/transport/Transport.h"
 
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
+#include "multio/message/Parametrization.h"
+#include "multio/transport/Transport.h"
 
 using eckit::LocalConfiguration;
 
@@ -72,7 +71,7 @@ void Dispatcher::handle(message::Message msg) const {
             break;
 
         case message::Message::Tag::Synchronization:
-            transport_.synchronize();
+            transport_.synchronize(msg);
             break;
 
         default:

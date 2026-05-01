@@ -49,13 +49,13 @@ PROGRAM MULTIOM_FEED_PROG
   USE :: MULTIO_API, ONLY: MULTIO_INITIALISE
   USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
 
-  ! MPI symbols for parallel execution
-  USE :: MPI, ONLY: MPI_INIT
-  USE :: MPI, ONLY: MPI_FINALIZE
-  USE :: MPI, ONLY: MPI_COMM_RANK
-  USE :: MPI, ONLY: MPI_COMM_SIZE
-  USE :: MPI, ONLY: MPI_COMM_WORLD
-  USE :: MPI, ONLY: MPI_SUCCESS
+  ! MPI access via fckit's compiler-agnostic wrapper.
+  ! NOTE: fckit deliberately avoids the Fortran 'mpi' module so the bundle is
+  ! portable across compiler / MPI combinations. Using 'use mpi' here breaks
+  ! GNU + Intel MPI builds because Intel's mpi.mod is precompiled with ifort
+  ! and cannot be read by gfortran.
+  USE :: FCKIT_MODULE,     ONLY: FCKIT_MAIN
+  USE :: FCKIT_MPI_MODULE, ONLY: FCKIT_MPI_COMM
 
 IMPLICIT NONE
 
@@ -74,6 +74,7 @@ IMPLICIT NONE
   INTEGER :: MPI_ERR
   INTEGER :: MPI_RANK
   INTEGER :: MPI_SIZE
+  TYPE(FCKIT_MPI_COMM) :: COMM
 
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INIT_CMD_LINE = 2_JPIB_K
@@ -109,15 +110,13 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  ! Initialize MPI
-  CALL MPI_INIT( MPI_ERR )
-  PP_DEBUG_CRITICAL_COND_THROW( MPI_ERR.NE.MPI_SUCCESS, ERRFLAG_UNABLE_TO_INITIALIZE_MPI )
+  ! Initialize fckit (delegates to eckit::Main::initialise, which initialises MPI).
+  CALL FCKIT_MAIN%INITIALISE()
 
-  ! Get the rank and size of the MPI communicator
-  CALL MPI_COMM_RANK( MPI_COMM_WORLD, MPI_RANK, MPI_ERR )
-  PP_DEBUG_CRITICAL_COND_THROW( MPI_ERR.NE.MPI_SUCCESS, ERRFLAG_UNABLE_TO_INITIALIZE_MPI )
-  CALL MPI_COMM_SIZE( MPI_COMM_WORLD, MPI_SIZE, MPI_ERR )
-  PP_DEBUG_CRITICAL_COND_THROW( MPI_ERR.NE.MPI_SUCCESS, ERRFLAG_UNABLE_TO_INITIALIZE_MPI )
+  ! Get the rank and size of the world communicator via fckit's MPI wrapper.
+  COMM     = FCKIT_MPI_COMM("world")
+  MPI_RANK = COMM%RANK()
+  MPI_SIZE = COMM%SIZE()
 
   WRITE(*,*) 'MultiOM Feed Program started with MPI_RANK = ', MPI_RANK, ' and MPI_SIZE = ', MPI_SIZE
 
@@ -206,9 +205,8 @@ IMPLICIT NONE
   !> Be sure we don't have any memory leaks
   CALL HOOKS%DEBUG_HOOK_%FREE( )
 
-  ! Finalize MPI
-  CALL MPI_FINALIZE( MPI_ERR )
-  PP_DEBUG_CRITICAL_COND_THROW( MPI_ERR.NE.MPI_SUCCESS, ERRFLAG_UNABLE_TO_FINALIZE_MPI )
+  ! Finalize fckit (delegates to eckit::Main::finalise, which finalises MPI).
+  CALL FCKIT_MAIN%FINALISE()
 
   !> Exit point (on success)
   STOP 0

@@ -86,7 +86,6 @@ ecbuild_add_executable(
       $<BUILD_INTERFACE:${MULTIO_OUTPUT_MANAGER_INCLUDE_DIR}>
 
   LIBS
-    MPI::MPI_Fortran
     fckit
     eccodes
     eccodes_f90

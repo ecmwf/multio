@@ -93,6 +93,13 @@ if( HAVE_FORTRAN )
 endif()
 
 
+### Tensogram encoding
+
+ecbuild_add_option( FEATURE TENSOGRAM
+                    DEFAULT OFF
+                    DESCRIPTION "Encode data using Tensogram format"
+                    REQUIRED_PACKAGES "NAME tensogram" )
+
 ### Maestro plugin
 
 ecbuild_add_option( FEATURE MAESTRO

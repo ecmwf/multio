@@ -198,6 +198,125 @@ the template, so what GRIB template to use will depend on the types of data bein
          unstructured-grid-type : eORCA025
 
 
+Encode-Tensogram
+~~~~~~~~~~~~~~~~
+
+This action encodes raw field data into the `Tensogram`_ N-dimensional tensor message format,
+producing self-describing binary messages that preserve MARS metadata. This action is particularly
+useful for producing compact, portable output that can be processed by external analysis tools.
+
+MARS metadata from the input message is preserved in two ways:
+
+* On the output Message itself (for downstream routing within multio pipelines)
+* Embedded in the Tensogram payload under ``base[0].mars`` (for external tool interoperability)
+
+The action supports configurable encoding (simple_packing for lossy compression), multiple
+compression algorithms (szip, zstd, lz4), optional filtering (shuffle), and integrity
+verification (xxh3 hashing).
+
+**Note:** This action requires tensogram support to be enabled at build time with
+``-DENABLE_TENSOGRAM=ON``. The tensogram library must be installed and available
+(see `github.com/ecmwf/tensogram`_).
+
+Configuration options:
+
+========================  ========================  ====================  ============================================
+Key                       Allowed Values            Default               Description
+========================  ========================  ====================  ============================================
+``encoding``              ``none``,                 ``simple_packing``    Encoding method: ``none`` (raw) or
+                          ``simple_packing``                              ``simple_packing`` (quantized integers)
+``compression``           ``none``, ``szip``,       ``szip``              Compression algorithm applied after
+                          ``zstd``, ``lz4``                               encoding
+``filter``                ``none``, ``shuffle``     ``none``              Pre-compression filter
+``hash``                  ``xxh3``, ``""``          ``xxh3``              Hash algorithm for integrity checking
+``bits-per-value``        Integer (1--64)           ``16``                Bits per value for simple_packing
+``decimal-scale-factor``  Integer                   ``0``                 Decimal scale factor for simple_packing
+========================  ========================  ====================  ============================================
+
+Example configurations:
+
+**High compression** (suitable for visual analysis):
+
+.. code-block:: yaml
+
+       - type : encode-tensogram
+         encoding : simple_packing
+         compression : szip
+         bits-per-value : 12
+         filter : shuffle
+
+**Lossless** (raw float64, no packing):
+
+.. code-block:: yaml
+
+       - type : encode-tensogram
+         encoding : none
+         compression : zstd
+
+**Balanced** (default settings):
+
+.. code-block:: yaml
+
+       - type : encode-tensogram
+         # Uses defaults: simple_packing, 16 bits, szip compression
+
+**Complete pipeline example** (select → encode → sink):
+
+.. code-block:: yaml
+
+       - name : surface-to-tensogram
+         actions :
+           - type : select
+             match :
+               - levtype : [sfc]
+
+           - type : encode-tensogram
+             encoding : simple_packing
+             compression : szip
+             bits-per-value : 16
+             hash : xxh3
+
+           - type : sink
+             sinks :
+               - type : file
+                 append : true
+                 path : output.tgm
+
+Output files can be validated and inspected using the tensogram command-line tools:
+
+.. code-block:: bash
+
+   # Validate message integrity
+   tensogram validate output.tgm
+
+   # Display metadata
+   tensogram info output.tgm
+
+   # List all messages
+   tensogram ls output.tgm
+
+   # Dump message contents
+   tensogram dump output.tgm
+
+Or processed in Python using the tensogram package:
+
+.. code-block:: python
+
+   import tensogram
+
+   with tensogram.TensogramFile.open("output.tgm") as f:
+       for msg in f:
+           meta, objects = msg
+           # Access MARS metadata
+           mars = meta.base[0].get('mars', {})
+           # Access data arrays
+           desc, data = objects[0]
+           print(f"Shape: {data.shape}, dtype: {data.dtype}")
+
+.. _`Tensogram`: https://github.com/ecmwf/tensogram
+.. _`github.com/ecmwf/tensogram`: https://github.com/ecmwf/tensogram
+
+
 Sink
 ~~~~
 

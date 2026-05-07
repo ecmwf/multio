@@ -131,4 +131,56 @@ bool parseEntry(bool& value, const std::string& key, const eckit::LocalConfigura
                            Here()};
 }
 
+
+bool parseEntry(eckit::LocalConfiguration& value, const std::string& key,
+                const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isSubConfiguration(key)) {
+        value = localConfig.getSubConfiguration(key);
+        return true;
+    }
+    throw eckit::UserError{
+        "Could not convert value of key '" + key + "' to eckit::LocalConfiguration: no conversion method defined",
+        Here()};
+}
+
+bool parseEntry(std::vector<double>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isFloatingPointList(key)) {
+        value = localConfig.getDoubleVector(key);
+        return true;
+    }
+    throw eckit::UserError{
+        "Could not convert value of key '" + key + "' to vector<double>: no conversion method defined", Here()};
+}
+
+bool parseEntry(std::vector<std::string>& value, const std::string& key, const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isStringList(key)) {
+        value = localConfig.getStringVector(key);
+        return true;
+    }
+    throw eckit::UserError{
+        "Could not convert value of key '" + key + "' to vector<string>: no conversion method defined", Here()};
+}
+bool parseEntry(std::vector<std::int64_t>& value, const std::string& key,
+                const eckit::LocalConfiguration& localConfig) {
+    if (!localConfig.has(key)) {
+        return false;
+    }
+    if (localConfig.isIntegralList(key)) {
+        auto res = localConfig.getLongVector(key);
+        value = std::vector<std::int64_t>{res.begin(), res.end()};
+        return true;
+    }
+    throw eckit::UserError{
+        "Could not convert value of key '" + key + "' to vector<int64_t>: no conversion method defined", Here()};
+}
+
 }  // namespace multio::util::config::detail

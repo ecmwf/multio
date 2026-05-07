@@ -334,15 +334,20 @@ struct MiscRecord {
     EntryType_t<decltype(BitsPerValue)> bitsPerValue;
     EntryType_t<decltype(LaplacianOperator)> laplacianOperator;
     EntryType_t<decltype(SubCentre)> subCentre;
+    EntryType_t<decltype(NumberOfComponents)> numberOfComponents;
+    EntryType_t<decltype(ModelErrorType)> modelErrorType;
+    EntryType_t<decltype(TotalNumberOfIterations)> totalNumberOfIterations;
+    EntryType_t<decltype(PVPresent)> pvPresent;
 
 
     static constexpr std::string_view record_name_ = "misc";
+
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
         Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
-        LaplacianOperator, SubCentre);
+        LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
 };
 
 

@@ -6,6 +6,8 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
+#include "multio/message/Metadata.h"
+
 
 namespace multio::action::statistics_mtg2 {
 
@@ -45,7 +47,7 @@ private:
 
     const bool disableStrictMapping_;
     const bool disableSquashing_;
-    const std::vector<std::pair<std::string, std::string>> setMetadata_;
+    const message::Metadata setMetadata_;
 
     const std::optional<OutputTimeReference> outputTimeReference_;
 
@@ -69,7 +71,7 @@ public:
 
     bool disableStrictMapping() const;
     bool disableSquashing() const;
-    const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
+    const message::Metadata& setMetadata() const;
     
     std::optional<OutputTimeReference> outputTimeReference() const;
 };

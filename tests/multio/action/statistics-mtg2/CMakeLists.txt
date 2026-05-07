@@ -64,4 +64,11 @@ ecbuild_add_test(
     LIBS multio-action-debug-sink multio-action-statistics-mtg2
 )
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_climdt_no_initialcondition
+    SOURCES ClimDTNoInitialCondition.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2 multio-action-encode-mtg2 multio-action-print
+)
+
 add_subdirectory(operations)

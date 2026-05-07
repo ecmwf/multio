@@ -61,7 +61,8 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
     // Note: A subtraction eckit::DateTime - eckit::Second yields eckit::Second instead of eckit::DateTime
-    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a workarounds
+    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a
+    //       workarounds
     eckit::DateTime epoch{eckit::Date{0000, 01, 01}, eckit::Time{00, 00, 00}};
     eckit::Second deltaCurr = cfg.curr() - epoch;
     eckit::Second deltaStart = deltaCurr - eckit::Second{cfg.timespan().value_or(0) * 3600.0};
@@ -70,7 +71,8 @@ OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater,
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
     eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeIncrementInSeconds(), cfg.options().windowType()};
+    return OperationWindow{
+        epochPoint, startPoint, creationPoint, endPoint, cfg.timeIncrementInSeconds(), cfg.options().windowType()};
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -195,21 +197,21 @@ bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
 }
 
 bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ >= dt) {
+    if (throw_error && startPoint_ >= dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt > creationPoint_;
+    return dt > startPoint_;
 };
 
 bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ > dt) {
+    if (throw_error && startPoint_ > dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt >= creationPoint_;
+    return dt >= startPoint_;
 };
 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
@@ -463,7 +465,8 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
-        outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "windowType_ :: "
+                << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
         outFile.close();
     }
 
@@ -495,7 +498,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     const size_t countsSize = counts_.size();
     currState[17] = static_cast<std::uint64_t>(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        currState[i+18] = static_cast<std::uint64_t>(counts_[i]);
+        currState[i + 18] = static_cast<std::uint64_t>(counts_[i]);
     }
 
     currState.computeChecksum();
@@ -520,7 +523,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     const auto countsSize = static_cast<size_t>(currState[17]);
     counts_.resize(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        counts_[i] = static_cast<long>(currState[i+18]);
+        counts_[i] = static_cast<long>(currState[i + 18]);
     }
 
     if (opt.debugRestart()) {
@@ -535,7 +538,8 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
-        outFile << "windowType_ :: " << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "windowType_ :: "
+                << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
         outFile.close();
     }
 

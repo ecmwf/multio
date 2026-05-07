@@ -72,10 +72,9 @@ OutputTimeReference readOutputTimeReference(const FieldMetadataKeys& md, const S
     if (!stream) {
         // Look for stream in options
         const auto& omd = opt.setMetadata();
-        auto it = std::find_if(omd.begin(), omd.end(), [](const auto& pair) { return pair.first == "stream"; });
 
-        if (it != omd.end()) {
-            stream = it->second;
+        if (auto it = omd.find("stream"); it != omd.end()) {
+            stream = it->second.get<std::string>();
         }
     }
 

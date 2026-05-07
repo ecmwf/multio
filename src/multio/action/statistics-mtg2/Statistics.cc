@@ -45,7 +45,8 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
-std::string Statistics::generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const {
+std::string Statistics::generateRestartNameFromFlush(const message::Message& msg,
+                                                     const FlushMetadataKeys& flush) const {
 
     std::string folderName;
 
@@ -241,8 +242,6 @@ bool Statistics::HasRestartKey(const std::string& key) {
 }
 
 
-
-
 void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
 
     std::ostringstream tmp;
@@ -318,10 +317,10 @@ void Statistics::executeImpl(message::Message msg) {
     }
 
     // The incomming message must occur AFTER the current point in the window!
-    if (cfg.curr() <= ts.cwin().currPoint()) {
+    if (cfg.curr() < ts.cwin().currPoint()) {
         std::ostringstream os;
-        os << "Current time is before or equal to the current point in the window :: " << cfg.curr() << " > "
-           << ts.cwin().currPoint() << std::endl;
+        os << "Current time is before or equal to the current point in the window :: " << cfg.curr()
+           << " <= " << ts.cwin().currPoint() << ". Message: " << msg << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
 
@@ -330,6 +329,7 @@ void Statistics::executeImpl(message::Message msg) {
         emitStatistics(ts, msg.source(), msg.destination());
         ts.updateWindow(msg, cfg);
     }
+
 
     // Update data
     ts.updateData(msg, cfg);
@@ -412,7 +412,10 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto opname = (*it)->operation();
         if (opname != "instant") {
             if (currentLoop == 1) {
-                const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                const std::int64_t timespan
+                    = ts.win().currPointInHours()
+                    - ((ts.periodUpdater().timeUnit() == "month") ? ts.win().creationPointInHours()
+                                                                  : ts.win().startPointInHours());
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
             }
@@ -430,7 +433,9 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                             Here());
                     }
                     // Squash means we don't map (already done in previous loop), but extend the timespan
-                    timespan.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    timespan.set(ts.win().currPointInHours()
+                                 - ((ts.periodUpdater().timeUnit() == "month") ? ts.win().creationPointInHours()
+                                                                               : ts.win().startPointInHours()));
                     dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
@@ -460,29 +465,41 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
 
                 // For instant fields or on flushes, timespan is not set yet
                 if (!lengthOfWindow.isSet()) {
-                    // The window spaws between creationPoint to endPoint
+                    // The window spaws between startingPoint, creationPoint to endPoint.
                     // Prev & Current point describe the last updated data points.
-                    // In this case we are explicitly interested in creation to current point
-                    lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    // CreationPoint describes the time which the window is created - this can lay within a window (i.e.
+                    // mid of a day, or month) whereas the startingPoint is explicitly the start of the window that can
+                    // then at time 0 of a day or explicitly the first day of a month etc...
+                    if (ts.periodUpdater().timeUnit() == "month") {
+                        // For months we emit from the creation point - if a simulation is started in the mid, not the
+                        // whole month should be considered.
+                        lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    }
+                    else {
+                        // For days we emit from the starting point - if the initial condition is not send (i.e. for
+                        // ocean), the window often starts at hour 1 instead of 0 In this case we explicitly want it to
+                        // start at 0 although first data arrived at hour 1
+                        lengthOfWindow.set(ts.win().currPointInHours() - ts.win().startPointInHours());
+                    }
                 }
 
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
-                // We explicitly take the creation point - alternative would be the start point.
-                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a month.
-                // To not confuse the output, we explicitly just output the window for which data has been received.
-                // As discussed with DGOV and scientist, half months are typically not of interest and should be ignored.
-                // Some additional mechanism has to make sure that these do not occur in the output (i.e. additional action).
-                auto dt = ts.win().creationPoint();
+                // We explicitly take the creation point for months and the start point for days (read comment above).
+                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a
+                // month. To not confuse the output, we explicitly just output the window for which data has been
+                // received. As discussed with DGOV and scientist, half months are typically not of interest and should
+                // be ignored. Some additional mechanism has to make sure that these do not occur in the output (i.e.
+                // additional action).
+                auto dt = (ts.periodUpdater().timeUnit() == "month") ? ts.win().creationPoint() : ts.win().startPoint();
 
                 dm::dumpEntry(dm::DATE, dm::DATE.makeEntry(dt.date().yyyymmdd()), md);
-                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()), md);  // Official MARS time is in hhmm, in multio hhmmss is used
+                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()),
+                              md);  // Official MARS time is in hhmm, in multio hhmmss is used
                 break;
             }
         }
 
-        for (const auto& kv : opt_.setMetadata()) {
-            md.set(kv.first, kv.second);
-        }
+        md.updateOverwrite(opt_.setMetadata());
 
         (*it)->compute(payload, cfg);
         executeNext(

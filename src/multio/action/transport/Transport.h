@@ -48,7 +48,7 @@ private:
 
     // Distribute fields
     message::Peer chooseServer(const message::Metadata& metadata);
-    std::map<std::string, message::Peer> destinations_;
+    std::map<size_t, message::Peer> destinations_;
     std::vector<uint64_t> counters_;
 
     enum class DistributionType : unsigned

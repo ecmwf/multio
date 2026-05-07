@@ -29,9 +29,7 @@ public:
     };
 
     const std::string timeUnit() const {
-        std::ostringstream os;
-        os << "month";
-        return os.str();
+        return "month";
     };
 
     eckit::DateTime computeWinStartTime(const eckit::DateTime& nextTime) const {

@@ -41,6 +41,10 @@ TemporalStatistics::TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager,
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Load restart files" << std::endl;
 }
 
+const PeriodUpdater& TemporalStatistics::periodUpdater() const {
+    return *periodUpdater_.get();
+}
+
 
 void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Dump restart files" << std::endl;

@@ -262,7 +262,7 @@ void MultioReplayNemoCApi::writeMasks() {
 
         multio_metadata_set_string(md, "category", "ocean-mask");
         multio_metadata_set_int(md, "misc-globalSize", globalSize_);
-        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "levelist", level_);
         multio_metadata_set_bool(md, "toAllServers", true);
 
         multio_write_mask(multio_handle, md, masks.data(), masks.size());
@@ -309,7 +309,7 @@ void MultioReplayNemoCApi::writeFields() {
         // Set reused fields once at the beginning
         multio_metadata_set_string(md, "category", "ocean-2d");
         multio_metadata_set_int(md, "misc-globalSize", globalSize_);
-        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "levelist", level_);
         multio_metadata_set_int(md, "step", step_);
 
         multio_metadata_set_bool(md, "bitmapPresent", false);

@@ -69,8 +69,8 @@ message::Message Mask::createMasked(message::Message msg) const {
     }
 
     message::Metadata& md = msg.modifyMetadata();
-    md.set("missingValue", missingValue_);
-    md.set("bitmapPresent", true);
+    md.set("misc-missingValue", missingValue_);
+    md.set("misc-bitmapPresent", true);
 
     return msg;
 }

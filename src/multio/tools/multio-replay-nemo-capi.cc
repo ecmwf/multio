@@ -262,7 +262,7 @@ void MultioReplayNemoCApi::writeMasks() {
         multio_metadata_set_string(md, "category", "ocean-mask");
         // Global size has been set through parametrization
         // multio_metadata_set_int(md, "globalSize", globalSize_);
-        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "levelist", level_);
         multio_metadata_set_bool(md, "toAllServers", true);
 
         multio_write_mask(multio_handle, md, masks.data(), masks.size());
@@ -310,7 +310,7 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string(md, "category", "ocean-2d");
         // globalSize has been set through parametrization
         // multio_metadata_set_int(md, "globalSize", globalSize_);
-        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "levelist", level_);
         multio_metadata_set_int(md, "step", step_);
 
         // To mimic nemoV4; it will be overwritten

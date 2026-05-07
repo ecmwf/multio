@@ -65,7 +65,7 @@ void SingleFieldSink::write(Message msg) {
 
 
     std::ostringstream oss;
-    oss << rootPath_ << msg.metadata().get<std::int64_t>("level") << "::" << paramOrId
+    oss << rootPath_ << msg.metadata().get<std::int64_t>("levelist") << "::" << paramOrId
         << "::" << msg.metadata().get<std::int64_t>("step");
     eckit::LocalConfiguration config;
 

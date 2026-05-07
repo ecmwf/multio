@@ -26,7 +26,7 @@ Mask& Mask::instance() {
 }
 
 std::string Mask::key(const message::Metadata& md) {
-    return "(" + md.get<std::string>("domain") + "," + std::to_string(md.get<std::int64_t>("level")) + ")";
+    return "(" + md.get<std::string>("domain") + "," + std::to_string(md.get<std::int64_t>("levelist")) + ")";
 }
 
 void Mask::add(message::Message msg) {

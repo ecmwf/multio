@@ -121,13 +121,16 @@ void InterpolateMtg2::interpolateMessage<double>(message::Message&& msg) const {
         throw eckit::UserError(oss.str(), Here());
     }
 
-    // mir::param::GridSpecParametrisation inputPar(std::string("{\"grid\":\"") + grid.get() + std::string("\"}"));
     mir::param::GridSpecParametrisation gridSpecPar(grid.get());
     mir::param::RuntimeParametrisation inputPar(gridSpecPar);
 
-    /// Not possible with GridSpecParametrisation
-    if (missingValue.isSet() && bitmapPresent.isSet() && bitmapPresent.get()) {
-        inputPar.set("missing_value", missingValue.get());
+    if (bitmapPresent.isSet() && bitmapPresent.get()) {
+        if (missingValue.isSet()) {
+            inputPar.set("missing_value", missingValue.get());
+        }
+        else {
+            throw eckit::SeriousBug("Value for missingValue is required if bitmapPresent is true!", Here());
+        }
     }
 
     mir::input::RawInput input(data, size, inputPar);

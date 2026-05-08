@@ -20,8 +20,8 @@ intel_mpi:
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
         - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
+        - ecmwf/eccodes@develop
         - ecmwf/metkit@develop
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
@@ -52,8 +52,8 @@ hpcx_openmpi:
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
         - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
+        - ecmwf/eccodes@develop
         - ecmwf/metkit@develop
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
@@ -84,8 +84,8 @@ openmpi:
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
         - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
+        - ecmwf/eccodes@develop
         - ecmwf/metkit@develop
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop
@@ -112,8 +112,8 @@ mpi_off:
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
       dependencies:
         - ecmwf/ecbuild@develop
-        - ecmwf/eccodes@develop
         - ecmwf/eckit@develop
+        - ecmwf/eccodes@develop
         - ecmwf/metkit@develop
         - ecmwf/fckit@develop
         - ecmwf/fdb@develop

@@ -357,7 +357,6 @@ ecbuild_add_test( TARGET          test_multio_step_meter_synced
                   ARGS            2 12 0,1,2,3,4,5,6,7,8,9,10,11,12 0,1,2,3,4,5,6,7,8,9,10,11,12
                   ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       10
 )
 
 ecbuild_add_test( TARGET          test_multio_step_meter_asymmetric
@@ -365,7 +364,6 @@ ecbuild_add_test( TARGET          test_multio_step_meter_asymmetric
                   ARGS            2 12 0,1,2,3,4,5,6,7,8,9,10,11,12 0,3,6,9,12
                   ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       10
 )
 
 ecbuild_add_test( TARGET          test_multio_step_meter_stalled
@@ -373,7 +371,6 @@ ecbuild_add_test( TARGET          test_multio_step_meter_stalled
                   ARGS            2 8 0,4,8 0,3,6,9,12
                   ENVIRONMENT     "${_step_meter_environment}"
                   TEST_PROPERTIES RESOURCE_LOCK mpi
-                                  TIMEOUT       10
 )
 
 endif (eckit_HAVE_MPI)

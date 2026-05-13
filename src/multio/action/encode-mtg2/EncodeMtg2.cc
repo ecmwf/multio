@@ -46,7 +46,7 @@ std::unique_ptr<metkit::codes::CodesHandle> encode(metkit::mars2grib::Mars2Grib&
                                                    T* values, size_t size, const dm::FullMarsRecord& marsRec,
                                                    const dm::MiscRecord& miscRec) {
     const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
-    const auto misc = dm::dumpRecord<eckit::LocalConfiguration>(miscRec);
+    const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
 
     if (!cache) {
         return encoder.encode(values, size, mars, misc);
@@ -88,10 +88,6 @@ void EncodeMtg2::executeImpl(Message msg) {
     // Apply mappings
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
-    // Dump (mapped) mars and misc keys to local configurations
-    const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
-    const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
-
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         msg.payload().acquire();
@@ -123,7 +119,6 @@ void EncodeMtg2::executeImpl(Message msg) {
         eckit::Buffer buf{sample->messageSize()};
         sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());
 
-        // TODO(pgeier) write mapped metadata
         return Message{Message::Header{Message::Tag::Field, Peer{msg.source()}, Peer{msg.destination()},
                                        dm::dumpRecord<message::Metadata>(marsRec)},
                        std::move(buf)};

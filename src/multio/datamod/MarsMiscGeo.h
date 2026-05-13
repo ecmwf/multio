@@ -324,6 +324,7 @@ struct MiscRecord {
     EntryType_t<decltype(TypeOfEnsembleForecast)> typeOfEnsembleForecast;
     EntryType_t<decltype(NumberOfForecastsInEnsemble)> numberOfForecastsInEnsemble;
     EntryType_t<decltype(SatelliteSeries)> satelliteSeries;
+    EntryType_t<decltype(NumberOfFrequencies)> numberOfFrequencies;
     EntryType_t<decltype(ScaleFactorOfCentralWaveNumber)> scaleFactorOfCentralWaveNumber;
     EntryType_t<decltype(ScaledValueOfCentralWaveNumber)> scaledValueOfCentralWaveNumber;
     EntryType_t<decltype(Pv)> pv;
@@ -345,9 +346,10 @@ struct MiscRecord {
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
         LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
-        NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
-        Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
-        LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
+        NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies, ScaleFactorOfCentralWaveNumber,
+        ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections,
+        WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType,
+        TotalNumberOfIterations, PVPresent);
 };
 
 

@@ -549,6 +549,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries.withKey("satelliteSeries"), h);
+    misc.numberOfFrequencies = dm::parseEntry(dm::NumberOfFrequencies.withKey("numberOfFrequencies"), h);
     misc.scaleFactorOfCentralWaveNumber
         = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber.withKey("scaleFactorOfCentralWaveNumber"), h);
     misc.scaledValueOfCentralWaveNumber

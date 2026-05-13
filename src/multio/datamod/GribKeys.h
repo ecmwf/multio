@@ -216,6 +216,10 @@ constexpr auto SatelliteSeries =
     EntryDef<std::int64_t>{"misc-satelliteSeries"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.satelliteSeries; });
+constexpr auto NumberOfFrequencies =
+    EntryDef<std::int64_t>{"misc-numberOfFrequencies"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfFrequencies; });
 // Horizontal Keys
 constexpr auto PressureUnits
     = EntryDef<std::string>{"misc-pressureUnits"}

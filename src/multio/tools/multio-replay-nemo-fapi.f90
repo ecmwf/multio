@@ -380,7 +380,7 @@ implicit none
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 20
     cerr = md%set_int("misc-globalSize", global_size)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 21
-    cerr = md%set_int("level", level)
+    cerr = md%set_int("levelist", level)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 22
     cerr = md%set_int("step", step)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 23

@@ -138,18 +138,11 @@ std::optional<OutputTimeReference> parseOutputTimeRef(const eckit::LocalConfigur
     throw eckit::UserError(os.str(), Here());
 }
 
-std::vector<std::pair<std::string, std::string>> parseSetMetadata(const eckit::LocalConfiguration& cfg) {
+message::Metadata parseSetMetadata(const eckit::LocalConfiguration& cfg) {
     if (!cfg.has("set-metadata")) {
         return {};
     }
-
-    auto subCfg = cfg.getSubConfiguration("set-metadata");
-    std::vector<std::pair<std::string, std::string>> res;
-    for (auto key : subCfg.keys()) {
-        auto value = subCfg.getString(key);
-        res.emplace_back(std::pair<std::string, std::string>(key, value));
-    }
-    return res;
+    return message::toMetadata(cfg.getSubConfiguration("set-metadata"));
 }
 
 
@@ -214,7 +207,7 @@ bool StatisticsOptions::disableStrictMapping() const {
 bool StatisticsOptions::disableSquashing() const {
     return disableSquashing_;
 }
-const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {
+const message::Metadata& StatisticsOptions::setMetadata() const {
     return setMetadata_;
 }
 

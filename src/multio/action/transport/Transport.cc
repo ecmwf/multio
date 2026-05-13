@@ -32,7 +32,7 @@ std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
     if (conf.has("hash-keys")) {
         return conf.getStringVector("hash-keys");
     }
-    return std::vector<std::string>{"category", "name", "level"};
+    return std::vector<std::string>{"param", "levtype", "levelist"};
 }
 
 }  // namespace
@@ -77,36 +77,29 @@ void Transport::print(std::ostream& os) const {
 message::Peer Transport::chooseServer(const message::Metadata& metadata) {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
 
-    auto getMetadataValue = [&](const std::string& hashKey) -> const message::MetadataValue& {
+    auto hashMetadataValue = [&](const std::string& hashKey) -> size_t {
         auto searchHashKey = metadata.find(hashKey);
         if (searchHashKey == metadata.end()) {
             std::ostringstream os;
             os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
             throw multio::transport::TransportException(os.str(), Here());
         }
-        return searchHashKey->second;
+        return std::hash<message::MetadataValue>{}(searchHashKey->second);
     };
 
     auto constructHash = [&]() {
-        std::ostringstream os;
-
+        size_t ret = 0;
         for (const std::string& s : hashKeys_) {
-            getMetadataValue(s).visit(eckit::Overloaded{
-                [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), MetadataTypes::Scalars> {
-                    throw message::MetadataWrongTypeException(s, Here());
-                },
-                [&os](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Scalars> { os << v; },
-            });
+            ret = util::hashAppend(ret, hashMetadataValue(s));
         }
-        return os.str();
+        return ret;
     };
 
     switch (distType_) {
         case DistributionType::hashed_cyclic: {
-            std::string hashString = constructHash();
             ASSERT(usedServerCount_ <= serverCount_);
 
-            auto offset = std::hash<std::string>{}(hashString) % usedServerCount_;
+            auto offset = constructHash() % usedServerCount_;
             auto id = (serverId_ + offset) % serverCount_;
 
             ASSERT(id < serverPeers_.size());
@@ -114,18 +107,18 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
             return *serverPeers_[id];
         }
         case DistributionType::hashed_to_single: {
-            std::string hashString = constructHash();
-            auto id = std::hash<std::string>{}(hashString) % serverCount_;
+            auto id = constructHash() % serverCount_;
 
             ASSERT(id < serverPeers_.size());
 
             return *serverPeers_[id];
         }
         case DistributionType::even: {
-            std::string hashString = constructHash();
+            auto hash = constructHash();
 
-            if (destinations_.find(hashString) != end(destinations_)) {
-                return destinations_.at(hashString);
+            if (auto searchDest = destinations_.find(hash); searchDest != end(destinations_)) {
+                return searchDest->second;
+                ;
             }
 
             auto it = std::min_element(begin(counters_), end(counters_));
@@ -137,7 +130,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
             ++counters_[id];
 
             auto dest = *serverPeers_[id];
-            destinations_[hashString] = *serverPeers_[id];
+            destinations_[hash] = *serverPeers_[id];
 
             return dest;
         }

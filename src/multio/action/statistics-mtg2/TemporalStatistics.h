@@ -40,6 +40,8 @@ public:
     message::Metadata& metadata();
 
     void print(std::ostream& os) const;
+    
+    const PeriodUpdater& periodUpdater() const;
 
 private:
     std::unique_ptr<PeriodUpdater> periodUpdater_;

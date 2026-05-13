@@ -33,9 +33,7 @@ public:
     };
 
     const std::string timeUnit() const {
-        std::ostringstream os;
-        os << "hour";
-        return os.str();
+        return "hour";
     };
 
     eckit::DateTime computeWinStartTime(const eckit::DateTime& nextTime) const {

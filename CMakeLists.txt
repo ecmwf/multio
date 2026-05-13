@@ -29,6 +29,10 @@ if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
 
+if( NOT metkit_HAVE_MARS2GRIB )
+  ecbuild_critical( "metkit must be build with feature MARS2GRIB" )
+endif()
+
 ### fdb5 plugin
 
 ecbuild_add_option( FEATURE FDB5

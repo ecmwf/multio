@@ -459,7 +459,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
 
     // Check for derivedEnsembleForecast
-    if (mars.type.get() == "es" || mars.type.get() == "em") {
+    if (mars.type.get() == "es" || mars.type.get() == "em" || mars.type.get() == "ses") {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
         misc.numberOfForecastsInEnsemble.set(numForecasts);
     }

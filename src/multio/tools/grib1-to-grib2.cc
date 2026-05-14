@@ -979,6 +979,7 @@ private:
     long ncycle_ = 0;
 
     std::optional<FieldValueMap> excludeMap_ = {};
+    std::optional<FieldValueMap> exceptMap_ = {};
     std::optional<FieldValueMap> filterMap_ = {};
     std::optional<std::string> overwritePacking_ = {};
     std::optional<std::string> setModel_ = {};
@@ -1013,6 +1014,11 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
         "exclude",
         "Keys and values to be excluded. Multiple values are separated by ','. Multiple key-values pairs are separated "
         "by ';'. Example --exclude paramId=130,131,133;levtype=pl,sfc"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "except",
+        "Keys and values to be copied verbatim (without re-encoding) when --all is active. Same syntax as --exclude. "
+        "Only applies to GRIB2 messages; matching a GRIB1 message is an error. "
+        "Example --except paramId=213131"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "filter",
         "Keys and values to be included. Multiple values are separated by ','. Multiple key-values pairs are separated "
@@ -1077,6 +1083,16 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     args.get("exclude", excludeStr);
     if (!excludeStr.empty()) {
         excludeMap_ = parseFieldValueMap(std::move(excludeStr), verbosity_);
+    }
+
+    std::string exceptStr = "";
+    args.get("except", exceptStr);
+    if (!exceptStr.empty()) {
+        if (copyGrib2Messages_) {
+            std::cerr << "Warning: --except has no effect without --all (GRIB2 messages are already copied verbatim)"
+                      << std::endl;
+        }
+        exceptMap_ = parseFieldValueMap(std::move(exceptStr), verbosity_);
     }
 
     std::string filterStr = "";
@@ -1193,6 +1209,24 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                 }
                 continue;
             }
+        }
+
+        // --except: copy matching GRIB2 messages verbatim instead of re-encoding.
+        // Only meaningful with --all; GRIB1 matches are an error.
+        if (exceptMap_ && matches(msg, *exceptMap_, verbosity_)) {
+            if (edition == "1") {
+                throw eckit::BadValue(std::string("--except matched a GRIB1 message (paramId=")
+                                          + std::to_string(inputHandle->getLong("paramId"))
+                                          + "). --except may only match GRIB2 messages.",
+                                      Here());
+            }
+            if (verbosity_ >= 1) {
+                std::cout << "except map matched — copying GRIB2 message verbatim" << std::endl;
+            }
+            if (outputFileHandle) {
+                write(*inputHandle.get(), *outputFileHandle);
+            }
+            continue;
         }
 
         if (edition == "2" && copyGrib2Messages_) {

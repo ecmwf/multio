@@ -1204,6 +1204,11 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             bool isDiscipline192
                 = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle->getLong("discipline") == 192);
             if (isDiscipline192) {
+                if (exceptMap_ && matches(msg, *exceptMap_, verbosity_)) {
+                    std::cerr << "Warning: --except matched a discipline-192 message (paramId=" << paramId
+                              << ") but it was skipped by --discipline-192 policy. "
+                              << "Use --discipline-192 try-to-handle to allow --except to take effect." << std::endl;
+                }
                 if (discipline192Handling_ == Discipline192Handling::LogAndIgnore) {
                     std::cout << "Excluding message with discipline 192 (paramId: " << paramId << ")" << std::endl;
                 }

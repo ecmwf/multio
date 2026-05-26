@@ -7,6 +7,7 @@ ecbuild_add_test(
     TARGET ${PREFIX}_initialize
     SOURCES test_initialize.cc
     NO_AS_NEEDED
+    CONDITION HAVE_MIR
     LIBS multio-action-interpolate-mtg2 multio-action-sink
     ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
 )
@@ -16,6 +17,7 @@ ecbuild_add_test(
     TARGET ${PREFIX}_with_sample_data
     SOURCES test_interpolate-mtg2_with_data.cc
     NO_AS_NEEDED
+    CONDITION HAVE_MIR
     LIBS multio-action-interpolate-mtg2 multio-action-debug-sink
     ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
 )

@@ -103,7 +103,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  LOGICAL, DIMENSION(4) :: CONDITIONS
+  LOGICAL, DIMENSION(2) :: CONDITIONS
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS

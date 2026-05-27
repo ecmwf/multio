@@ -25,6 +25,7 @@ enum class LevType : std::size_t
 {
     ML,
     PL,
+    FL,
     PV,
     PT,
     SOL,
@@ -60,4 +61,3 @@ template <>
 struct multio::datamod::ParseType<multio::datamod::LevType> {
     static LevType parse(const std::string& s);
 };
-

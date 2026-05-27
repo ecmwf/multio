@@ -22,6 +22,8 @@ std::string DumpType<LevType>::dump(LevType v) {
             return "ml";
         case LevType::PL:
             return "pl";
+        case LevType::FL:
+            return "fl";
         case LevType::PV:
             return "pv";
         case LevType::PT:
@@ -63,6 +65,9 @@ LevType ParseType<LevType>::parse(const std::string& val) {
     }
     if (val == "pl") {
         return LevType::PL;
+    }
+    if (val == "fl") {
+        return LevType::FL;
     }
     if (val == "pv") {
         return LevType::PV;
@@ -110,9 +115,10 @@ LevType ParseType<LevType>::parse(const std::string& val) {
 }
 
 const std::vector<LevType>& allLevTypes() {
-    static const std::vector<LevType> all{
-        LevType::ML, LevType::PL,  LevType::PV,  LevType::PT, LevType::SOL, LevType::SFC, LevType::O2D, LevType::O3D,
-        LevType::HL, LevType::HHL, LevType::HPL, LevType::AL, LevType::WV,  LevType::DP,  LevType::CAT, LevType::LAYER};
+    static const std::vector<LevType> all{LevType::ML,  LevType::PL,   LevType::FL,  LevType::PV,  LevType::PT,
+                                          LevType::SOL, LevType::SFC,  LevType::O2D, LevType::O3D, LevType::HL,
+                                          LevType::HHL, LevType::HPL,  LevType::AL,  LevType::WV,  LevType::DP,
+                                          LevType::CAT, LevType::LAYER};
 
     return all;
 }

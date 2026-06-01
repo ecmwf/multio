@@ -57,6 +57,8 @@ std::string eckit::Translator<OnReceiveError, std::string>::operator()(OnReceive
     switch (tag) {
         case OnReceiveError::Propagate:
             return std::string("propagate");
+        case OnReceiveError::Recover:
+            return std::string("recover");
         default:
             throw eckit::SeriousBug("Unknown OnReceiveError tag", Here());
     }
@@ -66,6 +68,8 @@ std::string eckit::Translator<OnDispatchError, std::string>::operator()(OnDispat
     switch (tag) {
         case OnDispatchError::Propagate:
             return std::string("propagate");
+        case OnDispatchError::Recover:
+            return std::string("recover");
         default:
             throw eckit::SeriousBug("Unknown OnDispatchError tag", Here());
     }

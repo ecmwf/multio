@@ -325,12 +325,20 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
     This& operator=(const This&) = default;
     This& operator=(This&&) noexcept = default;
 
-    constexpr EntryDef(KeyType key, std::optional<Accessor> accessor = {},
-                       std::optional<DefaultValueFunctor> defaultFunctor = {}, std::string_view description = {}) :
+    // Default constructor: only enabled when Accessor is default-constructible (e.g. empty
+    // DefaultPointerAccessor before .withAccessor(...) is chained). The std::optional wrapper used to
+    // hide non-default-constructibility, but it tripped icpc 2021's constexpr handling of
+    // libstdc++ 11's std::optional default ctor for AccessFunctor specialisations.
+    template <typename A = Accessor, std::enable_if_t<std::is_default_constructible_v<A>, bool> = true>
+    constexpr explicit EntryDef(KeyType key, std::string_view description = {}) :
+        Base{key, description}, accessor_{}, defaultFunctor_{} {}
+
+    constexpr EntryDef(KeyType key, Accessor accessor, std::optional<DefaultValueFunctor> defaultFunctor = {},
+                       std::string_view description = {}) :
         Base{key, description}, accessor_{std::move(accessor)}, defaultFunctor_{std::move(defaultFunctor)} {}
 
     // The only additional member
-    std::optional<Accessor> accessor_{};                   // This is optional to savely allow default initialization
+    Accessor accessor_;  // Plain member; constexpr default-init via the 1-arg ctor above
     std::optional<DefaultValueFunctor> defaultFunctor_{};  // This is optional to savely allow default initialization
 
 
@@ -357,7 +365,7 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
 
     template <typename Container>
     decltype(auto) get(Container&& cont) const {
-        return (*accessor_)(std::forward<Container>(cont));
+        return accessor_(std::forward<Container>(cont));
     }
 
     //-----------------------------------------------------
@@ -517,7 +525,7 @@ struct ScopedEntryDef {
     ScopedEntryDef(const std::string& key, const EntryDef_& entryDef) :
         key_{key},
         baseEntryDef_{entryDef.withKey(key_).toBase()},
-        accessor_{std::cref(*entryDef.accessor_)},
+        accessor_{std::cref(entryDef.accessor_)},
         defaultFunctor_{std::cref(*entryDef.defaultFunctor_)} {}
 
     ScopedEntryDef(const This& other) :

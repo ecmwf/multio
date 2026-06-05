@@ -64,7 +64,7 @@ void FstreamIO::checkFileExist(const std::string& name) const {
 
 void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) const {
     eckit::PathName file{name};
-    if (file.size() != expectedSize) {
+    if (file.size() != eckit::Length(expectedSize)) {
         std::ostringstream os;
         os << "ERROR : wrong file size for restart : (" << name << ")";
         throw eckit::SeriousBug{os.str(), Here()};

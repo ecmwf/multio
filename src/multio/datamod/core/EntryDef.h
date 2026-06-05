@@ -325,21 +325,21 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
     This& operator=(const This&) = default;
     This& operator=(This&&) noexcept = default;
 
-    // Default constructor: only enabled when Accessor is default-constructible (e.g. empty
-    // DefaultPointerAccessor before .withAccessor(...) is chained). The std::optional wrapper used to
-    // hide non-default-constructibility, but it tripped icpc 2021's constexpr handling of
-    // libstdc++ 11's std::optional default ctor for AccessFunctor specialisations.
-    template <typename A = Accessor, std::enable_if_t<std::is_default_constructible_v<A>, bool> = true>
+    // Default constructor: only enabled when Accessor and DefaultValueFunctor are both
+    // default-constructible (e.g. empty DefaultPointerAccessor / NoDefaultFunctor before
+    // .withAccessor(...) / .withDefault(...) is chained).
+    template <typename A = Accessor, typename D = DefaultValueFunctor,
+              std::enable_if_t<std::is_default_constructible_v<A> && std::is_default_constructible_v<D>, bool> = true>
     constexpr explicit EntryDef(KeyType key, std::string_view description = {}) :
         Base{key, description}, accessor_{}, defaultFunctor_{} {}
 
-    constexpr EntryDef(KeyType key, Accessor accessor, std::optional<DefaultValueFunctor> defaultFunctor = {},
+    constexpr EntryDef(KeyType key, Accessor accessor, DefaultValueFunctor defaultFunctor,
                        std::string_view description = {}) :
         Base{key, description}, accessor_{std::move(accessor)}, defaultFunctor_{std::move(defaultFunctor)} {}
 
     // The only additional member
-    Accessor accessor_;  // Plain member; constexpr default-init via the 1-arg ctor above
-    std::optional<DefaultValueFunctor> defaultFunctor_{};  // This is optional to savely allow default initialization
+    Accessor accessor_;                   // Plain member; constexpr default-init via the 1-arg ctor above
+    DefaultValueFunctor defaultFunctor_;  // Plain member; constexpr default-init via the 1-arg ctor above
 
 
     const Base& toBase() const { return static_cast<const Base&>(*this); }
@@ -350,7 +350,7 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
 
     ValueType defaultValue() const noexcept {
         static_assert(hasDefaultValueFunctor, "No default functor given");
-        return (*defaultFunctor_)();
+        return defaultFunctor_();
     }
 
     //-----------------------------------------------------
@@ -358,7 +358,7 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
     // Apply defaults on entry
 
     // Takes a tuple of KeyValue and verifies that all required keys are set
-    void applyDefaults(EntryType& v) const { ApplyDefaultValueFunctor<DefaultValueFunctor>{}(v, *defaultFunctor_); }
+    void applyDefaults(EntryType& v) const { ApplyDefaultValueFunctor<DefaultValueFunctor>{}(v, defaultFunctor_); }
 
 
     // Entry specific accessors
@@ -526,7 +526,7 @@ struct ScopedEntryDef {
         key_{key},
         baseEntryDef_{entryDef.withKey(key_).toBase()},
         accessor_{std::cref(entryDef.accessor_)},
-        defaultFunctor_{std::cref(*entryDef.defaultFunctor_)} {}
+        defaultFunctor_{std::cref(entryDef.defaultFunctor_)} {}
 
     ScopedEntryDef(const This& other) :
         key_{other.key_},

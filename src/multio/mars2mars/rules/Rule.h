@@ -17,6 +17,7 @@
 
 #include "multio/util/Print.h"
 
+#include <initializer_list>
 #include <memory>
 #include <sstream>
 #include <vector>
@@ -106,7 +107,7 @@ template <typename Rule_, typename... Rules_>
 RuleList ruleList(Rule_&& rule, Rules_&&... rules) {
     RuleList res;
     res.addEntry(std::forward<Rule_>(rule));
-    (res.addEntry(std::forward<Rules_>(rules)), ...);
+    (void)std::initializer_list<int>{(res.addEntry(std::forward<Rules_>(rules)), 0)...};
     return res;
 }
 

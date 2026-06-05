@@ -89,6 +89,7 @@ void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packing
         {"spectral_complex", "complex"},
         {"grid_ccsds", "ccsds"},
         {"grid_ieee", "ccsds"},
+        {"grid_second_order", "ccsds"}
     };
 
     const auto packingTypeVal = packingMap.find(packingType);

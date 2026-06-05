@@ -222,7 +222,7 @@ struct BaseEntryDef {
     KeyType key() const noexcept { return key_; }
 
 
-    const std::optional<std::string_view>& description() const noexcept { return description_; }
+    std::string_view description() const noexcept { return description_; }
 
     std::string keyInfo() const { return std::string(key()) + std::string(" (") + toString(tag) + std::string{")"}; }
 
@@ -296,7 +296,7 @@ struct BaseEntryDef {
 
     // Members - all "simple" to be constexpr constructable. Would be more relaxed with C++20, but it's all we need
     KeyType key_;
-    std::optional<std::string_view> description_{};
+    std::string_view description_{};
 };
 
 
@@ -326,8 +326,7 @@ struct EntryDef : BaseEntryDef<ValueType_, tag_> {
     This& operator=(This&&) noexcept = default;
 
     constexpr EntryDef(KeyType key, std::optional<Accessor> accessor = {},
-                       std::optional<DefaultValueFunctor> defaultFunctor = {},
-                       std::optional<std::string_view> description = {}) :
+                       std::optional<DefaultValueFunctor> defaultFunctor = {}, std::string_view description = {}) :
         Base{key, description}, accessor_{std::move(accessor)}, defaultFunctor_{std::move(defaultFunctor)} {}
 
     // The only additional member
@@ -580,7 +579,7 @@ struct ScopedEntryDef {
         return (*(defaultFunctor_.get()))();
     }
 
-    const std::optional<std::string_view>& description() const noexcept { return baseEntryDef_.description(); }
+    std::string_view description() const noexcept { return baseEntryDef_.description(); }
     std::string keyInfo() const { return baseEntryDef_.keyInfo(); }
 
     // Customize key

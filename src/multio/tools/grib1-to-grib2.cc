@@ -284,17 +284,22 @@ void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, in
         auto endStep = h.getLong("endStep");
         mars.step.set(endStep);
 
+        auto stepType = h.getString("stepType");
         auto stepRangeStr = h.getString("stepRange");
         if (verbosity > 1) {
             std::cout << "stepRange = " << stepRangeStr << std::endl;
         }
 
         // StepRange is a proper steprange - it contains a dash `-`
-        if (auto r = parseRange(stepRangeStr)) {
-            mars.timespan.set(r->second - r->first);
-        }
-        else {
-            mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
+        std::cout << "g1-to-g2 stepRange = " << stepRangeStr << " - " << stepType << std::endl;
+        if ( stepType != "instant" ) {
+            if (auto r = parseRange(stepRangeStr)) {
+                mars.timespan.set(r->second - r->first);
+            }
+            else {
+                std::cout << "g1-to-g2 hasStepRange = " << h.has("stepRange") << std::endl;
+                mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
+            }
         }
     }
 }
@@ -1341,26 +1346,38 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             // unrecoverable assertion in `grib_ieee_to_long`).
             extract::validateSpectralComplexNoOverflow(mars, misc, values);
 
-            // Call the GRIB2 encoder in metkit
-            auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
+            if (( marsConfig.has("timespan") && marsConfig.getLong("timespan") > 0 ) || !marsConfig.has("timespan") ) {
 
-            // Apply more changes
-            extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
+                // Call the GRIB2 encoder in metkit
+                auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
 
-            if (verbosity_ > 0) {
-                util::PrintStream ps{std::cout};
+                // Apply more changes
+                extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
 
-                ps << "Converted " << std::endl;
-                ;
-                {
-                    util::IndentGuard g{ps};
-                    ps << mars << std::endl;
+                if (verbosity_ > 0) {
+                    util::PrintStream ps{std::cout};
+
+                    ps << "Converted " << std::endl;
+                    ;
+                    {
+                        util::IndentGuard g{ps};
+                        ps << mars << std::endl;
+                    }
+                }
+
+                // Output by writing all to the same binary file
+                if (outputFileHandle) {
+                    write(*preparedHandle.get(), *outputFileHandle);
                 }
             }
-
-            // Output by writing all to the same binary file
-            if (outputFileHandle) {
-                write(*preparedHandle.get(), *outputFileHandle);
+            else {
+                if (verbosity_ > 0) {
+                    std::cout << "Skipping message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
+                              << ")" << std::endl;
+                }
+                if (outputFileHandle) {
+                    write(*inputHandle.get(), *outputFileHandle);
+                }
             }
         }
         }

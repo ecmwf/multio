@@ -21,6 +21,7 @@
 #include "multio/datamod/core/Record.h"
 
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
+#include "multio/action/encode-mtg2/fakeDoubleLoop.h"
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
@@ -86,6 +87,7 @@ void EncodeMtg2::executeImpl(Message msg) {
     auto miscRec = dm::readRecord<dm::MiscRecord>(md);
 
     // Apply mappings
+    fake_double_loop::fakeDoubleLoop( marsRec );
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {

@@ -16,6 +16,7 @@
 #include "multio/datamod/types/Param.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/datamod/types/TimeDuration.h"
+#include "multio/datamod/types/TimeSpan.h"
 
 
 namespace multio::datamod {
@@ -100,7 +101,7 @@ constexpr auto STEP =
         .withAccessor([](auto&& v) { return &v.step; });
 
 constexpr auto TIMESPAN =
-    EntryDef<TimeDuration>{"timespan"}
+    EntryDef<TimeSpan>{"timespan"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.timespan; });
 

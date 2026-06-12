@@ -26,7 +26,7 @@ std::vector<message::Metadata> aifsSingleParams() {
     // SFC params stat
     for (auto param : std::vector<int>{{143, 228}}) {
         // TODO(pgeier) don't know if the timespan is right - added to fix test
-        res.push_back({{"param", param}, {"levtype", "sfc"}, {"timespan", "1h"}});
+        res.push_back({{"param", param}, {"levtype", "sfc"}, {"timespan", 1}});
     }
 
     // PL params

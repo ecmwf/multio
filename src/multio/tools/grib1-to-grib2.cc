@@ -1500,6 +1500,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             // unrecoverable assertion in `grib_ieee_to_long`).
             extract::validateSpectralComplexNoOverflow(mars, misc, values);
 
+
+
             if (( marsConfig.has("timespan") && marsConfig.getLong("timespan") > 0 ) || !marsConfig.has("timespan") ) {
 
                 // Call the GRIB2 encoder in metkit
@@ -1535,20 +1537,18 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
             else {
 
                 if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::LogAndIgnore) {
-                    if (verbosity_ > 0) {
-                        std::cout << "WARNING:Skipping message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
-                                  << ")" << std::endl;
-                    }
+                    std::cerr << "WARNING: Skipping message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
+                              << ")" << std::endl;
                 }
                 else if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::Ignore) {
                     if (verbosity_ > 0) {
-                        std::cout << "WARNING:Ignoring message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
+                        std::cerr << "WARNING:Ignoring message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
                                   << ")" << std::endl;
                     }
                 }
                 else if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::Copy) {
                     if (verbosity_ > 0) {
-                        std::cout << "WARNING: Copying message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
+                        std::cerr << "WARNING: Copying message with non-positive timespan (paramId: " << inputHandle->getLong("paramId")
                                   << ")" << std::endl;
                     }
                     if (outputFileHandle) {

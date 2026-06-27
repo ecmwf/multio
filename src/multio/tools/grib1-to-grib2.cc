@@ -290,17 +290,27 @@ bool needTimespan(long paramId) {
     return paramIdsWithTimespan.find(paramId) != paramIdsWithTimespan.end();
 }
 
+bool isInstantStrikeProbability(long paramId) {
+    // This is just to fix some grib1 fields that are encoded wrongly as statistics fields rather than as a proper
+    // instant. For these fields, we have to remove the timespan explicitly.
+    static const std::unordered_set<long> instantStrikeProbabilityParamIds{131020, 131021, 131022, 131023, 131024,
+                                                                           131025, 131073, 131089, 131090, 131091};
+
+    return instantStrikeProbabilityParamIds.find(paramId) != instantStrikeProbabilityParamIds.end();
+}
+
 bool isStatisticalProduct(metkit::codes::CodesHandle& h) {
 
-    auto stepType = h.getString("stepType");
-    auto edition = h.getLong("edition");
+    std::string stepType = h.getString("stepType");
+    long edition = h.getLong("edition");
+    long paramId = h.getLong("paramId");
 
-    if (stepType != "instant") {
+    if (stepType != "instant" && !isInstantStrikeProbability(paramId)) {
         return true;
     }
 
     if (stepType == "instant" && edition == 1) {
-        return needTimespan(h.getLong("paramId"));
+        return needTimespan(paramId);
     }
 
     return false;

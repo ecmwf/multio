@@ -342,7 +342,9 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             const std::string input = cfg.getString("grid");
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
-            static const std::regex H("([h|H])([1-9][0-9]*)(_nested)?");
+            // Match mir's HEALPix syntax (H<N>, HN<N>, HR<N>, H<N>N, H<N>R) and
+            // the legacy multio form H<N>_nested (case-insensitive prefix).
+            static const std::regex H(R"(([hH])([nNrR]?)([1-9][0-9]*)(?:([nNrR])|(_nested))?)");
 #undef fp
             std::smatch matchll;
             std::smatch matchH;
@@ -353,8 +355,14 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 grid[1] = std::stod(matchll[4].str());
             }
             if (std::regex_match(input, matchH, H)) {
-                gridKind = matchH[3].str() == "_nested" ? "HEALPix_nested" : "HEALPix";
-                grid[0] = std::stod(matchH[2].str());
+                const std::string leading  = matchH[2].str();
+                const std::string trailing = matchH[4].str();
+                const std::string suffix   = matchH[5].str();
+                const bool nested = leading == "N" || leading == "n" ||
+                                    trailing == "N" || trailing == "n" ||
+                                    !suffix.empty();
+                gridKind = nested ? "HEALPix_nested" : "HEALPix";
+                grid[0] = std::stod(matchH[3].str());
             }
         }
         else if (cfg.isFloatingPointList("grid")) {

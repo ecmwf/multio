@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=dist-grib1-to-grib2
+#SBATCH --partition=par
+#SBATCH --time=24:00:00
+
+#SBATCH --ntasks-per-node=128
+#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --hint=nomultithread
+##SBATCH --exclusive
+
+set -euo pipefail
+
+echo "SLURM_JOB_ID=${SLURM_JOB_ID}"
+echo "SLURM_JOB_NUM_NODES=${SLURM_JOB_NUM_NODES}"
+echo "SLURM_NTASKS=${SLURM_NTASKS}"
+echo "SLURM_JOB_NODELIST=${SLURM_JOB_NODELIST}"
+
+module load intel hpcx-openmpi
+
+EXE="/ec/res4/hpcperm/mavm/ba/multio-bundle/install-debug-intel-2021.4.0-hpcx-tmp/bin/dist-grib1-to-grib2"
+
+srun \
+  --cpu-bind=cores \
+  --distribution=block:block \
+  "${EXE}" "${1}" "${2}" "${3}"

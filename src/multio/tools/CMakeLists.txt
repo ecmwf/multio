@@ -155,6 +155,7 @@ ecbuild_add_executable(
 
   LIBS
       multio
+      multio-fdb5
       multio-mars2mars
       multio-grib2marsmisc
       multio-dist-grib1-to-grib2-utils

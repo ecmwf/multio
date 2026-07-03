@@ -10,10 +10,11 @@
 
 #include <exception>
 #include <iostream>
-#include <optional>
 #include <string>
 
 #include <mpi.h>
+
+#include "eckit/runtime/Main.h"
 
 #include "multio/tools/utils/distGrib1ToGrib2LoadBalancer.h"
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
@@ -29,19 +30,14 @@ std::string globalOutcomePath(const std::string& outputPrefix) {
     return outputPrefix + "_GlobalOutcome.log";
 }
 
-std::optional<std::string> optionalArg(int argc, char** argv, int index) {
-    if (argc > index) {
-        return std::string{argv[index]};
-    }
-    return std::nullopt;
-}
-
 }  // namespace
 
 }  // namespace multio::distGrib1ToGrib2
 
 int main(int argc, char** argv) {
     using namespace multio::distGrib1ToGrib2;
+
+    eckit::Main::initialise( argc, argv, "MULTIO_HOME");
 
     MPI_Init(&argc, &argv);
 
@@ -50,11 +46,12 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 
+
     try {
-        if (argc < 3 || argc > 4) {
+        if (argc != 4) {
             if (rank == 0) {
                 std::cerr << "Usage:\n"
-                          << "  mpirun -np <N> " << argv[0] << " <input_file.list> <output_prefix> [options.yaml]\n\n"
+                          << "  mpirun -np <N> " << argv[0] << " <input_file.list> <output_prefix> <options.yaml>\n\n"
                           << "Outputs:\n"
                           << "  <output_prefix>_chunk_report.csv\n"
                           << "  <output_prefix>_GlobalOutcome.log\n"
@@ -66,7 +63,7 @@ int main(int argc, char** argv) {
 
         const std::string inputList = argv[1];
         const std::string outputPrefix = argv[2];
-        const std::optional<std::string> optionsYaml = optionalArg(argc, argv, 3);
+        const std::string optionsYaml = argv[3];
 
         std::vector<std::string> localFiles;
         if (rank == 0) {

@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
 
 #include <mpi.h>
@@ -19,6 +18,6 @@
 
 namespace multio::distGrib1ToGrib2 {
 
-eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::optional<std::string>& yamlFile, MPI_Comm comm);
+eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm);
 
 }  // namespace multio::distGrib1ToGrib2

@@ -23,34 +23,56 @@ namespace multio::distGrib1ToGrib2 {
 
 namespace {
 
-std::string readYamlFile(const std::string& path) {
+std::string readOptionsFile(const std::string& path) {
     std::ifstream in(path);
     if (!in) {
         throw std::runtime_error("cannot open options file: " + path);
     }
 
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
+    std::ostringstream os;
+    os << in.rdbuf();
+
     if (!in.good() && !in.eof()) {
         throw std::runtime_error("error while reading options file: " + path);
     }
-    return buffer.str();
+
+    return os.str();
 }
 
-eckit::LocalConfiguration parseOptions(const std::string& payload) {
-    eckit::LocalConfiguration options{eckit::YAMLConfiguration{payload.empty() ? std::string{"{}\n"} : payload}};
+void normalizeOptions(eckit::LocalConfiguration& options) {
     if (options.has("verbose") && options.getBool("verbose") && !options.has("verbosity")) {
         options.set("verbosity", 2L);
     }
+}
+
+eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
+    if (payload.empty()) {
+        throw std::runtime_error("empty options payload");
+    }
+
+    if (payload.find("LocalConfiguration[root=") != std::string::npos) {
+        throw std::runtime_error(
+            "invalid options payload: received an eckit LocalConfiguration debug dump instead of YAML"
+        );
+    }
+
+    std::istringstream in(payload);
+
+    eckit::YAMLConfiguration yaml(in);
+    eckit::LocalConfiguration options(yaml);
+
+    normalizeOptions(options);
+
     return options;
 }
 
 }  // namespace
 
-eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::optional<std::string>& yamlFile, MPI_Comm comm) {
-    const std::string rootPayload = (rank == 0 && yamlFile) ? readYamlFile(*yamlFile) : std::string{"{}\n"};
+eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm) {
+    const std::string rootPayload = (rank == 0) ? readOptionsFile(yamlFile) : std::string{};
     const std::string payload = broadcastStringFromRoot(rootPayload, rank, comm);
-    return parseOptions(payload);
+
+    return parseOptionsYaml(payload);
 }
 
 }  // namespace multio::distGrib1ToGrib2

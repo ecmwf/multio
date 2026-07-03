@@ -1,0 +1,456 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# =============================================================================
+# Configured by CMake
+# =============================================================================
+
+EXE="@CMAKE_INSTALL_FULL_BINDIR@/dist-grib1-to-grib2"
+
+# =============================================================================
+# Static configuration
+# =============================================================================
+
+NTASKS_PER_NODE=128
+SLURM_PARTITION="par"
+SLURM_TIME="24:00:00"
+
+# =============================================================================
+# Helpers
+# =============================================================================
+
+usage() {
+    cat <<'EOF'
+Usage:
+  convert.sh \
+    --date YYYYMMDD \
+    --time HHMM \
+    --tmp-dir /path/to/tmp/dir \
+    --nodes <number-of-nodes> \
+    --options-file /path/to/options.yaml \
+    [--do-it]
+
+Required:
+  --date          Date in YYYYMMDD format
+  --time          Time in HHMM format
+  --tmp-dir       Base temporary directory
+  --nodes         Number of SLURM nodes
+  --options-file  YAML options file passed to dist-grib1-to-grib2
+
+Optional:
+  --do-it         Submit the SLURM job after preparing the input list
+  -h, --help      Show this help
+
+Example:
+  convert.sh \
+    --date 20260702 \
+    --time 0000 \
+    --tmp-dir /ec/project/mdst/MDST/re-encode-scripts \
+    --nodes 1 \
+    --options-file ./options.yaml \
+    --do-it
+EOF
+}
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >&2
+}
+
+abspath() {
+    local path="$1"
+
+    if [[ -d "${path}" ]]; then
+        (
+            cd "${path}"
+            pwd -P
+        )
+    elif [[ -e "${path}" ]]; then
+        local dir
+        local base
+
+        dir="$(dirname "${path}")"
+        base="$(basename "${path}")"
+
+        (
+            cd "${dir}"
+            printf '%s/%s\n' "$(pwd -P)" "${base}"
+        )
+    else
+        die "Path does not exist: ${path}"
+    fi
+}
+
+# =============================================================================
+# CLI variables
+# =============================================================================
+
+DATE_ARG=""
+TIME_ARG=""
+TMP_DIR=""
+NODES=""
+OPTIONS_FILE=""
+DO_IT=0
+
+BASEDIR=""
+INPDIR=""
+OUTDIR=""
+SPLITDIR=""
+CHUNKDIR=""
+SUBMIT_SCRIPT=""
+INPUT_LIST=""
+
+# =============================================================================
+# CLI parsing
+# =============================================================================
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --date)
+                [[ $# -ge 2 ]] || die "--date requires an argument"
+                DATE_ARG="$2"
+                shift 2
+                ;;
+
+            --time)
+                [[ $# -ge 2 ]] || die "--time requires an argument"
+                TIME_ARG="$2"
+                shift 2
+                ;;
+
+            --tmp-dir)
+                [[ $# -ge 2 ]] || die "--tmp-dir requires an argument"
+                TMP_DIR="$2"
+                shift 2
+                ;;
+
+            --nodes)
+                [[ $# -ge 2 ]] || die "--nodes requires an argument"
+                NODES="$2"
+                shift 2
+                ;;
+
+            --options-file)
+                [[ $# -ge 2 ]] || die "--options-file requires an argument"
+                OPTIONS_FILE="$2"
+                shift 2
+                ;;
+
+            --do-it)
+                DO_IT=1
+                shift
+                ;;
+
+            -h|--help)
+                usage
+                exit 0
+                ;;
+
+            *)
+                die "Unknown argument: $1"
+                ;;
+        esac
+    done
+}
+
+validate_args() {
+    [[ -n "${DATE_ARG}" ]]     || die "Missing required argument: --date"
+    [[ -n "${TIME_ARG}" ]]     || die "Missing required argument: --time"
+    [[ -n "${TMP_DIR}" ]]      || die "Missing required argument: --tmp-dir"
+    [[ -n "${NODES}" ]]        || die "Missing required argument: --nodes"
+    [[ -n "${OPTIONS_FILE}" ]] || die "Missing required argument: --options-file"
+
+    [[ "${DATE_ARG}" =~ ^[0-9]{8}$ ]] || die "--date must be YYYYMMDD: got '${DATE_ARG}'"
+    [[ "${TIME_ARG}" =~ ^[0-9]{4}$ ]] || die "--time must be HHMM: got '${TIME_ARG}'"
+
+    [[ "${NODES}" =~ ^[0-9]+$ ]] || die "--nodes must be a positive integer: got '${NODES}'"
+    (( NODES > 0 )) || die "--nodes must be > 0"
+
+    local hh
+    local mm
+
+    hh="${TIME_ARG:0:2}"
+    mm="${TIME_ARG:2:2}"
+
+    (( 10#$hh >= 0 && 10#$hh <= 23 )) || die "Invalid hour in --time: ${hh}"
+    (( 10#$mm >= 0 && 10#$mm <= 59 )) || die "Invalid minute in --time: ${mm}"
+
+    date -d "${DATE_ARG}" "+%Y%m%d" >/dev/null 2>&1 \
+        || die "Invalid --date: ${DATE_ARG}"
+
+    [[ -d "${TMP_DIR}" ]]      || die "--tmp-dir does not exist or is not a directory: ${TMP_DIR}"
+    [[ -f "${OPTIONS_FILE}" ]] || die "--options-file does not exist or is not a file: ${OPTIONS_FILE}"
+
+    [[ -x "${EXE}" ]] || die "Configured executable does not exist or is not executable: ${EXE}"
+}
+
+setup_paths() {
+    BASEDIR="$(abspath "${TMP_DIR}")"
+    OPTIONS_FILE="$(abspath "${OPTIONS_FILE}")"
+
+    INPDIR="${BASEDIR}/input"
+    OUTDIR="${BASEDIR}/output"
+    SPLITDIR="${BASEDIR}/split"
+    CHUNKDIR="${BASEDIR}/chunks"
+
+    SUBMIT_SCRIPT="${BASEDIR}/submit-convert.sh"
+    INPUT_LIST="${CHUNKDIR}/od-0001-${TIME_ARG}-all-${DATE_ARG}.list"
+
+    mkdir -p "${INPDIR}" "${OUTDIR}" "${SPLITDIR}" "${CHUNKDIR}"
+
+    log "DATE=${DATE_ARG}"
+    log "TIME=${TIME_ARG}"
+    log "BASEDIR=${BASEDIR}"
+    log "INPDIR=${INPDIR}"
+    log "OUTDIR=${OUTDIR}"
+    log "SPLITDIR=${SPLITDIR}"
+    log "CHUNKDIR=${CHUNKDIR}"
+    log "OPTIONS_FILE=${OPTIONS_FILE}"
+    log "NODES=${NODES}"
+    log "EXE=${EXE}"
+}
+
+# =============================================================================
+# Phase A: gather data file lists
+# =============================================================================
+
+where_file() {
+    local stream="$1"
+
+    printf '%s/od-0001-%s-%s-%s.where' \
+        "${INPDIR}" "${TIME_ARG}" "${stream}" "${DATE_ARG}"
+}
+
+raw_list_file() {
+    local stream="$1"
+
+    printf '%s/od-0001-%s-%s-%s.list' \
+        "${INPDIR}" "${TIME_ARG}" "${stream}" "${DATE_ARG}"
+}
+
+split_list_file() {
+    local stream="$1"
+    local product="$2"
+
+    printf '%s/od-0001-%s-%s-%s-%s.list' \
+        "${SPLITDIR}" "${TIME_ARG}" "${stream}" "${product}" "${DATE_ARG}"
+}
+
+gather_where_for_stream() {
+    local stream="$1"
+    local out
+
+    out="$(where_file "${stream}")"
+
+    log "Running fdb where for stream=${stream}"
+
+    fdb where \
+        expver=0001 \
+        class=od \
+        time="${TIME_ARG}" \
+        stream="${stream}" \
+        date="${DATE_ARG}" \
+        > "${out}"
+
+    [[ -s "${out}" ]] || die "fdb where produced an empty file: ${out}"
+}
+
+find_data_files_for_stream() {
+    local stream="$1"
+    local where
+    local list
+    local root
+
+    where="$(where_file "${stream}")"
+    list="$(raw_list_file "${stream}")"
+
+    read -r root < "${where}"
+
+    [[ -n "${root}" ]] || die "No root path found in ${where}"
+    [[ -d "${root}" ]] || die "FDB root path does not exist or is not a directory: ${root}"
+
+    log "Finding data files for stream=${stream}"
+
+    find "${root}" -name '*data' -printf '%s\t%p\n' \
+        | sort -n \
+        | cut -f2- \
+        > "${list}"
+
+    log "Created ${list} with $(wc -l < "${list}") files"
+}
+
+split_ensemble_stream() {
+    local stream="$1"
+    local list
+    local product
+    local out
+
+    list="$(raw_list_file "${stream}")"
+
+    [[ -f "${list}" ]] || die "Missing list file: ${list}"
+
+    log "Splitting stream=${stream} by product type"
+
+    for product in pf em es ep icp efi efic sot gbf gwt pfc cm; do
+        out="$(split_list_file "${stream}" "${product}")"
+
+        grep -E "/${product}:" "${list}" > "${out}" || true
+
+        log "Created ${out} with $(wc -l < "${out}") files"
+    done
+}
+
+build_final_input_list() {
+    log "Building final input list: ${INPUT_LIST}"
+
+    cat \
+        "$(raw_list_file oper)" \
+        "$(raw_list_file wave)" \
+        "$(split_list_file enfo pf)" \
+        "$(split_list_file enfo em)" \
+        "$(split_list_file enfo es)" \
+        "$(split_list_file enfo ep)" \
+        "$(split_list_file enfo icp)" \
+        "$(split_list_file enfo gbf)" \
+        "$(split_list_file enfo gwt)" \
+        "$(split_list_file waef pf)" \
+        "$(split_list_file waef em)" \
+        "$(split_list_file waef es)" \
+        "$(split_list_file waef ep)" \
+        "$(split_list_file waef icp)" \
+        "$(split_list_file waef gbf)" \
+        "$(split_list_file waef gwt)" \
+        > "${INPUT_LIST}"
+
+    [[ -s "${INPUT_LIST}" ]] || die "Final input list is empty: ${INPUT_LIST}"
+
+    log "Final input list contains $(wc -l < "${INPUT_LIST}") files"
+}
+
+gather_data_file_lists() {
+    log "Gathering lists of files for date=${DATE_ARG}, time=${TIME_ARG}"
+
+    local stream
+
+    for stream in oper wave enfo waef; do
+        gather_where_for_stream "${stream}"
+        find_data_files_for_stream "${stream}"
+    done
+
+    split_ensemble_stream enfo
+    split_ensemble_stream waef
+
+    build_final_input_list
+}
+
+# =============================================================================
+# Phase B: submit processing job
+# =============================================================================
+
+write_submit_script() {
+    log "Writing submit script: ${SUBMIT_SCRIPT}"
+
+    cat > "${SUBMIT_SCRIPT}" <<EOF
+#!/usr/bin/env bash
+#SBATCH --job-name=dist-grib1-to-grib2
+#SBATCH --partition=${SLURM_PARTITION}
+#SBATCH --time=${SLURM_TIME}
+
+#SBATCH --ntasks-per-node=${NTASKS_PER_NODE}
+#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --hint=nomultithread
+##SBATCH --exclusive
+
+set -Eeuo pipefail
+
+echo "SLURM_JOB_ID=\${SLURM_JOB_ID}"
+echo "SLURM_JOB_NUM_NODES=\${SLURM_JOB_NUM_NODES}"
+echo "SLURM_NTASKS=\${SLURM_NTASKS}"
+echo "SLURM_JOB_NODELIST=\${SLURM_JOB_NODELIST}"
+
+module load intel hpcx-openmpi
+
+EXE="${EXE}"
+
+INPUT_LIST="\${1:?missing input list}"
+OUTPUT_DIR="\${2:?missing output dir}"
+OPTIONS_FILE="\${3:?missing options file}"
+
+echo "EXE=\${EXE}"
+echo "INPUT_LIST=\${INPUT_LIST}"
+echo "OUTPUT_DIR=\${OUTPUT_DIR}"
+echo "OPTIONS_FILE=\${OPTIONS_FILE}"
+
+mkdir -p "\${OUTPUT_DIR}"
+
+srun \\
+    --cpu-bind=cores \\
+    --distribution=block:block \\
+    "\${EXE}" "\${INPUT_LIST}" "\${OUTPUT_DIR}" "\${OPTIONS_FILE}"
+EOF
+
+    chmod +x "${SUBMIT_SCRIPT}"
+}
+
+submit_job() {
+    write_submit_script
+
+    log "Submitting SLURM job"
+
+    sbatch \
+        --nodes="${NODES}" \
+        "${SUBMIT_SCRIPT}" \
+        "${INPUT_LIST}" \
+        "${OUTDIR}" \
+        "${OPTIONS_FILE}"
+}
+
+print_dry_run_summary() {
+    cat <<EOF
+
+Prepared input list:
+  ${INPUT_LIST}
+
+Output directory:
+  ${OUTDIR}
+
+Options file:
+  ${OPTIONS_FILE}
+
+Submit script:
+  ${SUBMIT_SCRIPT}
+
+Manual submit command:
+  sbatch --nodes=${NODES} ${SUBMIT_SCRIPT} ${INPUT_LIST} ${OUTDIR} ${OPTIONS_FILE}
+
+Current mode:
+  dry-run only; add --do-it to submit automatically.
+EOF
+}
+
+# =============================================================================
+# Main
+# =============================================================================
+
+main() {
+    parse_args "$@"
+    validate_args
+    setup_paths
+
+    gather_data_file_lists
+
+    if (( DO_IT )); then
+        submit_job
+    else
+        write_submit_script
+        print_dry_run_summary
+    fi
+}
+
+main "$@"

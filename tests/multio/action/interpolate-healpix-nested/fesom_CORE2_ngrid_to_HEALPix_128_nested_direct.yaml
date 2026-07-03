@@ -6,7 +6,7 @@ plans:
         overwrite-existing: true
       - type: interpolate
         input: fesom
-        grid: H128_nested
+        grid: HN128
         cache-path: .
         options:
           interpolation: matrix

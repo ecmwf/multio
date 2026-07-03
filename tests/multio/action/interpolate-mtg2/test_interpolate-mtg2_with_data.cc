@@ -72,14 +72,14 @@ Metadata climDtMD() {
 }
 
 
-CASE("Test interpolate-mtg2 with O80 to H32_nested climateDt ATM") {
+CASE("Test interpolate-mtg2 with O80 to HN32 climateDt ATM") {
     const std::string plan = R"json({
             "name": "MULTIO_TEST",
             "actions": [
                 {
                     "type": "interpolate-mtg2",
                     "outputs": [{
-                      "grid": 'H32_nested',
+                      "grid": 'HN32',
                       "enable": '1',
                       "options": {"caching": true},
                       "additional-metadata": {"resolution": "standard"}
@@ -110,20 +110,20 @@ CASE("Test interpolate-mtg2 with O80 to H32_nested climateDt ATM") {
     EXPECT(env.debugSink().front().payload().size() == 98304);
 
     auto& mdout = env.debugSink().front().metadata();
-    EXPECT_EQUAL(mdout.get<std::string>("grid"), "H32_nested");
+    EXPECT_EQUAL(mdout.get<std::string>("grid"), "HN32");
 
     env.debugSink().pop();
 }
 
 
-CASE("Test interpolate-mtg2 with O80 to H32_nested climateDt ATM [wrong payload size]") {
+CASE("Test interpolate-mtg2 with O80 to HN32 climateDt ATM [wrong payload size]") {
     const std::string plan = R"json({
             "name": "MULTIO_TEST",
             "actions": [
                 {
                     "type": "interpolate-mtg2",
                     "outputs": [{
-                      "grid": 'H32_nested',
+                      "grid": 'HN32',
                       "enable": '1',
                       "options": {"caching": true},
                       "additional-metadata": {"resolution": "standard"}

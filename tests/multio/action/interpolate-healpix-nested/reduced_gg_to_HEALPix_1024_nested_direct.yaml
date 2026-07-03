@@ -6,7 +6,7 @@ plans:
           - paramId: 133
       - type: interpolate
         input: O1280
-        grid: H1024_nested
+        grid: HN1024
         options:
           caching: false
       - type: encode

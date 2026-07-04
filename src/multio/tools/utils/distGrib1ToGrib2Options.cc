@@ -68,6 +68,10 @@ eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
 
 }  // namespace
 
+eckit::LocalConfiguration loadOptionsFromYamlFile(const std::string& yamlFile) {
+    return parseOptionsYaml(readOptionsFile(yamlFile));
+}
+
 eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm) {
     const std::string rootPayload = (rank == 0) ? readOptionsFile(yamlFile) : std::string{};
     const std::string payload = broadcastStringFromRoot(rootPayload, rank, comm);

@@ -16,10 +16,13 @@
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
+#include "multio/tools/utils/grib2MarsMisc.h"
 
 namespace multio::distGrib1ToGrib2 {
 
-std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files, const eckit::LocalConfiguration& options,
-                                           const std::string& outputPrefix, int rank);
+std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files,
+                                           const grib2MarsMisc::Grib2MarsMiscOptions& options,
+                                           const eckit::LocalConfiguration& rawOptions, const std::string& outputPrefix,
+                                           int rank);
 
 }  // namespace multio::distGrib1ToGrib2

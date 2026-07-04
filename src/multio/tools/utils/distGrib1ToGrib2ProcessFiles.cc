@@ -25,13 +25,24 @@
 #include "multio/sink/DataSink.h"
 #include "multio/tools/utils/CodesHandleToEckitMessage.h"
 #include "multio/tools/utils/grib2MarsMisc.h"
+#include "multio/tools/utils/distGrib1ToGrib2Logging.h"
 
 namespace multio::distGrib1ToGrib2 {
 
 namespace {
 
 using grib2MarsMisc::ExtractedMsg;
+using grib2MarsMisc::ExtractionOutcome;
+using grib2MarsMisc::ExtractionOutcomeCode;
 using grib2MarsMisc::MessageDisposition;
+
+constexpr std::size_t outcomeIndex(ExtractionOutcomeCode code) {
+    return static_cast<std::size_t>(code);
+}
+
+void bumpOutcome(FileOutcome& outcome, ExtractionOutcomeCode code) {
+    ++outcome.outcomeCounters[outcomeIndex(code)];
+}
 
 std::string rankOutputPath(const std::string& outputPrefix, int rank) {
     return outputPrefix + ".rank" + std::to_string(rank) + ".grib2";
@@ -62,44 +73,56 @@ std::unique_ptr<sink::DataSink> buildSink(const eckit::LocalConfiguration& optio
     const auto sinkConf = sinkConfigurationForRank(options, outputPrefix, rank);
     config::MultioConfiguration multioConf(eckit::LocalConfiguration{}, config::LocalPeerTag::Client);
     config::ComponentConfiguration componentConf(sinkConf, multioConf);
-    std::cerr << "rank " << rank << " building sink of type: " << sinkConf.getString("type") << std::endl;
+    std::cerr << timestampString() << "rank " << rank << " building sink of type: " << sinkConf.getString("type") << std::endl;
     return sink::DataSinkFactory::instance().build(sinkConf.getString("type"), componentConf);
 }
 
-FileOutcome processOneFile(int rank, const std::string& file, const eckit::LocalConfiguration& options,
+FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMisc::Grib2MarsMiscOptions& options,
                            metkit::mars2grib::Mars2Grib& encoder, sink::DataSink& writer) {
+    (void)rank;
     FileOutcome outcome;
     outcome.filename = file;
-    outcome.nMessages = 0;
-    outcome.nEncoded = 0;
-    outcome.nFailEncode = 0;
-    outcome.nCopied = 0;
-    outcome.nFailArchive = 0;
-    outcome.nSkipped = 0;
-    outcome.nFailExtract = 0;
 
     try {
-
-        using eckit::message::ValueRepresentation;
         eckit::message::Reader reader{file};
         eckit::message::Message msg;
         while ((msg = reader.next())) {
             ++outcome.nMessages;
-            // std::cerr << "rank " << rank << ": Processing file: " << file << " nMessages: " << outcome.nMessages << std::endl;
 
-            ExtractedMsg extracted = grib2MarsMisc::grib2MarsMisc(msg, options);
+            auto result = grib2MarsMisc::grib2MarsMisc(msg, options);
+            ExtractedMsg& extracted = result.extractedMessage;
+            const ExtractionOutcome& extractionOutcome = result.extractionOutcome;
 
-
-            switch (extracted.disposition) {
+            switch (extractionOutcome.disposition) {
                 case MessageDisposition::Encode: {
+                    auto encoded = decltype(encoder.encode(extracted.values, extracted.mars, extracted.misc)){};
                     try {
-                        auto encoded = encoder.encode(extracted.values, extracted.mars, extracted.misc);
-                        writer.write(tools::utils::to_eckit_message(*encoded));
-                        ++outcome.nEncoded;
+                        encoded = encoder.encode(extracted.values, extracted.mars, extracted.misc);
+                    }
+                    catch (const std::exception&) {
+                        bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
+                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        break;
                     }
                     catch (...) {
-                        ++outcome.nFailEncode;
+                        bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
+                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        break;
                     }
+
+                    try {
+                        writer.write(tools::utils::to_eckit_message(*encoded));
+                        bumpOutcome(outcome, ExtractionOutcomeCode::ProcessedAndArchived);
+                    }
+                    catch (const std::exception&) {
+                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
+                    }
+                    catch (...) {
+                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
+                    }
+
                     break;
                 }
                 case MessageDisposition::CopyGrib2Verbatim:
@@ -107,59 +130,53 @@ FileOutcome processOneFile(int rank, const std::string& file, const eckit::Local
                 case MessageDisposition::CopyInvalidMessage:
                 case MessageDisposition::CopyDiscipline192:
                 case MessageDisposition::CopyTimespanNonPositive:
-/*
-                    try {
-                        writer.write(msg);
-                        ++outcome.nCopied;
-                    }
-                    catch (...) {
-                        ++outcome.nFailArchive;
-                    }
-                    break;
-*/
                 case MessageDisposition::SkipExcluded:
                 case MessageDisposition::SkipFilteredOut:
                 case MessageDisposition::SkipInvalidMessage:
                 case MessageDisposition::SkipDiscipline192:
                 case MessageDisposition::SkipTimespanNonPositive:
-                    ++outcome.nSkipped;
+                    bumpOutcome(outcome, extractionOutcome.code);
                     break;
                 case MessageDisposition::FailToExtract:
-                    ++outcome.nFailExtract;
+                    bumpOutcome(outcome, extractionOutcome.code);
                     break;
                 case MessageDisposition::FailToEncode:
-                    ++outcome.nFailEncode;
+                    bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
                     break;
                 case MessageDisposition::FailToArchive:
-                    ++outcome.nFailArchive;
+                    bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
                     break;
             }
 
         }
 
-        //std::cerr << "rank " << rank << ": Processing file: " << file << " nMessages: " << outcome.nMessages << std::endl;
-
+    }
+    catch (const std::exception&) {
+        bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
+        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
     }
     catch (...) {
-        ++outcome.nFailExtract;
+        bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
+        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
     }
 
-    outcome.status = deriveFileStatus(outcome);
     return outcome;
 }
 
 }  // namespace
 
-std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files, const eckit::LocalConfiguration& options,
-                                           const std::string& outputPrefix, int rank) {
+std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files,
+                                           const grib2MarsMisc::Grib2MarsMiscOptions& grib2MarsMiscOptions,
+                                           const eckit::LocalConfiguration& rawOptions, const std::string& outputPrefix,
+                                           int rank) {
     std::vector<FileOutcome> outcomes;
     outcomes.reserve(files.size());
 
-    auto writer = buildSink(options, outputPrefix, rank);
+    auto writer = buildSink(rawOptions, outputPrefix, rank);
 
     metkit::mars2grib::Mars2Grib encoder{};
     for (const auto& file : files) {
-        FileOutcome outcome = processOneFile(rank, file, options, encoder, *writer);
+        FileOutcome outcome = processOneFile(rank, file, grib2MarsMiscOptions, encoder, *writer);
         writer->flush();
         std::cerr << formatRankProgressLine(outcome, rank) << '\n';
         outcomes.push_back(std::move(outcome));

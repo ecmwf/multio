@@ -102,6 +102,8 @@ ecbuild_add_library(
       utils/distGrib1ToGrib2Options.h
       utils/distGrib1ToGrib2Logging.cc
       utils/distGrib1ToGrib2Logging.h
+      utils/distGrib1ToGrib2OutcomesReport.cc
+      utils/distGrib1ToGrib2OutcomesReport.h
       utils/distGrib1ToGrib2ProcessFiles.cc
       utils/distGrib1ToGrib2ProcessFiles.h
 
@@ -135,6 +137,30 @@ ecbuild_add_executable(
   LIBS
       multio
       multio-mars2mars
+      eckit
+      metkit
+      eccodes
+)
+
+ecbuild_add_executable(
+
+  TARGET
+      grib1-to-grib2-v2
+
+  CONDITION
+    HAVE_GRIB1_TO_GRIB2
+
+  SOURCES
+      grib1-to-grib2-v2.cc
+      MultioTool.cc
+
+  NO_AS_NEEDED
+
+  LIBS
+      multio
+      multio-mars2mars
+      multio-dist-grib1-to-grib2-utils
+      multio-grib2marsmisc
       eckit
       metkit
       eccodes

@@ -10,9 +10,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
+
+#include "multio/tools/utils/grib2MarsMisc.h"
 
 namespace multio::distGrib1ToGrib2 {
 
@@ -28,21 +31,19 @@ enum class FileStatus : std::uint8_t {
 
 struct FileOutcome {
     std::string filename;
-    FileStatus status = FileStatus::Unknown;
     std::size_t nMessages = 0;
-    std::size_t nEncoded = 0;
-    std::size_t nCopied = 0;
-    std::size_t nSkipped = 0;
-    std::size_t nFailExtract = 0;
-    std::size_t nFailEncode = 0;
-    std::size_t nFailArchive = 0;
+    std::array<std::size_t, static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedUnknownException)
+                                 + 1>
+        outcomeCounters{};
 };
 
 const char* toString(FileStatus status);
+const char* toString(grib2MarsMisc::ExtractionOutcomeCode code);
 FileStatus deriveFileStatus(const FileOutcome& o);
 std::string formatOutcomeLine(const FileOutcome& o);
 std::string formatRankProgressLine(const FileOutcome& o, int rank);
 std::string serializeOutcomesLog(const std::vector<FileOutcome>& outcomes);
 void writeGlobalOutcomeLog(const std::string& payload, const std::string& outputFile);
+std::string timestampString();
 
 }  // namespace multio::distGrib1ToGrib2

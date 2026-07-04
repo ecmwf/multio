@@ -18,6 +18,7 @@
 
 namespace multio::distGrib1ToGrib2 {
 
+eckit::LocalConfiguration loadOptionsFromYamlFile(const std::string& yamlFile);
 eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm);
 
 }  // namespace multio::distGrib1ToGrib2

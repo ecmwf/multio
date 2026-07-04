@@ -320,6 +320,7 @@ struct MiscRecord {
     EntryType_t<decltype(LengthOfTimeWindow)> lengthOfTimeWindow;
     EntryType_t<decltype(LengthOfTimeWindowInSeconds)> lengthOfTimeWindowInSeconds;
     EntryType_t<decltype(BitmapPresent)> bitmapPresent;
+    EntryType_t<decltype(ShapeOfTheEarth)> shapeOfTheEarth;
     EntryType_t<decltype(MissingValue)> missingValue;
     EntryType_t<decltype(TypeOfEnsembleForecast)> typeOfEnsembleForecast;
     EntryType_t<decltype(NumberOfForecastsInEnsemble)> numberOfForecastsInEnsemble;
@@ -345,7 +346,8 @@ struct MiscRecord {
 
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
-        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
+        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, ShapeOfTheEarth, MissingValue,
+        TypeOfEnsembleForecast,
         NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies, ScaleFactorOfCentralWaveNumber,
         ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections,
         WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType,

@@ -42,34 +42,15 @@ namespace dm = multio::datamod;
 
 namespace {
 
-using ValueSet = std::unordered_set<std::string>;
-using FieldValueMap = std::unordered_map<std::string, ValueSet>;
+using ExtractionOutcome = grib2MarsMisc::ExtractionOutcome;
+using ExtractionOutcomeCode = grib2MarsMisc::ExtractionOutcomeCode;
+using Grib2MarsMiscResult = grib2MarsMisc::Grib2MarsMiscResult;
+using Grib2MarsMiscOptions = grib2MarsMisc::Grib2MarsMiscOptions;
 
 struct KeySet {
     void add(const std::string& k) { keys.insert(k); }
     bool has(const std::string& k) const { return keys.find(k) != keys.end(); }
     std::unordered_set<std::string> keys;
-};
-
-enum class TimeSpanEqualToZeroHandling : std::size_t {
-    LogAndIgnore,
-    Ignore,
-    Copy,
-};
-
-enum class Discipline192Handling : std::size_t {
-    LogAndIgnore,
-    Ignore,
-    TryToHandle,
-    Copy,
-};
-
-enum class OnErrorHandling : std::size_t {
-    Abort,
-    LogAndSkip,
-    Skip,
-    TryToHandle,
-    Copy,
 };
 
 KeySet iterateMarsNamespace(const metkit::codes::CodesHandle& handle) {
@@ -200,6 +181,16 @@ std::optional<FieldValueMap> optionFieldValueMap(const eckit::LocalConfiguration
         return std::nullopt;
     }
     return parseFieldValueMap(value);
+}
+
+void validatePackingOverride(const std::string& packingOverride) {
+    if (packingOverride.empty()) {
+        return;
+    }
+    if (packingOverride == "ccsds" || packingOverride == "simple") {
+        return;
+    }
+    throw std::runtime_error(std::string("Unsupported packing: ") + packingOverride);
 }
 
 bool isDiscipline192Param(long p) {
@@ -787,6 +778,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
         }
     }
     misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
+    misc.shapeOfTheEarth = dm::parseEntry(dm::ShapeOfTheEarth.withKey("shapeOfTheEarth"), h);
 
     handleMissingValue(h, misc);
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
@@ -927,76 +919,88 @@ MessageDisposition classifyTimespanNonPositive(const TimeSpanEqualToZeroHandling
     return MessageDisposition::FailToExtract;
 }
 
-ExtractedMsg failToExtract() {
-    return ExtractedMsg{MessageDisposition::FailToExtract, eckit::LocalConfiguration{}, eckit::LocalConfiguration{},
-                        {}};
+ExtractionOutcome makeOutcome(MessageDisposition disposition, ExtractionOutcomeCode code, std::string reason,
+                              std::string detail = {}) {
+    return ExtractionOutcome{disposition, code, std::move(reason), std::move(detail)};
 }
 
-ExtractedMsg classifyMessage(const eckit::message::Message& msg, metkit::codes::CodesHandle& inputHandle,
-                            const eckit::LocalConfiguration& options) {
-    const auto excludeMap = optionFieldValueMap(options, "exclude");
-    if (excludeMap && matches(msg, *excludeMap)) {
-        return ExtractedMsg{MessageDisposition::SkipExcluded, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+Grib2MarsMiscResult makeResult(ExtractionOutcome outcome, ExtractedMsg extractedMessage) {
+    return Grib2MarsMiscResult{std::move(extractedMessage), std::move(outcome)};
+}
+
+Grib2MarsMiscResult makeResult(ExtractionOutcome outcome) {
+    return Grib2MarsMiscResult{ExtractedMsg{eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}},
+                               std::move(outcome)};
+}
+
+Grib2MarsMiscResult classifyMessage(const eckit::message::Message& msg, metkit::codes::CodesHandle& inputHandle,
+                                   const Grib2MarsMiscOptions& options) {
+    if (options.exclude && matches(msg, *options.exclude)) {
+        return makeResult(makeOutcome(MessageDisposition::SkipExcluded, ExtractionOutcomeCode::SkipRequiredExcluded,
+                                      "excluded"));
     }
 
-    const auto filterMap = optionFieldValueMap(options, "filter");
-    if (filterMap && !matches(msg, *filterMap)) {
-        return ExtractedMsg{MessageDisposition::SkipFilteredOut, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+    if (options.filter && !matches(msg, *options.filter)) {
+        return makeResult(makeOutcome(MessageDisposition::SkipFilteredOut,
+                                      ExtractionOutcomeCode::SkipRequiredFilteredOut, "filtered-out"));
     }
-
-    const bool copyGrib2Messages = !getBoolOrDefault(options, "all", false);
-    const auto exceptMap = optionFieldValueMap(options, "except");
-    const auto onError = parseOnErrorHandling(getStringOrDefault(options, "on-error", "log-and-skip"));
-    const auto discipline192 = parseDiscipline192Handling(getStringOrDefault(options, "discipline-192", "log-and-ignore"));
 
     long isMessageValid = inputHandle.getLong("isMessageValid");
     if (isMessageValid != 1) {
-        auto disposition = classifyInvalidMessage(onError);
+        auto disposition = classifyInvalidMessage(options.onError);
         if (disposition != MessageDisposition::Encode) {
-            return ExtractedMsg{disposition, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+            const auto code = (disposition == MessageDisposition::CopyInvalidMessage)
+                                  ? ExtractionOutcomeCode::CopyRequiredInvalidMessage
+                                  : ExtractionOutcomeCode::SkipRequiredInvalidMessage;
+            return makeResult(makeOutcome(disposition, code, "invalid-message"));
         }
     }
 
     std::string edition = inputHandle.getString("edition");
-    if (discipline192 != Discipline192Handling::TryToHandle) {
+    if (options.discipline192 != Discipline192Handling::TryToHandle) {
         long paramId = inputHandle.getLong("paramId");
         bool isDiscipline192 = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle.getLong("discipline") == 192);
         if (isDiscipline192) {
-            return ExtractedMsg{classifyDiscipline192(discipline192), eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+            const auto disposition = classifyDiscipline192(options.discipline192);
+            const auto code = (disposition == MessageDisposition::CopyDiscipline192)
+                                  ? ExtractionOutcomeCode::CopyRequiredDiscipline192
+                                  : ExtractionOutcomeCode::SkipRequiredDiscipline192;
+            return makeResult(makeOutcome(disposition, code, "discipline-192", std::string{"paramId="} + std::to_string(paramId)));
         }
     }
 
-    if (exceptMap && matches(msg, *exceptMap)) {
+    if (options.except && matches(msg, *options.except)) {
         if (edition == "1") {
-            return failToExtract();
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedExceptMatchedGrib1,
+                                          "except-matched-grib1"));
         }
-        return ExtractedMsg{MessageDisposition::CopyExceptMatched, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+        return makeResult(makeOutcome(MessageDisposition::CopyExceptMatched,
+                                      ExtractionOutcomeCode::CopyRequiredExceptMatched, "except-matched"));
     }
 
-    if (edition == "2" && copyGrib2Messages) {
-        return ExtractedMsg{MessageDisposition::CopyGrib2Verbatim, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+    if (edition == "2" && options.copyGrib2Messages) {
+        return makeResult(makeOutcome(MessageDisposition::CopyGrib2Verbatim,
+                                      ExtractionOutcomeCode::CopyRequiredGrib2Verbatim, "grib2-verbatim"));
     }
 
-    return ExtractedMsg{MessageDisposition::Encode, eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+    return makeResult(makeOutcome(MessageDisposition::Encode, ExtractionOutcomeCode::ReadyToEncode, "ready-to-encode"));
 }
 
-void applyOptionOverrides(dm::FullMarsRecord& mars, dm::MiscRecord& misc, const eckit::LocalConfiguration& options) {
-    const auto packing = getStringOrDefault(options, "packing");
-    if (!packing.empty()) {
-        mars.packing.set(packing);
+void applyOptionOverrides(dm::FullMarsRecord& mars, dm::MiscRecord& misc, const Grib2MarsMiscOptions& options) {
+    if (!options.packingOverride.empty()) {
+        mars.packing.set(options.packingOverride);
     }
 
-    const auto model = getStringOrDefault(options, "model");
-    if (!model.empty()) {
-        mars.model.set(model);
+    if (!options.modelOverride.empty()) {
+        mars.model.set(options.modelOverride);
     }
 
-    const long ncycle = getLongOrDefault(options, "ncycle", 0);
-    if (ncycle > 0) {
-        misc.generatingProcessIdentifier.set(ncycle);
+    if (options.ncycle > 0) {
+        misc.generatingProcessIdentifier.set(options.ncycle);
     }
 
-    if (getBoolOrDefault(options, "control", false)) {
+    if (options.controlForecast) {
         if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
             throw eckit::UserError(
                 "Setting forecast member to control is only supported for stream=oper and type=fc; got stream="
@@ -1008,23 +1012,26 @@ void applyOptionOverrides(dm::FullMarsRecord& mars, dm::MiscRecord& misc, const 
         misc.numberOfForecastsInEnsemble.set(51);
     }
 
-    if (getBoolOrDefault(options, "convert-wave-stream-to-oper", false)) {
+    if (options.convertWaveStreamToOper) {
         const auto currentStream = mars.stream.get();
-        if (currentStream == "wave" || currentStream == "waef") {
+        if (currentStream == "wave") {
             mars.stream.set("oper");
         }
+        if (currentStream == "waef") {
+            mars.stream.set("enfo");
+        }
+
     }
 
-    const auto expver = getStringOrDefault(options, "expver");
-    if (!expver.empty()) {
-        mars.expver.set(expver);
+    if (!options.expverOverride.empty()) {
+        mars.expver.set(options.expverOverride);
     }
 }
 
 void applyMappings(dm::FullMarsRecord& mars, dm::MiscRecord& misc, std::vector<double>& values,
-                   const eckit::LocalConfiguration& options) {
-    std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules = getBoolOrDefault(options, "wmo-units", false) ? mars2mars::allRules()
-                                                                                : mars2mars::allRulesNoWMOMapping();
+                   const Grib2MarsMiscOptions& options) {
+    std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules
+        = options.useWmoUnits ? mars2mars::allRules() : mars2mars::allRulesNoWMOMapping();
     if (mappingRules) {
         auto mappingResult = mars2mars::applyMappings(*mappingRules, mars, misc);
         if (mappingResult && mappingResult->valuesScaleFactor) {
@@ -1037,55 +1044,208 @@ void applyMappings(dm::FullMarsRecord& mars, dm::MiscRecord& misc, std::vector<d
 
 }  // namespace
 
-ExtractedMsg grib2MarsMisc(const eckit::message::Message& msg, const eckit::LocalConfiguration& options) {
+Grib2MarsMiscOptions makeGrib2MarsMiscOptions(const eckit::LocalConfiguration& options) {
+    Grib2MarsMiscOptions parsed;
+    parsed.exclude = optionFieldValueMap(options, "exclude");
+    parsed.filter = optionFieldValueMap(options, "filter");
+    parsed.except = optionFieldValueMap(options, "except");
+    parsed.copyGrib2Messages = !getBoolOrDefault(options, "all", false);
+    parsed.useWmoUnits = getBoolOrDefault(options, "wmo-units", false);
+    parsed.controlForecast = getBoolOrDefault(options, "control", false);
+    parsed.convertWaveStreamToOper = getBoolOrDefault(options, "convert-wave-stream-to-oper", false);
+    parsed.ncycle = getLongOrDefault(options, "ncycle", 0);
+    parsed.defaultEnsembleSize = getLongOrDefault(options, "default-ensemble-size", 0);
+    parsed.packingOverride = getStringOrDefault(options, "packing");
+    validatePackingOverride(parsed.packingOverride);
+    parsed.modelOverride = getStringOrDefault(options, "model");
+    parsed.expverOverride = getStringOrDefault(options, "expver");
+    parsed.onError = parseOnErrorHandling(getStringOrDefault(options, "on-error", "log-and-skip"));
+    parsed.discipline192
+        = parseDiscipline192Handling(getStringOrDefault(options, "discipline-192", "log-and-ignore"));
+    parsed.timespanNonPositive
+        = parseTimeSpanEqualToZeroHandling(getStringOrDefault(options, "timespan-equal-to-zero", "log-and-ignore"));
+    return parsed;
+}
+
+Grib2MarsMiscResult grib2MarsMisc(const eckit::message::Message& msg, const Grib2MarsMiscOptions& options) {
     try {
         std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
         auto* mh = dynamic_cast<eckit::MemoryHandle*>(dh.get());
         if (mh == nullptr) {
-            return failToExtract();
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedReadHandleNotMemory,
+                                          "read-handle-not-memory"));
         }
 
         auto inputHandle = metkit::codes::codesHandleFromMessageCopy(
             metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(mh->data()), mh->size()));
 
-        auto classified = classifyMessage(msg, *inputHandle, options);
-        if (classified.disposition != MessageDisposition::Encode) {
+        const auto classified = [&]() -> Grib2MarsMiscResult {
+            try {
+                return classifyMessage(msg, *inputHandle, options);
+            }
+            catch (const std::exception& e) {
+                return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                              ExtractionOutcomeCode::ExtractFailedMessageClassification,
+                                              "message-classification-exception", e.what()));
+            }
+            catch (...) {
+                return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                              ExtractionOutcomeCode::ExtractFailedMessageClassification,
+                                              "message-classification-exception"));
+            }
+        }();
+
+        if (!classified.extractionOutcome.shouldProceedToEncode()) {
             return classified;
         }
 
         dm::FullMarsRecord mars;
         dm::MiscRecord misc;
         KeySet marsKeys = iterateMarsNamespace(*inputHandle);
-        const long defaultEnsembleSize = getLongOrDefault(options, "default-ensemble-size", 0);
-        extract::mapGrib1ToGrib2(marsKeys, *inputHandle, mars, misc, defaultEnsembleSize);
+        try {
+            extract::mapGrib1ToGrib2(marsKeys, *inputHandle, mars, misc, options.defaultEnsembleSize);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMapGrib1ToGrib2,
+                                          "map-grib1-to-grib2-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMapGrib1ToGrib2,
+                                          "map-grib1-to-grib2-exception"));
+        }
 
         std::vector<double> values = inputHandle->getDoubleArray("values");
         if (values.empty()) {
-            return failToExtract();
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedEmptyValues,
+                                          "empty-values"));
         }
 
-        applyOptionOverrides(mars, misc, options);
-        applyMappings(mars, misc, values, options);
+        try {
+            applyOptionOverrides(mars, misc, options);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedOptionOverrides,
+                                          "option-overrides-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedOptionOverrides,
+                                          "option-overrides-exception"));
+        }
 
-        dm::applyRecordDefaults(mars);
-        dm::validateRecord(mars);
-        dm::applyRecordDefaults(misc);
-        dm::validateRecord(misc);
-        extract::validateSpectralComplexNoOverflow(mars, misc, values);
+        try {
+            applyMappings(mars, misc, values, options);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMappings,
+                                          "mappings-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMappings,
+                                          "mappings-exception"));
+        }
+
+        try {
+            dm::applyRecordDefaults(mars);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMarsDefaults,
+                                          "mars-defaults-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMarsDefaults,
+                                          "mars-defaults-exception"));
+        }
+
+        try {
+            dm::validateRecord(mars);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMarsValidation,
+                                          "mars-validation-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMarsValidation,
+                                          "mars-validation-exception"));
+        }
+
+        try {
+            dm::applyRecordDefaults(misc);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMiscDefaults,
+                                          "misc-defaults-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMiscDefaults,
+                                          "misc-defaults-exception"));
+        }
+
+        try {
+            dm::validateRecord(misc);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMiscValidation,
+                                          "misc-validation-exception", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedMiscValidation,
+                                          "misc-validation-exception"));
+        }
+
+        try {
+            extract::validateSpectralComplexNoOverflow(mars, misc, values);
+        }
+        catch (const std::exception& e) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedSpectralComplexOverflowProtection,
+                                          "spectral-complex-overflow-protection", e.what()));
+        }
+        catch (...) {
+            return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                          ExtractionOutcomeCode::ExtractFailedSpectralComplexOverflowProtection,
+                                          "spectral-complex-overflow-protection"));
+        }
 
         const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
         const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
 
         if (marsConfig.has("timespan") && marsConfig.getLong("timespan") <= 0) {
-            const auto timeSpanHandling
-                = parseTimeSpanEqualToZeroHandling(getStringOrDefault(options, "timespan-equal-to-zero", "log-and-ignore"));
-            return ExtractedMsg{classifyTimespanNonPositive(timeSpanHandling), eckit::LocalConfiguration{}, eckit::LocalConfiguration{}, {}};
+            const auto disposition = classifyTimespanNonPositive(options.timespanNonPositive);
+            const auto code = (disposition == MessageDisposition::CopyTimespanNonPositive)
+                                  ? ExtractionOutcomeCode::CopyRequiredTimespanNonPositive
+                                  : ExtractionOutcomeCode::SkipRequiredTimespanNonPositive;
+            return makeResult(makeOutcome(disposition, code, "timespan-nonpositive",
+                                          std::string{"timespan="} + std::to_string(marsConfig.getLong("timespan"))));
         }
 
-        return ExtractedMsg{MessageDisposition::Encode, marsConfig, miscConfig, std::move(values)};
+        return makeResult(makeOutcome(MessageDisposition::Encode, ExtractionOutcomeCode::ReadyToEncode, "ready-to-encode"),
+                          ExtractedMsg{marsConfig, miscConfig, std::move(values)});
+    }
+    catch (const std::exception& e) {
+        return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                      ExtractionOutcomeCode::ExtractFailedUnknownException,
+                                      "unknown-extraction-exception", e.what()));
     }
     catch (...) {
-        return failToExtract();
+        return makeResult(makeOutcome(MessageDisposition::FailToExtract,
+                                      ExtractionOutcomeCode::ExtractFailedUnknownException,
+                                      "unknown-extraction-exception"));
     }
 }
 

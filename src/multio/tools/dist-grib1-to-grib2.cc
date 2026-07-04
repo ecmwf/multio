@@ -20,19 +20,10 @@
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
 #include "multio/tools/utils/distGrib1ToGrib2Mpi.h"
 #include "multio/tools/utils/distGrib1ToGrib2Options.h"
+#include "multio/tools/utils/distGrib1ToGrib2OutcomesReport.h"
 #include "multio/tools/utils/distGrib1ToGrib2ProcessFiles.h"
+#include "multio/tools/utils/grib2MarsMisc.h"
 
-namespace multio::distGrib1ToGrib2 {
-
-namespace {
-
-std::string globalOutcomePath(const std::string& outputPrefix) {
-    return outputPrefix + "_GlobalOutcome.log";
-}
-
-}  // namespace
-
-}  // namespace multio::distGrib1ToGrib2
 
 int main(int argc, char** argv) {
     using namespace multio::distGrib1ToGrib2;
@@ -76,7 +67,7 @@ int main(int argc, char** argv) {
             const std::string reportFile = outputPrefix + "_chunk_report.csv";
             writeChunkReport(result, reportFile);
             printSplitSummaryToStderr(result);
-            std::cerr << "chunk report written to: " << reportFile << '\n';
+            std::cerr << timestampString() << "chunk report written to: " << reportFile << '\n';
 
             for (int dest = 1; dest < worldSize; ++dest) {
                 sendFileListToRank(result.chunks[static_cast<std::size_t>(dest)], dest, MPI_COMM_WORLD);
@@ -88,16 +79,24 @@ int main(int argc, char** argv) {
         }
 
         const eckit::LocalConfiguration options = loadAndBroadcastOptions(rank, optionsYaml, MPI_COMM_WORLD);
+        const auto grib2MarsMiscOptions = multio::grib2MarsMisc::makeGrib2MarsMiscOptions(options);
 
-        std::cerr << "rank " << rank << " received " << localFiles.size() << " files\n";
-        const std::vector<FileOutcome> localOutcomes = processLocalFiles(localFiles, options, outputPrefix, rank);
-        const std::string globalLog
-            = gatherStringToRank0(serializeOutcomesLog(localOutcomes), rank, worldSize, MPI_COMM_WORLD);
+        std::cerr << timestampString() << "rank " << rank << " received " << localFiles.size() << " files" << std::endl;
+        const std::vector<FileOutcome> localOutcomes
+            = processLocalFiles(localFiles, grib2MarsMiscOptions, options, outputPrefix, rank);
+
+        std::cerr << timestampString() << "rank " << rank << " processed all the files" << std::endl;
+        MPI_Barrier(MPI_COMM_WORLD);
+
+
+        const std::string globalOutcomesPayload
+            = gatherStringToRank0(serializeFileOutcomes(localOutcomes), rank, worldSize, MPI_COMM_WORLD);
 
         if (rank == 0) {
-            const std::string outcomeFile = globalOutcomePath(outputPrefix);
-            writeGlobalOutcomeLog(globalLog, outcomeFile);
-            std::cerr << "global outcome written to: " << outcomeFile << '\n';
+            const auto globalOutcomes = deserializeFileOutcomes(globalOutcomesPayload);
+            const auto reportPaths = makeReportPaths(outputPrefix);
+            writeOutcomeReports(globalOutcomes, reportPaths);
+            std::cerr << timestampString() << "global outcome written to: " << reportPaths.perFileLog << '\n';
         }
 
         MPI_Finalize();

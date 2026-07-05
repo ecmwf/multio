@@ -25,6 +25,7 @@ on-error: log-and-skip
 discipline-192: ignore
 
 # Optional override fields applied to the generated MARS/misc records.
+wmo-units: true
 packing: "ccsds"
 model: ""
 ncycle: 162

@@ -55,6 +55,9 @@ int main(int argc, char** argv) {
         const std::string inputList = argv[1];
         const std::string outputPrefix = argv[2];
         const std::string optionsYaml = argv[3];
+        const eckit::LocalConfiguration options = loadAndBroadcastOptions(rank, optionsYaml, MPI_COMM_WORLD);
+        const std::string debugPrefix = debugOutputPrefix(options);
+        const std::string reportPrefix = debugPrefix.empty() ? outputPrefix : debugPrefix;
 
         std::vector<std::string> localFiles;
         if (rank == 0) {
@@ -64,7 +67,7 @@ int main(int argc, char** argv) {
             }
 
             auto result = makeBalancedChunks(std::move(files), static_cast<std::size_t>(worldSize));
-            const std::string reportFile = outputPrefix + "_chunk_report.csv";
+            const std::string reportFile = reportPrefix + "_chunk_report.csv";
             writeChunkReport(result, reportFile);
             printSplitSummaryToStderr(result);
             std::cerr << timestampString() << "chunk report written to: " << reportFile << '\n';
@@ -78,7 +81,6 @@ int main(int argc, char** argv) {
             localFiles = recvFileListFromRank0(MPI_COMM_WORLD);
         }
 
-        const eckit::LocalConfiguration options = loadAndBroadcastOptions(rank, optionsYaml, MPI_COMM_WORLD);
         const auto grib2MarsMiscOptions = multio::grib2MarsMisc::makeGrib2MarsMiscOptions(options);
 
         std::cerr << timestampString() << "rank " << rank << " received " << localFiles.size() << " files" << std::endl;
@@ -94,7 +96,7 @@ int main(int argc, char** argv) {
 
         if (rank == 0) {
             const auto globalOutcomes = deserializeFileOutcomes(globalOutcomesPayload);
-            const auto reportPaths = makeReportPaths(outputPrefix);
+            const auto reportPaths = makeReportPaths(reportPrefix);
             writeOutcomeReports(globalOutcomes, reportPaths);
             std::cerr << timestampString() << "global outcome written to: " << reportPaths.perFileLog << '\n';
         }

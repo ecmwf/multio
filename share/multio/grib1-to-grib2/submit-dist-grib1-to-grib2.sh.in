@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=dist-grib1-to-grib2
+#SBATCH --partition=par
+#SBATCH --time=24:00:00
+
+#SBATCH --ntasks-per-node=128
+#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --hint=nomultithread
+##SBATCH --exclusive
+
+set -Eeuo pipefail
+
+EXE="@CMAKE_INSTALL_FULL_BINDIR@/dist-grib1-to-grib2"
+DEFAULT_OPTIONS_FILE="@CMAKE_INSTALL_FULL_DATADIR@/multio/grib1-to-grib2/optionfile.yaml"
+
+INPUT_LIST=""
+PREFIX=""
+OPTIONS_FILE="${DEFAULT_OPTIONS_FILE}"
+OUTPUT_PREFIX=""
+
+usage() {
+    cat <<'EOF'
+Usage:
+  submit-dist-grib1-to-grib2.sh --input-list /path/to/input.list [options]
+
+Required:
+  --input-list <path>     Input list passed to dist-grib1-to-grib2
+
+Optional:
+  --prefix <path>         Base directory for generated outputs
+                          Default: $SCRATCH/tmp_<cksum>_<timestamp>
+  --options-file <path>   YAML options file
+                          Default: installed optionfile.yaml
+  -h, --help, ?           Show this help
+
+The distributed executable is configured by CMake and loaded from the install
+tree. The script creates the prefix directory and runs:
+
+  dist-grib1-to-grib2 <input-list> <prefix>/dist-grib1-to-grib2 <options-file>
+EOF
+}
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >&2
+}
+
+abspath_existing() {
+    local path="$1"
+    local dir
+    local base
+
+    if [[ -d "${path}" ]]; then
+        (
+            cd "${path}"
+            pwd -P
+        )
+        return
+    fi
+
+    [[ -e "${path}" ]] || die "Path does not exist: ${path}"
+
+    dir="$(dirname "${path}")"
+    base="$(basename "${path}")"
+
+    (
+        cd "${dir}"
+        printf '%s/%s\n' "$(pwd -P)" "${base}"
+    )
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --input-list)
+                [[ $# -ge 2 ]] || die "--input-list requires an argument"
+                INPUT_LIST="$2"
+                shift 2
+                ;;
+
+            --prefix)
+                [[ $# -ge 2 ]] || die "--prefix requires an argument"
+                PREFIX="$2"
+                shift 2
+                ;;
+
+            --options-file)
+                [[ $# -ge 2 ]] || die "--options-file requires an argument"
+                OPTIONS_FILE="$2"
+                shift 2
+                ;;
+
+            -h|--help|\?)
+                usage
+                exit 0
+                ;;
+
+            *)
+                die "Unknown argument: $1"
+                ;;
+        esac
+    done
+}
+
+default_prefix() {
+    [[ -n "${SCRATCH:-}" ]] || die "--prefix not provided and SCRATCH is not set"
+
+    local input_abs
+    local stamp
+    local hash
+
+    input_abs="$(abspath_existing "${INPUT_LIST}")"
+    stamp="$(date +%Y%m%d%H%M%S)"
+    hash="$(printf '%s %s\n' "${input_abs}" "${stamp}" | cksum | awk '{print $1}')"
+
+    printf '%s/tmp_%s_%s\n' "${SCRATCH}" "${hash}" "${stamp}"
+}
+
+validate_and_prepare() {
+    [[ -n "${INPUT_LIST}" ]] || die "Missing required argument: --input-list"
+
+    INPUT_LIST="$(abspath_existing "${INPUT_LIST}")"
+    OPTIONS_FILE="$(abspath_existing "${OPTIONS_FILE}")"
+
+    [[ -f "${INPUT_LIST}" ]] || die "--input-list does not exist or is not a file: ${INPUT_LIST}"
+    [[ -f "${OPTIONS_FILE}" ]] || die "--options-file does not exist or is not a file: ${OPTIONS_FILE}"
+    [[ -x "${EXE}" ]] || die "Configured executable does not exist or is not executable: ${EXE}"
+
+    if [[ -z "${PREFIX}" ]]; then
+        PREFIX="$(default_prefix)"
+    fi
+
+    mkdir -p "${PREFIX}"
+    PREFIX="$(cd "${PREFIX}" && pwd -P)"
+    OUTPUT_PREFIX="${PREFIX}/dist-grib1-to-grib2"
+
+    log "EXE=${EXE}"
+    log "INPUT_LIST=${INPUT_LIST}"
+    log "PREFIX=${PREFIX}"
+    log "OUTPUT_PREFIX=${OUTPUT_PREFIX}"
+    log "OPTIONS_FILE=${OPTIONS_FILE}"
+}
+
+parse_args "$@"
+validate_and_prepare
+
+echo "SLURM_JOB_ID=${SLURM_JOB_ID:-}"
+echo "SLURM_JOB_NUM_NODES=${SLURM_JOB_NUM_NODES:-}"
+echo "SLURM_NTASKS=${SLURM_NTASKS:-}"
+echo "SLURM_JOB_NODELIST=${SLURM_JOB_NODELIST:-}"
+
+module load intel hpcx-openmpi
+
+srun \
+  --cpu-bind=cores \
+  --distribution=block:block \
+  "${EXE}" "${INPUT_LIST}" "${OUTPUT_PREFIX}" "${OPTIONS_FILE}"

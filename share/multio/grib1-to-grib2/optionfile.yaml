@@ -48,7 +48,7 @@ sink:
   type: fdb5
   config:
     # Optional FDB5 userConfig. If omitted, the sink defaults to `useSubToc: true`.
-    fdb_home: '/lus/h1tcst01/mavm_temp_scratch_mtg2/fdbsc'
+    fdb_home: '/home/fdbsc'
     userConfig:
       useSubToc: true
 

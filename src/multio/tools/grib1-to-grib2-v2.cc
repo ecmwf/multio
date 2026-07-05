@@ -30,9 +30,12 @@
 #include "metkit/codes/api/CodesAPI.h"
 #include "metkit/mars2grib/api/Mars2Grib.h"
 
+#include "multio/sink/DataSink.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/tools/utils/CodesHandleToEckitMessage.h"
 #include "multio/tools/utils/distGrib1ToGrib2Options.h"
 #include "multio/tools/utils/grib2MarsMisc.h"
+#include "multio/tools/utils/scalarGrib1ToGrib2DebugOutputs.h"
 
 namespace multio::grib1ToGrib2 {
 
@@ -187,6 +190,8 @@ private:
     long verbosity_ = 0;
     bool noOutput_ = false;
     bool useOptionsYaml_ = false;
+    std::string debugOutputPrefix_;
+    std::optional<eckit::LocalConfiguration> archiveProbeSinkConfig_;
     grib2MarsMisc::Grib2MarsMiscOptions grib2MarsMiscOptions_{};
 };
 
@@ -266,6 +271,13 @@ void Grib1ToGrib2V2::init(const eckit::option::CmdArgs& args) {
     if (useOptionsYaml_) {
         throwIfYamlModeConflicts(args);
         const auto yamlOptions = distGrib1ToGrib2::loadOptionsFromYamlFile(optionsYaml);
+        debugOutputPrefix_ = distGrib1ToGrib2::debugOutputPrefix(yamlOptions);
+        if (yamlOptions.has("sink")) {
+            archiveProbeSinkConfig_ = yamlOptions.getSubConfiguration("sink");
+        }
+        if (archiveProbeSinkConfig_ && debugOutputPrefix_.empty()) {
+            throw std::runtime_error("YAML option sink requires debug.output-prefix in grib1-to-grib2-v2");
+        }
         grib2MarsMiscOptions_ = grib2MarsMisc::makeGrib2MarsMiscOptions(yamlOptions);
         return;
     }
@@ -375,11 +387,17 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
         outputFileHandle->openForWrite(0);
     }
 
+    ScalarDebugOutputs debugOutputs(debugOutputPrefix_);
+    std::unique_ptr<sink::DataSink> archiveProbeSink;
+    if (archiveProbeSinkConfig_) {
+        archiveProbeSink = buildArchiveProbeSink(*archiveProbeSinkConfig_);
+    }
+
     metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
     std::size_t msgIndex = 0;
-    std::size_t skippedCount = 0;
+    std::size_t nonSuccessCount = 0;
     while ((msg = reader.next())) {
         ++msgIndex;
         try {
@@ -402,7 +420,14 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                     std::cout << "Encoding message #" << msgIndex
                               << " to GRIB2 (total GRIB2 messages so far: " << msgIndex << ")" << std::endl;
 
-                    auto preparedHandle = encoder.encode(extracted.values, extracted.mars, extracted.misc);
+                    decltype(encoder.encode(extracted.values, extracted.mars, extracted.misc)) preparedHandle;
+                    try {
+                        preparedHandle = encoder.encode(extracted.values, extracted.mars, extracted.misc);
+                    }
+                    catch (...) {
+                        debugOutputs.writeInputMessage(ScalarDebugBucket::FailedEncode, msg);
+                        throw;
+                    }
                     const long isMessageValid = preparedHandle->getLong("isMessageValid");
                     if (isMessageValid != 1) {
                         std::cerr << "WARNING: Re-encoded message #" << msgIndex
@@ -412,6 +437,35 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
 
                     if (outputFileHandle) {
                         write(*preparedHandle, *outputFileHandle);
+                    }
+
+                    if (archiveProbeSink) {
+                        try {
+                            archiveProbeSink->write(tools::utils::to_eckit_message(*preparedHandle));
+                            archiveProbeSink->flush();
+                            debugOutputs.writeInputMessage(ScalarDebugBucket::ConvertedAndArchived, msg);
+                        }
+                        catch (const std::exception& e) {
+                            debugOutputs.writeInputMessage(ScalarDebugBucket::FailedArchive, msg);
+                            debugOutputs.writeArchiveFailureEncoded(*preparedHandle);
+                            ++nonSuccessCount;
+                            if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::LogAndSkip) {
+                                std::cerr << "Error archiving message #" << msgIndex << ": " << e.what()
+                                          << " -- classified as FailedArchive" << std::endl;
+                            }
+                        }
+                        catch (...) {
+                            debugOutputs.writeInputMessage(ScalarDebugBucket::FailedArchive, msg);
+                            debugOutputs.writeArchiveFailureEncoded(*preparedHandle);
+                            ++nonSuccessCount;
+                            if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::LogAndSkip) {
+                                std::cerr << "Error archiving message #" << msgIndex
+                                          << ": unknown exception -- classified as FailedArchive" << std::endl;
+                            }
+                        }
+                    }
+                    else {
+                        debugOutputs.writeInputMessage(ScalarDebugBucket::Converted, msg);
                     }
                     break;
                 }
@@ -449,18 +503,21 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                     if (outputFileHandle) {
                         write(*inputHandle, *outputFileHandle);
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipExcluded:
                     if (verbosity_ >= 2) {
                         std::cout << "exclude map matched... skipping message" << std::endl;
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipFilteredOut:
                     if (verbosity_ >= 2) {
                         std::cout << "filter map did not match... skipping message" << std::endl;
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipInvalidMessage:
@@ -469,7 +526,8 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                                   << " is not valid according to the GRIB1 metadata. This likely means the message is malformed and may fail to convert to GRIB2. Skipping message."
                                   << std::endl;
                     }
-                    ++skippedCount;
+                    ++nonSuccessCount;
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipDiscipline192:
@@ -477,6 +535,7 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                         std::cout << "Excluding message with discipline 192 (paramId: " << inputHandle->getLong("paramId")
                                   << ")" << std::endl;
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipTimespanNonPositive:
@@ -489,22 +548,28 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                         std::cerr << "WARNING:Ignoring message with non-positive timespan (paramId: "
                                   << inputHandle->getLong("paramId") << ")" << std::endl;
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::FailToExtract:
                     if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::Abort) {
                         throw std::runtime_error(outcome.detail.empty() ? outcome.reason : outcome.detail);
                     }
-                    ++skippedCount;
+                    ++nonSuccessCount;
                     if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::LogAndSkip) {
                         std::cerr << "Error converting message #" << msgIndex << ": "
                                   << (outcome.detail.empty() ? outcome.reason : outcome.detail) << " -- skipping"
                                   << std::endl;
                     }
+                    debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::FailToEncode:
+                    debugOutputs.writeInputMessage(ScalarDebugBucket::FailedEncode, msg);
+                    throw std::runtime_error(outcome.detail.empty() ? outcome.reason : outcome.detail);
+
                 case grib2MarsMisc::MessageDisposition::FailToArchive:
+                    debugOutputs.writeInputMessage(ScalarDebugBucket::FailedArchive, msg);
                     throw std::runtime_error(outcome.detail.empty() ? outcome.reason : outcome.detail);
             }
         }
@@ -512,7 +577,7 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
             if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::Abort) {
                 throw;
             }
-            ++skippedCount;
+            ++nonSuccessCount;
             if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::LogAndSkip) {
                 std::cerr << "Error converting message #" << msgIndex << ": " << e.what() << " -- skipping"
                           << std::endl;
@@ -521,9 +586,13 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
         }
     }
 
-    if (skippedCount > 0) {
-        std::cerr << "grib1-to-grib2: skipped " << skippedCount << " message(s) due to conversion errors"
-                  << std::endl;
+    if (nonSuccessCount > 0) {
+        std::cerr << "grib1-to-grib2: observed " << nonSuccessCount
+                  << " non-success message(s) during conversion/archive probing" << std::endl;
+    }
+
+    if (debugOutputs.enabled()) {
+        std::cerr << "grib1-to-grib2: debug bucket counts " << debugOutputs.summary() << std::endl;
     }
 
     if (outputFileHandle) {

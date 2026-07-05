@@ -21,11 +21,11 @@ namespace multio::distGrib1ToGrib2 {
 
 enum class FileStatus : std::uint8_t {
     Success = 0,
-    FailedExtract = 1,
-    FailedEncode = 2,
-    FailedArchive = 3,
-    FailedMixed = 4,
-    Partial = 5,
+    Partial = 1,
+    ExtractFail = 2,
+    EncodeFail = 3,
+    ArchiveFail = 4,
+    Fail = 5,
     Unknown = 255
 };
 
@@ -42,8 +42,6 @@ const char* toString(grib2MarsMisc::ExtractionOutcomeCode code);
 FileStatus deriveFileStatus(const FileOutcome& o);
 std::string formatOutcomeLine(const FileOutcome& o);
 std::string formatRankProgressLine(const FileOutcome& o, int rank);
-std::string serializeOutcomesLog(const std::vector<FileOutcome>& outcomes);
-void writeGlobalOutcomeLog(const std::string& payload, const std::string& outputFile);
 std::string timestampString();
 
 }  // namespace multio::distGrib1ToGrib2

@@ -2,31 +2,21 @@
 # Configure helper scripts
 # -----------------------------------------------------------------------------
 
-set(DIST_GRIB1_TO_GRIB2_SCRIPT_IN
-    ${CMAKE_CURRENT_SOURCE_DIR}/dist-grib1-to-grib2.sh.in
+set(BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
+set(SHAREDIR ${CMAKE_INSTALL_PREFIX}/share)
+
+
+set(MTG2_CONVERT_SCRIPT_IN
+    ${CMAKE_CURRENT_SOURCE_DIR}/mtg2-convert.sh.in
 )
 
-set(DIST_GRIB1_TO_GRIB2_SCRIPT_OUT
-    ${CMAKE_CURRENT_BINARY_DIR}/dist-grib1-to-grib2.sh
-)
-
-set(SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_IN
-    ${CMAKE_CURRENT_SOURCE_DIR}/submit-dist-grib1-to-grib2.sh.in
-)
-
-set(SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT
-    ${CMAKE_CURRENT_BINARY_DIR}/submit-dist-grib1-to-grib2.sh
+set(MTG2_CONVERT_SCRIPT_OUT
+    ${CMAKE_CURRENT_BINARY_DIR}/mtg2-convert.sh
 )
 
 configure_file(
-    ${DIST_GRIB1_TO_GRIB2_SCRIPT_IN}
-    ${DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
-    @ONLY
-)
-
-configure_file(
-    ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_IN}
-    ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
+    ${MTG2_CONVERT_SCRIPT_IN}
+    ${MTG2_CONVERT_SCRIPT_OUT}
     @ONLY
 )
 
@@ -36,9 +26,8 @@ configure_file(
 
 install(
     PROGRAMS
-        ${DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
-        ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
-        ${CMAKE_CURRENT_SOURCE_DIR}/grib1-to-grib2-gather-lists.sh
+        ${MTG2_CONVERT_SCRIPT_OUT}
+        ${CMAKE_CURRENT_SOURCE_DIR}/mtg2-list.sh
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

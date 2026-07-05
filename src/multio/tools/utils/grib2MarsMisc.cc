@@ -144,10 +144,17 @@ Discipline192Handling parseDiscipline192Handling(const std::string& str) {
 
 const std::unordered_map<std::string, OnErrorHandling>& onErrorHandlingMap() {
     static const std::unordered_map<std::string, OnErrorHandling> map{{"abort", OnErrorHandling::Abort},
-                                                                      {"log-and-skip", OnErrorHandling::LogAndSkip},
-                                                                      {"skip", OnErrorHandling::Skip},
-                                                                      {"try-to-handle", OnErrorHandling::TryToHandle},
-                                                                      {"copy", OnErrorHandling::Copy}};
+                                                                       {"log-and-skip", OnErrorHandling::LogAndSkip},
+                                                                       {"skip", OnErrorHandling::Skip},
+                                                                       {"try-to-handle", OnErrorHandling::TryToHandle},
+                                                                       {"copy", OnErrorHandling::Copy}};
+    return map;
+}
+
+const std::unordered_map<std::string, InvalidInputMessageHandling>& invalidInputMessageHandlingMap() {
+    static const std::unordered_map<std::string, InvalidInputMessageHandling> map{
+        {"try-to-handle", InvalidInputMessageHandling::TryToHandle},
+        {"skip", InvalidInputMessageHandling::Skip}};
     return map;
 }
 
@@ -157,6 +164,14 @@ OnErrorHandling parseOnErrorHandling(const std::string& str) {
         return search->second;
     }
     throw std::runtime_error(std::string("Unsupported --on-error value: ") + str);
+}
+
+InvalidInputMessageHandling parseInvalidInputMessageHandling(const std::string& str) {
+    const auto& map = invalidInputMessageHandlingMap();
+    if (auto search = map.find(str); search != map.end()) {
+        return search->second;
+    }
+    throw std::runtime_error(std::string("Unsupported invalid-input-message handling: ") + str);
 }
 
 long getLongOrDefault(const eckit::LocalConfiguration& options, const std::string& key, long defaultValue) {
@@ -881,16 +896,12 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
 
 }  // namespace extract
 
-MessageDisposition classifyInvalidMessage(const OnErrorHandling handling) {
+MessageDisposition classifyInvalidInputMessage(const InvalidInputMessageHandling handling) {
     switch (handling) {
-        case OnErrorHandling::Copy:
-            return MessageDisposition::CopyInvalidMessage;
-        case OnErrorHandling::Abort:
-        case OnErrorHandling::LogAndSkip:
-        case OnErrorHandling::Skip:
-            return MessageDisposition::SkipInvalidMessage;
-        case OnErrorHandling::TryToHandle:
+        case InvalidInputMessageHandling::TryToHandle:
             return MessageDisposition::Encode;
+        case InvalidInputMessageHandling::Skip:
+            return MessageDisposition::SkipInvalidMessage;
     }
     return MessageDisposition::FailToExtract;
 }
@@ -947,12 +958,10 @@ Grib2MarsMiscResult classifyMessage(const eckit::message::Message& msg, metkit::
 
     long isMessageValid = inputHandle.getLong("isMessageValid");
     if (isMessageValid != 1) {
-        auto disposition = classifyInvalidMessage(options.onError);
+        auto disposition = classifyInvalidInputMessage(options.invalidInputMessage);
         if (disposition != MessageDisposition::Encode) {
-            const auto code = (disposition == MessageDisposition::CopyInvalidMessage)
-                                  ? ExtractionOutcomeCode::CopyRequiredInvalidMessage
-                                  : ExtractionOutcomeCode::SkipRequiredInvalidMessage;
-            return makeResult(makeOutcome(disposition, code, "invalid-message"));
+            return makeResult(makeOutcome(disposition, ExtractionOutcomeCode::SkipRequiredInvalidMessage,
+                                          "invalid-message"));
         }
     }
 
@@ -1059,6 +1068,8 @@ Grib2MarsMiscOptions makeGrib2MarsMiscOptions(const eckit::LocalConfiguration& o
     validatePackingOverride(parsed.packingOverride);
     parsed.modelOverride = getStringOrDefault(options, "model");
     parsed.expverOverride = getStringOrDefault(options, "expver");
+    parsed.invalidInputMessage
+        = parseInvalidInputMessageHandling(getStringOrDefault(options, "invalid-input-message", "try-to-handle"));
     parsed.onError = parseOnErrorHandling(getStringOrDefault(options, "on-error", "log-and-skip"));
     parsed.discipline192
         = parseDiscipline192Handling(getStringOrDefault(options, "discipline-192", "log-and-ignore"));

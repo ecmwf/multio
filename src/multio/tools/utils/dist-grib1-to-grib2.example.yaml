@@ -26,6 +26,9 @@ all: true
 # Optional. Valid values: abort, log-and-skip, skip, try-to-handle, copy
 on-error: log-and-skip
 
+# Optional. Valid values: try-to-handle, skip
+invalid-input-message: try-to-handle
+
 # Optional. Valid values: log-and-ignore, ignore, try-to-handle, copy
 discipline-192: ignore
 

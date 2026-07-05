@@ -46,6 +46,11 @@ enum class OnErrorHandling : std::size_t {
     Copy,
 };
 
+enum class InvalidInputMessageHandling : std::size_t {
+    TryToHandle,
+    Skip,
+};
+
 struct Grib2MarsMiscOptions {
     std::optional<FieldValueMap> exclude;
     std::optional<FieldValueMap> filter;
@@ -63,6 +68,7 @@ struct Grib2MarsMiscOptions {
     std::string modelOverride;
     std::string expverOverride;
 
+    InvalidInputMessageHandling invalidInputMessage = InvalidInputMessageHandling::TryToHandle;
     OnErrorHandling onError = OnErrorHandling::LogAndSkip;
     Discipline192Handling discipline192 = Discipline192Handling::LogAndIgnore;
     TimeSpanEqualToZeroHandling timespanNonPositive = TimeSpanEqualToZeroHandling::LogAndIgnore;

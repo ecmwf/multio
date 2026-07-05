@@ -1,0 +1,505 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_NAME="$(basename "$0")"
+
+# Populated by CMake configure_file()
+BINDIR="@BINDIR@"
+SHAREDIR="@SHAREDIR@"
+
+EXE="${BINDIR}/dist-grib1-to-grib2"
+DEFAULT_OPTIONS_YAML="${SHAREDIR}/multio/grib1-to-grib2/optionfile.yaml"
+
+NODES=1
+RUN_DIRECTORY=""
+OPTIONS_YAML="${DEFAULT_OPTIONS_YAML}"
+LIST_FILE=""
+ARCHITECTURE_FILE=""
+PREPARE_RUN=0
+
+usage() {
+    cat <<EOF
+Usage:
+  ${SCRIPT_NAME} [options]
+
+Options:
+  -n, --nodes <N>                 Number of nodes. Default: 1. Valid range: 1..25
+  -r, --run-directory <path>      Run directory.
+                                  Default: ./mtg2_convert_<user>_YYYYMMDD_HHMM_<hash-of-list-file>
+  -y, --options-yaml <path>       Options YAML file.
+                                  Default: ${DEFAULT_OPTIONS_YAML}
+  -l, --list-file <path>          Mandatory input list file
+  -a, --architecture-file <path>  Mandatory architecture file for the executable
+      --prepare                  Prepare the run directory and generate submit.sbatch
+  -h, --help                      Show this help
+
+Behaviour:
+  Without --prepare:
+    Validate inputs and print a summary.
+    The run directory is not created.
+
+  With --prepare:
+    Validate inputs.
+    Require the run directory to not exist.
+    Create the run directory.
+    Copy the list file, option file, and architecture file into <run-directory>/input.
+    Generate a fully configured submit.sbatch script inside the run directory.
+
+  The generated job can then be submitted with:
+    sbatch <run-directory>/submit.sbatch
+
+Note:
+  Validation may take a couple of minutes for large input lists, because the
+  script checks every listed file and retrieves its size for the summary.
+
+Examples:
+  Dry-run validation:
+    ${SCRIPT_NAME} \\
+      --nodes 2 \\
+      --list-file /path/to/input-files.list \\
+      --architecture-file /path/to/architecture.sh
+
+  Prepare a run using the default option file and default run directory:
+    ${SCRIPT_NAME} \\
+      --nodes 2 \\
+      --list-file /path/to/input-files.list \\
+      --architecture-file /path/to/architecture.sh \\
+      --prepare
+
+  Prepare a run with an explicit run directory and option file:
+    ${SCRIPT_NAME} \\
+      --nodes 4 \\
+      --run-directory /scratch/user/mtg2_convert_test_run \\
+      --list-file /path/to/input-files.list \\
+      --architecture-file /path/to/architecture.sh \\
+      --options-yaml /path/to/optionfile.yaml \\
+      --prepare
+
+  Submit the prepared run:
+    sbatch <run-directory>/submit.sbatch
+EOF
+}
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+is_positive_integer() {
+    [[ "${1:-}" =~ ^[0-9]+$ ]]
+}
+
+abs_path() {
+    local path="$1"
+    local dir
+    local base
+
+    if [[ -d "$path" ]]; then
+        (cd "$path" && pwd -P)
+    else
+        dir="$(dirname "$path")"
+        base="$(basename "$path")"
+
+        [[ -d "$dir" ]] || die "Parent directory does not exist: $dir"
+
+        (cd "$dir" && printf '%s/%s\n' "$(pwd -P)" "$base")
+    fi
+}
+
+file_hash() {
+    local file="$1"
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$file" | awk '{print substr($1, 1, 12)}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$file" | awk '{print substr($1, 1, 12)}'
+    else
+        die "Cannot compute list-file hash: neither sha256sum nor shasum is available"
+    fi
+}
+
+default_run_directory() {
+    local list_file="$1"
+    local username
+    local timestamp
+    local hash
+
+    username="$(whoami)"
+    timestamp="$(date +%Y%m%d_%H%M)"
+    hash="$(file_hash "$list_file")"
+
+    printf './mtg2_convert_%s_%s_%s\n' "$username" "$timestamp" "$hash"
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -n|--nodes)
+                [[ $# -ge 2 ]] || die "Missing value for $1"
+                NODES="$2"
+                shift 2
+                ;;
+
+            -r|--run-directory)
+                [[ $# -ge 2 ]] || die "Missing value for $1"
+                RUN_DIRECTORY="$2"
+                shift 2
+                ;;
+
+            -y|--options-yaml)
+                [[ $# -ge 2 ]] || die "Missing value for $1"
+                OPTIONS_YAML="$2"
+                shift 2
+                ;;
+
+            -l|--list-file)
+                [[ $# -ge 2 ]] || die "Missing value for $1"
+                LIST_FILE="$2"
+                shift 2
+                ;;
+
+            -a|--architecture-file)
+                [[ $# -ge 2 ]] || die "Missing value for $1"
+                ARCHITECTURE_FILE="$2"
+                shift 2
+                ;;
+
+            --prepare)
+                PREPARE_RUN=1
+                shift
+                ;;
+
+            -h|--help)
+                usage
+                exit 0
+                ;;
+
+            *)
+                die "Unknown argument: $1"
+                ;;
+        esac
+    done
+}
+
+check_nodes() {
+    is_positive_integer "$NODES" || die "--nodes must be a positive integer"
+    (( NODES > 0 && NODES <= 25 )) || die "--nodes must satisfy 0 < N <= 25"
+}
+
+check_options_yaml() {
+    [[ -f "$OPTIONS_YAML" ]] || die "Options YAML file does not exist: $OPTIONS_YAML"
+    [[ -r "$OPTIONS_YAML" ]] || die "Options YAML file is not readable: $OPTIONS_YAML"
+}
+
+check_executable() {
+    [[ -x "$EXE" ]] || die "Executable does not exist or is not executable: $EXE"
+}
+
+check_list_file_path() {
+    [[ -n "$LIST_FILE" ]] || die "--list-file / -l is mandatory"
+    [[ -f "$LIST_FILE" ]] || die "List file does not exist: $LIST_FILE"
+    [[ -r "$LIST_FILE" ]] || die "List file is not readable: $LIST_FILE"
+}
+
+check_architecture_file_path() {
+    [[ -n "$ARCHITECTURE_FILE" ]] || die "--architecture-file / -a is mandatory"
+    [[ "$ARCHITECTURE_FILE" == /* ]] || die "Architecture file path must be absolute: $ARCHITECTURE_FILE"
+    [[ -f "$ARCHITECTURE_FILE" ]] || die "Architecture file does not exist: $ARCHITECTURE_FILE"
+    [[ -r "$ARCHITECTURE_FILE" ]] || die "Architecture file is not readable: $ARCHITECTURE_FILE"
+}
+
+check_list_file_contents() {
+    local errors=0
+    local line_no=0
+    local file
+
+    while IFS= read -r file || [[ -n "$file" ]]; do
+        line_no=$((line_no + 1))
+
+        # Skip empty / whitespace-only lines and comments.
+        [[ "$file" =~ ^[[:space:]]*$ ]] && continue
+        [[ "$file" =~ ^[[:space:]]*# ]] && continue
+
+        if [[ "$file" != /* ]]; then
+            echo "Non-absolute path at line ${line_no}: ${file}" >&2
+            errors=$((errors + 1))
+            continue
+        fi
+
+        if [[ ! -f "$file" ]]; then
+            echo "Missing file at line ${line_no}: ${file}" >&2
+            errors=$((errors + 1))
+        elif [[ ! -r "$file" ]]; then
+            echo "Unreadable file at line ${line_no}: ${file}" >&2
+            errors=$((errors + 1))
+        fi
+    done < "$LIST_FILE"
+
+    (( errors == 0 )) || die "List file validation failed: ${errors} error(s)"
+}
+
+resolve_run_directory() {
+    if [[ -z "$RUN_DIRECTORY" ]]; then
+        RUN_DIRECTORY="$(default_run_directory "$LIST_FILE")"
+    fi
+}
+
+check_run_directory_available() {
+    local parent
+
+    parent="$(dirname "$RUN_DIRECTORY")"
+
+    [[ -d "$parent" ]] || die "Parent directory for run directory does not exist: $parent"
+    [[ -w "$parent" ]] || die "Parent directory for run directory is not writable: $parent"
+
+    if [[ -e "$RUN_DIRECTORY" || -L "$RUN_DIRECTORY" ]]; then
+        die "Run directory already exists: $RUN_DIRECTORY"
+    fi
+}
+
+create_run_directory_tree() {
+    mkdir "$RUN_DIRECTORY"
+
+    mkdir -p \
+        "${RUN_DIRECTORY}/input" \
+        "${RUN_DIRECTORY}/output" \
+        "${RUN_DIRECTORY}/logging/views"
+
+    [[ -d "${RUN_DIRECTORY}/input" ]] || die "Cannot create directory: ${RUN_DIRECTORY}/input"
+    [[ -d "${RUN_DIRECTORY}/output" ]] || die "Cannot create directory: ${RUN_DIRECTORY}/output"
+    [[ -d "${RUN_DIRECTORY}/logging" ]] || die "Cannot create directory: ${RUN_DIRECTORY}/logging"
+    [[ -d "${RUN_DIRECTORY}/logging/views" ]] || die "Cannot create directory: ${RUN_DIRECTORY}/logging/views"
+
+    [[ -w "${RUN_DIRECTORY}/input" ]] || die "Directory is not writable: ${RUN_DIRECTORY}/input"
+    [[ -w "${RUN_DIRECTORY}/output" ]] || die "Directory is not writable: ${RUN_DIRECTORY}/output"
+    [[ -w "${RUN_DIRECTORY}/logging" ]] || die "Directory is not writable: ${RUN_DIRECTORY}/logging"
+    [[ -w "${RUN_DIRECTORY}/logging/views" ]] || die "Directory is not writable: ${RUN_DIRECTORY}/logging/views"
+}
+
+staged_list_file_path() {
+    local run_dir="$1"
+    local list_base
+
+    list_base="$(basename "$LIST_FILE")"
+    printf '%s/input/%s\n' "$run_dir" "$list_base"
+}
+
+staged_option_file_path() {
+    local run_dir="$1"
+
+    printf '%s/input/optionfile.yaml\n' "$run_dir"
+}
+
+staged_architecture_file_path() {
+    local run_dir="$1"
+    local architecture_base
+
+    architecture_base="$(basename "$ARCHITECTURE_FILE")"
+    printf '%s/input/%s\n' "$run_dir" "$architecture_base"
+}
+
+stage_input_files() {
+    local run_dir
+    local staged_list_file
+    local staged_option_file
+    local staged_architecture_file
+
+    run_dir="$(abs_path "$RUN_DIRECTORY")"
+    staged_list_file="$(staged_list_file_path "$run_dir")"
+    staged_option_file="$(staged_option_file_path "$run_dir")"
+    staged_architecture_file="$(staged_architecture_file_path "$run_dir")"
+
+    cp -- "$LIST_FILE" "$staged_list_file"
+    cp -- "$OPTIONS_YAML" "$staged_option_file"
+    cp -- "$ARCHITECTURE_FILE" "$staged_architecture_file"
+
+    [[ -f "$staged_list_file" ]] || die "Failed to stage list file: $staged_list_file"
+    [[ -r "$staged_list_file" ]] || die "Staged list file is not readable: $staged_list_file"
+
+    [[ -f "$staged_option_file" ]] || die "Failed to stage option file: $staged_option_file"
+    [[ -r "$staged_option_file" ]] || die "Staged option file is not readable: $staged_option_file"
+
+    [[ -f "$staged_architecture_file" ]] || die "Failed to stage architecture file: $staged_architecture_file"
+    [[ -r "$staged_architecture_file" ]] || die "Staged architecture file is not readable: $staged_architecture_file"
+}
+
+count_input_files_and_bytes() {
+    local file
+    local size
+
+    N_INPUT_FILES=0
+    TOTAL_INPUT_BYTES=0
+
+    while IFS= read -r file || [[ -n "$file" ]]; do
+        [[ "$file" =~ ^[[:space:]]*$ ]] && continue
+        [[ "$file" =~ ^[[:space:]]*# ]] && continue
+
+        size="$(stat -c '%s' "$file")"
+        TOTAL_INPUT_BYTES=$((TOTAL_INPUT_BYTES + size))
+        N_INPUT_FILES=$((N_INPUT_FILES + 1))
+    done < "$LIST_FILE"
+}
+
+print_summary() {
+    local run_dir_abs
+    local staged_list_file
+    local staged_option_file
+    local staged_architecture_file
+
+    count_input_files_and_bytes
+
+    run_dir_abs="$(abs_path "$RUN_DIRECTORY")"
+    staged_list_file="$(staged_list_file_path "$run_dir_abs")"
+    staged_option_file="$(staged_option_file_path "$run_dir_abs")"
+    staged_architecture_file="$(staged_architecture_file_path "$run_dir_abs")"
+
+    cat <<EOF
+
+Input summary
+-------------
+BINDIR                  : ${BINDIR}
+SHAREDIR                : ${SHAREDIR}
+Executable              : ${EXE}
+Nodes                   : ${NODES}
+Tasks per node          : 128
+Total tasks             : $((NODES * 128))
+Run directory           : ${run_dir_abs}
+Input path              : ${run_dir_abs}/input
+Output path             : ${run_dir_abs}/output
+Logging path            : ${run_dir_abs}/logging
+Views path              : ${run_dir_abs}/logging/views
+Original list file      : $(abs_path "$LIST_FILE")
+Staged list file        : ${staged_list_file}
+Original optionfile     : $(abs_path "$OPTIONS_YAML")
+Staged optionfile       : ${staged_option_file}
+Original architecture   : $(abs_path "$ARCHITECTURE_FILE")
+Staged architecture     : ${staged_architecture_file}
+Generated sbatch script : ${run_dir_abs}/submit.sbatch
+Number of files         : ${N_INPUT_FILES}
+Total input bytes       : ${TOTAL_INPUT_BYTES}
+Mode                    : $([[ "$PREPARE_RUN" -eq 1 ]] && echo "prepare run directory" || echo "dry-run only")
+
+EOF
+}
+
+generate_submit_script() {
+    local run_dir="$1"
+    local submit_script="$2"
+    local staged_list_file="$3"
+    local staged_option_file="$4"
+    local staged_architecture_file="$5"
+
+    cat > "${submit_script}" <<EOF
+#!/usr/bin/env bash
+#SBATCH --job-name=dist-grib1-to-grib2
+#SBATCH --partition=par
+#SBATCH --time=04:00:00
+#SBATCH --nodes=${NODES}
+
+#SBATCH --ntasks-per-node=128
+#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --hint=nomultithread
+##SBATCH --exclusive
+
+#SBATCH --output=${run_dir}/logging/dist-grib1-to-grib2-%j.out
+#SBATCH --error=${run_dir}/logging/dist-grib1-to-grib2-%j.err
+
+set -euo pipefail
+
+if [[ -z "\${SLURM_JOB_ID:-}" && -z "\${SLURM_JOBID:-}" ]]; then
+    echo "ERROR: this script must be submitted with sbatch, not executed directly." >&2
+    echo "Usage: sbatch ${submit_script}" >&2
+    exit 1
+fi
+
+LIST_FILE="${staged_list_file}"
+RUNDIR="${run_dir}"
+OPTIONFILE="${staged_option_file}"
+ARCHITECTURE_FILE="${staged_architecture_file}"
+EXE="${EXE}"
+
+echo "SLURM_JOB_ID=\${SLURM_JOB_ID:-\${SLURM_JOBID:-unknown}}"
+echo "SLURM_JOB_NUM_NODES=\${SLURM_JOB_NUM_NODES:-unknown}"
+echo "SLURM_NTASKS=\${SLURM_NTASKS:-unknown}"
+echo "SLURM_JOB_NODELIST=\${SLURM_JOB_NODELIST:-unknown}"
+
+echo "EXE=\${EXE}"
+echo "LIST_FILE=\${LIST_FILE}"
+echo "RUNDIR=\${RUNDIR}"
+echo "OPTIONFILE=\${OPTIONFILE}"
+echo "ARCHITECTURE_FILE=\${ARCHITECTURE_FILE}"
+
+module purge
+source "\${ARCHITECTURE_FILE}"
+
+if [[ ! -x "\${EXE}" ]]; then
+    echo "ERROR: executable does not exist or is not executable: \${EXE}" >&2
+    exit 1
+fi
+
+srun \\
+    --cpu-bind=cores \\
+    --distribution=block:block \\
+    "\${EXE}" "\${LIST_FILE}" "\${RUNDIR}" "\${OPTIONFILE}"
+
+EOF
+
+    chmod +x "${submit_script}"
+}
+
+prepare_run_submission() {
+    local run_dir
+    local staged_list_file
+    local staged_option_file
+    local staged_architecture_file
+    local submit_script
+
+    run_dir="$(abs_path "$RUN_DIRECTORY")"
+    staged_list_file="$(staged_list_file_path "$run_dir")"
+    staged_option_file="$(staged_option_file_path "$run_dir")"
+    staged_architecture_file="$(staged_architecture_file_path "$run_dir")"
+
+    submit_script="${run_dir}/submit.sbatch"
+
+    generate_submit_script \
+        "$run_dir" \
+        "$submit_script" \
+        "$staged_list_file" \
+        "$staged_option_file" \
+        "$staged_architecture_file"
+
+    echo "Generated sbatch script:"
+    echo "  ${submit_script}"
+    echo
+
+    echo "Run directory prepared."
+    echo "To submit the job, run:"
+    echo "  sbatch ${submit_script}"
+}
+
+main() {
+    parse_args "$@"
+
+    check_nodes
+    check_options_yaml
+    check_executable
+    check_list_file_path
+    check_architecture_file_path
+    resolve_run_directory
+    check_run_directory_available
+    check_list_file_contents
+
+    print_summary
+
+    if [[ "$PREPARE_RUN" -eq 1 ]]; then
+        create_run_directory_tree
+        stage_input_files
+        prepare_run_submission
+    else
+        echo "Dry-run completed. No run directory was created. Use --prepare to prepare the run directory."
+    fi
+}
+
+main "$@"

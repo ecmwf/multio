@@ -18,20 +18,24 @@
 namespace multio::distGrib1ToGrib2 {
 
 struct DistGrib1ToGrib2ReportPaths {
-    std::string perFileLog;
+    std::string summaryLog;
+    std::string summaryJson;
+    std::string readme;
+    std::string loggingDirectory;
     std::string byClassStreamTypeLevtypeLog;
     std::string byClassStreamTypeLog;
-    std::string fullSuccessList;
-    std::string skipSuccessList;
-    std::string encodeFailureList;
-    std::string archiveFailureList;
-    std::string extractFailureList;
+    std::string successList;
+    std::string partialList;
+    std::string extractFailList;
+    std::string encodeFailList;
+    std::string archiveFailList;
+    std::string failList;
 };
 
 std::string serializeFileOutcomes(const std::vector<FileOutcome>& outcomes);
 std::vector<FileOutcome> deserializeFileOutcomes(const std::string& payload);
 
-DistGrib1ToGrib2ReportPaths makeReportPaths(const std::string& outputPrefix);
+DistGrib1ToGrib2ReportPaths makeReportPaths(const std::string& outputDirectory);
 void writeOutcomeReports(const std::vector<FileOutcome>& outcomes, const DistGrib1ToGrib2ReportPaths& paths);
 
 }  // namespace multio::distGrib1ToGrib2

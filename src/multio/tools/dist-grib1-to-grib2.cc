@@ -14,6 +14,7 @@
 
 #include <mpi.h>
 
+#include "eckit/filesystem/PathName.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/tools/utils/distGrib1ToGrib2LoadBalancer.h"
@@ -42,32 +43,36 @@ int main(int argc, char** argv) {
         if (argc != 4) {
             if (rank == 0) {
                 std::cerr << "Usage:\n"
-                          << "  mpirun -np <N> " << argv[0] << " <input_file.list> <output_prefix> <options.yaml>\n\n"
+                          << "  mpirun -np <N> " << argv[0] << " <input_file.list> <output_directory> <options.yaml>\n\n"
                           << "Outputs:\n"
-                          << "  <output_prefix>_chunk_report.csv\n"
-                          << "  <output_prefix>_GlobalOutcome.log\n"
-                          << "  <output_prefix>.rank<R>.grib2\n";
+                          << "  <output_directory>/Summary.log\n"
+                          << "  <output_directory>/Summary.json\n"
+                          << "  <output_directory>/output/...\n"
+                          << "  <output_directory>/logging/...\n";
             }
             MPI_Finalize();
             return 2;
         }
 
         const std::string inputList = argv[1];
-        const std::string outputPrefix = argv[2];
+        const std::string outputDirectory = argv[2];
         const std::string optionsYaml = argv[3];
         const eckit::LocalConfiguration options = loadAndBroadcastOptions(rank, optionsYaml, MPI_COMM_WORLD);
-        const std::string debugPrefix = debugOutputPrefix(options);
-        const std::string reportPrefix = debugPrefix.empty() ? outputPrefix : debugPrefix;
+        const auto reportPaths = makeReportPaths(outputDirectory);
 
         std::vector<std::string> localFiles;
         if (rank == 0) {
+            eckit::PathName{outputDirectory}.mkdir();
+            eckit::PathName{outputDirectory + "/output"}.mkdir();
+            eckit::PathName{reportPaths.loggingDirectory}.mkdir();
+
             auto files = loadFileListWithSizes(inputList);
             if (files.empty()) {
                 throw std::runtime_error("input list contains no valid files");
             }
 
             auto result = makeBalancedChunks(std::move(files), static_cast<std::size_t>(worldSize));
-            const std::string reportFile = reportPrefix + "_chunk_report.csv";
+            const std::string reportFile = reportPaths.loggingDirectory + "/chunk_report.csv";
             writeChunkReport(result, reportFile);
             printSplitSummaryToStderr(result);
             std::cerr << timestampString() << "chunk report written to: " << reportFile << '\n';
@@ -85,7 +90,7 @@ int main(int argc, char** argv) {
 
         std::cerr << timestampString() << "rank " << rank << " received " << localFiles.size() << " files" << std::endl;
         const std::vector<FileOutcome> localOutcomes
-            = processLocalFiles(localFiles, grib2MarsMiscOptions, options, outputPrefix, rank);
+            = processLocalFiles(localFiles, grib2MarsMiscOptions, options, outputDirectory, rank);
 
         std::cerr << timestampString() << "rank " << rank << " processed all the files" << std::endl;
         MPI_Barrier(MPI_COMM_WORLD);
@@ -96,9 +101,9 @@ int main(int argc, char** argv) {
 
         if (rank == 0) {
             const auto globalOutcomes = deserializeFileOutcomes(globalOutcomesPayload);
-            const auto reportPaths = makeReportPaths(reportPrefix);
             writeOutcomeReports(globalOutcomes, reportPaths);
-            std::cerr << timestampString() << "global outcome written to: " << reportPaths.perFileLog << '\n';
+            std::cerr << timestampString() << "summary written to: " << reportPaths.summaryLog << '\n';
+            std::cerr << timestampString() << "json summary written to: " << reportPaths.summaryJson << '\n';
         }
 
         MPI_Finalize();

@@ -10,6 +10,7 @@
 
 #include "multio/tools/utils/distGrib1ToGrib2OutcomesReport.h"
 
+#include <array>
 #include <fstream>
 #include <optional>
 #include <sstream>
@@ -114,6 +115,39 @@ std::string joinCounters(const std::array<std::size_t, static_cast<std::size_t>(
     return out.str();
 }
 
+std::string jsonEscape(const std::string& s) {
+    std::ostringstream out;
+    for (char c : s) {
+        switch (c) {
+            case '\\':
+                out << "\\\\";
+                break;
+            case '"':
+                out << "\\\"";
+                break;
+            case '\b':
+                out << "\\b";
+                break;
+            case '\f':
+                out << "\\f";
+                break;
+            case '\n':
+                out << "\\n";
+                break;
+            case '\r':
+                out << "\\r";
+                break;
+            case '\t':
+                out << "\\t";
+                break;
+            default:
+                out << c;
+                break;
+        }
+    }
+    return out.str();
+}
+
 std::optional<ParsedFileIdentity> parseFileIdentity(const std::string& filename) {
     eckit::PathName path(filename);
     const std::string parent = path.dirName().baseName();
@@ -149,13 +183,6 @@ bool hasAny(const FileOutcome& outcome, std::initializer_list<ExtractionOutcomeC
         }
     }
     return false;
-}
-
-bool hasRequestedSkips(const FileOutcome& outcome) {
-    return hasAny(outcome, {ExtractionOutcomeCode::SkipRequiredExcluded,
-                            ExtractionOutcomeCode::SkipRequiredFilteredOut,
-                            ExtractionOutcomeCode::SkipRequiredDiscipline192,
-                            ExtractionOutcomeCode::SkipRequiredTimespanNonPositive});
 }
 
 bool hasCopyRequired(const FileOutcome& outcome) {
@@ -195,24 +222,26 @@ bool hasInvalidSkip(const FileOutcome& outcome) {
     return outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::SkipRequiredInvalidMessage)] > 0;
 }
 
-std::size_t requestedSkipCount(const FileOutcome& outcome) {
-    return outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::SkipRequiredExcluded)]
-           + outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::SkipRequiredFilteredOut)]
-           + outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::SkipRequiredDiscipline192)]
-           + outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive)];
+std::size_t skipLikeCount(const FileOutcome& outcome) {
+    std::size_t total = 0;
+    for (std::size_t i = outcomeIndex(ExtractionOutcomeCode::CopyRequiredGrib2Verbatim);
+         i <= outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive); ++i) {
+        total += outcome.outcomeCounters[i];
+    }
+    return total;
 }
 
 bool isFullSuccess(const FileOutcome& outcome) {
     return outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] == outcome.nMessages
-           && !hasCopyRequired(outcome) && !hasRealExtractFailure(outcome)
-           && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome) && !hasInvalidSkip(outcome);
+            && !hasCopyRequired(outcome) && !hasRealExtractFailure(outcome)
+            && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome) && !hasInvalidSkip(outcome);
 }
 
 bool isSkipSuccess(const FileOutcome& outcome) {
-    return outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] + requestedSkipCount(outcome)
-                   == outcome.nMessages
-           && !hasCopyRequired(outcome) && !hasRealExtractFailure(outcome) && !hasEncodeFailure(outcome)
-           && !hasArchiveFailure(outcome) && !hasInvalidSkip(outcome);
+    return skipLikeCount(outcome) > 0
+           && outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] + skipLikeCount(outcome)
+                    == outcome.nMessages
+            && !hasRealExtractFailure(outcome) && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome);
 }
 
 void writeTextFile(const std::string& path, const std::string& payload) {
@@ -235,6 +264,114 @@ std::string formatSummaryByTypeLine(const SummaryByTypeKey& key, const OutcomeAg
     out << key.klass << ',' << key.stream << ',' << key.type << ',' << aggregate.nFiles << ',' << aggregate.nMessages
         << ',' << joinCounters(aggregate.outcomeCounters) << '\n';
     return out.str();
+}
+
+void emitJsonStringField(std::ostringstream& out, const std::string& key, const std::string& value, bool withComma = true) {
+    out << "    \"" << key << "\": \"" << jsonEscape(value) << "\"";
+    if (withComma) {
+        out << ',';
+    }
+    out << '\n';
+}
+
+void emitJsonNullableField(std::ostringstream& out, const std::string& key, const std::optional<std::string>& value,
+                           bool withComma = true) {
+    out << "    \"" << key << "\": ";
+    if (value) {
+        out << "\"" << jsonEscape(*value) << "\"";
+    }
+    else {
+        out << "null";
+    }
+    if (withComma) {
+        out << ',';
+    }
+    out << '\n';
+}
+
+std::string buildSummaryJson(const std::vector<FileOutcome>& outcomes) {
+    std::ostringstream out;
+    out << "{\n  \"files\": [\n";
+
+    for (std::size_t idx = 0; idx < outcomes.size(); ++idx) {
+        const auto& outcome = outcomes[idx];
+        const auto identity = parseFileIdentity(outcome.filename);
+
+        out << "  {\n";
+        emitJsonStringField(out, "status", toString(deriveFileStatus(outcome)));
+        emitJsonStringField(out, "filename", outcome.filename);
+        emitJsonNullableField(out, "class", identity ? std::optional<std::string>{identity->klass} : std::nullopt);
+        emitJsonNullableField(out, "expver", identity ? std::optional<std::string>{identity->expver} : std::nullopt);
+        emitJsonNullableField(out, "stream", identity ? std::optional<std::string>{identity->stream} : std::nullopt);
+        emitJsonNullableField(out, "type", identity ? std::optional<std::string>{identity->type} : std::nullopt);
+        emitJsonNullableField(out, "levtype", identity ? std::optional<std::string>{identity->levtype} : std::nullopt);
+        out << "    \"nMessages\": " << outcome.nMessages << ",\n";
+        out << "    \"counters\": {\n";
+        for (std::size_t i = 0; i < outcome.outcomeCounters.size(); ++i) {
+            out << "      \"" << toString(static_cast<ExtractionOutcomeCode>(i)) << "\": " << outcome.outcomeCounters[i];
+            if (i + 1 != outcome.outcomeCounters.size()) {
+                out << ',';
+            }
+            out << '\n';
+        }
+        out << "    }\n";
+        out << "  }";
+        if (idx + 1 != outcomes.size()) {
+            out << ',';
+        }
+        out << '\n';
+    }
+
+    out << "  ]\n}\n";
+    return out.str();
+}
+
+std::string buildSummaryDocumentation() {
+    return R"MD(# Summary Files
+
+The distributed tool writes:
+
+- top-level summary files:
+  - `Summary.log`: human-readable, one line per processed input file
+  - `Summary.json`: machine-readable JSON representation of the same per-file summary
+- an `output/` directory containing the produced GRIB files, typically one file per rank
+- a `logging/` directory containing report views and status-partitioned file lists
+
+## Summary.log format
+
+Each line has the form:
+
+```text
+[STATUS] "filename", nMessages=N, CounterA=X CounterB=Y ...
+```
+
+- `STATUS` is the overall file status
+- `filename` is the input file path
+- `nMessages` is the number of messages read from that input file
+- the remaining fields are the non-zero outcome counters for that file
+
+## Status meanings
+
+- `SUCCESS`: all messages in the file were extracted, encoded, and archived successfully
+- `PARTIAL`: there were no genuine failures, but at least one message was skipped by policy or classified as copy-required; all other messages were extracted, encoded, and archived successfully
+- `EXTRACTFAIL`: the file contains genuine failures and all of them are extraction failures
+- `ENCODEFAIL`: the file contains genuine failures and all of them are encoding failures
+- `ARCHIVEFAIL`: the file contains genuine failures and all of them are archiving failures
+- `FAIL`: the file contains a mix of different genuine failure families
+
+## Notes
+
+- In distributed summaries, `CopyRequired*` outcomes are treated as skip-like outcomes
+- `Summary.json` includes the same status plus all counters, and also extracts `class`, `expver`, `stream`, `type`, and `levtype` when they can be inferred from the input path
+- The `logging/` directory contains one filename-only list per final status:
+  - `success_list.txt`
+  - `partial_list.txt`
+  - `extractfail_list.txt`
+  - `encodefail_list.txt`
+  - `archivefail_list.txt`
+  - `fail_list.txt`
+- Each input file appears in exactly one of those six list files
+)MD";
 }
 
 }  // namespace
@@ -276,32 +413,39 @@ std::vector<FileOutcome> deserializeFileOutcomes(const std::string& payload) {
     return outcomes;
 }
 
-DistGrib1ToGrib2ReportPaths makeReportPaths(const std::string& outputPrefix) {
-    return DistGrib1ToGrib2ReportPaths{outputPrefix + "_GlobalOutcome.log",
-                                       outputPrefix + "_SummaryByClassStreamTypeLevtype.log",
-                                       outputPrefix + "_SummaryByClassStreamType.log",
-                                       outputPrefix + "_FullSuccess.list",
-                                       outputPrefix + "_SkipSuccess.list",
-                                       outputPrefix + "_EncodingFailures.list",
-                                       outputPrefix + "_ArchiveFailures.list",
-                                       outputPrefix + "_ExtractFailures.list"};
+DistGrib1ToGrib2ReportPaths makeReportPaths(const std::string& outputDirectory) {
+    const std::string loggingSubdir = outputDirectory + "/logging";
+    return DistGrib1ToGrib2ReportPaths{outputDirectory + "/Summary.log",
+                                       outputDirectory + "/Summary.json",
+                                       outputDirectory + "/README",
+                                       loggingSubdir,
+                                       loggingSubdir + "/SummaryByClassStreamTypeLevtype.log",
+                                       loggingSubdir + "/SummaryByClassStreamType.log",
+                                       loggingSubdir + "/success_list.txt",
+                                       loggingSubdir + "/partial_list.txt",
+                                       loggingSubdir + "/extractfail_list.txt",
+                                       loggingSubdir + "/encodefail_list.txt",
+                                       loggingSubdir + "/archivefail_list.txt",
+                                       loggingSubdir + "/fail_list.txt"};
 }
 
 void writeOutcomeReports(const std::vector<FileOutcome>& outcomes, const DistGrib1ToGrib2ReportPaths& paths) {
     std::ostringstream perFile;
-    perFile << "# [Status] fileName, NMessages, NonZeroOutcomeCounters\n";
+    perFile << "# [Status] fileName, nMessages=<N>, NonZeroOutcomeCounters\n";
 
     std::unordered_map<SummaryByLevtypeKey, OutcomeAggregate, SummaryByLevtypeKeyHash> summaryByLevtype;
     std::unordered_map<SummaryByTypeKey, OutcomeAggregate, SummaryByTypeKeyHash> summaryByType;
 
-    std::ostringstream fullSuccess;
-    std::ostringstream skipSuccess;
-    std::ostringstream encodeFailures;
-    std::ostringstream archiveFailures;
-    std::ostringstream extractFailures;
+    std::ostringstream successList;
+    std::ostringstream partialList;
+    std::ostringstream extractFailList;
+    std::ostringstream encodeFailList;
+    std::ostringstream archiveFailList;
+    std::ostringstream failList;
 
     for (const auto& outcome : outcomes) {
         perFile << formatOutcomeLine(outcome);
+        const auto status = deriveFileStatus(outcome);
 
         if (auto identity = parseFileIdentity(outcome.filename)) {
             accumulate(summaryByLevtype[SummaryByLevtypeKey{identity->klass, identity->stream, identity->type, identity->levtype}],
@@ -309,20 +453,26 @@ void writeOutcomeReports(const std::vector<FileOutcome>& outcomes, const DistGri
             accumulate(summaryByType[SummaryByTypeKey{identity->klass, identity->stream, identity->type}], outcome);
         }
 
-        if (isFullSuccess(outcome)) {
-            fullSuccess << outcome.filename << '\n';
-        }
-        if (isSkipSuccess(outcome)) {
-            skipSuccess << outcome.filename << '\n';
-        }
-        if (hasEncodeFailure(outcome)) {
-            encodeFailures << outcome.filename << '\n';
-        }
-        if (hasArchiveFailure(outcome)) {
-            archiveFailures << outcome.filename << '\n';
-        }
-        if (hasRealExtractFailure(outcome)) {
-            extractFailures << outcome.filename << '\n';
+        switch (status) {
+            case FileStatus::Success:
+                successList << outcome.filename << '\n';
+                break;
+            case FileStatus::Partial:
+                partialList << outcome.filename << '\n';
+                break;
+            case FileStatus::ExtractFail:
+                extractFailList << outcome.filename << '\n';
+                break;
+            case FileStatus::EncodeFail:
+                encodeFailList << outcome.filename << '\n';
+                break;
+            case FileStatus::ArchiveFail:
+                archiveFailList << outcome.filename << '\n';
+                break;
+            case FileStatus::Fail:
+            case FileStatus::Unknown:
+                failList << outcome.filename << '\n';
+                break;
         }
     }
 
@@ -338,14 +488,17 @@ void writeOutcomeReports(const std::vector<FileOutcome>& outcomes, const DistGri
         byType << formatSummaryByTypeLine(entry.first, entry.second);
     }
 
-    writeTextFile(paths.perFileLog, perFile.str());
+    writeTextFile(paths.summaryLog, perFile.str());
+    writeTextFile(paths.summaryJson, buildSummaryJson(outcomes));
+    writeTextFile(paths.readme, buildSummaryDocumentation());
     writeTextFile(paths.byClassStreamTypeLevtypeLog, byLevtype.str());
     writeTextFile(paths.byClassStreamTypeLog, byType.str());
-    writeTextFile(paths.fullSuccessList, fullSuccess.str());
-    writeTextFile(paths.skipSuccessList, skipSuccess.str());
-    writeTextFile(paths.encodeFailureList, encodeFailures.str());
-    writeTextFile(paths.archiveFailureList, archiveFailures.str());
-    writeTextFile(paths.extractFailureList, extractFailures.str());
+    writeTextFile(paths.successList, successList.str());
+    writeTextFile(paths.partialList, partialList.str());
+    writeTextFile(paths.extractFailList, extractFailList.str());
+    writeTextFile(paths.encodeFailList, encodeFailList.str());
+    writeTextFile(paths.archiveFailList, archiveFailList.str());
+    writeTextFile(paths.failList, failList.str());
 }
 
 }  // namespace multio::distGrib1ToGrib2

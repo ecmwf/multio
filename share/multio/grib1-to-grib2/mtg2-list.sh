@@ -11,9 +11,9 @@ Usage:
   grib1-to-grib2-gather-lists.sh --date YYYYMMDD --time HHMM --target-dir /path/to/workdir
 
 Required:
-  --date YYYYMMDD       Date to query from FDB
-  --time HHMM           Time to query from FDB
-  --target-dir <path>   Target directory for generated input/split/chunk files
+  --date YYYYMMDD             Date to query from FDB
+  --time HHMM                 Time to query from FDB
+  --target-dir <path>         Target directory for generated input/split/chunk files
 
 Optional:
   -h, --help, ?         Show this help
@@ -66,6 +66,10 @@ validate_args() {
     [[ -n "${DATE_ARG}" ]] || die "Missing required argument: --date"
     [[ -n "${TIME_ARG}" ]] || die "Missing required argument: --time"
     [[ -n "${TARGET_DIR}" ]] || die "Missing required argument: --target-dir"
+    [[ -d "${TARGET_DIR}" ]] || die "Target directory does not exist: ${TARGET_DIR}"
+    [[ -w "${TARGET_DIR}" ]] || die "Target directory is not writable: ${TARGET_DIR}"
+    [[ -x "$(command -v fdb)" ]] || die "fdb command not found in PATH"
+    [[ -x "$(command -v find)" ]] || die "find command not found in PATH"
 
     [[ "${DATE_ARG}" =~ ^[0-9]{8}$ ]] || die "--date must be YYYYMMDD: got '${DATE_ARG}'"
     [[ "${TIME_ARG}" =~ ^[0-9]{4}$ ]] || die "--time must be HHMM: got '${TIME_ARG}'"
@@ -172,9 +176,23 @@ build_final_input_list() {
     log "Created ${final_list} with $(wc -l < "${final_list}") files"
 }
 
+require_slurm_allocation() {
+    local job_id="${SLURM_JOB_ID:-${SLURM_JOBID:-}}"
+
+    if [[ -z "$job_id" ]]; then
+        echo "ERROR: this command must be run inside a SLURM allocation/job." >&2
+        exit 1
+    fi
+
+    echo "Running inside SLURM allocation: ${job_id}"
+}
+
 main() {
+
     parse_args "$@"
     validate_args
+    require_slurm_allocation
+
     prepare_dirs
 
     log "Gathering lists of files for date=${DATE_ARG} time=${TIME_ARG} into ${TARGET_DIR}"

@@ -10,14 +10,13 @@
 
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
 
+#include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <chrono>
 #include <ctime>
-#include <iomanip>
-#include <sstream>
 
 namespace multio::distGrib1ToGrib2 {
 
@@ -57,10 +56,26 @@ std::size_t archiveFailures(const FileOutcome& o) {
 std::size_t copyOrSkipRequired(const FileOutcome& o) {
     std::size_t total = 0;
     for (std::size_t i = outcomeIndex(ExtractionOutcomeCode::CopyRequiredGrib2Verbatim);
-         i <= outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive); ++i) {
+          i <= outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive); ++i) {
         total += o.outcomeCounters[i];
     }
     return total;
+}
+
+std::size_t requestedSkipOrCopyRequired(const FileOutcome& o) {
+    return copyOrSkipRequired(o);
+}
+
+bool hasRealExtractFailure(const FileOutcome& o) {
+    return extractionFailures(o) > 0;
+}
+
+bool hasRealEncodeFailure(const FileOutcome& o) {
+    return encodeFailures(o) > 0;
+}
+
+bool hasRealArchiveFailure(const FileOutcome& o) {
+    return archiveFailures(o) > 0;
 }
 
 std::string quoteForLog(const std::string& s) {
@@ -104,19 +119,19 @@ std::string formatNonZeroCounters(const FileOutcome& o) {
 const char* toString(FileStatus status) {
     switch (status) {
         case FileStatus::Success:
-            return "Success";
-        case FileStatus::FailedExtract:
-            return "FailedExtract";
-        case FileStatus::FailedEncode:
-            return "FailedEncode";
-        case FileStatus::FailedArchive:
-            return "FailedArchive";
-        case FileStatus::FailedMixed:
-            return "FailedMixed";
+            return "SUCCESS";
         case FileStatus::Partial:
-            return "Partial";
+            return "PARTIAL";
+        case FileStatus::ExtractFail:
+            return "EXTRACTFAIL";
+        case FileStatus::EncodeFail:
+            return "ENCODEFAIL";
+        case FileStatus::ArchiveFail:
+            return "ARCHIVEFAIL";
+        case FileStatus::Fail:
+            return "FAIL";
         case FileStatus::Unknown:
-            return "Unknown";
+            return "FAIL";
     }
     return "Unknown";
 }
@@ -185,62 +200,46 @@ const char* toString(ExtractionOutcomeCode code) {
 
 FileStatus deriveFileStatus(const FileOutcome& o) {
     const auto nSuccess = successfulMessages(o);
-    const auto nExtractFail = extractionFailures(o);
-    const auto nEncodeFail = encodeFailures(o);
-    const auto nArchiveFail = archiveFailures(o);
-    const auto nClassifiedErrors = copyOrSkipRequired(o);
+    const auto nSkipLike = requestedSkipOrCopyRequired(o);
+    const bool extractFail = hasRealExtractFailure(o);
+    const bool encodeFail = hasRealEncodeFailure(o);
+    const bool archiveFail = hasRealArchiveFailure(o);
+    const int nFailureFamilies = static_cast<int>(extractFail) + static_cast<int>(encodeFail) + static_cast<int>(archiveFail);
 
-    if (nExtractFail > 0 && nSuccess == 0 && nEncodeFail == 0 && nArchiveFail == 0 && nClassifiedErrors == 0) {
-        return FileStatus::FailedExtract;
-    }
-    if (nEncodeFail == 0 && nArchiveFail == 0 && nExtractFail == 0 && nClassifiedErrors == 0) {
+    if (nSuccess == o.nMessages) {
         return FileStatus::Success;
     }
-    if (nSuccess > 0 || nClassifiedErrors > 0) {
+    if (nFailureFamilies == 0 && nSkipLike > 0 && (nSuccess + nSkipLike == o.nMessages)) {
         return FileStatus::Partial;
     }
-    if (nEncodeFail > 0 && nArchiveFail > 0) {
-        return FileStatus::FailedMixed;
+
+    if (nFailureFamilies > 1) {
+        return FileStatus::Fail;
     }
-    if (nEncodeFail > 0) {
-        return FileStatus::FailedEncode;
+    if (extractFail) {
+        return FileStatus::ExtractFail;
     }
-    if (nArchiveFail > 0) {
-        return FileStatus::FailedArchive;
+    if (encodeFail) {
+        return FileStatus::EncodeFail;
     }
-    return FileStatus::Unknown;
+    if (archiveFail) {
+        return FileStatus::ArchiveFail;
+    }
+    return FileStatus::Fail;
 }
 
 std::string formatOutcomeLine(const FileOutcome& o) {
     std::ostringstream out;
-    out << '[' << toString(deriveFileStatus(o)) << "] " << quoteForLog(o.filename) << ", " << o.nMessages
-        << ", " << formatNonZeroCounters(o) << '\n';
+    out << '[' << toString(deriveFileStatus(o)) << "] " << quoteForLog(o.filename) << ", nMessages=" << o.nMessages
+         << ", " << formatNonZeroCounters(o) << '\n';
     return out.str();
 }
 
 std::string formatRankProgressLine(const FileOutcome& o, int rank) {
     std::ostringstream out;
     out << "rank " << rank << " processed " << o.filename << " status=" << toString(deriveFileStatus(o))
-        << " NMessages=" << o.nMessages << " Counters=" << formatNonZeroCounters(o);
+         << " NMessages=" << o.nMessages << " Counters=" << formatNonZeroCounters(o);
     return out.str();
-}
-
-std::string serializeOutcomesLog(const std::vector<FileOutcome>& outcomes) {
-    std::ostringstream out;
-    for (const auto& outcome : outcomes) {
-        out << formatOutcomeLine(outcome);
-    }
-    return out.str();
-}
-
-void writeGlobalOutcomeLog(const std::string& payload, const std::string& outputFile) {
-    std::ofstream out(outputFile);
-    if (!out) {
-        throw std::runtime_error("cannot open output file: " + outputFile);
-    }
-
-    out << "# [Status] fileName, NMessages, NonZeroOutcomeCounters\n";
-    out << payload;
 }
 
 std::string timestampString() {

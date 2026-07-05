@@ -79,4 +79,15 @@ eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& y
     return parseOptionsYaml(payload);
 }
 
+std::string debugOutputPrefix(const eckit::LocalConfiguration& options) {
+    if (!options.has("debug")) {
+        return {};
+    }
+    const auto debugConf = options.getSubConfiguration("debug");
+    if (!debugConf.has("output-prefix")) {
+        return {};
+    }
+    return debugConf.getString("output-prefix");
+}
+
 }  // namespace multio::distGrib1ToGrib2

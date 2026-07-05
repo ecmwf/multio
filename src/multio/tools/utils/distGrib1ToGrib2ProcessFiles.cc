@@ -178,7 +178,7 @@ std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files
     for (const auto& file : files) {
         FileOutcome outcome = processOneFile(rank, file, grib2MarsMiscOptions, encoder, *writer);
         writer->flush();
-        std::cerr << formatRankProgressLine(outcome, rank) << '\n';
+        std::cerr << timestampString() << formatRankProgressLine(outcome, rank) << '\n';
         outcomes.push_back(std::move(outcome));
     }
 

@@ -106,6 +106,8 @@ ecbuild_add_library(
       utils/distGrib1ToGrib2OutcomesReport.h
       utils/distGrib1ToGrib2ProcessFiles.cc
       utils/distGrib1ToGrib2ProcessFiles.h
+      utils/scalarGrib1ToGrib2DebugOutputs.cc
+      utils/scalarGrib1ToGrib2DebugOutputs.h
 
   CONDITION
     HAVE_GRIB1_TO_GRIB2

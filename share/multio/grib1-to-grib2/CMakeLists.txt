@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Configure dist-grib1-to-grib2.sh
+# Configure helper scripts
 # -----------------------------------------------------------------------------
 
 set(DIST_GRIB1_TO_GRIB2_SCRIPT_IN
@@ -10,18 +10,35 @@ set(DIST_GRIB1_TO_GRIB2_SCRIPT_OUT
     ${CMAKE_CURRENT_BINARY_DIR}/dist-grib1-to-grib2.sh
 )
 
+set(SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_IN
+    ${CMAKE_CURRENT_SOURCE_DIR}/submit-dist-grib1-to-grib2.sh.in
+)
+
+set(SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT
+    ${CMAKE_CURRENT_BINARY_DIR}/submit-dist-grib1-to-grib2.sh
+)
+
 configure_file(
     ${DIST_GRIB1_TO_GRIB2_SCRIPT_IN}
     ${DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
     @ONLY
 )
 
+configure_file(
+    ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_IN}
+    ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
+    @ONLY
+)
+
 # -----------------------------------------------------------------------------
-# Install configured script into bin/
+# Install scripts into bin/
 # -----------------------------------------------------------------------------
 
 install(
-    PROGRAMS ${DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
+    PROGRAMS
+        ${DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
+        ${SUBMIT_DIST_GRIB1_TO_GRIB2_SCRIPT_OUT}
+        ${CMAKE_CURRENT_SOURCE_DIR}/grib1-to-grib2-gather-lists.sh
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

@@ -10,11 +10,10 @@
 namespace multio::action::statistics_mtg2 {
 
 namespace {
-    using Param = std::int64_t;
-    using TypeOfStatisticalProcessing = std::int64_t;
-    using ParamToTypeOfStatisticalProcessingMap
-        = std::unordered_map<Param, TypeOfStatisticalProcessing>;
-}
+using Param = std::int64_t;
+using TypeOfStatisticalProcessing = std::int64_t;
+using ParamToTypeOfStatisticalProcessingMap = std::unordered_map<Param, TypeOfStatisticalProcessing>;
+}  // namespace
 
 
 class StatisticsOperationMapping {

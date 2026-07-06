@@ -25,20 +25,23 @@ namespace multio::grib2MarsMisc {
 using ValueSet = std::unordered_set<std::string>;
 using FieldValueMap = std::unordered_map<std::string, ValueSet>;
 
-enum class TimeSpanEqualToZeroHandling : std::size_t {
+enum class TimeSpanEqualToZeroHandling : std::size_t
+{
     LogAndIgnore,
     Ignore,
     Copy,
 };
 
-enum class Discipline192Handling : std::size_t {
+enum class Discipline192Handling : std::size_t
+{
     LogAndIgnore,
     Ignore,
     TryToHandle,
     Copy,
 };
 
-enum class OnErrorHandling : std::size_t {
+enum class OnErrorHandling : std::size_t
+{
     Abort,
     LogAndSkip,
     Skip,
@@ -46,7 +49,8 @@ enum class OnErrorHandling : std::size_t {
     Copy,
 };
 
-enum class InvalidInputMessageHandling : std::size_t {
+enum class InvalidInputMessageHandling : std::size_t
+{
     TryToHandle,
     Skip,
 };
@@ -74,7 +78,8 @@ struct Grib2MarsMiscOptions {
     TimeSpanEqualToZeroHandling timespanNonPositive = TimeSpanEqualToZeroHandling::LogAndIgnore;
 };
 
-enum class MessageDisposition {
+enum class MessageDisposition
+{
     Encode,
     CopyGrib2Verbatim,
     CopyExceptMatched,
@@ -91,7 +96,8 @@ enum class MessageDisposition {
     FailToArchive,
 };
 
-enum class ExtractionOutcomeCode : std::uint8_t {
+enum class ExtractionOutcomeCode : std::uint8_t
+{
     ReadyToEncode = 0,
     ProcessedAndArchived,
     CopyRequiredGrib2Verbatim,

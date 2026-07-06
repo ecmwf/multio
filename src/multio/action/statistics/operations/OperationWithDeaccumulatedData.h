@@ -12,8 +12,8 @@ public:
     using Operation::logHeader_;
     using Operation::name_;
 
-    OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, std::size_t size, bool needRestart,
-                                   const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, std::size_t size,
+                                   bool needRestart, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg.options()},
         values_{std::vector<T>(size / sizeof(T), 0.0)},
         initValues_{std::vector<T>(size / sizeof(T), 0.0)},
@@ -48,7 +48,8 @@ public:
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
     };
 
-    void init(const void* data, std::size_t size, const message::Message& msg, const StatisticsConfiguration& cfg) override {
+    void init(const void* data, std::size_t size, const message::Message& msg,
+              const StatisticsConfiguration& cfg) override {
         checkSize(size, cfg);
         if (solverResetAccumulatedFields(msg, cfg)) {
             std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),

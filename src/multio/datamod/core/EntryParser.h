@@ -267,4 +267,3 @@ RecordType readRecordByValue(FromContainer&& cont, const ParseOptions& opts = Pa
 }
 
 }  // namespace multio::datamod
-

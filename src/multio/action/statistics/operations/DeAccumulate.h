@@ -18,7 +18,8 @@ public:
     using OperationWithDeaccumulatedData<T>::checkTimeInterval;
 
 
-    DeAccumulate(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    DeAccumulate(const std::string& name, std::size_t size, const OperationWindow& win,
+                 const StatisticsConfiguration& cfg) :
         OperationWithDeaccumulatedData<T>{name, "accumulate", size, true, win, cfg} {}
 
     DeAccumulate(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,

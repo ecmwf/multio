@@ -120,8 +120,9 @@ void dumpUnscopedRecord(RecordType&& rec, Container& cont, const DumpOptions& op
                 std::string k{ed.key()};
                 return (k.compare(0, prefix.size(), prefix) == 0) ? k.substr(prefix.size()) : k;
             };
-            (dumpEntry(scopedEntryDef(entryDef, stripPrefix(entryDef)),
-                       entryDef.get(std::forward<RecordType>(rec)), cont, opts), ...);
+            (dumpEntry(scopedEntryDef(entryDef, stripPrefix(entryDef)), entryDef.get(std::forward<RecordType>(rec)),
+                       cont, opts),
+             ...);
         },
         recordEntries(rec));
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/GribKeys.h"
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/EntryDef.h"
 
 namespace multio::action::statistics_mtg2 {
 
@@ -42,20 +42,16 @@ namespace dm = multio::datamod;
 
 //-------------------------- Flush-local EntryDefs --------------------------//
 
-constexpr auto FLUSH_KIND =
-    dm::EntryDef<FlushKind>{"flushKind"}
-        .withDefault(FlushKind::Default)
-        .withAccessor([](auto&& v) { return &v.flushKind; });
+constexpr auto FLUSH_KIND
+    = dm::EntryDef<FlushKind>{"flushKind"}.withDefault(FlushKind::Default).withAccessor([](auto&& v) {
+          return &v.flushKind;
+      });
 
-constexpr auto RESTART_DATE_TIME =
-    dm::EntryDef<std::string>{"restartDateTime"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.restartDateTime; });
+constexpr auto RESTART_DATE_TIME = dm::EntryDef<std::string>{"restartDateTime"}.tagOptional().withAccessor(
+    [](auto&& v) { return &v.restartDateTime; });
 
-constexpr auto SERVER_RANK =
-    dm::EntryDef<std::int64_t>{"serverRank"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.serverRank; });
+constexpr auto SERVER_RANK
+    = dm::EntryDef<std::int64_t>{"serverRank"}.tagOptional().withAccessor([](auto&& v) { return &v.serverRank; });
 
 //----------------------- Field Metadata Keys Record ------------------------//
 
@@ -75,21 +71,10 @@ struct FieldMetadataKeys {
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "statistics-mtg2-field";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::DATE,
-        dm::TIME,
-        dm::STEP.tagRequired(),
-        dm::TIMESPAN,
-        dm::PARAM,
-        dm::STREAM.tagOptional(),
-        dm::LEVTYPE.tagRequired(),
-        dm::LEVELIST,
-        dm::GRID,
-        dm::TRUNCATION,
-        dm::TimeIncrementInSeconds,
-        dm::BitmapPresent,
-        dm::MissingValue
-    );
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::PARAM, dm::STREAM.tagOptional(),
+                          dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION, dm::TimeIncrementInSeconds,
+                          dm::BitmapPresent, dm::MissingValue);
 };
 
 //------------------------ Flush Metadata Keys Record -----------------------//
@@ -103,14 +88,8 @@ struct FlushMetadataKeys {
     dm::EntryType_t<decltype(SERVER_RANK)> serverRank;
 
     static constexpr std::string_view record_name_ = "statistics-mtg2-flush";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::DATE.tagOptional(),
-        dm::TIME.tagOptional(),
-        dm::STEP,
-        FLUSH_KIND,
-        RESTART_DATE_TIME,
-        SERVER_RANK
-    );
+    static constexpr auto record_entries_ = std::make_tuple(dm::DATE.tagOptional(), dm::TIME.tagOptional(), dm::STEP,
+                                                            FLUSH_KIND, RESTART_DATE_TIME, SERVER_RANK);
 };
 
 //---------------------------------------------------------------------------//

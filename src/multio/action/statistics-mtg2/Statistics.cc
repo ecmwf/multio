@@ -45,7 +45,8 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
 
-std::string Statistics::generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const {
+std::string Statistics::generateRestartNameFromFlush(const message::Message& msg,
+                                                     const FlushMetadataKeys& flush) const {
 
     std::string folderName;
 
@@ -239,8 +240,6 @@ bool Statistics::HasRestartKey(const std::string& key) {
     IOmanager_->popDir();
     return has_restart;
 }
-
-
 
 
 void Statistics::updateLatestDateTime(const StatisticsConfiguration& cfg) {
@@ -468,14 +467,16 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
 
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
                 // We explicitly take the creation point - alternative would be the start point.
-                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a month.
-                // To not confuse the output, we explicitly just output the window for which data has been received.
-                // As discussed with DGOV and scientist, half months are typically not of interest and should be ignored.
-                // Some additional mechanism has to make sure that these do not occur in the output (i.e. additional action).
+                // The start point may be different for the first window, i.e. if the simulation starts in the mid of a
+                // month. To not confuse the output, we explicitly just output the window for which data has been
+                // received. As discussed with DGOV and scientist, half months are typically not of interest and should
+                // be ignored. Some additional mechanism has to make sure that these do not occur in the output (i.e.
+                // additional action).
                 auto dt = ts.win().creationPoint();
 
                 dm::dumpEntry(dm::DATE, dm::DATE.makeEntry(dt.date().yyyymmdd()), md);
-                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()), md);  // Official MARS time is in hhmm, in multio hhmmss is used
+                dm::dumpEntry(dm::TIME, dm::TIME.makeEntry(dt.time().hhmmss()),
+                              md);  // Official MARS time is in hhmm, in multio hhmmss is used
                 break;
             }
         }

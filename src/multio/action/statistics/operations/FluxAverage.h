@@ -16,7 +16,8 @@ public:
     using OperationWithData<T>::checkSize;
     using OperationWithData<T>::checkTimeInterval;
 
-    FluxAverage(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    FluxAverage(const std::string& name, std::size_t size, const OperationWindow& win,
+                const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "average", size, true, win, cfg} {}
 
     FluxAverage(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,

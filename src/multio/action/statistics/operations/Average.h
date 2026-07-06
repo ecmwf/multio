@@ -27,14 +27,17 @@ public:
         checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg)
+                                                                   : computeWithoutThreshold(val, cfg);
     }
 
     void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) override {
         checkSize(size, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const auto val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg) : updateWithMissingAndCounters(val, cfg)) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg)
+                                                                    : updateWithMissingAndCounters(val, cfg))
+                            : updateWithoutMissing(val, cfg);
     }
 
 private:
@@ -63,7 +66,7 @@ private:
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [c1, c2, m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 * c1 + v2 * c2); });
     }
-    void  updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
+    void updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
         const auto m = cfg.missingValue();
         win_.updateCounts(val, values_.size(), m);
         const auto& counts = win_.counts();

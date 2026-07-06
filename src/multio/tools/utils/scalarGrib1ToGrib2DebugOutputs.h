@@ -32,7 +32,8 @@ class DataSink;
 
 namespace multio::grib1ToGrib2 {
 
-enum class ScalarDebugBucket : std::size_t {
+enum class ScalarDebugBucket : std::size_t
+{
     Converted = 0,
     ConvertedAndArchived,
     CopiedGrib2Verbatim,

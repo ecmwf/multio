@@ -252,9 +252,7 @@ struct Entry {
         }
     }
 
-    template <typename Func,
-              std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Func>()())>, bool>
-              = true>
+    template <typename Func, std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Func>()())>, bool> = true>
     This& ensureInit(Func&& func) {
         if (!isSet()) {
             this->set(std::forward<Func>(func)());
@@ -265,8 +263,7 @@ struct Entry {
         }
         return *this;
     }
-    template <typename Val,
-              std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Val>())>, bool> = true>
+    template <typename Val, std::enable_if_t<CanParse_v<ValueType, decltype(std::declval<Val>())>, bool> = true>
     This& ensureInit(Val&& val) {
         if (!isSet()) {
             this->set(std::forward<Val>(val)());
@@ -340,4 +337,3 @@ inline constexpr bool IsEntry_v = IsEntry<T>::value;
 
 
 }  // namespace multio::datamod
-

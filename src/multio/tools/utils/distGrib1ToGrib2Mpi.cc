@@ -28,7 +28,8 @@ void mpiSendString(const std::string& s, int dest, int tag, MPI_Comm comm) {
     const char* ptr = s.data();
     unsigned long long remaining = n;
     while (remaining > 0) {
-        const int chunkSize = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
+        const int chunkSize
+            = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
         MPI_Send(ptr, chunkSize, MPI_CHAR, dest, tag + 1, comm);
         ptr += chunkSize;
         remaining -= static_cast<unsigned long long>(chunkSize);
@@ -49,7 +50,8 @@ std::string mpiRecvString(int source, int tag, MPI_Comm comm) {
     char* ptr = s.data();
     unsigned long long remaining = n;
     while (remaining > 0) {
-        const int chunkSize = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
+        const int chunkSize
+            = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
         MPI_Recv(ptr, chunkSize, MPI_CHAR, source, tag + 1, comm, MPI_STATUS_IGNORE);
         ptr += chunkSize;
         remaining -= static_cast<unsigned long long>(chunkSize);

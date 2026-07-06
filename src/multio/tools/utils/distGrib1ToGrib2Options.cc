@@ -52,8 +52,7 @@ eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
 
     if (payload.find("LocalConfiguration[root=") != std::string::npos) {
         throw std::runtime_error(
-            "invalid options payload: received an eckit LocalConfiguration debug dump instead of YAML"
-        );
+            "invalid options payload: received an eckit LocalConfiguration debug dump instead of YAML");
     }
 
     std::istringstream in(payload);

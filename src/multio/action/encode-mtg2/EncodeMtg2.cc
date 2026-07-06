@@ -87,7 +87,7 @@ void EncodeMtg2::executeImpl(Message msg) {
     auto miscRec = dm::readRecord<dm::MiscRecord>(md);
 
     // Apply mappings
-    fake_double_loop::fakeDoubleLoop( marsRec );
+    fake_double_loop::fakeDoubleLoop(marsRec);
     auto mappingResult = mars2mars::applyMappings(mars2mars::allRules(), marsRec, miscRec);
 
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {

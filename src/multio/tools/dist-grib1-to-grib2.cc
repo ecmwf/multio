@@ -29,7 +29,7 @@
 int main(int argc, char** argv) {
     using namespace multio::distGrib1ToGrib2;
 
-    eckit::Main::initialise( argc, argv, "MULTIO_HOME");
+    eckit::Main::initialise(argc, argv, "MULTIO_HOME");
 
     MPI_Init(&argc, &argv);
 
@@ -43,7 +43,8 @@ int main(int argc, char** argv) {
         if (argc != 4) {
             if (rank == 0) {
                 std::cerr << "Usage:\n"
-                          << "  mpirun -np <N> " << argv[0] << " <input_file.list> <output_directory> <options.yaml>\n\n"
+                          << "  mpirun -np <N> " << argv[0]
+                          << " <input_file.list> <output_directory> <options.yaml>\n\n"
                           << "Outputs:\n"
                           << "  <output_directory>/Summary.log\n"
                           << "  <output_directory>/Summary.json\n"

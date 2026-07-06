@@ -93,7 +93,6 @@ struct multio::util::Print<multio::datamod::StatType> {
 };
 
 
-
 namespace multio::datamod {
 
 template <>

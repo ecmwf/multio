@@ -25,8 +25,8 @@
 #include "multio/config/MultioConfiguration.h"
 #include "multio/sink/DataSink.h"
 #include "multio/tools/utils/CodesHandleToEckitMessage.h"
-#include "multio/tools/utils/grib2MarsMisc.h"
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
+#include "multio/tools/utils/grib2MarsMisc.h"
 
 namespace multio::distGrib1ToGrib2 {
 
@@ -49,8 +49,8 @@ std::string rankOutputPath(const std::string& outputDirectory, int rank) {
     return outputDirectory + "/output/rank" + std::to_string(rank) + ".grib2";
 }
 
-eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfiguration& options, const std::string& outputDirectory,
-                                                    int rank) {
+eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfiguration& options,
+                                                   const std::string& outputDirectory, int rank) {
     eckit::LocalConfiguration sinkConf;
     if (options.has("sink")) {
         sinkConf = options.getSubConfiguration("sink");
@@ -77,7 +77,8 @@ std::unique_ptr<sink::DataSink> buildSink(const eckit::LocalConfiguration& optio
     if (sinkConf.getString("type") == "file" && sinkConf.has("path")) {
         eckit::PathName{sinkConf.getString("path")}.dirName().mkdir();
     }
-    std::cerr << timestampString() << "rank " << rank << " building sink of type: " << sinkConf.getString("type") << std::endl;
+    std::cerr << timestampString() << "rank " << rank << " building sink of type: " << sinkConf.getString("type")
+              << std::endl;
     return sink::DataSinkFactory::instance().build(sinkConf.getString("type"), componentConf);
 }
 
@@ -105,12 +106,18 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
                     }
                     catch (const std::exception&) {
                         bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
-                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        std::cerr << timestampString()
+                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
+                                     "the code continues."
+                                  << std::endl;
                         break;
                     }
                     catch (...) {
                         bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
-                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        std::cerr << timestampString()
+                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
+                                     "the code continues."
+                                  << std::endl;
                         break;
                     }
 
@@ -119,11 +126,17 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
                         bumpOutcome(outcome, ExtractionOutcomeCode::ProcessedAndArchived);
                     }
                     catch (const std::exception&) {
-                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        std::cerr << timestampString()
+                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
+                                     "the code continues."
+                                  << std::endl;
                         bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
                     }
                     catch (...) {
-                        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+                        std::cerr << timestampString()
+                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
+                                     "the code continues."
+                                  << std::endl;
                         bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
                     }
 
@@ -151,17 +164,21 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
                     bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
                     break;
             }
-
         }
-
     }
     catch (const std::exception&) {
         bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
-        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+        std::cerr
+            << timestampString()
+            << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."
+            << std::endl;
     }
     catch (...) {
         bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
-        std::cerr << timestampString() << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues." << std::endl;
+        std::cerr
+            << timestampString()
+            << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."
+            << std::endl;
     }
 
     return outcome;
@@ -171,8 +188,8 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
 
 std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files,
                                            const grib2MarsMisc::Grib2MarsMiscOptions& grib2MarsMiscOptions,
-                                           const eckit::LocalConfiguration& rawOptions, const std::string& outputDirectory,
-                                           int rank) {
+                                           const eckit::LocalConfiguration& rawOptions,
+                                           const std::string& outputDirectory, int rank) {
     std::vector<FileOutcome> outcomes;
     outcomes.reserve(files.size());
 

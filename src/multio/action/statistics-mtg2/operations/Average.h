@@ -28,7 +28,8 @@ public:
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg)
+                                                                   : computeWithoutThreshold(val, cfg);
         return;
     }
 
@@ -36,7 +37,9 @@ public:
         checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg) : updateWithMissingAndCounters(val, cfg)) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg)
+                                                                    : updateWithMissingAndCounters(val, cfg))
+                            : updateWithoutMissing(val, cfg);
         return;
     }
 
@@ -70,13 +73,15 @@ private:
                        [c1, c2, m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 * c1 + v2 * c2); });
         return;
     }
-    void  updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
+    void updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
         const double m = cfg.missingValue();
         win_.updateCounts(val, values_.size(), m);
         const std::vector<long>& counts = win_.counts();
 
         for (size_t i = 0; i < values_.size(); ++i) {
-            if (val[i] == m) { continue; }
+            if (val[i] == m) {
+                continue;
+            }
             const auto c = counts[i];
             const auto c2 = icntpp(c);
             const auto c1 = sc(c2, c);

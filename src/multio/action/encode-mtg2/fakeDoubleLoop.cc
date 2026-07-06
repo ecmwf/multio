@@ -9,8 +9,8 @@
  */
 
 #include <optional>
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 
 #include "fakeDoubleLoop.h"
 
@@ -26,12 +26,13 @@ namespace detail {
 
 using Param = std::int64_t;
 
-enum class TypeOfStatisticalProcessing : std::int64_t {
-    Average           = 0,
-    Accumulation      = 1,
-    Maximum           = 2,
-    Minimum           = 3,
-    Difference        = 4,
+enum class TypeOfStatisticalProcessing : std::int64_t
+{
+    Average = 0,
+    Accumulation = 1,
+    Maximum = 2,
+    Minimum = 3,
+    Difference = 4,
     StandardDeviation = 6,
     InverseDifference = 8
 };
@@ -128,25 +129,16 @@ private:
 
     static LocalStatisticsOperationMapping make() {
         eckit::LocalConfiguration mappingConf{
-            eckit::YAMLConfiguration{
-                eckit::PathName{
-                    multio::LibMultio::instance().libraryHome()
-                    + "/share/multio/mappings/statistics_operation_mappings.yaml"
-                }
-            }
-        };
+            eckit::YAMLConfiguration{eckit::PathName{multio::LibMultio::instance().libraryHome()
+                                                     + "/share/multio/mappings/statistics_operation_mappings.yaml"}}};
 
         Mapping operationMappings;
 
         for (const auto& mapping : mappingConf.getSubConfigurations()) {
             const auto param = mapping.getInt64("param");
-            const auto typeOfStatisticalProcessing =
-                mapping.getInt64("typeOfStatisticalProcessing");
+            const auto typeOfStatisticalProcessing = mapping.getInt64("typeOfStatisticalProcessing");
 
-            operationMappings.emplace(
-                param,
-                typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing)
-            );
+            operationMappings.emplace(param, typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing));
         }
 
         return LocalStatisticsOperationMapping{std::move(operationMappings)};
@@ -172,36 +164,35 @@ bool requiresFakeDoubleLoopRepresentation(const dm::FullMarsRecord& marsRec) {
     std::string stream = marsRec.stream.get();
 
     // Rule valid for ERA6 products
-    if (klass == "e6" && (stream == "sttd" || stream == "stte" ) ){
+    if (klass == "e6" && (stream == "sttd" || stream == "stte")) {
         return true;
     }
 
     // Rule valid for SEAS6
-    if ( ( klass == "od" || klass == "rd" || klass == "c3" ) && (stream == "sfmd" || stream == "shmd" ) ){
+    if ((klass == "od" || klass == "rd" || klass == "c3") && (stream == "sfmd" || stream == "shmd")) {
         return true;
     }
 
     // Other rules
-    if ( ( klass == "gh" || klass == "eh") && ( stream == "msmm" || stream == "rfsd" ) ){
+    if ((klass == "gh" || klass == "eh") && (stream == "msmm" || stream == "rfsd")) {
         return true;
     }
 
     return false;
-
 }
 
-std::optional<std::string> operationCodeFromParam(std::int64_t param){
+std::optional<std::string> operationCodeFromParam(std::int64_t param) {
 
-    // This is the full 
-    const std::optional<TypeOfStatisticalProcessing> operation =
-        LocalStatisticsOperationMapping::instance().getOperation(param);
+    // This is the full
+    const std::optional<TypeOfStatisticalProcessing> operation
+        = LocalStatisticsOperationMapping::instance().getOperation(param);
 
     if (operation && isValidStattypeOperation(*operation)) {
         return stattypeOperationCode(*operation);
-    }  else {
+    }
+    else {
         return std::nullopt;
     }
-
 }
 
 std::optional<std::string> periodCodeFromTimespanHours(std::int64_t timespanHours) {
@@ -238,27 +229,26 @@ std::string reconstructStatType(const dm::FullMarsRecord& marsRec) {
     // Create statType by concatenating operation code and period code
     if (operationCode && periodCode) {
         return *operationCode + *periodCode;
-    } else {
+    }
+    else {
         std::ostringstream os;
         os << "Cannot reconstruct statType for single loop statistics record ";
         os << "with param: " << param << " and timespan (hours): " << timespan;
         throw eckit::SeriousBug(os.str(), Here());
     }
-
 }
 
-} // namespace detail
+}  // namespace detail
 
-void fakeDoubleLoop( dm::FullMarsRecord& marsRec) {
-    
-    if ( detail::isSingleLoopStatistics( marsRec ) ) {
-        if ( detail::requiresFakeDoubleLoopRepresentation( marsRec ) ) {
+void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
+
+    if (detail::isSingleLoopStatistics(marsRec)) {
+        if (detail::requiresFakeDoubleLoopRepresentation(marsRec)) {
             std::string stattype = detail::reconstructStatType(marsRec);
             marsRec.stattype.set(dm::TypeParser<dm::StatType>::parse(stattype));
             marsRec.timespan.set(dm::TypeParser<dm::TimeSpan>::parse("none"));
         }
     }
-
 }
 
-} // namespace multio::action::encode_mtg2::fake_double_loop
+}  // namespace multio::action::encode_mtg2::fake_double_loop

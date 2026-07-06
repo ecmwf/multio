@@ -22,8 +22,7 @@ namespace dm = multio::datamod;
 namespace {
 Param2ParamMap getMappings() {
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/average_rate_param_mappings.yaml"
-    }}};
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/average_rate_param_mappings.yaml"}}};
 
     Param2ParamMap paramMappings;
     for (auto& mappings : mappingConf.getSubConfigurations()) {
@@ -33,7 +32,7 @@ Param2ParamMap getMappings() {
     }
     return paramMappings;
 }
-}
+}  // namespace
 
 AverageRate::AverageRate(const ComponentConfiguration& compConf) :
     ChainedAction(compConf), paramMappings_{getMappings()} {}
@@ -53,7 +52,8 @@ void AverageRate::executeImpl(message::Message msg) {
     if (auto search = paramMappings_.find(md.param.get().id()); search != paramMappings_.end()) {
         md.param.set(search->second);
         dm::dumpRecord(md, msg.modifyMetadata());
-    } else {
+    }
+    else {
         std::ostringstream os;
         os << "Action average-rate cannot find mapping from param " << md.param.get().id() << " : " << msg;
         throw eckit::UserError(os.str(), Here());
@@ -82,9 +82,9 @@ void AverageRate::compute(message::Message& msg) const {
         const auto m = static_cast<Precision>(md.missingValue.get());
         std::transform(data, data + size, data,
                        [c, m](Precision v) { return static_cast<Precision>(v == m ? m : v * c); });
-    } else {
-        std::transform(data, data + size, data,
-                       [c](Precision v) { return static_cast<Precision>(v * c); });
+    }
+    else {
+        std::transform(data, data + size, data, [c](Precision v) { return static_cast<Precision>(v * c); });
     }
 }
 

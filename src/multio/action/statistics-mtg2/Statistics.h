@@ -21,8 +21,8 @@
 #include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
-#include "multio/action/statistics-mtg2/mappings/StatisticsParamMapping.h"
 #include "multio/action/statistics-mtg2/mappings/StatisticsOperationMapping.h"
+#include "multio/action/statistics-mtg2/mappings/StatisticsParamMapping.h"
 
 namespace eckit {
 class Configuration;
@@ -60,11 +60,8 @@ private:
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 
-    void emitAllStatistics(
-        message::Peer source, message::Peer destination);
-    void emitStatistics(
-        TemporalStatistics& ts,
-        message::Peer source, message::Peer destination);
+    void emitAllStatistics(message::Peer source, message::Peer destination);
+    void emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination);
 };
 
 }  // namespace multio::action::statistics_mtg2

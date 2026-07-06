@@ -97,7 +97,9 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
         eckit::Log::info() << "EXAMPLE: " << std::endl
-                           << tool << " --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv --outputPath=. --nCols=126858 --inputOrdering=ring --outputOrdering=nested"
+                           << tool
+                           << " --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv --outputPath=. --nCols=126858 "
+                              "--inputOrdering=ring --outputOrdering=nested"
                            << std::endl
                            << std::endl;
     }
@@ -131,22 +133,21 @@ private:
 };
 
 
-Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
-    multio::MultioTool{argc, argv}
-    {
+Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) : multio::MultioTool{argc, argv} {
 
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputPath", "Path of the input files with the triplets. Default( \".\" )", "."));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "outputPath", "Path of the output files with the triplets. Default( \".\" )", "."));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )", "CORE2_ngrid_NSIDE32_0_ring.csv"));
-    options_.push_back(new eckit::option::SimpleOption<size_t>(
-        "nCols", "Size of the fesom grid.", 126858));
+        "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )",
+        "CORE2_ngrid_NSIDE32_0_ring.csv"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nCols", "Size of the fesom grid.", 126858));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputOrdering", "Ordering of the input files. Options( \"ring\", \"nested\") Default( \"ring\" )", "ring"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "outputOrdering", "Ordering of the output files. Options( \"ring\", \"nested\", \"input\") Default( \"input\" )", "input"));
+        "outputOrdering",
+        "Ordering of the output files. Options( \"ring\", \"nested\", \"input\") Default( \"input\" )", "input"));
 }
 
 
@@ -166,19 +167,19 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             "([0-9][0-9]*)\\s+([0-9][0-9]*)\\s*([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)");
         std::smatch matchLine;
         if (std::regex_match(line, matchLine, lineGrammar)) {
-            if (inputOrdering_ ==  outputOrdering_) {
-              iHEALPix = std::stoi(matchLine[1].str());
+            if (inputOrdering_ == outputOrdering_) {
+                iHEALPix = std::stoi(matchLine[1].str());
             }
             else if (inputOrdering_ == orderingConvention_e::RING && outputOrdering_ == orderingConvention_e::NESTED) {
-              HEALPix Idx(static_cast<int>(NSide_));
-              iHEALPix = Idx.ring_to_nest(static_cast<int>(std::stoi(matchLine[1].str())));
+                HEALPix Idx(static_cast<int>(NSide_));
+                iHEALPix = Idx.ring_to_nest(static_cast<int>(std::stoi(matchLine[1].str())));
             }
             else if (inputOrdering_ == orderingConvention_e::NESTED && outputOrdering_ == orderingConvention_e::RING) {
-              HEALPix Idx(static_cast<int>(NSide_));
-              iHEALPix = Idx.nest_to_ring(static_cast<int>(std::stoi(matchLine[1].str())));
+                HEALPix Idx(static_cast<int>(NSide_));
+                iHEALPix = Idx.nest_to_ring(static_cast<int>(std::stoi(matchLine[1].str())));
             }
             else {
-              throw eckit::SeriousBug("Ordering not supported: " + line, Here());
+                throw eckit::SeriousBug("Ordering not supported: " + line, Here());
             }
             iFESOM = std::stoi(matchLine[2].str());
             weight = std::stod(matchLine[3].str());

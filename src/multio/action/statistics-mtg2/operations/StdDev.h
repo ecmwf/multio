@@ -19,27 +19,29 @@ public:
         OperationWithData<T>{name, "stddev", sz, true, win, cfg}, mean_{std::vector<T>(sz /= sizeof(T), 0.0)} {}
 
     StdDev(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-            const StatisticsOptions& opt) :
+           const StatisticsOptions& opt) :
         OperationWithData<T>{name, "stddev", true, win, IOmanager, opt} {};
 
     void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg)
+                                                                   : computeWithoutThreshold(val, cfg);
     }
 
     void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
         checkSize(sz, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg) : updateWithMissingAndCounters(val, cfg)) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (!cfg.options().valueCountThreshold() ? updateWithMissing(val, cfg)
+                                                                    : updateWithMissingAndCounters(val, cfg))
+                            : updateWithoutMissing(val, cfg);
     }
 
 private:
     void computeWithoutThreshold(T* buf, const StatisticsConfiguration& cfg) {
         const auto c = 1.0 / win_.count();
-        std::transform(values_.begin(), values_.end(), buf,
-                       [c](T v) { return std::sqrt(v * c); });
+        std::transform(values_.begin(), values_.end(), buf, [c](T v) { return std::sqrt(v * c); });
     }
 
     void computeWithThreshold(T* buf, const StatisticsConfiguration& cfg) {
@@ -62,20 +64,23 @@ private:
         const auto c = 1.0 / win_.count();
         const auto m = cfg.missingValue();
         for (size_t i = 0; i < values_.size(); ++i) {
-            if (val[i] == m) { continue; }
+            if (val[i] == m) {
+                continue;
+            }
             const auto oldMean = mean_[i];
             mean_[i] += c * (val[i] - oldMean);
             values_[i] += (val[i] - oldMean) * (val[i] - mean_[i]);
         }
-
     }
-    void  updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
+    void updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
         const auto m = cfg.missingValue();
         win_.updateCounts(val, values_.size(), m);
         const auto& counts = win_.counts();
 
         for (size_t i = 0; i < values_.size(); ++i) {
-            if (val[i] == m) { continue; }
+            if (val[i] == m) {
+                continue;
+            }
             const auto c = 1.0 / counts[i];
             const auto oldMean = mean_[i];
             mean_[i] += c * (val[i] - oldMean);

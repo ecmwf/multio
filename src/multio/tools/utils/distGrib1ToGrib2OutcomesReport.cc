@@ -96,7 +96,9 @@ std::vector<std::string> split(const std::string& str, char delim) {
     return parts;
 }
 
-std::string joinCounters(const std::array<std::size_t, static_cast<std::size_t>(ExtractionOutcomeCode::ExtractFailedUnknownException) + 1>& counters) {
+std::string joinCounters(
+    const std::array<std::size_t, static_cast<std::size_t>(ExtractionOutcomeCode::ExtractFailedUnknownException) + 1>&
+        counters) {
     std::ostringstream out;
     bool first = true;
     for (std::size_t i = 0; i < counters.size(); ++i) {
@@ -186,28 +188,23 @@ bool hasAny(const FileOutcome& outcome, std::initializer_list<ExtractionOutcomeC
 }
 
 bool hasCopyRequired(const FileOutcome& outcome) {
-    return hasAny(outcome, {ExtractionOutcomeCode::CopyRequiredGrib2Verbatim,
-                            ExtractionOutcomeCode::CopyRequiredExceptMatched,
-                            ExtractionOutcomeCode::CopyRequiredInvalidMessage,
-                            ExtractionOutcomeCode::CopyRequiredDiscipline192,
-                            ExtractionOutcomeCode::CopyRequiredTimespanNonPositive});
+    return hasAny(outcome,
+                  {ExtractionOutcomeCode::CopyRequiredGrib2Verbatim, ExtractionOutcomeCode::CopyRequiredExceptMatched,
+                   ExtractionOutcomeCode::CopyRequiredInvalidMessage, ExtractionOutcomeCode::CopyRequiredDiscipline192,
+                   ExtractionOutcomeCode::CopyRequiredTimespanNonPositive});
 }
 
 bool hasRealExtractFailure(const FileOutcome& outcome) {
-    return hasAny(outcome, {ExtractionOutcomeCode::ExtractFailedReadHandleNotMemory,
-                            ExtractionOutcomeCode::ExtractFailedMessageClassification,
-                            ExtractionOutcomeCode::ExtractFailedExceptMatchedGrib1,
-                            ExtractionOutcomeCode::ExtractFailedMapGrib1ToGrib2,
-                            ExtractionOutcomeCode::ExtractFailedEmptyValues,
-                            ExtractionOutcomeCode::ExtractFailedOptionOverrides,
-                            ExtractionOutcomeCode::ExtractFailedMappings,
-                            ExtractionOutcomeCode::ExtractFailedMarsDefaults,
-                            ExtractionOutcomeCode::ExtractFailedMarsValidation,
-                            ExtractionOutcomeCode::ExtractFailedMiscDefaults,
-                            ExtractionOutcomeCode::ExtractFailedMiscValidation,
-                            ExtractionOutcomeCode::ExtractFailedSpectralComplexOverflowProtection,
-                            ExtractionOutcomeCode::ExtractFailedFileRead,
-                            ExtractionOutcomeCode::ExtractFailedUnknownException});
+    return hasAny(outcome,
+                  {ExtractionOutcomeCode::ExtractFailedReadHandleNotMemory,
+                   ExtractionOutcomeCode::ExtractFailedMessageClassification,
+                   ExtractionOutcomeCode::ExtractFailedExceptMatchedGrib1,
+                   ExtractionOutcomeCode::ExtractFailedMapGrib1ToGrib2, ExtractionOutcomeCode::ExtractFailedEmptyValues,
+                   ExtractionOutcomeCode::ExtractFailedOptionOverrides, ExtractionOutcomeCode::ExtractFailedMappings,
+                   ExtractionOutcomeCode::ExtractFailedMarsDefaults, ExtractionOutcomeCode::ExtractFailedMarsValidation,
+                   ExtractionOutcomeCode::ExtractFailedMiscDefaults, ExtractionOutcomeCode::ExtractFailedMiscValidation,
+                   ExtractionOutcomeCode::ExtractFailedSpectralComplexOverflowProtection,
+                   ExtractionOutcomeCode::ExtractFailedFileRead, ExtractionOutcomeCode::ExtractFailedUnknownException});
 }
 
 bool hasEncodeFailure(const FileOutcome& outcome) {
@@ -233,15 +230,15 @@ std::size_t skipLikeCount(const FileOutcome& outcome) {
 
 bool isFullSuccess(const FileOutcome& outcome) {
     return outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] == outcome.nMessages
-            && !hasCopyRequired(outcome) && !hasRealExtractFailure(outcome)
-            && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome) && !hasInvalidSkip(outcome);
+        && !hasCopyRequired(outcome) && !hasRealExtractFailure(outcome) && !hasEncodeFailure(outcome)
+        && !hasArchiveFailure(outcome) && !hasInvalidSkip(outcome);
 }
 
 bool isSkipSuccess(const FileOutcome& outcome) {
     return skipLikeCount(outcome) > 0
-           && outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] + skipLikeCount(outcome)
-                    == outcome.nMessages
-            && !hasRealExtractFailure(outcome) && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome);
+        && outcome.outcomeCounters[outcomeIndex(ExtractionOutcomeCode::ProcessedAndArchived)] + skipLikeCount(outcome)
+               == outcome.nMessages
+        && !hasRealExtractFailure(outcome) && !hasEncodeFailure(outcome) && !hasArchiveFailure(outcome);
 }
 
 void writeTextFile(const std::string& path, const std::string& payload) {
@@ -266,7 +263,8 @@ std::string formatSummaryByTypeLine(const SummaryByTypeKey& key, const OutcomeAg
     return out.str();
 }
 
-void emitJsonStringField(std::ostringstream& out, const std::string& key, const std::string& value, bool withComma = true) {
+void emitJsonStringField(std::ostringstream& out, const std::string& key, const std::string& value,
+                         bool withComma = true) {
     out << "    \"" << key << "\": \"" << jsonEscape(value) << "\"";
     if (withComma) {
         out << ',';
@@ -308,7 +306,8 @@ std::string buildSummaryJson(const std::vector<FileOutcome>& outcomes) {
         out << "    \"nMessages\": " << outcome.nMessages << ",\n";
         out << "    \"counters\": {\n";
         for (std::size_t i = 0; i < outcome.outcomeCounters.size(); ++i) {
-            out << "      \"" << toString(static_cast<ExtractionOutcomeCode>(i)) << "\": " << outcome.outcomeCounters[i];
+            out << "      \"" << toString(static_cast<ExtractionOutcomeCode>(i))
+                << "\": " << outcome.outcomeCounters[i];
             if (i + 1 != outcome.outcomeCounters.size()) {
                 out << ',';
             }
@@ -448,7 +447,8 @@ void writeOutcomeReports(const std::vector<FileOutcome>& outcomes, const DistGri
         const auto status = deriveFileStatus(outcome);
 
         if (auto identity = parseFileIdentity(outcome.filename)) {
-            accumulate(summaryByLevtype[SummaryByLevtypeKey{identity->klass, identity->stream, identity->type, identity->levtype}],
+            accumulate(summaryByLevtype[SummaryByLevtypeKey{identity->klass, identity->stream, identity->type,
+                                                            identity->levtype}],
                        outcome);
             accumulate(summaryByType[SummaryByTypeKey{identity->klass, identity->stream, identity->type}], outcome);
         }

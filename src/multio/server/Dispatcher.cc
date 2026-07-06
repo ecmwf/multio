@@ -18,7 +18,8 @@ namespace multio::server {
 
 using config::ComponentConfiguration;
 
-Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue, multio::transport::Transport& transport) :
+Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue,
+                       multio::transport::Transport& transport) :
     FailureAware(compConf), queue_{queue}, transport_{transport} {
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;

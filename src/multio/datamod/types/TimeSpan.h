@@ -19,8 +19,7 @@ class TimeSpan {
 public:
     TimeSpan() = default;
 
-    explicit TimeSpan(TimeDuration duration) :
-        value_{std::move(duration)} {}
+    explicit TimeSpan(TimeDuration duration) : value_{std::move(duration)} {}
 
     static TimeSpan none() {
         TimeSpan ret;
@@ -28,13 +27,9 @@ public:
         return ret;
     }
 
-    bool isNone() const {
-        return std::holds_alternative<std::monostate>(value_);
-    }
+    bool isNone() const { return std::holds_alternative<std::monostate>(value_); }
 
-    bool isDuration() const {
-        return std::holds_alternative<TimeDuration>(value_);
-    }
+    bool isDuration() const { return std::holds_alternative<TimeDuration>(value_); }
 
     const TimeDuration& duration() const {
         if (!isDuration()) {
@@ -43,25 +38,19 @@ public:
         return std::get<TimeDuration>(value_);
     }
 
-    std::int64_t toHours() const {
-        return duration().toHours();
+    std::int64_t toHours() const { return duration().toHours(); }
+
+    std::int64_t toSeconds() const { return duration().toSeconds(); }
+
+    friend bool operator==(const TimeSpan& lhs, const TimeSpan& rhs) {
+        if (lhs.isNone() || rhs.isNone()) {
+            return lhs.isNone() && rhs.isNone();
+        }
+
+        return lhs.toSeconds() == rhs.toSeconds();
     }
 
-    std::int64_t toSeconds() const {
-        return duration().toSeconds();
-    }
-
-friend bool operator==(const TimeSpan& lhs, const TimeSpan& rhs) {
-    if (lhs.isNone() || rhs.isNone()) {
-        return lhs.isNone() && rhs.isNone();
-    }
-
-    return lhs.toSeconds() == rhs.toSeconds();
-}
-
-friend bool operator!=(const TimeSpan& lhs, const TimeSpan& rhs) {
-    return !(lhs == rhs);
-}
+    friend bool operator!=(const TimeSpan& lhs, const TimeSpan& rhs) { return !(lhs == rhs); }
 
 private:
     std::variant<TimeDuration, std::monostate> value_{std::chrono::hours{0}};
@@ -94,15 +83,9 @@ template <>
 struct std::hash<multio::datamod::TimeSpan> {
     std::size_t operator()(const multio::datamod::TimeSpan& v) const noexcept {
         if (v.isNone()) {
-            return multio::util::hashCombine(
-                std::string{"TimeSpan"},
-                std::string{"none"}
-            );
+            return multio::util::hashCombine(std::string{"TimeSpan"}, std::string{"none"});
         }
 
-        return multio::util::hashCombine(
-            std::string{"TimeSpan"},
-            v.duration()
-        );
+        return multio::util::hashCombine(std::string{"TimeSpan"}, v.duration());
     }
 };

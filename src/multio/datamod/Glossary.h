@@ -252,4 +252,3 @@ constexpr auto IDirectionIncrementInDegrees = KV<double>{"iDirectionIncrementInD
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod::legacy
-

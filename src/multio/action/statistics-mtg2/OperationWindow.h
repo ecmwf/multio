@@ -20,8 +20,8 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                    long timeIncrementInSeconds, WindowType windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeIncrementInSeconds,
+                    WindowType windowType);
 
     long count() const;
     const std::vector<long>& counts() const;

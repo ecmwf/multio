@@ -79,7 +79,9 @@ void SharedPayload::acquire() {
 void* SharedPayload::modifyData() {
     return util::visit(eckit::Overloaded{
                            [](std::shared_ptr<eckit::Buffer>& sharedBuf) -> void* { return sharedBuf->data(); },
-                           [](PayloadReference& ref) -> void* { throw eckit::SeriousBug{"The payload has not been acquired yet!" , Here()}; },
+                           [](PayloadReference& ref) -> void* {
+                               throw eckit::SeriousBug{"The payload has not been acquired yet!", Here()};
+                           },
                        },
                        *this);
 }

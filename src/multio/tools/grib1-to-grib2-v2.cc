@@ -249,10 +249,9 @@ Grib1ToGrib2V2::Grib1ToGrib2V2(int argc, char** argv) : multio::MultioTool{argc,
         "default-ensemble-size",
         "Fallback value used when numberOfForecastsInEnsemble is 0 but number is non-zero. Default: 0 (throw)"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
-        "convert-wave-stream-to-oper", "If enabled it converts the wave stream (wave/waef) to oper stream. Default: false (throw)"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "expver",
-        "Override expver. Default: 0 (throw)"));
+        "convert-wave-stream-to-oper",
+        "If enabled it converts the wave stream (wave/waef) to oper stream. Default: false (throw)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Override expver. Default: 0 (throw)"));
 }
 
 void Grib1ToGrib2V2::init(const eckit::option::CmdArgs& args) {
@@ -472,7 +471,8 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
 
                 case grib2MarsMisc::MessageDisposition::CopyInvalidMessage:
                     std::cerr << "WARNING: Message " << msgIndex
-                              << " is not valid according to the GRIB1 metadata. This likely means the message is malformed and may fail to convert to GRIB2. Copying invalid message verbatim."
+                              << " is not valid according to the GRIB1 metadata. This likely means the message is "
+                                 "malformed and may fail to convert to GRIB2. Copying invalid message verbatim."
                               << std::endl;
                     [[fallthrough]];
 
@@ -483,7 +483,8 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                     [[fallthrough]];
 
                 case grib2MarsMisc::MessageDisposition::CopyExceptMatched:
-                    if (outcome.disposition == grib2MarsMisc::MessageDisposition::CopyExceptMatched && verbosity_ >= 1) {
+                    if (outcome.disposition == grib2MarsMisc::MessageDisposition::CopyExceptMatched
+                        && verbosity_ >= 1) {
                         std::cout << "except map matched — copying GRIB2 message verbatim" << std::endl;
                     }
                     [[fallthrough]];
@@ -496,7 +497,8 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                     [[fallthrough]];
 
                 case grib2MarsMisc::MessageDisposition::CopyTimespanNonPositive:
-                    if (outcome.disposition == grib2MarsMisc::MessageDisposition::CopyTimespanNonPositive && verbosity_ > 0) {
+                    if (outcome.disposition == grib2MarsMisc::MessageDisposition::CopyTimespanNonPositive
+                        && verbosity_ > 0) {
                         std::cerr << "WARNING: Copying message with non-positive timespan (paramId: "
                                   << inputHandle->getLong("paramId") << ")" << std::endl;
                     }
@@ -523,7 +525,8 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
                 case grib2MarsMisc::MessageDisposition::SkipInvalidMessage:
                     if (grib2MarsMiscOptions_.onError == grib2MarsMisc::OnErrorHandling::LogAndSkip) {
                         std::cerr << "Error: Message " << msgIndex
-                                  << " is not valid according to the GRIB1 metadata. This likely means the message is malformed and may fail to convert to GRIB2. Skipping message."
+                                  << " is not valid according to the GRIB1 metadata. This likely means the message is "
+                                     "malformed and may fail to convert to GRIB2. Skipping message."
                                   << std::endl;
                     }
                     ++nonSuccessCount;
@@ -532,18 +535,20 @@ void Grib1ToGrib2V2::execute(const eckit::option::CmdArgs& args) {
 
                 case grib2MarsMisc::MessageDisposition::SkipDiscipline192:
                     if (grib2MarsMiscOptions_.discipline192 == grib2MarsMisc::Discipline192Handling::LogAndIgnore) {
-                        std::cout << "Excluding message with discipline 192 (paramId: " << inputHandle->getLong("paramId")
-                                  << ")" << std::endl;
+                        std::cout << "Excluding message with discipline 192 (paramId: "
+                                  << inputHandle->getLong("paramId") << ")" << std::endl;
                     }
                     debugOutputs.writeInputMessage(bucketForOutcome(outcome.code), msg);
                     break;
 
                 case grib2MarsMisc::MessageDisposition::SkipTimespanNonPositive:
-                    if (grib2MarsMiscOptions_.timespanNonPositive == grib2MarsMisc::TimeSpanEqualToZeroHandling::LogAndIgnore) {
+                    if (grib2MarsMiscOptions_.timespanNonPositive
+                        == grib2MarsMisc::TimeSpanEqualToZeroHandling::LogAndIgnore) {
                         std::cerr << "WARNING: Skipping message with non-positive timespan (paramId: "
                                   << inputHandle->getLong("paramId") << ")" << std::endl;
                     }
-                    else if (grib2MarsMiscOptions_.timespanNonPositive == grib2MarsMisc::TimeSpanEqualToZeroHandling::Ignore
+                    else if (grib2MarsMiscOptions_.timespanNonPositive
+                                 == grib2MarsMisc::TimeSpanEqualToZeroHandling::Ignore
                              && verbosity_ > 0) {
                         std::cerr << "WARNING:Ignoring message with non-positive timespan (paramId: "
                                   << inputHandle->getLong("paramId") << ")" << std::endl;

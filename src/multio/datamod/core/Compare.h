@@ -26,9 +26,7 @@ struct EqualToRecord {
     template <typename Record_, std::enable_if_t<IsRecord_v<Record_>, bool> = true>
     bool operator()(const Record_& lhs, const Record_& rhs) const {
         return std::apply(
-            [&](const auto&... entryDef) {
-                return ((entryDef.get(lhs) == entryDef.get(rhs)) && ... && true);
-            },
+            [&](const auto&... entryDef) { return ((entryDef.get(lhs) == entryDef.get(rhs)) && ... && true); },
             recordEntries<Record_>());
     };
 };

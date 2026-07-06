@@ -34,7 +34,8 @@ public:
         std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
-    void init(const void* data, std::size_t size, const message::Message& msg, const StatisticsConfiguration& cfg) override {
+    void init(const void* data, std::size_t size, const message::Message& msg,
+              const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the first field of the window
     };
 

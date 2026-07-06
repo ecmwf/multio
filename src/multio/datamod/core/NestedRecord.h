@@ -35,7 +35,7 @@
 
 namespace multio::datamod {
 
-template <typename RecordType, typename Container=void>
+template <typename RecordType, typename Container = void>
 struct RecordMapper {
     // Parse record from other record or implemented container
     template <
@@ -80,4 +80,3 @@ constexpr auto nestedOptEntryDef(M T::* member) {
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod
-

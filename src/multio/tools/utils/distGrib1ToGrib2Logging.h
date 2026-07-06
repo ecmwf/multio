@@ -19,7 +19,8 @@
 
 namespace multio::distGrib1ToGrib2 {
 
-enum class FileStatus : std::uint8_t {
+enum class FileStatus : std::uint8_t
+{
     Success = 0,
     Partial = 1,
     ExtractFail = 2,
@@ -32,8 +33,8 @@ enum class FileStatus : std::uint8_t {
 struct FileOutcome {
     std::string filename;
     std::size_t nMessages = 0;
-    std::array<std::size_t, static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedUnknownException)
-                                 + 1>
+    std::array<std::size_t,
+               static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedUnknownException) + 1>
         outcomeCounters{};
 };
 

@@ -12,8 +12,8 @@
 
 #include <sstream>
 
-#include "eckit/io/Buffer.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/io/MemoryHandle.h"
 #include "eckit/message/MessageContent.h"

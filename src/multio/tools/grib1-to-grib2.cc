@@ -570,7 +570,6 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
             }
         }
 
-        
 
         if (numForecasts != 0) {
             mars.number.set(number);
@@ -1171,10 +1170,10 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
     options_.push_back(new eckit::option::SimpleOption<long>(
         "default-ensemble-size",
         "Fallback value used when numberOfForecastsInEnsemble is 0 but number is non-zero. Default: 0 (throw)"));
-    options_.push_back(new eckit::option::SimpleOption<bool>("convert-wave-stream-to-oper", "If enabled it converts the wave stream (wave/waef) to oper stream. Default: false (throw)"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "expver",
-        "Override expver. Default: 0 (throw)"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "convert-wave-stream-to-oper",
+        "If enabled it converts the wave stream (wave/waef) to oper stream. Default: false (throw)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Override expver. Default: 0 (throw)"));
 }
 
 void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
@@ -1539,7 +1538,7 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                     std::cout << "Encoding message #" << msgIndex
                               << " to GRIB2 (total GRIB2 messages so far: " << msgIndex << ")" << std::endl;
 
-                    if ( convertWaveStreamToOper_ ) {
+                    if (convertWaveStreamToOper_) {
                         std::cout << "Converting wave stream to oper stream for message #" << msgIndex << std::endl;
                         const auto curreStream = mars.stream.get();
                         if (curreStream == "wave" || curreStream == "waef") {
@@ -1547,8 +1546,8 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
                         }
                     }
 
-                    if ( overwriteExpver_ ) {
-                        mars.expver.set( overwriteExpver_ );
+                    if (overwriteExpver_) {
+                        mars.expver.set(overwriteExpver_);
                     }
 
                     auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);

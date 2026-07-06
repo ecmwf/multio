@@ -384,7 +384,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         auto type = firstOf(lookUp<std::string>(md, dm::legacy::Type), lookUp<std::string>(md, dm::legacy::MarsType));
         g.setValue("backgroundProcess", 255);
         productionStatusOfProcessedData = 3;
-        if ( type && (*type == "an" || *type == "4v")) {
+        if (type && (*type == "an" || *type == "4v")) {
             g.setValue("typeOfProcessedData", 0);
         }
     }

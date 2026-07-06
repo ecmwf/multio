@@ -22,7 +22,7 @@ namespace multio::distGrib1ToGrib2 {
 
 std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files,
                                            const grib2MarsMisc::Grib2MarsMiscOptions& options,
-                                           const eckit::LocalConfiguration& rawOptions, const std::string& outputDirectory,
-                                           int rank);
+                                           const eckit::LocalConfiguration& rawOptions,
+                                           const std::string& outputDirectory, int rank);
 
 }  // namespace multio::distGrib1ToGrib2

@@ -11,12 +11,12 @@
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
 
 #include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <ctime>
 
 namespace multio::distGrib1ToGrib2 {
 
@@ -56,7 +56,7 @@ std::size_t archiveFailures(const FileOutcome& o) {
 std::size_t copyOrSkipRequired(const FileOutcome& o) {
     std::size_t total = 0;
     for (std::size_t i = outcomeIndex(ExtractionOutcomeCode::CopyRequiredGrib2Verbatim);
-          i <= outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive); ++i) {
+         i <= outcomeIndex(ExtractionOutcomeCode::SkipRequiredTimespanNonPositive); ++i) {
         total += o.outcomeCounters[i];
     }
     return total;
@@ -204,7 +204,8 @@ FileStatus deriveFileStatus(const FileOutcome& o) {
     const bool extractFail = hasRealExtractFailure(o);
     const bool encodeFail = hasRealEncodeFailure(o);
     const bool archiveFail = hasRealArchiveFailure(o);
-    const int nFailureFamilies = static_cast<int>(extractFail) + static_cast<int>(encodeFail) + static_cast<int>(archiveFail);
+    const int nFailureFamilies
+        = static_cast<int>(extractFail) + static_cast<int>(encodeFail) + static_cast<int>(archiveFail);
 
     if (nSuccess == o.nMessages) {
         return FileStatus::Success;
@@ -231,14 +232,14 @@ FileStatus deriveFileStatus(const FileOutcome& o) {
 std::string formatOutcomeLine(const FileOutcome& o) {
     std::ostringstream out;
     out << '[' << toString(deriveFileStatus(o)) << "] " << quoteForLog(o.filename) << ", nMessages=" << o.nMessages
-         << ", " << formatNonZeroCounters(o) << '\n';
+        << ", " << formatNonZeroCounters(o) << '\n';
     return out.str();
 }
 
 std::string formatRankProgressLine(const FileOutcome& o, int rank) {
     std::ostringstream out;
     out << "rank " << rank << " processed " << o.filename << " status=" << toString(deriveFileStatus(o))
-         << " NMessages=" << o.nMessages << " Counters=" << formatNonZeroCounters(o);
+        << " NMessages=" << o.nMessages << " Counters=" << formatNonZeroCounters(o);
     return out.str();
 }
 

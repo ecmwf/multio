@@ -3,9 +3,9 @@
 #include <cstdint>
 
 #include "multio/action/ChainedAction.h"
-#include "multio/datamod/core/EntryDef.h"
-#include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/GribKeys.h"
+#include "multio/datamod/MarsKeys.h"
+#include "multio/datamod/core/EntryDef.h"
 #include "multio/util/config/Parser.h"
 
 namespace multio::action::scale {
@@ -21,11 +21,11 @@ struct ScaleMetadataKeys {
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "scale-action-metadata";
-    static constexpr auto record_entries_ = std::make_tuple(
-        dm::PARAM,          // access: read/write
-        dm::BitmapPresent,  // access: read only
-        dm::MissingValue    // access: read/write (will be unset if bitmapPresent false)
-    );
+    static constexpr auto record_entries_
+        = std::make_tuple(dm::PARAM,          // access: read/write
+                          dm::BitmapPresent,  // access: read only
+                          dm::MissingValue    // access: read/write (will be unset if bitmapPresent false)
+        );
 
     static void applyDefaults(ScaleMetadataKeys& k) {
         if (!k.bitmapPresent.get()) {
@@ -35,17 +35,15 @@ struct ScaleMetadataKeys {
 
     static void validate(const ScaleMetadataKeys& k) {
         if (k.bitmapPresent.get() && !k.missingValue.isSet()) {
-            throw eckit::SeriousBug(
-                "Value for missingValue is required if bitmapPresent is true!",
-                Here()
-            );
+            throw eckit::SeriousBug("Value for missingValue is required if bitmapPresent is true!", Here());
         }
     }
 };
 
 //------------------------ Action Configuration Keys ------------------------//
 
-enum class ScalePreset : std::size_t {
+enum class ScalePreset : std::size_t
+{
     LocalToWmo,
     WmoToLocal,
 };
@@ -55,21 +53,17 @@ struct ScaleMapping {
     std::int64_t paramOut;
     double scaling;
 
-    static constexpr auto fields_ = std::make_tuple(
-        cf::requiredEntry("param-in", &ScaleMapping::paramIn),
-        cf::requiredEntry("param-out", &ScaleMapping::paramOut),
-        cf::requiredEntry("scaling", &ScaleMapping::scaling)
-    );
+    static constexpr auto fields_ = std::make_tuple(cf::requiredEntry("param-in", &ScaleMapping::paramIn),
+                                                    cf::requiredEntry("param-out", &ScaleMapping::paramOut),
+                                                    cf::requiredEntry("scaling", &ScaleMapping::scaling));
 };
 
 struct ScaleConfig {
     std::optional<ScalePreset> preset;
     std::vector<ScaleMapping> customMappings;
 
-    static constexpr auto fields_ = std::make_tuple(
-        cf::optionalEntry("preset-mappings", &ScaleConfig::preset),
-        cf::optionalEntry("custom-mappings", &ScaleConfig::customMappings)
-    );
+    static constexpr auto fields_ = std::make_tuple(cf::optionalEntry("preset-mappings", &ScaleConfig::preset),
+                                                    cf::optionalEntry("custom-mappings", &ScaleConfig::customMappings));
 };
 
 //---------------------------------------------------------------------------//

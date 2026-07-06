@@ -14,8 +14,8 @@
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
 #include "multio/datamod/types/TypeOfLevel.h"
-#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 #include "multio/datamod/types/TypeOfProcessedData.h"
+#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 
 
 namespace multio::datamod {
@@ -339,4 +339,3 @@ template <>
 struct Print<multio::datamod::VerticalGribKeys> : multio::datamod::PrintRecord {};
 
 }  // namespace multio::util
-

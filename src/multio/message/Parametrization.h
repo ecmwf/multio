@@ -64,20 +64,20 @@ struct GetElementType<ElementType::Real64> {
 
 /** Global singleton metadata object that contains information that may be send once at the beginning of a run
  *
- * Important: Key-value pairs are ment to be constant. It is possible to call `update` on a key with the same value multiple
- * times. To enforce consistency a key can not be updated with a different value - this will throw an exception
- * to notify about inconsistency. 
- * It is intentional that multiple clients may send the same parametrization keys - in this case also the consistency check
- * is a desired feature.
+ * Important: Key-value pairs are ment to be constant. It is possible to call `update` on a key with the same value
+ * multiple times. To enforce consistency a key can not be updated with a different value - this will throw an exception
+ * to notify about inconsistency.
+ * It is intentional that multiple clients may send the same parametrization keys - in this case also the consistency
+ * check is a desired feature.
  *
  *             This singleton object is shared accross multiple multio instances (e.g. IFS and NEMO). Hence it is
  * assumed that all global key-value pairs of different models are exclusive to each other or contain the same value.
  *
- * TODO pgeier: Make threadsafe. As keys are constant, reading does not need any checks. 
+ * TODO pgeier: Make threadsafe. As keys are constant, reading does not need any checks.
  * However, we may need a lock to ensure single writers and multilpe readers.
  *
- * Usually we expect to have parametrization updates to arrive at the start, not inbetween. Currently we don't guarantee this.
- * As the metadata uses a map, references can be invalidated when the map is rehashed through additional inserts.
+ * Usually we expect to have parametrization updates to arrive at the start, not inbetween. Currently we don't guarantee
+ * this. As the metadata uses a map, references can be invalidated when the map is rehashed through additional inserts.
  * This may be bad when vectors or other large values are referenced.
  */
 class Parametrization {
@@ -108,7 +108,7 @@ public:
 
     // Should only be used for testing purpose
     void clear();
-    
+
 private:
     void print(std::ostream& out) const;
 
@@ -118,7 +118,8 @@ private:
     }
     void update(std::string_view key, const MetadataValue&);
 
-    // TODO pgeier use RW lock (maybe with atomic flag), shared_mutex not working on all plattforms correctly yet (Mac...)
+    // TODO pgeier use RW lock (maybe with atomic flag), shared_mutex not working on all plattforms correctly yet
+    // (Mac...)
     mutable std::mutex mutex_;
 
     BaseMetadata data_;

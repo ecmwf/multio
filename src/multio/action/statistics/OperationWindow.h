@@ -15,8 +15,9 @@
 
 namespace multio::action::statistics {
 
-enum OperationWindowType : std::int64_t {
-    FORWARD_OFFSET  = 0,
+enum OperationWindowType : std::int64_t
+{
+    FORWARD_OFFSET = 0,
     BACKWARD_OFFSET = 1
 };
 

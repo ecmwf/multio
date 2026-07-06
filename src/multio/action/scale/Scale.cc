@@ -24,9 +24,8 @@ namespace multio::action::scale {
 
 const Mappings getMappings(const ScalePreset preset) {
     // Load the mapping file
-    eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"
-    }}};
+    eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{
+        eckit::PathName{multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/local-to-wmo.yaml"}}};
 
     // Read the mappings and put them into the map
     // We use the same mapping file for local-to-wmo and wmo-to-local, the
@@ -35,10 +34,10 @@ const Mappings getMappings(const ScalePreset preset) {
     for (const auto& subConfig : mappingConf.getSubConfigurations()) {
         const auto mapping = util::config::parseConfig<ScaleMapping>(subConfig);
         switch (preset) {
-            case ScalePreset::LocalToWmo : {
+            case ScalePreset::LocalToWmo: {
                 mappings[mapping.paramIn] = {mapping.paramOut, mapping.scaling};
             }
-            case ScalePreset::WmoToLocal : {
+            case ScalePreset::WmoToLocal: {
                 mappings[mapping.paramOut] = {mapping.paramIn, 1.0 / mapping.scaling};
             }
         }
@@ -60,7 +59,8 @@ Mappings getMappings(const ScaleConfig& config) {
     }
 
     if (mappings.empty()) {
-        throw eckit::UserError("No scale mapping was found, set 'preset' or 'mappings' in action configuration!", Here());
+        throw eckit::UserError("No scale mapping was found, set 'preset' or 'mappings' in action configuration!",
+                               Here());
     }
     return mappings;
 }
@@ -105,10 +105,10 @@ void Scale::executeImpl(message::Message msg) {
             std::transform(data, data + size, data, [&](Precision value) {
                 return static_cast<Precision>(value == missing ? missing : value * mapping.scaling);
             });
-        } else {
-            std::transform(data, data + size, data, [&](Precision value) {
-                return static_cast<Precision>(value * mapping.scaling);
-            });
+        }
+        else {
+            std::transform(data, data + size, data,
+                           [&](Precision value) { return static_cast<Precision>(value * mapping.scaling); });
         }
     });
 

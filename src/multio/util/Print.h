@@ -62,8 +62,6 @@ template <typename T>
 inline constexpr bool Printable_v = Printable<T>::value;
 
 
-
-
 template <typename T, class = void>
 struct OstreamPrintable : std::false_type {};
 
@@ -230,4 +228,3 @@ struct Print<std::variant<T...>> {
 
 
 }  // namespace multio::util
-

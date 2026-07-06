@@ -28,14 +28,17 @@ public:
         checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg) : computeWithoutThreshold(val, cfg);
+        cfg.bitmapPresent() && cfg.options().valueCountThreshold() ? computeWithThreshold(val, cfg)
+                                                                   : computeWithoutThreshold(val, cfg);
     }
 
     void updateData(const void* data, std::size_t size, const StatisticsConfiguration& cfg) override {
         checkSize(size, cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const auto val = static_cast<const T*>(data);
-        cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() ? updateWithMissingAndCounters(val, cfg) : updateWithMissing(val, cfg)) : updateWithoutMissing(val, cfg);
+        cfg.bitmapPresent() ? (cfg.options().valueCountThreshold() ? updateWithMissingAndCounters(val, cfg)
+                                                                   : updateWithMissing(val, cfg))
+                            : updateWithoutMissing(val, cfg);
     }
 
 
@@ -49,25 +52,27 @@ private:
         const auto m = cfg.missingValue();
         const auto& counts = win_.counts();
         std::transform(values_.begin(), values_.end(), counts.begin(), buf,
-                    [t, m](T v, std::int64_t c) { return static_cast<T>(c < t ? m : v); });
+                       [t, m](T v, std::int64_t c) { return static_cast<T>(c < t ? m : v); });
     }
 
     void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
-            [](T v1, T v2) { return static_cast<T>(v1 < v2 ? v1 : v2); });
+                       [](T v1, T v2) { return static_cast<T>(v1 < v2 ? v1 : v2); });
     }
 
     void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
         const auto m = cfg.missingValue();
-        std::transform(values_.begin(), values_.end(), val, values_.begin(),
-            [m](T v1, T v2) { return static_cast<T>(m == v1 || m == v2 ? m : v1 < v2 ? v1 : v2); });
+        std::transform(values_.begin(), values_.end(), val, values_.begin(), [m](T v1, T v2) {
+            return static_cast<T>(m == v1 || m == v2 ? m : v1 < v2 ? v1 : v2);
+        });
     }
 
     void updateWithMissingAndCounters(const T* val, const StatisticsConfiguration& cfg) {
         const auto m = cfg.missingValue();
         win_.updateCounts(val, values_.size(), m);
-        std::transform(values_.begin(), values_.end(), val, values_.begin(),
-            [m](T v1, T v2) { return static_cast<T>(m == v2 ? v1 : v1 < v2 ? v1 : v2); });
+        std::transform(values_.begin(), values_.end(), val, values_.begin(), [m](T v1, T v2) {
+            return static_cast<T>(m == v2 ? v1 : v1 < v2 ? v1 : v2);
+        });
     }
 
     void print(std::ostream& os) const override { os << logHeader_; }

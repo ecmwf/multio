@@ -100,4 +100,3 @@ void Print<mars2mars::rules::RuleList>::print(PrintStream& ps, const mars2mars::
 
 
 }  // namespace multio::util
-

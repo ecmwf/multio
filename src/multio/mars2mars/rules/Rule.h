@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "multio/mars2mars/rules/Matcher.h"
 #include "multio/mars2mars/MappingResult.h"
 #include "multio/mars2mars/Mars2MarsException.h"
+#include "multio/mars2mars/rules/Matcher.h"
 #include "multio/mars2mars/rules/Setter.h"
 
 #include "multio/util/Print.h"
@@ -147,4 +147,3 @@ struct Print<mars2mars::rules::RuleList> {
 
 
 }  // namespace multio::util
-

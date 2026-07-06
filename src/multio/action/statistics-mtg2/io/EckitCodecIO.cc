@@ -35,7 +35,8 @@ public:
 
 template <typename T>
 void interprete(const SubVector<T>& in, eckit::codec::ArrayReference& out) {
-    out = eckit::codec::ArrayReference(in.data(), eckit::codec::make_datatype<T>(), eckit::codec::ArrayShape{in.size()});
+    out = eckit::codec::ArrayReference(in.data(), eckit::codec::make_datatype<T>(),
+                                       eckit::codec::ArrayShape{in.size()});
 }
 
 template <typename T>
@@ -50,7 +51,8 @@ void decode(const eckit::codec::Metadata& metadata, const eckit::codec::Data& da
 }
 }  // namespace
 
-EckitCodecIO::EckitCodecIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "atlasIO"} {};
+EckitCodecIO::EckitCodecIO(const std::string& path, const std::string& prefix) :
+    StatisticsIO{path, prefix, "atlasIO"} {};
 
 void EckitCodecIO::write(const std::string& name, std::size_t fieldSize, std::size_t writeSize) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the window write file is :: " << generateCurrFileName(name)

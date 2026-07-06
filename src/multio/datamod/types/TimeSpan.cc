@@ -1,7 +1,6 @@
 #include "TimeSpan.h"
 
 
-
 namespace multio::datamod {
 
 std::variant<std::int64_t, std::string> DumpType<TimeSpan>::dump(const TimeSpan& value) {
@@ -25,8 +24,7 @@ TimeSpan ParseType<TimeSpan>::parse(const std::string& value) {
 
     throw DataModellingException(
         std::string{"Invalid timespan value: "} + value + ". Only integer hours or string \"none\" are supported.",
-        Here()
-    );
+        Here());
 }
 
 }  // namespace multio::datamod

@@ -10,6 +10,7 @@
 
 #include "multio/tools/utils/distGrib1ToGrib2LoadBalancer.h"
 
+#include <sys/stat.h>
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
@@ -20,12 +21,11 @@
 #include <queue>
 #include <stdexcept>
 #include <string>
-#include <sys/stat.h>
 
 namespace multio::distGrib1ToGrib2 {
 
 long fileSizeBytes(const std::string& path) {
-    struct stat st {};
+    struct stat st{};
 
     if (::stat(path.c_str(), &st) != 0) {
         throw std::runtime_error("stat failed for '" + path + "': " + std::strerror(errno));
@@ -39,7 +39,8 @@ long fileSizeBytes(const std::string& path) {
         throw std::runtime_error("negative file size reported for: " + path);
     }
 
-    if (static_cast<unsigned long long>(st.st_size) > static_cast<unsigned long long>(std::numeric_limits<long>::max())) {
+    if (static_cast<unsigned long long>(st.st_size)
+        > static_cast<unsigned long long>(std::numeric_limits<long>::max())) {
         throw std::runtime_error("file too large for long: " + path);
     }
 
@@ -77,7 +78,8 @@ SplitResult makeBalancedChunks(std::vector<FileWithSize> files, std::size_t nChu
         throw std::runtime_error("N must be > 0");
     }
 
-    std::sort(files.begin(), files.end(), [](const FileWithSize& a, const FileWithSize& b) { return a.second > b.second; });
+    std::sort(files.begin(), files.end(),
+              [](const FileWithSize& a, const FileWithSize& b) { return a.second > b.second; });
 
     SplitResult result;
     result.chunks.resize(nChunks);
@@ -122,7 +124,8 @@ void writeChunkReport(const SplitResult& result, const std::string& reportFile) 
     const double idealWeight = static_cast<double>(totalWeight) / static_cast<double>(result.weights.size());
     const long long maxMinusMin = maxWeight - minWeight;
     const double imbalancePercent = idealWeight > 0.0 ? 100.0 * static_cast<double>(maxMinusMin) / idealWeight : 0.0;
-    const double maxOverIdealPercent = idealWeight > 0.0 ? 100.0 * (static_cast<double>(maxWeight) - idealWeight) / idealWeight : 0.0;
+    const double maxOverIdealPercent
+        = idealWeight > 0.0 ? 100.0 * (static_cast<double>(maxWeight) - idealWeight) / idealWeight : 0.0;
 
     std::ofstream out(reportFile);
     if (!out) {
@@ -133,8 +136,8 @@ void writeChunkReport(const SplitResult& result, const std::string& reportFile) 
     for (std::size_t i = 0; i < result.weights.size(); ++i) {
         const double delta = static_cast<double>(result.weights[i]) - idealWeight;
         const double deltaPercent = idealWeight > 0.0 ? 100.0 * delta / idealWeight : 0.0;
-        out << i << ',' << result.chunks[i].size() << ',' << result.weights[i] << ',' << static_cast<long long>(delta) << ','
-            << deltaPercent << '\n';
+        out << i << ',' << result.chunks[i].size() << ',' << result.weights[i] << ',' << static_cast<long long>(delta)
+            << ',' << deltaPercent << '\n';
     }
 
     out << '\n';
@@ -164,7 +167,8 @@ void printSplitSummaryToStderr(const SplitResult& result) {
     }
 
     const double idealWeight = static_cast<double>(totalWeight) / static_cast<double>(result.weights.size());
-    const double imbalancePercent = idealWeight > 0.0 ? 100.0 * static_cast<double>(maxWeight - minWeight) / idealWeight : 0.0;
+    const double imbalancePercent
+        = idealWeight > 0.0 ? 100.0 * static_cast<double>(maxWeight - minWeight) / idealWeight : 0.0;
 
     std::cerr << "chunks: " << result.chunks.size() << '\n';
     std::cerr << "total weight bytes: " << totalWeight << '\n';

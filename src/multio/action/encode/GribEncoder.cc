@@ -129,8 +129,8 @@ void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
             startDate = util::toDateInts(searchDataDate->second.get<std::int64_t>());
             startTime = util::toTimeInts(searchDataTime->second.get<std::int64_t>() * 100);
 
-            in.set("startDate", searchDate->second.get<std::int64_t>());
-            in.set("startTime", searchTime->second.get<std::int64_t>() * 100);
+            in.set("startDate", searchDataDate->second.get<std::int64_t>());
+            in.set("startTime", searchDataTime->second.get<std::int64_t>() * 100);
         }
         else if (hasDateTime) {
             startDate = util::toDateInts(searchDate->second.get<std::int64_t>());

@@ -110,7 +110,7 @@ ecbuild_add_library(
       utils/scalarGrib1ToGrib2DebugOutputs.h
 
   CONDITION
-    HAVE_GRIB1_TO_GRIB2
+    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
 
   PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}
@@ -150,7 +150,7 @@ ecbuild_add_executable(
       grib1-to-grib2-v2
 
   CONDITION
-    HAVE_GRIB1_TO_GRIB2
+    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
 
   SOURCES
       grib1-to-grib2-v2.cc
@@ -174,7 +174,7 @@ ecbuild_add_executable(
       dist-grib1-to-grib2
 
   CONDITION
-    HAVE_GRIB1_TO_GRIB2
+    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
 
   SOURCES
       dist-grib1-to-grib2.cc

@@ -185,26 +185,38 @@ void MultioClient::dispatch(message::SharedMetadata metadata, const message::Pay
 }
 
 void MultioClient::dispatch(message::Message msg) {
-    withFailureHandling([&]() {
-        if (msg.tag() == message::Message::Tag::Flush) {
-            for (const auto& plan : plans_) {
-                message::Message msg2{msg};
-                msg2.acquireMetadata();
-                msg2.modifyMetadata().set("clientPlanName", plan->name());
+    // Capture a lightweight LogMessage view of the message BEFORE the callable
+    // moves-from/mutates msg, so failure reports can identify which field/step
+    // triggered the error. Matches the pattern in Plan::process (Plan.cc:111-123)
+    // and avoids the "unknown" context that the single-argument overload of
+    // withFailureHandling (FailureHandling.h:345-348) would otherwise produce.
+    message::LogMessage lmsg = msg.logMessage();
+    withFailureHandling(
+        [&]() {
+            if (msg.tag() == message::Message::Tag::Flush) {
+                for (const auto& plan : plans_) {
+                    message::Message msg2{msg};
+                    msg2.acquireMetadata();
+                    msg2.modifyMetadata().set("clientPlanName", plan->name());
 
-                plan->process(std::move(msg2));
+                    plan->process(std::move(msg2));
+                }
             }
-        }
-        else {
-            if (msg.tag() == message::Message::Tag::Parametrization) {
-                message::Parametrization::instance().update(msg);
-            }
+            else {
+                if (msg.tag() == message::Message::Tag::Parametrization) {
+                    message::Parametrization::instance().update(msg);
+                }
 
-            for (const auto& plan : plans_) {
-                plan->process(msg);
+                for (const auto& plan : plans_) {
+                    plan->process(msg);
+                }
             }
-        }
-    });
+        },
+        [lmsg = std::move(lmsg)]() {
+            std::ostringstream oss;
+            oss << "MultioClient::dispatch with Message: " << lmsg;
+            return oss.str();
+        });
 
 #ifdef MULTIO_CLIENT_MEMORY_PROFILE_ENABLED
     const auto current_time = std::chrono::system_clock::now();

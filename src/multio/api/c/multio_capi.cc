@@ -156,14 +156,20 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
 
         MultioErrorValues error = getNestedErrorValue(e);
         g_failure_info.lastErrorString = oss.str();
+        // Always echo the full nested exception dump so it is visible even when a
+        // user-installed failure handler (e.g. IFS multio_error_handler) forwards
+        // only a truncated first line to the abort routine. See
+        // FailureHandling.h:326-328 Rethrow branch, which does NOT print via
+        // printException, unlike the Retry/Ignore branches.
+        std::cerr << "[multio_capi] " << oss.str() << std::endl;
+        std::cerr.flush();
         if (fh && fh->handler) {
             fh->info.lastErrorString = oss.str();
             callFailureHandler(fh, error);
             return error;
         }
 
-        // Print to cerr and cout to make sure the user knows his problem
-        std::cerr << oss.str() << std::endl;
+        // Print to cout as well to make sure the user knows his problem
         std::cout << oss.str() << std::endl;
         return error;
     }
@@ -173,14 +179,16 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
         oss << "Caught eckit exception on C-C++ API boundary: " << e.what() << e.location();
 
         g_failure_info.lastErrorString = oss.str();
+        // Always echo to stderr even when a user handler is installed.
+        std::cerr << "[multio_capi] " << oss.str() << std::endl;
+        std::cerr.flush();
         if (fh && fh->handler) {
             fh->info.lastErrorString = oss.str();
             callFailureHandler(fh, error);
             return error;
         }
 
-        // Print to cerr and cout to make sure the user knows his problem
-        std::cerr << oss.str() << std::endl;
+        // Print to cout as well to make sure the user knows his problem
         std::cout << oss.str() << std::endl;
         return error;
     }
@@ -190,14 +198,16 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
         oss << "Caught exception on C-C++ API boundary: " << e.what();
 
         g_failure_info.lastErrorString = oss.str();
+        // Always echo to stderr even when a user handler is installed.
+        std::cerr << "[multio_capi] " << oss.str() << std::endl;
+        std::cerr.flush();
         if (fh && fh->handler) {
             fh->info.lastErrorString = oss.str();
             callFailureHandler(fh, error);
             return error;
         }
 
-        // Print to cerr and cout to make sure the user knows his problem
-        std::cerr << oss.str() << std::endl;
+        // Print to cout as well to make sure the user knows his problem
         std::cout << oss.str() << std::endl;
         return error;
     }
@@ -206,14 +216,16 @@ int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
         std::string errStr = "Caugth unkown exception on C-C++ API boundary";
 
         g_failure_info.lastErrorString = errStr;
+        // Always echo to stderr even when a user handler is installed.
+        std::cerr << "[multio_capi] " << errStr << std::endl;
+        std::cerr.flush();
         if (fh && fh->handler) {
             fh->info.lastErrorString = errStr;
             callFailureHandler(fh, error);
             return error;
         }
 
-        // Print to cerr and cout to make sure the user knows his problem
-        std::cerr << errStr << std::endl;
+        // Print to cout as well to make sure the user knows his problem
         std::cout << errStr << std::endl;
         return error;
     }

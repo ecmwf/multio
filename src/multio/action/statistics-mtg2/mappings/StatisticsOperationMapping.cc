@@ -4,8 +4,8 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/filesystem/PathName.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 
 
 namespace multio::action::statistics_mtg2 {
@@ -15,8 +15,7 @@ StatisticsOperationMapping::StatisticsOperationMapping(ParamToTypeOfStatisticalP
 
 StatisticsOperationMapping StatisticsOperationMapping::makeStatisticsOperationMapping() {
     eckit::LocalConfiguration mappingConf{eckit::YAMLConfiguration{eckit::PathName{
-        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/statistics_operation_mappings.yaml"
-    }}};
+        multio::LibMultio::instance().libraryHome() + "/share/multio/mappings/statistics_operation_mappings.yaml"}}};
 
     ParamToTypeOfStatisticalProcessingMap operationMappings;
     for (auto& mapping : mappingConf.getSubConfigurations()) {
@@ -47,13 +46,27 @@ bool StatisticsOperationMapping::hasOperation(Param param, TypeOfStatisticalProc
 
 // TODO: Create an ENUM TypeOfStatisticalProcessing with appropriate conversions to and from strings and integers
 bool StatisticsOperationMapping::hasOperation(Param param, std::string operation) const {
-    if (operation == "average")            { return hasOperation(param, 0); }
-    if (operation == "accumulate")         { return hasOperation(param, 1); }
-    if (operation == "maximum")            { return hasOperation(param, 2); }
-    if (operation == "minimum")            { return hasOperation(param, 3); }
-    if (operation == "difference")         { return hasOperation(param, 4); }
-    if (operation == "stddev")             { return hasOperation(param, 6); }
-    if (operation == "inverse-difference") { return hasOperation(param, 8); }
+    if (operation == "average") {
+        return hasOperation(param, 0);
+    }
+    if (operation == "accumulate") {
+        return hasOperation(param, 1);
+    }
+    if (operation == "maximum") {
+        return hasOperation(param, 2);
+    }
+    if (operation == "minimum") {
+        return hasOperation(param, 3);
+    }
+    if (operation == "difference") {
+        return hasOperation(param, 4);
+    }
+    if (operation == "stddev") {
+        return hasOperation(param, 6);
+    }
+    if (operation == "inverse-difference") {
+        return hasOperation(param, 8);
+    }
 
     std::ostringstream os;
     os << "TypeOfStatisticalProcessing of operation " << operation << " is undefined!" << std::endl;

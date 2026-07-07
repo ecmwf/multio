@@ -14,8 +14,8 @@
 #include "multio/datamod/core/EntryDef.h"
 #include "multio/datamod/core/Print.h"
 #include "multio/datamod/types/TypeOfLevel.h"
-#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 #include "multio/datamod/types/TypeOfProcessedData.h"
+#include "multio/datamod/types/TypeOfStatisticalProcessing.h"
 
 
 namespace multio::datamod {
@@ -61,6 +61,31 @@ constexpr auto TypeOfProcessedDataEntry =
     EntryDef<TypeOfProcessedData>{"misc-typeOfProcessedData"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.typeOfProcessedData; });
+
+// Section 2 - local definition 39 (4D-var model errors, type=eme/me)
+
+constexpr auto NumberOfComponents =
+    EntryDef<std::int64_t>{"misc-numberOfComponents"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfComponents; });
+
+constexpr auto ModelErrorType =
+    EntryDef<std::int64_t>{"misc-modelErrorType"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.modelErrorType; });
+
+// Section 2 - local definition 38 (4D-var analysis iterations, type=4i)
+//
+// `iterationNumber` is forwarded directly through MARS as
+// `mars.iteration` (see `dm::ITERATION` in MarsKeys.h); the metkit
+// encoder reads it via the iteration deduction. Only the
+// `totalNumberOfIterations` key, which has no MARS equivalent, is
+// forwarded through misc.
+
+constexpr auto TotalNumberOfIterations =
+    EntryDef<std::int64_t>{"misc-totalNumberOfIterations"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.totalNumberOfIterations; });
 
 
 // Section3 (more to be moved here from MarsMiscGeo.h)
@@ -191,6 +216,10 @@ constexpr auto SatelliteSeries =
     EntryDef<std::int64_t>{"misc-satelliteSeries"}
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.satelliteSeries; });
+constexpr auto NumberOfFrequencies =
+    EntryDef<std::int64_t>{"misc-numberOfFrequencies"}
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.numberOfFrequencies; });
 // Horizontal Keys
 constexpr auto PressureUnits
     = EntryDef<std::string>{"misc-pressureUnits"}
@@ -310,4 +339,3 @@ template <>
 struct Print<multio::datamod::VerticalGribKeys> : multio::datamod::PrintRecord {};
 
 }  // namespace multio::util
-

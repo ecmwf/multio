@@ -33,7 +33,9 @@ public:
 
     virtual std::size_t byte_size() const = 0;
     virtual void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) = 0;
-    virtual void init(const void* data, std::size_t size, const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
+    virtual void init(const void* data, std::size_t size, const message::Message& msg,
+                      const StatisticsConfiguration& cfg)
+        = 0;
     virtual void init(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
     virtual bool needStepZero() const = 0;
 

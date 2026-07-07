@@ -8,6 +8,8 @@ ecbuild_add_library(
         EncodeMtg2.h
         EncodeMtg2Exception.cc
         EncodeMtg2Exception.h
+        fakeDoubleLoop.cc
+        fakeDoubleLoop.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

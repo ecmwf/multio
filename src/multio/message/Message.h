@@ -20,11 +20,11 @@
 #include "eckit/io/Buffer.h"
 #include "multio/util/PrecisionTag.h"
 
+#include "multio/datamod/Glossary.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
 #include "multio/message/SharedMetadata.h"
 #include "multio/message/SharedPayload.h"
-#include "multio/datamod/Glossary.h"
 
 #include <memory>
 #include <optional>
@@ -233,7 +233,9 @@ message::Message convert_precision(message::Message&& msg) {
 
     auto md = msg.metadata();
     md.set<std::int64_t>(dm::legacy::GlobalSize, buffer.size());
-    md.set(dm::legacy::Precision, std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
+    md.set(dm::legacy::Precision, std::is_same_v<To, double>  ? "double"
+                                  : std::is_same_v<To, float> ? "single"
+                                                              : NOTIMP);
 
     const auto* a = reinterpret_cast<const From*>(msg.payload().data());
     auto* b = reinterpret_cast<To*>(buffer.data());

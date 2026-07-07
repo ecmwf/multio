@@ -84,4 +84,3 @@ struct PrintRecord {
 };
 
 }  // namespace multio::datamod
-

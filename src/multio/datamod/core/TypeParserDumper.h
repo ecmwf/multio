@@ -108,7 +108,6 @@ inline constexpr bool HasDump_v = HasDump<Spec, FromType>::value;
 // };
 
 
-
 //=============================================================================
 
 // ParseType class - to be specilized by types with a parse function

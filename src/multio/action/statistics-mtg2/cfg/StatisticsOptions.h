@@ -70,7 +70,7 @@ public:
     bool disableStrictMapping() const;
     bool disableSquashing() const;
     const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
-    
+
     std::optional<OutputTimeReference> outputTimeReference() const;
 };
 

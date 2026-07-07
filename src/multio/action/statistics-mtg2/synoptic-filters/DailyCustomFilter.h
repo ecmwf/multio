@@ -19,8 +19,8 @@ namespace {
 std::vector<long> initDailyCustomFilterReadArray(const eckit::LocalConfiguration& compConf,
                                                  const StatisticsConfiguration& cfg) {
     std::vector<long> tmp;
-    LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix() << " + Initialize new DailyCustomFilter with explicit configuration"
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix()
+                             << " + Initialize new DailyCustomFilter with explicit configuration" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix() << " + Config    :: " << compConf << std::endl;
     tmp = compConf.getLongVector("hours-set");
     std::sort(tmp.begin(), tmp.end());
@@ -42,8 +42,8 @@ std::vector<long> initDailyCustomFilterReadArray(const eckit::LocalConfiguration
 std::vector<long> initDailyCustomFilterReadVars(const eckit::LocalConfiguration& compConf,
                                                 const StatisticsConfiguration& cfg) {
     std::vector<long> tmp;
-    LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix() << " + Initialize new DailyCustomFilter with from/to/by configuration"
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix()
+                             << " + Initialize new DailyCustomFilter with from/to/by configuration" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << cfg.options().logPrefix() << " + Config    :: " << compConf << std::endl;
     long from;
     long to;

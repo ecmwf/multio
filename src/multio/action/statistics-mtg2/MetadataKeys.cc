@@ -36,13 +36,12 @@ std::string multio::datamod::DumpType<FlushKind>::dump(FlushKind v) {
 }
 
 FlushKind multio::datamod::ParseType<FlushKind>::parse(const std::string& s) {
-    static const std::unordered_map<std::string, FlushKind> map{
-        {"default", FlushKind::Default},
-        {"first-step", FlushKind::FirstStep},
-        {"step-and-restart", FlushKind::StepAndRestart},
-        {"last-step", FlushKind::LastStep},
-        {"end-of-simulation", FlushKind::EndOfSimulation},
-        {"close-connection", FlushKind::CloseConnection}};
+    static const std::unordered_map<std::string, FlushKind> map{{"default", FlushKind::Default},
+                                                                {"first-step", FlushKind::FirstStep},
+                                                                {"step-and-restart", FlushKind::StepAndRestart},
+                                                                {"last-step", FlushKind::LastStep},
+                                                                {"end-of-simulation", FlushKind::EndOfSimulation},
+                                                                {"close-connection", FlushKind::CloseConnection}};
     if (auto it = map.find(s); it != map.end()) {
         return it->second;
     }
@@ -52,8 +51,8 @@ FlushKind multio::datamod::ParseType<FlushKind>::parse(const std::string& s) {
 
 FlushKind multio::datamod::ParseType<FlushKind>::parse(std::int64_t val) {
     static const std::unordered_map<std::int64_t, FlushKind> map{
-        {0, FlushKind::FirstStep},     {1, FlushKind::Default},          {2, FlushKind::StepAndRestart},
-        {3, FlushKind::LastStep},      {4, FlushKind::EndOfSimulation},  {5, FlushKind::CloseConnection}};
+        {0, FlushKind::FirstStep}, {1, FlushKind::Default},         {2, FlushKind::StepAndRestart},
+        {3, FlushKind::LastStep},  {4, FlushKind::EndOfSimulation}, {5, FlushKind::CloseConnection}};
     if (auto it = map.find(val); it != map.end()) {
         return it->second;
     }

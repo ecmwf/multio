@@ -15,8 +15,8 @@
 #pragma once
 
 #include "multio/util/PrehashedKey.h"
-#include "multio/util/TypeTraits.h"
 #include "multio/util/TypeToString.h"
+#include "multio/util/TypeTraits.h"
 
 #include "eckit/log/JSON.h"
 
@@ -111,8 +111,10 @@ struct MetadataTypes {
     using FloatLists = util::MapTypeList_t<std::vector, Floats>;
     using StringLists = util::MapTypeList_t<std::vector, Strings>;
     using Lists = util::MergeTypeList_t<Bytes, IntegerLists, FloatLists, StringLists>;
-    
-    using ListsWrapped = util::MapTypeList_t<std::unique_ptr, Lists>;  // Used for memory layout. Hidden from user. Lists wrapped to be referenced safely in case of rehashing of the map
+
+    using ListsWrapped
+        = util::MapTypeList_t<std::unique_ptr, Lists>;  // Used for memory layout. Hidden from user. Lists wrapped to be
+                                                        // referenced safely in case of rehashing of the map
 
     using Nested = util::TypeList<BaseMetadata>;
     using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;  // Used for memory layout. Hidden from user.

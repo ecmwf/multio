@@ -18,7 +18,8 @@ public:
     using OperationWithDeaccumulatedData<T>::checkTimeInterval;
 
 
-    Difference(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    Difference(const std::string& name, std::size_t size, const OperationWindow& win,
+               const StatisticsConfiguration& cfg) :
         OperationWithDeaccumulatedData<T>{name, "difference", size, true, win, cfg} {}
 
     Difference(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,

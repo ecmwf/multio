@@ -379,7 +379,8 @@ std::string_view getRecordScope(SRecordType&& rec) {
 
 template <typename Rec, std::enable_if_t<IsRecord_v<std::decay_t<Rec>>, bool> = true>
 bool containsKey(std::string_view key, const Rec& rec) {
-    return std::apply([&](const auto&... entryDef) { return ((entryDef.key() == key) || ... || false); }, recordEntries(rec));
+    return std::apply([&](const auto&... entryDef) { return ((entryDef.key() == key) || ... || false); },
+                      recordEntries(rec));
 }
 
 // Takes a string and searches the entry with the given key in the record.
@@ -562,4 +563,3 @@ void acquireRecord(RecordType& rec) {
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::datamod
-

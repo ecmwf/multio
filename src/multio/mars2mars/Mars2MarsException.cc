@@ -23,4 +23,4 @@ Mars2MarsException::Mars2MarsException(const std::string& r, const eckit::CodeLo
     eckit::Exception(encodingExceptionReason(r), l) {}
 
 
-}  // namespace multio::action
+}  // namespace multio::mars2mars

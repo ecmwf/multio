@@ -21,9 +21,9 @@
 #include "multio/action/statistics/operations/Accumulate.h"
 #include "multio/action/statistics/operations/Average.h"
 #include "multio/action/statistics/operations/Difference.h"
-#include "multio/action/statistics/operations/InverseDifference.h"
 #include "multio/action/statistics/operations/FluxAverage.h"
 #include "multio/action/statistics/operations/Instant.h"
+#include "multio/action/statistics/operations/InverseDifference.h"
 #include "multio/action/statistics/operations/Maximum.h"
 #include "multio/action/statistics/operations/Minimum.h"
 
@@ -33,8 +33,9 @@
 namespace multio::action::statistics {
 
 template <typename Precision>
-std::unique_ptr<Operation> make_operation(const std::string& opname, std::size_t size, std::shared_ptr<StatisticsIO>& IOmanager,
-                                          const OperationWindow& win, const StatisticsConfiguration& cfg) {
+std::unique_ptr<Operation> make_operation(const std::string& opname, std::size_t size,
+                                          std::shared_ptr<StatisticsIO>& IOmanager, const OperationWindow& win,
+                                          const StatisticsConfiguration& cfg) {
 
     if (opname == "instant") {
         return std::make_unique<Instant<Precision>>(opname, size, win, cfg);

@@ -2,10 +2,10 @@
 #include "eckit/utils/Tokenizer.h"
 
 
-#include "multio/config/MetadataMappings.h"
-#include "multio/config/MultioConfiguration.h"
 #include "eckit/log/Log.h"
 #include "multio/LibMultio.h"
+#include "multio/config/MetadataMappings.h"
+#include "multio/config/MultioConfiguration.h"
 #include "multio/util/Environment.h"
 #include "multio/util/Substitution.h"
 
@@ -124,8 +124,8 @@ MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& global
                                          const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
     configDir_{configDir}, configFile_{configFile}, localPeerTag_{localPeerTag} {
-        parsedConfig_ = replaceAllCurly(globalConfig);
-    }
+    parsedConfig_ = replaceAllCurly(globalConfig);
+}
 
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
@@ -138,15 +138,15 @@ MultioConfiguration::MultioConfiguration(const eckit::PathName& configFile, Loca
 
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag localPeerTag) :
     configDir_{}, configFile_{}, localPeerTag_{localPeerTag} {
-        parsedConfig_ = replaceAllCurly(globalConfig);
-    }
+    parsedConfig_ = replaceAllCurly(globalConfig);
+}
 
 
 MultioConfiguration::MultioConfiguration(ConfigAndPaths c, LocalPeerTag localPeerTag) :
     configDir_{c.paths.configDir}, configFile_{c.paths.configFile}, localPeerTag_{localPeerTag} {
-        const auto& cfg = c.parsedConfig;
-        parsedConfig_ = replaceAllCurly(cfg);
-    }
+    const auto& cfg = c.parsedConfig;
+    parsedConfig_ = replaceAllCurly(cfg);
+}
 
 MultioConfiguration::MultioConfiguration(LocalPeerTag localPeerTag) :
     MultioConfiguration(configureFromEnv(localPeerTag), localPeerTag) {}
@@ -199,7 +199,8 @@ const ConfigFile& MultioConfiguration::getConfigFile(const eckit::PathName& fnam
 
     referencedConfigFiles_.emplace(
         std::piecewise_construct, std::forward_as_tuple(key),
-        std::forward_as_tuple(ConfigFile{replaceAllCurly(eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}), path}));
+        std::forward_as_tuple(
+            ConfigFile{replaceAllCurly(eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}), path}));
     return referencedConfigFiles_[key];
 }
 

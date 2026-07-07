@@ -488,25 +488,24 @@ struct EntryDumper<metkit::codes::CodesHandle> {
     static void set(const EntryDef_& entryDef, Entry_&& entry, GH& handle, const DumpOptions& opts) {
         using ValueType = typename EntryDef_::ValueType;
         std::string key{entryDef.key()};
-        std::forward<Entry_>(entry).visit(
-            eckit::Overloaded{[&](UnsetType v) {
-                                  if (opts.removeMissingKeys) {
-                                      if (handle.isDefined(key)) {
-                                          handle.setMissing(key);
-                                      }
-                                  }
-                              },
-                              [&](auto&& v) {
-                                  if (!handle.isDefined(key)) {
-                                      std::ostringstream oss;
-                                      oss << "Key " << entryDef.keyInfo()
-                                          << " should be written but is not defined on  eccodes handle.";
-                                      throw DataModellingException(oss.str(), Here());
-                                  }
-                                  // The contained value might be or mapped to a variant, that's why we visit
-                                  TypeDumper<ValueType, metkit::codes::CodesHandle>::dumpToAndVisit(
+        std::forward<Entry_>(entry).visit(eckit::Overloaded{
+            [&](UnsetType v) {
+                if (opts.removeMissingKeys) {
+                    if (handle.isDefined(key)) {
+                        handle.setMissing(key);
+                    }
+                }
+            },
+            [&](auto&& v) {
+                if (!handle.isDefined(key)) {
+                    std::ostringstream oss;
+                    oss << "Key " << entryDef.keyInfo() << " should be written but is not defined on  eccodes handle.";
+                    throw DataModellingException(oss.str(), Here());
+                }
+                // The contained value might be or mapped to a variant, that's why we visit
+                TypeDumper<ValueType, metkit::codes::CodesHandle>::dumpToAndVisit(
                     std::forward<decltype(v)>(v), [&](auto&& vi) { handle.set(key, std::forward<decltype(vi)>(vi)); });
-                              }});
+            }});
     }
 };
 

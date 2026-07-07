@@ -504,7 +504,7 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     const std::size_t countsSize = counts_.size();
     currState[17] = static_cast<std::uint64_t>(countsSize);
     for (std::size_t i = 0; i < countsSize; ++i) {
-        currState[i+18] = static_cast<std::uint64_t>(counts_[i]);
+        currState[i + 18] = static_cast<std::uint64_t>(counts_[i]);
     }
 
     currState.computeChecksum();
@@ -513,13 +513,20 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
 void OperationWindow::deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
 
     currState.checkChecksum();
-    epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[0]), static_cast<std::int64_t>(currState[1]));
-    startPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[2]), static_cast<std::int64_t>(currState[3]));
-    endPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[4]), static_cast<std::int64_t>(currState[5]));
-    creationPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[6]), static_cast<std::int64_t>(currState[7]));
-    prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[8]), static_cast<std::int64_t>(currState[9]));
-    currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[10]), static_cast<std::int64_t>(currState[11]));
-    lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[12]), static_cast<std::int64_t>(currState[13]));
+    epochPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[0]), static_cast<std::int64_t>(currState[1]));
+    startPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[2]), static_cast<std::int64_t>(currState[3]));
+    endPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[4]), static_cast<std::int64_t>(currState[5]));
+    creationPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[6]), static_cast<std::int64_t>(currState[7]));
+    prevPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[8]), static_cast<std::int64_t>(currState[9]));
+    currPoint_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[10]), static_cast<std::int64_t>(currState[11]));
+    lastFlush_
+        = yyyymmdd_hhmmss2DateTime(static_cast<std::int64_t>(currState[12]), static_cast<std::int64_t>(currState[13]));
     timeStepInSeconds_ = static_cast<std::int64_t>(currState[14]);
     count_ = static_cast<std::int64_t>(currState[15]);
     type_ = static_cast<OperationWindowType>(currState[16]);
@@ -527,7 +534,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     const auto countsSize = static_cast<std::size_t>(currState[17]);
     counts_.resize(countsSize);
     for (std::size_t i = 0; i < countsSize; ++i) {
-        counts_[i] = static_cast<std::int64_t>(currState[i+18]);
+        counts_[i] = static_cast<std::int64_t>(currState[i + 18]);
     }
 
     if (opt.debugRestart()) {

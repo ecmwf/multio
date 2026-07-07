@@ -18,7 +18,8 @@ public:
     using OperationWithDeaccumulatedData<T>::checkTimeInterval;
 
 
-    InverseDifference(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    InverseDifference(const std::string& name, std::size_t size, const OperationWindow& win,
+                      const StatisticsConfiguration& cfg) :
         OperationWithDeaccumulatedData<T>{name, "inverse-difference", size, true, win, cfg} {}
 
     InverseDifference(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,

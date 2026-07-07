@@ -62,7 +62,8 @@ struct DispatcherFailureTraits {
 
 class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
 public:
-    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue, multio::transport::Transport& transport);
+    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue,
+               multio::transport::Transport& transport);
     ~Dispatcher();
 
     void dispatch();

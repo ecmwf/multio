@@ -27,7 +27,11 @@ public:
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, bool needRestart,
                                    const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                                    const StatisticsOptions& opt) :
-        Operation{name, operation, win, opt}, values_{}, initValues_{}, needRestart_{needRestart}, operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {
+        Operation{name, operation, win, opt},
+        values_{},
+        initValues_{},
+        needRestart_{needRestart},
+        operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()} {
         load(IOmanager, opt);
         return;
     }
@@ -192,7 +196,9 @@ private:
         // TODO(knobel): Do this check only once when the TemporalStatistics object is created
         const auto op = operationMapping_.getOperation(cfg.param());
         if (!op) {
-            throw eckit::SeriousBug{"Metadata has timespan, but param is not known to be statistical! : param=" + std::to_string(cfg.param()), Here()};
+            throw eckit::SeriousBug{"Metadata has timespan, but param is not known to be statistical! : param="
+                                        + std::to_string(cfg.param()),
+                                    Here()};
         }
         if (op != 1) {
             return false;  // Not an accumulated field (typeOfStatisticalProcessing=1)

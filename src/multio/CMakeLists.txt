@@ -170,6 +170,8 @@ list( APPEND multio_datamod_srcs
     datamod/types/StatType.h
     datamod/types/TypeOfLevel.cc
     datamod/types/TypeOfLevel.h
+    datamod/types/TimeSpan.cc
+    datamod/types/TimeSpan.h
     datamod/types/TypeOfStatisticalProcessing.cc
     datamod/types/TypeOfStatisticalProcessing.h
     datamod/types/TypeOfProcessedData.cc

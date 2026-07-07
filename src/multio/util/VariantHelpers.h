@@ -87,14 +87,16 @@ decltype(auto) visit(Func&& f, ValuesToVisit&&... values) noexcept(
 
 // visitOrForward performs a visit on variants and types derived from variant
 // If not the passed value is forwarded to the function.
-template <typename Func, typename Arg, std::enable_if_t<(IsVariant_v<std::decay_t<Arg>> || HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
+template <typename Func, typename Arg,
+          std::enable_if_t<(IsVariant_v<std::decay_t<Arg>> || HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
 decltype(auto) visitOrForward(Func&& f,
                               Arg&& value) noexcept(noexcept(std::visit(std::forward<Func>(f),
                                                                         tryToVariantBase(std::forward<Arg>(value))))) {
     return std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<Arg>(value)));
 }
 
-template <typename Func, typename Arg, std::enable_if_t<(!IsVariant_v<std::decay_t<Arg>> && !HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
+template <typename Func, typename Arg,
+          std::enable_if_t<(!IsVariant_v<std::decay_t<Arg>> && !HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
 decltype(auto) visitOrForward(Func&& f,
                               Arg&& value) noexcept(noexcept(std::forward<Func>(f)(std::forward<Arg>(value)))) {
     return std::forward<Func>(f)(std::forward<Arg>(value));

@@ -251,22 +251,22 @@ struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, M
 
 // TypeOfProcessedData defined in GribKeys
 
-constexpr auto InitialStep =               //
+constexpr auto InitialStep =                    //
     EntryDef<std::int64_t>{"misc-initialStep"}  //
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.initialStep; });
 
-constexpr auto TimeIncrementInSeconds =               //
+constexpr auto TimeIncrementInSeconds =                    //
     EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}  //
         .withDefault(3600)
         .withAccessor([](auto&& v) { return &v.timeIncrementInSeconds; });
 
-constexpr auto LengthOfTimeWindow =               //
+constexpr auto LengthOfTimeWindow =                    //
     EntryDef<std::int64_t>{"misc-lengthOfTimeWindow"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindow; });
 
-constexpr auto LengthOfTimeWindowInSeconds =               //
+constexpr auto LengthOfTimeWindowInSeconds =                    //
     EntryDef<std::int64_t>{"misc-lengthOfTimeWindowInSeconds"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.lengthOfTimeWindowInSeconds; });
@@ -287,22 +287,22 @@ constexpr auto LengthOfTimeWindowInSeconds =               //
 
 // Pv defined in GribKeys
 
-constexpr auto ScaleFactorOfWaveDirections =               //
+constexpr auto ScaleFactorOfWaveDirections =                    //
     EntryDef<std::int64_t>{"misc-scaleFactorOfWaveDirections"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveDirections; });
 
-constexpr auto ScaleFactorOfWaveFrequencies =               //
+constexpr auto ScaleFactorOfWaveFrequencies =                    //
     EntryDef<std::int64_t>{"misc-scaleFactorOfWaveFrequencies"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.scaleFactorOfWaveFrequencies; });
 
-constexpr auto WaveDirections =                      //
+constexpr auto WaveDirections =                           //
     EntryDef<std::vector<double>>{"misc-waveDirections"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.waveDirections; });
 
-constexpr auto WaveFrequencies =                      //
+constexpr auto WaveFrequencies =                           //
     EntryDef<std::vector<double>>{"misc-waveFrequencies"}  //
         .tagOptional()
         .withAccessor([](auto&& v) { return &v.waveFrequencies; });
@@ -320,10 +320,12 @@ struct MiscRecord {
     EntryType_t<decltype(LengthOfTimeWindow)> lengthOfTimeWindow;
     EntryType_t<decltype(LengthOfTimeWindowInSeconds)> lengthOfTimeWindowInSeconds;
     EntryType_t<decltype(BitmapPresent)> bitmapPresent;
+    EntryType_t<decltype(ShapeOfTheEarth)> shapeOfTheEarth;
     EntryType_t<decltype(MissingValue)> missingValue;
     EntryType_t<decltype(TypeOfEnsembleForecast)> typeOfEnsembleForecast;
     EntryType_t<decltype(NumberOfForecastsInEnsemble)> numberOfForecastsInEnsemble;
     EntryType_t<decltype(SatelliteSeries)> satelliteSeries;
+    EntryType_t<decltype(NumberOfFrequencies)> numberOfFrequencies;
     EntryType_t<decltype(ScaleFactorOfCentralWaveNumber)> scaleFactorOfCentralWaveNumber;
     EntryType_t<decltype(ScaledValueOfCentralWaveNumber)> scaledValueOfCentralWaveNumber;
     EntryType_t<decltype(Pv)> pv;
@@ -334,15 +336,21 @@ struct MiscRecord {
     EntryType_t<decltype(BitsPerValue)> bitsPerValue;
     EntryType_t<decltype(LaplacianOperator)> laplacianOperator;
     EntryType_t<decltype(SubCentre)> subCentre;
+    EntryType_t<decltype(NumberOfComponents)> numberOfComponents;
+    EntryType_t<decltype(ModelErrorType)> modelErrorType;
+    EntryType_t<decltype(TotalNumberOfIterations)> totalNumberOfIterations;
+    EntryType_t<decltype(PVPresent)> pvPresent;
 
 
     static constexpr std::string_view record_name_ = "misc";
+
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
-        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, MissingValue, TypeOfEnsembleForecast,
-        NumberOfForecastsInEnsemble, SatelliteSeries, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber,
-        Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
-        LaplacianOperator, SubCentre);
+        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, ShapeOfTheEarth, MissingValue,
+        TypeOfEnsembleForecast, NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies,
+        ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections,
+        ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre,
+        NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
 };
 
 

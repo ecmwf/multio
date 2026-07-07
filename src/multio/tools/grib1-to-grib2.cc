@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -84,13 +86,8 @@ namespace extract {
 
 void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
-        {"grid_simple", "simple"},
-        {"grid_complex", "complex"},
-        {"spectral_complex", "complex"},
-        {"grid_ccsds", "ccsds"},
-        {"grid_ieee", "ccsds"},
-        {"grid_second_order", "ccsds"}
-    };
+        {"grid_simple", "simple"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
+        {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
 
     const auto packingTypeVal = packingMap.find(packingType);
     if (packingTypeVal == packingMap.cend()) {
@@ -207,8 +204,63 @@ void handleParamId(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars) {
 
 void handleMissingValue(metkit::codes::CodesHandle& h, dm::MiscRecord& misc) {
     double missingValue = 9999.0;
+    // std::cout << " - handleMissingValue: has missingValue = " << h.has("missingValue") << std::endl;
     h.set("missingValue", missingValue);
     misc.missingValue.set(missingValue);
+    // std::cout << " - handleMissingValue: set missingValue to " << missingValue << std::endl;
+}
+
+// Spectral_complex packing in ecCodes pre-multiplies each spherical harmonic
+// coefficient (m,n) by `(n*(n+1))^laplacianOperator` before quantising it.
+// The packed referenceValue and the unpacked low-order subset are stored as
+// IEEE 32-bit floats; any product that exceeds FLT_MAX (~3.4e38) trips an
+// unrecoverable assertion inside `grib_ieee_to_long` and aborts the whole
+// process - bypassing the per-message --on-error handling.
+//
+// IFS occasionally writes type=al SPP random fields with the sentinel value
+// `laplacianOperator=9.9` even though the source data carries no
+// pre-laplacian scaling. Combined with the truncation=399 of those fields,
+// this yields (399*400)^9.9 ~= 1.6e51, easily overflowing FLT_MAX once
+// multiplied by the actual coefficient values. Verified by `grib_set
+// laplacianOperator=0` on such a message: re-encoding then succeeds and the
+// codedValues match the input exactly, confirming the source data is not
+// pre-laplacian-scaled.
+//
+// We can't compute a tight overflow bound generically from the values array
+// (the largest coefficient lives at low n while the largest scaling lives at
+// high n; without traversing the spectral (m,n) layout we'd get too many
+// false positives). Instead, refuse to encode messages whose laplacianOperator
+// is the known IFS sentinel `9.9` by throwing eckit::BadValue. The exception
+// is recoverable: --on-error=log-and-skip will skip the offending message and
+// continue, while --on-error=abort will propagate and stop the conversion.
+//
+// NOTE (revisit): the underlying issue is an upstream IFS encoding bug; once
+// IFS stops emitting `laplacianOperator=9.9` for non-laplacian-scaled SPP
+// random fields this guard becomes dead code and can be removed.
+void validateSpectralComplexNoOverflow(const dm::FullMarsRecord& mars, const dm::MiscRecord& misc,
+                                       const std::vector<double>& /*values*/) {
+    if (!mars.packing.isSet() || mars.packing.get() != "complex") {
+        return;
+    }
+    if (!misc.laplacianOperator.isSet()) {
+        return;
+    }
+
+    constexpr double kIfsSentinel = 9.9;
+    constexpr double kEpsilon = 1.0e-3;
+    const double p = misc.laplacianOperator.get();
+    if (std::fabs(p - kIfsSentinel) > kEpsilon) {
+        return;
+    }
+
+    std::ostringstream oss;
+    oss << "spectral_complex message carries IFS sentinel laplacianOperator=" << p
+        << " (truncation=" << (mars.truncation.isSet() ? mars.truncation.get() : -1L)
+        << ", type=" << (mars.type.isSet() ? mars.type.get() : std::string{"<unset>"})
+        << ", paramId=" << (mars.param.isSet() ? mars.param.get() : -1L) << "). Re-encoding such messages would "
+        << "trigger an unrecoverable ecCodes IEEE32 overflow in `grib_ieee_to_long` because the "
+        << "stored data is not actually pre-laplacian-scaled. Refusing to encode.";
+    throw eckit::BadValue(oss.str(), Here());
 }
 
 std::optional<std::pair<long, long>> parseRange(const std::string& s) {
@@ -223,31 +275,85 @@ std::optional<std::pair<long, long>> parseRange(const std::string& s) {
     return std::make_pair(start, end);
 }
 
+
+bool needTimespan(long paramId) {
+
+    // This is just to fix some grib1 fields that are encoded wrongly as instant fields rather than as a proper time
+    // range. For these fields, we have to set the timespan explicitly.
+    static const std::unordered_set<long> paramIdsWithTimespan{
+        8,      9,      20,     44,     45,     47,     49,     50,     57,     58,     121,    122,
+        123,    142,    143,    144,    146,    145,    147,    169,    175,    176,    177,    178,
+        179,    180,    181,    182,    189,    195,    196,    197,    201,    202,    205,    208,
+        209,    210,    211,    212,    213,    228,    228021, 228022, 228080, 228081, 228082, 228129,
+        228130, 228216, 228222, 228223, 228224, 228225, 228226, 228227, 228026, 228027, 228028, 228251};
+
+    return paramIdsWithTimespan.find(paramId) != paramIdsWithTimespan.end();
+}
+
+bool isInstantStrikeProbability(long paramId) {
+    // This is just to fix some grib1 fields that are encoded wrongly as statistics fields rather than as a proper
+    // instant. For these fields, we have to remove the timespan explicitly.
+    static const std::unordered_set<long> instantStrikeProbabilityParamIds{131020, 131021, 131022, 131023, 131024,
+                                                                           131025, 131073, 131089, 131090, 131091};
+
+    return instantStrikeProbabilityParamIds.find(paramId) != instantStrikeProbabilityParamIds.end();
+}
+
+bool isStatisticalProduct(metkit::codes::CodesHandle& h) {
+
+    std::string stepType = h.getString("stepType");
+    long edition = h.getLong("edition");
+    long paramId = h.getLong("paramId");
+
+    if (stepType != "instant" && !isInstantStrikeProbability(paramId)) {
+        return true;
+    }
+
+    if (stepType == "instant" && edition == 1) {
+        return needTimespan(paramId);
+    }
+
+    return false;
+}
+
 void handleStepRange(metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, int verbosity = 0) {
     // For some reason mars returns an empty string for step
     if (h.has("endStep")) {
         auto endStep = h.getLong("endStep");
+        auto paramId = h.getLong("paramId");
         mars.step.set(endStep);
 
+        auto stepType = h.getString("stepType");
         auto stepRangeStr = h.getString("stepRange");
         if (verbosity > 1) {
             std::cout << "stepRange = " << stepRangeStr << std::endl;
         }
 
         // StepRange is a proper steprange - it contains a dash `-`
-        if (auto r = parseRange(stepRangeStr)) {
-            mars.timespan.set(r->second - r->first);
+        // std::cout << "g1-to-g2 stepRange = " << stepRangeStr << " - " << stepType << std::endl;
+        // if ( stepType != "instant" ) {
+        if (isStatisticalProduct(h)) {
+            if (auto r = parseRange(stepRangeStr); r) {
+                auto ts = r->second - r->first;
+                mars.timespan.set(ts);
+            }
+            else {
+                // std::cout << "g1-to-g2 hasStepRange = " << h.has("stepRange") << std::endl;
+                mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
+            }
         }
-        else {
-            mars.timespan.set(h.has("stepRange") ? h.getLong("stepRange") : endStep);
-        }
+        // else {
+        //     if (needTimespan(paramId)) {
+        //         mars.timespan.set(endStep);
+        //     }
+        // }
     }
 }
 
 // Perform grib1ToGrib2 mapping - for a few marskeys we have to rely on eccodes namespace iterator.
 // E.g. the key "number" may be defined and set, although it has no meaning.
 void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMarsRecord& mars, dm::MiscRecord& misc,
-                     int verbosity) {
+                     int verbosity, long defaultEnsembleSize = 0) {
     mars.stream = dm::parseEntry(dm::STREAM, h);
     mars.type = dm::parseEntry(dm::TYPE, h);
     mars.klass = dm::parseEntry(dm::CLASS, h);
@@ -261,6 +367,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     mars.anoffset = dm::parseEntry(dm::ANOFFSET, h);
+    mars.iteration = dm::parseEntry(dm::ITERATION, h);
     mars.ident = dm::parseEntry(dm::IDENT, h);
     mars.instrument = dm::parseEntry(dm::INSTRUMENT, h);
     mars.channel = dm::parseEntry(dm::CHANNEL, h);
@@ -344,21 +451,104 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     misc.initialStep = dm::parseEntry(dm::InitialStep.withKey("initialStep"), h);
+
     misc.timeIncrementInSeconds = dm::parseEntry(dm::TimeIncrementInSeconds.withKey("timeIncrement"), h);
+
+    if (isStatisticalProduct(h)) {
+        if (!misc.timeIncrementInSeconds.isSet()) {
+            std::cout << "Warning: timeIncrement is missing; setting timeIncrementInSeconds to 600." << std::endl;
+            misc.timeIncrementInSeconds.set(600);
+        }
+        else if (misc.timeIncrementInSeconds.get() == 0) {
+            std::cout << "Warning: timeIncrementInSeconds is 0; setting it to 600." << std::endl;
+            misc.timeIncrementInSeconds.set(600);
+        }
+    }
+
+    //     auto edition = grib_get_long(h.handle(), "edition");
+    //     auto stepType = h.getString("stepType");
+    //     if ( edition == 1 ) {
+    //         if ( stepType != "instant" ) {
+    //             long startStep = grib_get_long(h.handle(), "startStep");
+    //             long endStep = grib_get_long(h.handle(), "endStep");
+    //             operationWindow = endStep - startStep;
+    //             if (operationWindow < 0) {
+    //                 throw std::runtime_error("Invalid step range: endStep must be greater than or equal to
+    //                 startStep");
+    //             }
+    //             if ( operationWindow == 0 ) {
+    //                 operationWindow = h.has("stepRange") ? h.getLong("stepRange") : endStep;
+    //             }
+    //         }
+    //     }
+    //     else {
+    //
+    //     }
+
+
     misc.pv = dm::parseEntry(dm::Pv.withKey("pv"), h);
+    // Signal explicit absence of vertical-coordinate parameters to the
+    // encoder. Without this, mars2grib's `resolve_PvArray_or_throw` falls back
+    // to its PV137 default and writes a 1002-double PV array into the output
+    // for hybrid-level fields whose source GRIB had NV=0 (e.g. lnsp on ml).
+    // Detect "no PV" via the input handle's NV key and forward as
+    // `misc.pvPresent=false`; metkit's LevelOp suppresses PV emission when
+    // it sees this flag.
+    if (!misc.pv.isSet()) {
+        long nv = h.has("NV") ? h.getLong("NV") : 0;
+        if (nv == 0) {
+            misc.pvPresent.set(false);
+        }
+    }
     misc.bitmapPresent = dm::parseEntry(dm::BitmapPresent.withKey("bitmapPresent"), h);
 
+    // std::cout << " - BEFORE" << std::endl;
     handleMissingValue(h, misc);
+    // std::cout << " - AFTER" << std::endl;
 
     // TODO pgeier set it again ??
     misc.laplacianOperator = dm::parseEntry(dm::LaplacianOperator.withKey("laplacianOperator"), h);
+
+    // For type=eme (ensemble model errors) or type=me (model errors) the
+    // GRIB1 input carries local definition 39 with componentIndex
+    // (= mars.number), numberOfComponents and modelErrorType. The metkit
+    // encoder deduces componentIndex from mars.number, but
+    // numberOfComponents and modelErrorType have no MARS equivalent and
+    // must be forwarded from the input handle.
+    if (mars.type.get() == "eme" || mars.type.get() == "me") {
+        if (h.has("numberOfComponents")) {
+            misc.numberOfComponents.set(h.getLong("numberOfComponents"));
+        }
+        if (h.has("modelErrorType")) {
+            misc.modelErrorType.set(h.getLong("modelErrorType"));
+        }
+        // mars.number == componentIndex for eme/me; the encoder reads it via
+        // the analysis ModelErrors path (see metkit analysisEncoding.h).
+        // Forwarded here unconditionally because the standard ensemble branch
+        // below requires `numberOfForecastsInEnsemble` (absent for eme/me)
+        // and would otherwise leave `mars.number` unset.
+        if (h.has("number")) {
+            mars.number.set(h.getLong("number"));
+        }
+    }
+
+    // For type=4i (4D-var analysis iterations) the GRIB1 input carries
+    // local definition 38 with iterationNumber and totalNumberOfIterations.
+    // `iterationNumber` is forwarded directly through MARS as
+    // `mars.iteration` (set above); only `totalNumberOfIterations` has no
+    // MARS equivalent and must be forwarded through misc.
+    if (mars.type.get() == "4i") {
+        if (h.has("totalNumberOfIterations")) {
+            misc.totalNumberOfIterations.set(h.getLong("totalNumberOfIterations"));
+        }
+    }
 
     // Can not rely on "number" from mars key iterator... for reference data (with hdate) number
     // can be 0 but is not emitted although numberOfForecastsInEnsemble has a valid value
     // if (auto searchNumber = marsKeys.find("number"); searchNumber != marsKeys.end())
 
     // Check for derivedEnsembleForecast
-    if (mars.type.get() == "es" || mars.type.get() == "em") {
+    if (mars.type.get() == "es" || mars.type.get() == "em" || mars.type.get() == "ses") {
         long numForecasts = h.getLong("numberOfForecastsInEnsemble");
         misc.numberOfForecastsInEnsemble.set(numForecasts);
     }
@@ -368,8 +558,19 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
 
         // If both are 0 it is likely a control forecast or no ensemble...
         if (number != 0 && numForecasts == 0) {
-            throw std::runtime_error("The value for key numberOfForecastsInEnsemble must not be 0");
+            if (defaultEnsembleSize > 0) {
+                std::cout << "Warning: numberOfForecastsInEnsemble is 0 but number=" << number
+                          << "; applying --default-ensemble-size=" << defaultEnsembleSize << std::endl;
+                numForecasts = defaultEnsembleSize;
+            }
+            else {
+                throw std::runtime_error(
+                    "The value for key numberOfForecastsInEnsemble must not be 0 (use --default-ensemble-size "
+                    "to supply a fallback, or --on-error log-and-skip to skip such messages)");
+            }
         }
+
+
         if (numForecasts != 0) {
             mars.number.set(number);
             misc.numberOfForecastsInEnsemble.set(numForecasts);
@@ -391,6 +592,22 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     misc.lengthOfTimeWindow = dm::parseEntry(dm::LengthOfTimeWindow.withKey("lengthOfTimeWindow"), h);
     misc.lengthOfTimeWindowInSeconds
         = dm::parseEntry(dm::LengthOfTimeWindowInSeconds.withKey("lengthOfTimeWindowInSeconds"), h);
+
+    // Fallback: for classic 4D-Var analysis messages, the window length is
+    // carried in the GRIB1 local-section key `lengthOf4DvarWindow` (in hours)
+    // rather than in `lengthOfTimeWindow`. If the primary source did not
+    // populate `misc.lengthOfTimeWindow`, read the 4D-Var key directly.
+    //
+    // No derivation from `anoffset` is performed: we only mirror what the
+    // producer placed in the input handle. The ecCodes "missing" sentinel
+    // (0xFFFF for a 16-bit unsigned field) is explicitly ignored so that
+    // metkit's analysis deduction keeps writing GRIB "missing" downstream.
+    if (!misc.lengthOfTimeWindow.isSet() && h.has("lengthOf4DvarWindow")) {
+        long lengthOf4DvarWindowHours = h.getLong("lengthOf4DvarWindow");
+        if (lengthOf4DvarWindowHours != 0xFFFF) {
+            misc.lengthOfTimeWindow.set(lengthOf4DvarWindowHours);
+        }
+    }
     misc.bitsPerValue = dm::parseEntry(dm::BitsPerValue.withKey("bitsPerValue").withDefault(24), h);
 
     // TODO pgeier readd maybe
@@ -421,6 +638,7 @@ void mapGrib1ToGrib2(KeySet& marsKeys, metkit::codes::CodesHandle& h, dm::FullMa
     }
 
     misc.satelliteSeries = dm::parseEntry(dm::SatelliteSeries.withKey("satelliteSeries"), h);
+    misc.numberOfFrequencies = dm::parseEntry(dm::NumberOfFrequencies.withKey("numberOfFrequencies"), h);
     misc.scaleFactorOfCentralWaveNumber
         = dm::parseEntry(dm::ScaleFactorOfCentralWaveNumber.withKey("scaleFactorOfCentralWaveNumber"), h);
     misc.scaledValueOfCentralWaveNumber
@@ -771,18 +989,48 @@ bool matches(eckit::message::Message msg, const FieldValueMap& map, int verbosit
 }
 
 
+enum class TimeSpanEqualToZeroHandling : std::size_t
+{
+    LogAndIgnore,
+    Ignore,
+    Copy,
+};
+
+
+const std::unordered_map<std::string, TimeSpanEqualToZeroHandling>& timeSpanEqualToZeroHandlingMap() {
+    static const std::unordered_map<std::string, TimeSpanEqualToZeroHandling> map{
+        {"log-and-ignore", TimeSpanEqualToZeroHandling::LogAndIgnore},
+        {"ignore", TimeSpanEqualToZeroHandling::Ignore},
+        {"copy", TimeSpanEqualToZeroHandling::Copy}};
+
+    return map;
+}
+
+TimeSpanEqualToZeroHandling parseTimeSpanEqualToZeroHandling(const std::string& str) {
+    const auto& map = timeSpanEqualToZeroHandlingMap();
+
+    if (auto search = map.find(str); search != map.end()) {
+        return search->second;
+    }
+    throw std::runtime_error(std::string("Unsupported --time-span-equal-to-zero value: ") + str);
+}
+
+
 enum class Discipline192Handling : std::size_t
 {
     LogAndIgnore,
     Ignore,
     TryToHandle,
+    Copy,
 };
 
 const std::unordered_map<std::string, Discipline192Handling>& discipline192HandlingMap() {
     static const std::unordered_map<std::string, Discipline192Handling> map{
         {"log-and-ignore", Discipline192Handling::LogAndIgnore},
         {"ignore", Discipline192Handling::Ignore},
-        {"try-to-handle", Discipline192Handling::TryToHandle}};
+        {"try-to-handle", Discipline192Handling::TryToHandle},
+        {"copy", Discipline192Handling::Copy}};
+
     return map;
 }
 
@@ -794,6 +1042,33 @@ Discipline192Handling parseDiscipline192Handling(const std::string& str) {
         return search->second;
     }
     throw std::runtime_error(std::string("Unsupported discipline-192 handling: ") + str);
+}
+
+
+enum class OnErrorHandling : std::size_t
+{
+    Abort,
+    LogAndSkip,
+    Skip,
+    TryToHandle,
+    Copy,
+};
+
+const std::unordered_map<std::string, OnErrorHandling>& onErrorHandlingMap() {
+    static const std::unordered_map<std::string, OnErrorHandling> map{{"abort", OnErrorHandling::Abort},
+                                                                      {"log-and-skip", OnErrorHandling::LogAndSkip},
+                                                                      {"skip", OnErrorHandling::Skip},
+                                                                      {"try-to-handle", OnErrorHandling::TryToHandle},
+                                                                      {"copy", OnErrorHandling::Copy}};
+    return map;
+}
+
+OnErrorHandling parseOnErrorHandling(const std::string& str) {
+    const auto& map = onErrorHandlingMap();
+    if (auto search = map.find(str); search != map.end()) {
+        return search->second;
+    }
+    throw std::runtime_error(std::string("Unsupported --on-error value: ") + str);
 }
 
 
@@ -828,15 +1103,21 @@ private:
     long ncycle_ = 0;
 
     std::optional<FieldValueMap> excludeMap_ = {};
+    std::optional<FieldValueMap> exceptMap_ = {};
     std::optional<FieldValueMap> filterMap_ = {};
     std::optional<std::string> overwritePacking_ = {};
+    std::optional<std::string> overwriteExpver_ = {};
     std::optional<std::string> setModel_ = {};
+    bool convertWaveStreamToOper_ = false;
     bool mapWMOUnits_ = false;
     bool noOutput_ = false;
     bool control_ = false;
 
     std::optional<std::reference_wrapper<const mars2mars::RuleList>> mappingRules_ = mars2mars::allRulesNoWMOMapping();
     Discipline192Handling discipline192Handling_ = Discipline192Handling::LogAndIgnore;
+    OnErrorHandling onErrorHandling_ = OnErrorHandling::LogAndSkip;
+    TimeSpanEqualToZeroHandling timeSpanEqualToZeroHandling_ = TimeSpanEqualToZeroHandling::LogAndIgnore;
+    long defaultEnsembleSize_ = 0;
 };
 
 Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, argv} {
@@ -861,6 +1142,11 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
         "Keys and values to be excluded. Multiple values are separated by ','. Multiple key-values pairs are separated "
         "by ';'. Example --exclude paramId=130,131,133;levtype=pl,sfc"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "except",
+        "Keys and values to be copied verbatim (without re-encoding) when --all is active. Same syntax as --exclude. "
+        "Only applies to GRIB2 messages; matching a GRIB1 message is an error. "
+        "Example --except paramId=213131"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
         "filter",
         "Keys and values to be included. Multiple values are separated by ','. Multiple key-values pairs are separated "
         "by ';'. Example --filter paramId=130,131,133;levtype=pl,sfc"));
@@ -873,6 +1159,21 @@ Grib1ToGrib2::Grib1ToGrib2(int argc, char** argv) : multio::MultioTool{argc, arg
         "discipline-192",
         "Options on handling fields with discipline 192 (field that are ill-formed). Values: \"log-and-ignore\" "
         "(default), \"ignore\", \"try-to-handle\""));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "on-error",
+        "How to handle per-message conversion errors. Values: \"abort\" (stop on first error), \"log-and-skip\" "
+        "(default, log the error and continue), \"skip\" (silently skip failing messages)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "timespan-equal-to-zero",
+        "How to handle fields with time span equal to zero (these fields should not exist in grib2 so it is not "
+        "possible to try-to-handle). Values: \"log-and-ignore\" (default), \"ignore\", \"copy\""));
+    options_.push_back(new eckit::option::SimpleOption<long>(
+        "default-ensemble-size",
+        "Fallback value used when numberOfForecastsInEnsemble is 0 but number is non-zero. Default: 0 (throw)"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "convert-wave-stream-to-oper",
+        "If enabled it converts the wave stream (wave/waef) to oper stream. Default: false (throw)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Override expver. Default: 0 (throw)"));
 }
 
 void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
@@ -889,6 +1190,10 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     args.get("all", all);
     copyGrib2Messages_ = !all;
 
+    bool convertWaveStreamToOper = false;
+    args.get("convert-wave-stream-to-oper", convertWaveStreamToOper);
+    convertWaveStreamToOper_ = convertWaveStreamToOper;
+
     args.get("no-output", noOutput_);
     args.get("control", control_);
 
@@ -902,6 +1207,13 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
             throw std::runtime_error(std::string("Unsupported packing: ") + packing);
         }
     }
+    std::string expver;
+    args.get("expver", expver);
+    if (!expver.empty()) {
+        overwriteExpver_ = expver;
+    }
+
+
     std::string model;
     args.get("model", model);
     if (!model.empty()) {
@@ -919,6 +1231,16 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
         excludeMap_ = parseFieldValueMap(std::move(excludeStr), verbosity_);
     }
 
+    std::string exceptStr = "";
+    args.get("except", exceptStr);
+    if (!exceptStr.empty()) {
+        if (copyGrib2Messages_) {
+            std::cerr << "Warning: --except has no effect without --all (GRIB2 messages are already copied verbatim)"
+                      << std::endl;
+        }
+        exceptMap_ = parseFieldValueMap(std::move(exceptStr), verbosity_);
+    }
+
     std::string filterStr = "";
     args.get("filter", filterStr);
     if (!filterStr.empty()) {
@@ -930,6 +1252,20 @@ void Grib1ToGrib2::init(const eckit::option::CmdArgs& args) {
     if (!discipline192.empty()) {
         discipline192Handling_ = parseDiscipline192Handling(discipline192);
     }
+
+    std::string onError;
+    args.get("on-error", onError);
+    if (!onError.empty()) {
+        onErrorHandling_ = parseOnErrorHandling(onError);
+    }
+
+    std::string timeSpanEqualToZero;
+    args.get("timespan-equal-to-zero", timeSpanEqualToZero);
+    if (!timeSpanEqualToZero.empty()) {
+        timeSpanEqualToZeroHandling_ = parseTimeSpanEqualToZeroHandling(timeSpanEqualToZero);
+    }
+
+    args.get("default-ensemble-size", defaultEnsembleSize_);
 }
 
 void Grib1ToGrib2::finish(const eckit::option::CmdArgs&) {}
@@ -977,174 +1313,311 @@ void Grib1ToGrib2::execute(const eckit::option::CmdArgs& args) {
     metkit::mars2grib::Mars2Grib encoder{};
 
     eckit::message::Message msg;
+    std::size_t msgIndex = 0;
+    std::size_t skippedCount = 0;
     while ((msg = reader.next())) {
-        // Extract message from datahandle... we expect it to be a memory handle
-        // TODO pgeier: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
-        std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
-        eckit::MemoryHandle* mh = reinterpret_cast<eckit::MemoryHandle*>(dh.get());
+        ++msgIndex;
+        try {
+            // Extract message from datahandle... we expect it to be a memory handle
+            // TODO pgeier: Alternative would be to explicitly create a eckit::MemoryHandle and write to it
+            std::unique_ptr<eckit::DataHandle> dh{msg.readHandle()};
+            eckit::MemoryHandle* mh = reinterpret_cast<eckit::MemoryHandle*>(dh.get());
 
-        ASSERT(mh != NULL);
-        auto inputHandle = metkit::codes::codesHandleFromMessageCopy(
-            metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(mh->data()), mh->size()));
+            ASSERT(mh != NULL);
+            auto inputHandle = metkit::codes::codesHandleFromMessageCopy(
+                metkit::codes::Span<const uint8_t>(reinterpret_cast<const uint8_t*>(mh->data()), mh->size()));
 
-        dh.reset(nullptr);
-        mh = NULL;
+            dh.reset(nullptr);
+            mh = NULL;
 
-        if (excludeMap_) {
-            bool ret = matches(msg, *excludeMap_, verbosity_);
-            if (ret) {
-                if (verbosity_ >= 2) {
-                    std::cout << "exclude map matched... skipping message" << std::endl;
+            if (excludeMap_) {
+                bool ret = matches(msg, *excludeMap_, verbosity_);
+                if (ret) {
+                    if (verbosity_ >= 2) {
+                        std::cout << "exclude map matched... skipping message" << std::endl;
+                    }
+                    continue;
+                }
+            }
+            if (filterMap_) {
+                bool ret = matches(msg, *filterMap_, verbosity_);
+                if (!ret) {
+                    if (verbosity_ >= 2) {
+                        std::cout << "filter map did not match... skipping message" << std::endl;
+                    }
+                    continue;
+                }
+            }
+
+            long isMessageValid = inputHandle->getLong("isMessageValid");
+            std::cout << "Message " << msgIndex << ": isMessageValid=" << isMessageValid << std::endl;
+            if (isMessageValid != 1) {
+                std::string errorMsg = "Message " + std::to_string(msgIndex)
+                                     + " is not valid according to the GRIB1 metadata. This likely means the message "
+                                       "is malformed and may fail to convert to GRIB2. ";
+                if (onErrorHandling_ == OnErrorHandling::Abort) {
+                    throw std::runtime_error(errorMsg + "Aborting.");
+                }
+                else if (onErrorHandling_ == OnErrorHandling::LogAndSkip) {
+                    std::cerr << "Error: " << errorMsg << "Skipping message." << std::endl;
+                    ++skippedCount;
+                    continue;
+                }
+                else if (onErrorHandling_ == OnErrorHandling::Skip) {
+                    ++skippedCount;
+                    continue;
+                }
+                else if (onErrorHandling_ == OnErrorHandling::TryToHandle) {
+                    std::cerr << "WARNING: " << errorMsg << "Try to handle an invalid message." << std::endl;
+                }
+                else if (onErrorHandling_ == OnErrorHandling::Copy) {
+                    std::cerr << "WARNING: " << errorMsg << "Copying invalid message verbatim." << std::endl;
+                    if (outputFileHandle) {
+                        write(*inputHandle.get(), *outputFileHandle);
+                    }
+                    continue;
+                }
+            }
+            std::string edition = inputHandle->getString("edition");
+            if (discipline192Handling_ != Discipline192Handling::TryToHandle) {
+                long paramId = inputHandle->getLong("paramId");
+                bool isDiscipline192
+                    = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle->getLong("discipline") == 192);
+                if (isDiscipline192) {
+                    if (exceptMap_ && matches(msg, *exceptMap_, verbosity_)) {
+                        std::cerr << "Warning: --except matched a discipline-192 message (paramId=" << paramId
+                                  << ") but it was skipped by --discipline-192 policy. "
+                                  << "Use --discipline-192 try-to-handle to allow --except to take effect."
+                                  << std::endl;
+                    }
+                    if (discipline192Handling_ == Discipline192Handling::LogAndIgnore) {
+                        std::cout << "Excluding message with discipline 192 (paramId: " << paramId << ")" << std::endl;
+                    }
+                    if (discipline192Handling_ == Discipline192Handling::Copy) {
+                        std::cout << "Copying message with discipline 192 (paramId: " << paramId << ")" << std::endl;
+                        if (outputFileHandle) {
+                            write(*inputHandle.get(), *outputFileHandle);
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            // --except: copy matching GRIB2 messages verbatim instead of re-encoding.
+            // Only meaningful with --all; GRIB1 matches are an error.
+            if (exceptMap_ && matches(msg, *exceptMap_, verbosity_)) {
+                if (edition == "1") {
+                    throw eckit::BadValue(std::string("--except matched a GRIB1 message (paramId=")
+                                              + std::to_string(inputHandle->getLong("paramId"))
+                                              + "). --except may only match GRIB2 messages.",
+                                          Here());
+                }
+                if (verbosity_ >= 1) {
+                    std::cout << "except map matched — copying GRIB2 message verbatim" << std::endl;
+                }
+                if (outputFileHandle) {
+                    write(*inputHandle.get(), *outputFileHandle);
                 }
                 continue;
             }
-        }
-        if (filterMap_) {
-            bool ret = matches(msg, *filterMap_, verbosity_);
-            if (!ret) {
-                if (verbosity_ >= 2) {
-                    std::cout << "filter map did not match... skipping message" << std::endl;
-                }
-                continue;
-            }
-        }
 
-
-        std::string edition = inputHandle->getString("edition");
-        if (discipline192Handling_ != Discipline192Handling::TryToHandle) {
-            long paramId = inputHandle->getLong("paramId");
-            bool isDiscipline192
-                = (edition == "1") ? isDiscipline192Param(paramId) : (inputHandle->getLong("discipline") == 192);
-            if (isDiscipline192) {
-                if (discipline192Handling_ == Discipline192Handling::LogAndIgnore) {
-                    std::cout << "Excluding message with discipline 192 (paramId: " << paramId << ")" << std::endl;
-                }
-                continue;
-            }
-        }
-
-        if (edition == "2" && copyGrib2Messages_) {
-            // Write the message directly
-            if (verbosity_ > 2) {
-                std::cout << "Copying grib2 message..." << std::endl;
-            }
-            if (outputFileHandle) {
-                write(*inputHandle.get(), *outputFileHandle);
-            }
-        }
-        else {
-
-            // now inputHandle is save to use
-            dm::FullMarsRecord mars;
-            dm::MiscRecord misc;
-
-            KeySet marsKeys = iterateMarsNamespace(*inputHandle.get());
-            if (verbosity_ > 2) {
-                std::cout << "Extracting metadata..." << std::endl;
-            }
-
-            extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_);
-
-
-            if (overwritePacking_) {
+            if (edition == "2" && copyGrib2Messages_) {
+                // Write the message directly
                 if (verbosity_ > 2) {
-                    std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
+                    std::cout << "Copying grib2 message..." << std::endl;
                 }
-                mars.packing.set(overwritePacking_->c_str());
+                if (outputFileHandle) {
+                    write(*inputHandle.get(), *outputFileHandle);
+                }
             }
+            else {
 
-            if (setModel_) {
+                // now inputHandle is save to use
+                dm::FullMarsRecord mars;
+                dm::MiscRecord misc;
+
+                KeySet marsKeys = iterateMarsNamespace(*inputHandle.get());
                 if (verbosity_ > 2) {
-                    std::cout << "Set model " << *setModel_ << std::endl;
+                    std::cout << "Extracting metadata..." << std::endl;
                 }
-                mars.model.set(*setModel_);
-            }
 
-            if (ncycle_ > 0) {
+                extract::mapGrib1ToGrib2(marsKeys, *inputHandle.get(), mars, misc, verbosity_, defaultEnsembleSize_);
+
+
+                if (overwritePacking_) {
+                    if (verbosity_ > 2) {
+                        std::cout << "Overwrite packing " << *overwritePacking_ << std::endl;
+                    }
+                    mars.packing.set(overwritePacking_->c_str());
+                }
+
+                if (setModel_) {
+                    if (verbosity_ > 2) {
+                        std::cout << "Set model " << *setModel_ << std::endl;
+                    }
+                    mars.model.set(*setModel_);
+                }
+
+                if (ncycle_ > 0) {
+                    if (verbosity_ > 2) {
+                        std::cout << "Set generatingProcessIdentifier " << ncycle_ << std::endl;
+                    }
+                    misc.generatingProcessIdentifier.set(ncycle_);
+                }
+
+                // TODO: Move this logic into the encoder
+                // TODO: numberOfForecastsInEnsemble needs a default in the encoder
+                if (control_) {
+                    if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
+                        throw eckit::UserError(
+                            "Setting forecast member to control is only supported for stream=oper and type=fc; got "
+                            "stream="
+                                + mars.stream.get() + ", type=" + mars.type.get(),
+                            Here());
+                    }
+                    mars.number.set(0);
+                    misc.typeOfEnsembleForecast.set(1);
+                    misc.numberOfForecastsInEnsemble.set(51);
+                }
+
                 if (verbosity_ > 2) {
-                    std::cout << "Set generatingProcessIdentifier " << ncycle_ << std::endl;
+                    util::PrintStream ps{std::cout};
+                    ps << "Extracted mars dict:" << std::endl;
+                    {
+                        util::IndentGuard g{ps};
+                        ps << mars << std::endl;
+                    }
+                    ps << "Extracted misc dict:" << std::endl;
+                    {
+                        util::IndentGuard g{ps};
+                        ps << misc << std::endl;
+                    }
                 }
-                misc.generatingProcessIdentifier.set(ncycle_);
-            }
 
-            // TODO: Move this logic into the encoder
-            // TODO: numberOfForecastsInEnsemble needs a default in the encoder
-            if (control_) {
-                if ((mars.stream.get() != "oper") || (mars.type.get() != "fc")) {
-                    throw eckit::UserError(
-                        "Setting forecast member to control is only supported for stream=oper and type=fc; got stream="
-                            + mars.stream.get() + ", type=" + mars.type.get(),
-                        Here());
+                codes_handle* rawOutputCodesHandle = NULL;
+
+                std::vector<double> values = inputHandle->getDoubleArray("values");
+
+                if (values.size() <= 0) {
+                    throw std::runtime_error("Message contains no values");
                 }
-                mars.number.set(0);
-                misc.typeOfEnsembleForecast.set(1);
-                misc.numberOfForecastsInEnsemble.set(51);
-            }
 
-            if (verbosity_ > 2) {
-                util::PrintStream ps{std::cout};
-                ps << "Extracted mars dict:" << std::endl;
-                {
-                    util::IndentGuard g{ps};
-                    ps << mars << std::endl;
+                if (verbosity_ > 2) {
+                    std::cout << "Encoding with extracted metadata..." << std::endl;
                 }
-                ps << "Extracted misc dict:" << std::endl;
-                {
-                    util::IndentGuard g{ps};
-                    ps << misc << std::endl;
+
+                if (mappingRules_) {
+                    // TODO pgeier use upcoming C++ interface
+                    auto mappingResult = mars2mars::applyMappings(*mappingRules_, mars, misc);
+
+                    if (mappingResult && mappingResult->valuesScaleFactor) {
+                        const auto scaleFactor = *(mappingResult->valuesScaleFactor);
+                        std::transform(values.begin(), values.end(), values.begin(),
+                                       [&](const double& value) -> double { return value * scaleFactor; });
+                    }
                 }
-            }
 
-            codes_handle* rawOutputCodesHandle = NULL;
+                datamod::applyRecordDefaults(mars);
+                datamod::validateRecord(mars);
+                datamod::applyRecordDefaults(misc);
+                datamod::validateRecord(misc);
 
-            std::vector<double> values = inputHandle->getDoubleArray("values");
+                // Convert mars/misc to eckit::LocalConfiguration
+                const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
+                const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
 
-            if (verbosity_ > 2) {
-                std::cout << "Encoding with extracted metadata..." << std::endl;
-            }
+                // Pre-encode validation: catch spectral_complex laplacian-scaling
+                // overflows before they reach ecCodes (where they would trip an
+                // unrecoverable assertion in `grib_ieee_to_long`).
+                extract::validateSpectralComplexNoOverflow(mars, misc, values);
 
-            if (mappingRules_) {
-                // TODO pgeier use upcoming C++ interface
-                auto mappingResult = mars2mars::applyMappings(*mappingRules_, mars, misc);
 
-                if (mappingResult && mappingResult->valuesScaleFactor) {
-                    const auto scaleFactor = *(mappingResult->valuesScaleFactor);
-                    std::transform(values.begin(), values.end(), values.begin(),
-                                   [&](const double& value) -> double { return value * scaleFactor; });
+                if ((marsConfig.has("timespan") && marsConfig.getLong("timespan") > 0) || !marsConfig.has("timespan")) {
+
+                    // Call the GRIB2 encoder in metkit
+                    std::cout << "Encoding message #" << msgIndex
+                              << " to GRIB2 (total GRIB2 messages so far: " << msgIndex << ")" << std::endl;
+
+                    if (convertWaveStreamToOper_) {
+                        std::cout << "Converting wave stream to oper stream for message #" << msgIndex << std::endl;
+                        const auto curreStream = mars.stream.get();
+                        if (curreStream == "wave" || curreStream == "waef") {
+                            mars.stream.set("oper");
+                        }
+                    }
+
+                    if (overwriteExpver_) {
+                        mars.expver.set(overwriteExpver_);
+                    }
+
+                    auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
+
+                    long isMessageValid = preparedHandle->getLong("isMessageValid");
+                    if (isMessageValid != 1) {
+                        std::cerr << "WARNING: Re-encoded message #" << msgIndex
+                                  << " is not valid according to the GRIB2 metadata. This likely means the message is "
+                                     "malformed and may fail to convert to GRIB2. ";
+                    }
+
+
+                    // Apply more changes
+                    extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
+
+                    if (verbosity_ > 0) {
+                        util::PrintStream ps{std::cout};
+
+                        ps << "Converted " << std::endl;
+                        ;
+                        {
+                            util::IndentGuard g{ps};
+                            ps << mars << std::endl;
+                        }
+                    }
+
+                    // Output by writing all to the same binary file
+                    if (outputFileHandle) {
+                        write(*preparedHandle.get(), *outputFileHandle);
+                    }
                 }
-            }
+                else {
 
-            datamod::applyRecordDefaults(mars);
-            datamod::validateRecord(mars);
-            datamod::applyRecordDefaults(misc);
-            datamod::validateRecord(misc);
-
-            // Convert mars/misc to eckit::LocalConfiguration
-            const auto marsConfig = dm::dumpRecord<eckit::LocalConfiguration>(mars);
-            const auto miscConfig = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(misc);
-
-            // Call the GRIB2 encoder in metkit
-            auto preparedHandle = encoder.encode(values, marsConfig, miscConfig);
-
-            // Apply more changes
-            extract::postFixToolOnly(*inputHandle.get(), *preparedHandle.get());
-
-            if (verbosity_ > 0) {
-                util::PrintStream ps{std::cout};
-
-                ps << "Converted " << std::endl;
-                ;
-                {
-                    util::IndentGuard g{ps};
-                    ps << mars << std::endl;
+                    if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::LogAndIgnore) {
+                        std::cerr << "WARNING: Skipping message with non-positive timespan (paramId: "
+                                  << inputHandle->getLong("paramId") << ")" << std::endl;
+                    }
+                    else if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::Ignore) {
+                        if (verbosity_ > 0) {
+                            std::cerr << "WARNING:Ignoring message with non-positive timespan (paramId: "
+                                      << inputHandle->getLong("paramId") << ")" << std::endl;
+                        }
+                    }
+                    else if (timeSpanEqualToZeroHandling_ == TimeSpanEqualToZeroHandling::Copy) {
+                        if (verbosity_ > 0) {
+                            std::cerr << "WARNING: Copying message with non-positive timespan (paramId: "
+                                      << inputHandle->getLong("paramId") << ")" << std::endl;
+                        }
+                        if (outputFileHandle) {
+                            write(*inputHandle.get(), *outputFileHandle);
+                        }
+                    }
                 }
-            }
-
-            // Output by writing all to the same binary file
-            if (outputFileHandle) {
-                write(*preparedHandle.get(), *outputFileHandle);
             }
         }
+        catch (const std::exception& e) {
+            if (onErrorHandling_ == OnErrorHandling::Abort) {
+                throw;
+            }
+            ++skippedCount;
+            if (onErrorHandling_ == OnErrorHandling::LogAndSkip) {
+                std::cerr << "Error converting message #" << msgIndex << ": " << e.what() << " -- skipping"
+                          << std::endl;
+            }
+            continue;
+        }
+    }
+
+    if (skippedCount > 0) {
+        std::cerr << "grib1-to-grib2: skipped " << skippedCount << " message(s) due to conversion errors" << std::endl;
     }
 
     if (outputFileHandle) {

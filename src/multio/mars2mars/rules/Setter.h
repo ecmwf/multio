@@ -171,4 +171,3 @@ struct Print<mars2mars::rules::SetAll> {
 
 
 }  // namespace multio::util
-

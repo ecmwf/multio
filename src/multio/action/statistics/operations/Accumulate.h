@@ -17,7 +17,8 @@ public:
     using OperationWithData<T>::checkTimeInterval;
 
 
-    Accumulate(const std::string& name, std::size_t size, const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    Accumulate(const std::string& name, std::size_t size, const OperationWindow& win,
+               const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "accumulate", size, true, win, cfg} {}
 
     Accumulate(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,

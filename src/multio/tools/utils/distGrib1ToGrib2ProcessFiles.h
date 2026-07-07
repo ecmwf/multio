@@ -1,0 +1,28 @@
+/*
+ * (C) Copyright 2025- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
+ */
+
+#pragma once
+
+#include <string>
+#include <vector>
+
+#include "eckit/config/LocalConfiguration.h"
+
+#include "multio/tools/utils/distGrib1ToGrib2Logging.h"
+#include "multio/tools/utils/grib2MarsMisc.h"
+
+namespace multio::distGrib1ToGrib2 {
+
+std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files,
+                                           const grib2MarsMisc::Grib2MarsMiscOptions& options,
+                                           const eckit::LocalConfiguration& rawOptions,
+                                           const std::string& outputDirectory, int rank);
+
+}  // namespace multio::distGrib1ToGrib2

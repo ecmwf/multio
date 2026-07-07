@@ -355,10 +355,9 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 grid[1] = std::stod(matchll[4].str());
             }
             if (std::regex_match(input, matchH, H)) {
-                const std::string leading  = matchH[2].str();
+                const std::string leading = matchH[2].str();
                 const std::string trailing = matchH[4].str();
-                const bool nested = leading == "N" || leading == "n" ||
-                                    trailing == "N" || trailing == "n";
+                const bool nested = leading == "N" || leading == "n" || trailing == "N" || trailing == "n";
                 gridKind = nested ? "HEALPix_nested" : "HEALPix";
                 grid[0] = std::stod(matchH[3].str());
             }
@@ -408,7 +407,8 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 }
                 const auto& options = cfg.getSubConfiguration("options");
                 const auto cache_path = cfg.getString("cache-path", "");
-                const auto weights_file = generateKey<double>(msg, cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
+                const auto weights_file
+                    = generateKey<double>(msg, cache_path, grid[0], gridKind == "HEALPix_nested" ? "nested" : "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
         }
@@ -438,7 +438,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     fill_input(config, inputPar, size, msg.metadata().getOpt<std::string>(dm::legacy::Domain).value_or(""), inp);
     auto searchMissingValue = msg.metadata().find("missingValue");
     auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
-    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end() && searchBitmapPresent->second.get<bool>()) {
+    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end()
+        && searchBitmapPresent->second.get<bool>()) {
         inputPar.set("missing_value", searchMissingValue->second.get<double>());
     }
     else if (config.getSubConfiguration("options").has("missing_value")) {

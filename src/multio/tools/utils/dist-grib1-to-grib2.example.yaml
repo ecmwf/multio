@@ -1,0 +1,69 @@
+# Example configuration for `dist-grib1-to-grib2`
+#
+# Usage:
+#   mpirun -np <N> dist-grib1-to-grib2 <input_file.list> <output_prefix> <this-file.yaml>
+#
+# Top-level keys supported by the current implementation are listed below.
+
+# Optional. If true and `verbosity` is not set, it is normalised to `verbosity: 2`.
+verbose: false
+
+# Optional. Kept for compatibility with the existing config loader.
+verbosity: 0
+
+# Optional message selection rules.
+# Format: "key=value1,value2;other_key=value3,value4"
+# Matching is satisfied when any configured key matches one of its values.
+exclude: ""
+filter: ""
+except: ""
+
+# Optional.
+# false: copy GRIB2 messages verbatim and only encode GRIB1 messages
+# true:  force all messages through the encode path
+all: true
+
+# Optional. Valid values: abort, log-and-skip, skip, try-to-handle, copy
+on-error: log-and-skip
+
+# Optional. Valid values: try-to-handle, skip
+invalid-input-message: try-to-handle
+
+# Optional. Valid values: log-and-ignore, ignore, try-to-handle, copy
+discipline-192: ignore
+
+# Optional override fields applied to the generated MARS/misc records.
+packing: "ccsds"
+model: ""
+ncycle: 162
+control: false
+convert-wave-stream-to-oper: true
+expver: "2250"
+wmo-units: true
+default-ensemble-size: 50
+
+# Optional. Valid values: log-and-ignore, ignore, copy
+timespan-equal-to-zero: ignore
+
+# Output sink selection.
+# For file output, omit `sink` completely or switch `type` to `file`.
+sink:
+  type: fdb5
+  config:
+    # Optional FDB5 userConfig. If omitted, the sink defaults to `useSubToc: true`.
+    fdb_home: '/home/fdbsc'
+    userConfig:
+      useSubToc: true
+
+# File sink alternative:
+# sink:
+#   type: file
+#   path: /path/to/output.rank${MPI_RANK}.grib2
+#   append: false
+#   per-server: false
+#
+# Notes for the file sink in this tool:
+# - if `sink` is omitted entirely, the tool defaults to:
+#     type: file
+#     path: <output_prefix>.rank<R>.grib2
+# - if `type: file` is selected and `path` is omitted, the same default path is used

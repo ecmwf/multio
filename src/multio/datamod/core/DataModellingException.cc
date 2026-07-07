@@ -9,4 +9,4 @@ DataModellingException::DataModellingException(const std::string& reason, const 
 
 //-----------------------------------------------------------------------------
 
-}  // namespace multio::message
+}  // namespace multio::datamod

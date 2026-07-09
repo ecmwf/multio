@@ -16,8 +16,8 @@
 #include <string>
 
 #include "eckit/config/YAMLConfiguration.h"
-
-#include "multio/tools/utils/distGrib1ToGrib2Mpi.h"
+#include "eckit/filesystem/PathName.h"
+#include "eckit/io/SharedBuffer.h"
 
 namespace multio::distGrib1ToGrib2 {
 
@@ -50,11 +50,6 @@ eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
         throw std::runtime_error("empty options payload");
     }
 
-    if (payload.find("LocalConfiguration[root=") != std::string::npos) {
-        throw std::runtime_error(
-            "invalid options payload: received an eckit LocalConfiguration debug dump instead of YAML");
-    }
-
     std::istringstream in(payload);
 
     eckit::YAMLConfiguration yaml(in);
@@ -71,11 +66,18 @@ eckit::LocalConfiguration loadOptionsFromYamlFile(const std::string& yamlFile) {
     return parseOptionsYaml(readOptionsFile(yamlFile));
 }
 
-eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm) {
-    const std::string rootPayload = (rank == 0) ? readOptionsFile(yamlFile) : std::string{};
-    const std::string payload = broadcastStringFromRoot(rootPayload, rank, comm);
+eckit::LocalConfiguration loadAndBroadcastOptions(const std::string& yamlFile, const eckit::mpi::Comm& comm) {
+    eckit::SharedBuffer buf = comm.broadcastFile(eckit::PathName{yamlFile}, /*root=*/0);
 
-    return parseOptionsYaml(payload);
+    if (buf.size() == 0) {
+        throw std::runtime_error("empty options payload broadcast from root");
+    }
+
+    eckit::YAMLConfiguration yaml(buf);
+    eckit::LocalConfiguration options(yaml);
+    normalizeOptions(options);
+
+    return options;
 }
 
 std::string debugOutputPrefix(const eckit::LocalConfiguration& options) {

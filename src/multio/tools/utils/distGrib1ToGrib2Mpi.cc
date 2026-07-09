@@ -21,40 +21,60 @@ namespace multio::distGrib1ToGrib2 {
 
 namespace {
 
-void mpiSendString(const std::string& s, int dest, int tag, MPI_Comm comm) {
-    const unsigned long long n = static_cast<unsigned long long>(s.size());
-    MPI_Send(&n, 1, MPI_UNSIGNED_LONG_LONG, dest, tag, comm);
+// Wire type for the size prefix. Uses signed long long because eckit::mpi::Data::Type
+// specialises Type<long long> (mapping to MPI_LONG_LONG) but not Type<unsigned long long>.
+// A signed 64-bit integer is more than sufficient for any real string payload.
+using WireSize = long long;
+
+WireSize toWireSize(std::size_t sz) {
+    if (sz > static_cast<std::size_t>(std::numeric_limits<WireSize>::max())) {
+        throw std::runtime_error("MPI string payload too large for wire size type");
+    }
+    return static_cast<WireSize>(sz);
+}
+
+std::size_t toSizeT(WireSize n) {
+    if (n < 0) {
+        throw std::runtime_error("negative MPI string size received");
+    }
+    if (static_cast<unsigned long long>(n) > static_cast<unsigned long long>(std::numeric_limits<std::size_t>::max())) {
+        throw std::runtime_error("incoming MPI string too large for std::string");
+    }
+    return static_cast<std::size_t>(n);
+}
+
+void mpiSendString(const std::string& s, int dest, int tag, const eckit::mpi::Comm& comm) {
+    const WireSize n = toWireSize(s.size());
+    comm.send(&n, 1, dest, tag);
 
     const char* ptr = s.data();
-    unsigned long long remaining = n;
+    WireSize remaining = n;
     while (remaining > 0) {
-        const int chunkSize
-            = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
-        MPI_Send(ptr, chunkSize, MPI_CHAR, dest, tag + 1, comm);
+        const std::size_t chunkSize
+            = static_cast<std::size_t>(std::min<WireSize>(remaining, static_cast<WireSize>(INT_MAX)));
+        comm.send(ptr, chunkSize, dest, tag + 1);
         ptr += chunkSize;
-        remaining -= static_cast<unsigned long long>(chunkSize);
+        remaining -= static_cast<WireSize>(chunkSize);
     }
 }
 
-std::string mpiRecvString(int source, int tag, MPI_Comm comm) {
-    unsigned long long n = 0;
-    MPI_Recv(&n, 1, MPI_UNSIGNED_LONG_LONG, source, tag, comm, MPI_STATUS_IGNORE);
+std::string mpiRecvString(int source, int tag, const eckit::mpi::Comm& comm) {
+    WireSize n = 0;
+    comm.receive(&n, 1, source, tag);
 
-    if (n > static_cast<unsigned long long>(std::numeric_limits<std::size_t>::max())) {
-        throw std::runtime_error("incoming MPI string too large for std::string");
-    }
+    const std::size_t total = toSizeT(n);
 
     std::string s;
-    s.resize(static_cast<std::size_t>(n));
+    s.resize(total);
 
     char* ptr = s.data();
-    unsigned long long remaining = n;
+    WireSize remaining = n;
     while (remaining > 0) {
-        const int chunkSize
-            = static_cast<int>(std::min<unsigned long long>(remaining, static_cast<unsigned long long>(INT_MAX)));
-        MPI_Recv(ptr, chunkSize, MPI_CHAR, source, tag + 1, comm, MPI_STATUS_IGNORE);
+        const std::size_t chunkSize
+            = static_cast<std::size_t>(std::min<WireSize>(remaining, static_cast<WireSize>(INT_MAX)));
+        comm.receive(ptr, chunkSize, source, tag + 1);
         ptr += chunkSize;
-        remaining -= static_cast<unsigned long long>(chunkSize);
+        remaining -= static_cast<WireSize>(chunkSize);
     }
 
     return s;
@@ -83,43 +103,40 @@ std::vector<std::string> deserializeFileList(const std::string& payload) {
     return files;
 }
 
-void sendFileListToRank(const std::vector<std::string>& files, int dest, MPI_Comm comm) {
+void sendFileListToRank(const std::vector<std::string>& files, int dest, const eckit::mpi::Comm& comm) {
     mpiSendString(serializeFileList(files), dest, 1000, comm);
 }
 
-std::vector<std::string> recvFileListFromRank0(MPI_Comm comm) {
+std::vector<std::string> recvFileListFromRank0(const eckit::mpi::Comm& comm) {
     return deserializeFileList(mpiRecvString(0, 1000, comm));
 }
 
-std::string broadcastStringFromRoot(const std::string& rootPayload, int rank, MPI_Comm comm) {
-    unsigned long long n = rank == 0 ? static_cast<unsigned long long>(rootPayload.size()) : 0;
-    MPI_Bcast(&n, 1, MPI_UNSIGNED_LONG_LONG, 0, comm);
+std::string broadcastStringFromRoot(const std::string& rootPayload, int rank, const eckit::mpi::Comm& comm) {
+    WireSize n = (rank == 0) ? toWireSize(rootPayload.size()) : WireSize{0};
+    comm.broadcast(&n, 1, /*root=*/0);
 
-    if (n > static_cast<unsigned long long>(std::numeric_limits<std::size_t>::max())) {
-        throw std::runtime_error("broadcast payload too large for std::string");
-    }
-
-    std::string payload = rank == 0 ? rootPayload : std::string(static_cast<std::size_t>(n), '\0');
+    const std::size_t total = toSizeT(n);
+    std::string payload = (rank == 0) ? rootPayload : std::string(total, '\0');
     if (n > 0) {
-        MPI_Bcast(payload.data(), static_cast<int>(n), MPI_CHAR, 0, comm);
+        comm.broadcast(payload.data(), total, /*root=*/0);
     }
     return payload;
 }
 
-std::string gatherStringToRank0(const std::string& local, int rank, int worldSize, MPI_Comm comm) {
+std::string gatherStringToRank0(const std::string& local, int rank, int worldSize, const eckit::mpi::Comm& comm) {
     if (local.size() > static_cast<std::size_t>(INT_MAX)) {
         throw std::runtime_error("local gather payload larger than INT_MAX");
     }
 
     const int localSize = static_cast<int>(local.size());
-    std::vector<int> recvCounts;
+
+    // Allocate recvCounts on every rank so the eckit::mpi::Comm::gather scalar overload accepts it.
+    // On non-root ranks the receive buffer is ignored by MPI, but the API requires the correct size.
+    std::vector<int> recvCounts(static_cast<std::size_t>(worldSize));
+
+    comm.gather(localSize, recvCounts, /*root=*/0);
+
     std::vector<int> displs;
-    if (rank == 0) {
-        recvCounts.resize(static_cast<std::size_t>(worldSize));
-    }
-
-    MPI_Gather(&localSize, 1, MPI_INT, rank == 0 ? recvCounts.data() : nullptr, 1, MPI_INT, 0, comm);
-
     std::string global;
     if (rank == 0) {
         displs.resize(static_cast<std::size_t>(worldSize));
@@ -134,8 +151,8 @@ std::string gatherStringToRank0(const std::string& local, int rank, int worldSiz
         global.resize(static_cast<std::size_t>(totalSize64));
     }
 
-    MPI_Gatherv(local.data(), localSize, MPI_CHAR, rank == 0 ? global.data() : nullptr,
-                rank == 0 ? recvCounts.data() : nullptr, rank == 0 ? displs.data() : nullptr, MPI_CHAR, 0, comm);
+    comm.gatherv(local.data(), static_cast<std::size_t>(localSize), rank == 0 ? global.data() : nullptr,
+                 rank == 0 ? recvCounts.data() : nullptr, rank == 0 ? displs.data() : nullptr, /*root=*/0);
 
     return global;
 }

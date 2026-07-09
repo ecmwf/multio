@@ -12,9 +12,8 @@
 #include <iostream>
 #include <string>
 
-#include <mpi.h>
-
 #include "eckit/filesystem/PathName.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/tools/utils/distGrib1ToGrib2LoadBalancer.h"
@@ -31,12 +30,11 @@ int main(int argc, char** argv) {
 
     eckit::Main::initialise(argc, argv, "MULTIO_HOME");
 
-    MPI_Init(&argc, &argv);
+    // eckit::mpi lazily initialises MPI on first access and registers a finaliser at exit.
+    eckit::mpi::Comm& comm = eckit::mpi::comm();
 
-    int rank = 0;
-    int worldSize = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+    const int rank = static_cast<int>(comm.rank());
+    const int worldSize = static_cast<int>(comm.size());
 
 
     try {
@@ -51,14 +49,13 @@ int main(int argc, char** argv) {
                           << "  <output_directory>/output/...\n"
                           << "  <output_directory>/logging/...\n";
             }
-            MPI_Finalize();
             return 2;
         }
 
         const std::string inputList = argv[1];
         const std::string outputDirectory = argv[2];
         const std::string optionsYaml = argv[3];
-        const eckit::LocalConfiguration options = loadAndBroadcastOptions(rank, optionsYaml, MPI_COMM_WORLD);
+        const eckit::LocalConfiguration options = loadAndBroadcastOptions(optionsYaml, comm);
         const auto reportPaths = makeReportPaths(outputDirectory);
 
         std::vector<std::string> localFiles;
@@ -79,12 +76,12 @@ int main(int argc, char** argv) {
             std::cerr << timestampString() << "chunk report written to: " << reportFile << '\n';
 
             for (int dest = 1; dest < worldSize; ++dest) {
-                sendFileListToRank(result.chunks[static_cast<std::size_t>(dest)], dest, MPI_COMM_WORLD);
+                sendFileListToRank(result.chunks[static_cast<std::size_t>(dest)], dest, comm);
             }
             localFiles = std::move(result.chunks[0]);
         }
         else {
-            localFiles = recvFileListFromRank0(MPI_COMM_WORLD);
+            localFiles = recvFileListFromRank0(comm);
         }
 
         const auto grib2MarsMiscOptions = multio::grib2MarsMisc::makeGrib2MarsMiscOptions(options);
@@ -94,11 +91,11 @@ int main(int argc, char** argv) {
             = processLocalFiles(localFiles, grib2MarsMiscOptions, options, outputDirectory, rank);
 
         std::cerr << timestampString() << "rank " << rank << " processed all the files" << std::endl;
-        MPI_Barrier(MPI_COMM_WORLD);
+        comm.barrier();
 
 
         const std::string globalOutcomesPayload
-            = gatherStringToRank0(serializeFileOutcomes(localOutcomes), rank, worldSize, MPI_COMM_WORLD);
+            = gatherStringToRank0(serializeFileOutcomes(localOutcomes), rank, worldSize, comm);
 
         if (rank == 0) {
             const auto globalOutcomes = deserializeFileOutcomes(globalOutcomesPayload);
@@ -107,17 +104,16 @@ int main(int argc, char** argv) {
             std::cerr << timestampString() << "json summary written to: " << reportPaths.summaryJson << '\n';
         }
 
-        MPI_Finalize();
         return 0;
     }
     catch (const std::exception& e) {
         std::cerr << "ERROR on rank " << rank << ": " << e.what() << '\n';
-        MPI_Abort(MPI_COMM_WORLD, 1);
+        comm.abort(1);
         return 1;
     }
     catch (...) {
         std::cerr << "ERROR on rank " << rank << ": unknown exception\n";
-        MPI_Abort(MPI_COMM_WORLD, 1);
+        comm.abort(1);
         return 1;
     }
 }

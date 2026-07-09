@@ -12,14 +12,13 @@
 
 #include <string>
 
-#include <mpi.h>
-
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/mpi/Comm.h"
 
 namespace multio::distGrib1ToGrib2 {
 
 eckit::LocalConfiguration loadOptionsFromYamlFile(const std::string& yamlFile);
-eckit::LocalConfiguration loadAndBroadcastOptions(int rank, const std::string& yamlFile, MPI_Comm comm);
+eckit::LocalConfiguration loadAndBroadcastOptions(const std::string& yamlFile, const eckit::mpi::Comm& comm);
 std::string debugOutputPrefix(const eckit::LocalConfiguration& options);
 
 }  // namespace multio::distGrib1ToGrib2

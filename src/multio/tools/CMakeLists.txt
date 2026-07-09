@@ -117,6 +117,8 @@ ecbuild_add_library(
       ${METKIT_INCLUDE_DIRS}
 
   PUBLIC_LIBS
+      multio
+      multio-grib2marsmisc
       eckit
       metkit
       eckit_mpi

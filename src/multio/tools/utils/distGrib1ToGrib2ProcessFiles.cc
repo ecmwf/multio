@@ -152,6 +152,7 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
                 case MessageDisposition::SkipInvalidMessage:
                 case MessageDisposition::SkipDiscipline192:
                 case MessageDisposition::SkipTimespanNonPositive:
+                case MessageDisposition::ComplexExclusion:
                     bumpOutcome(outcome, extractionOutcome.code);
                     break;
                 case MessageDisposition::FailToExtract:

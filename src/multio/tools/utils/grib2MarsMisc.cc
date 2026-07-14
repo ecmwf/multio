@@ -465,7 +465,7 @@ namespace extract {
 
 void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
-        {"grid_simple", "simple"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
+        {"grid_simple", "ccsds"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
         {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
 
     const auto packingTypeVal = packingMap.find(packingType);
@@ -911,6 +911,12 @@ MessageDisposition classifyTimespanNonPositive(const TimeSpanEqualToZeroHandling
     return MessageDisposition::FailToExtract;
 }
 
+MessageDisposition classifyComplexExclusion() {
+        return MessageDisposition::ComplexExclusion;
+}
+
+
+
 ExtractionOutcome makeOutcome(MessageDisposition disposition, ExtractionOutcomeCode code, std::string reason,
                               std::string detail = {}) {
     return ExtractionOutcome{disposition, code, std::move(reason), std::move(detail)};
@@ -1220,6 +1226,18 @@ Grib2MarsMiscResult grib2MarsMisc(const eckit::message::Message& msg, const Grib
                                 : ExtractionOutcomeCode::SkipRequiredTimespanNonPositive;
             return makeResult(makeOutcome(disposition, code, "timespan-nonpositive",
                                           std::string{"timespan="} + std::to_string(marsConfig.getLong("timespan"))));
+        }
+
+
+        if (marsConfig.has("param") && marsConfig.has("levtype") && marsConfig.has("levelist") ) {
+            if ( marsConfig.getLong("param") == 152 && marsConfig.getString("levtype") == "ml" && marsConfig.getLong("levelist") == 100000 ) {
+                const auto disposition = classifyComplexExclusion();
+                const auto code = (disposition == MessageDisposition::ComplexExclusion)
+                                    ? ExtractionOutcomeCode::ExtractFailedComplexExclusion
+                                    : ExtractionOutcomeCode::ExtractFailedUnknownException;
+                return makeResult(makeOutcome(disposition, code, "complex-exclusion",
+                                              std::string{"param="} + std::to_string(marsConfig.getLong("param"))));
+            }
         }
 
         return makeResult(

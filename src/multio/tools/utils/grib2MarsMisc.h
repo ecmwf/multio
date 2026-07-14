@@ -94,6 +94,7 @@ enum class MessageDisposition
     FailToExtract,
     FailToEncode,
     FailToArchive,
+    ComplexExclusion,
 };
 
 enum class ExtractionOutcomeCode : std::uint8_t
@@ -126,6 +127,7 @@ enum class ExtractionOutcomeCode : std::uint8_t
     EncodeFailedMars2Grib,
     ArchiveFailedSinkWrite,
     ExtractFailedUnknownException,
+    ExtractFailedComplexExclusion,
 };
 
 struct ExtractionOutcome {

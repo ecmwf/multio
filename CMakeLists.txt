@@ -145,6 +145,7 @@ ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
 ###  Definitions used by the output manager
 ecbuild_add_option( FEATURE MULTIO_OUTPUT_MANAGER
 	            DEFAULT ON
+                    CONDITION HAVE_FORTRAN
                     DESCRIPTION "Build the output manager" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT

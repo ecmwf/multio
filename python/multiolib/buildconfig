@@ -11,9 +11,9 @@
 # TODO we duplicate information -- pyproject.toml's `name` and `packages` are derivable from $NAME and must stay consistent
 
 NAME="multio"
-CMAKE_PARAMS1="-Deckit_ROOT=/tmp/multio/prereqs/eckitlib -Deccodes_ROOT=/tmp/multio/prereqs/eccodeslib -Dmetkit_ROOT=/tmp/multio/prereqs/metkitlib -Datlas_ROOT=/tmp/multio/prereqs/atlaslib-ecmwf -Dfdb5_ROOT=/tmp/multio/prereqs/fdb5lib -Dmir_ROOT=/tmp/multio/prereqs/mirlib -Dfckit_ROOT=/tmp/multio/prereqs/fckitlib"
-CMAKE_PARAMS2="-DENABLE_ATLAS_IO=1"
+CMAKE_PARAMS1="-Deckit_ROOT=/tmp/multio/prereqs/eckitlib -Deccodes_ROOT=/tmp/multio/prereqs/eccodeslib -Dmetkit_ROOT=/tmp/multio/prereqs/metkitlib -Datlas_ROOT=/tmp/multio/prereqs/atlaslib-ecmwf -Dfdb5_ROOT=/tmp/multio/prereqs/fdb5lib -Dmir_ROOT=/tmp/multio/prereqs/mirlib"
+CMAKE_PARAMS2="-DENABLE_ATLAS_IO=1 -DENABLE_FORTRAN=0 -DENABLE_MULTIO_OUTPUT_MANAGER=OFF"
 CMAKE_PARAMS="$CMAKE_PARAMS1 $CMAKE_PARAMS2"
 PYPROJECT_DIR="python/multiolib"
-DEPENDENCIES='["eckitlib", "eccodeslib", "metkitlib", "atlaslib-ecmwf", "fdb5lib", "mirlib", "fckitlib"]'
+DEPENDENCIES='["eckitlib", "eccodeslib", "metkitlib", "atlaslib-ecmwf", "fdb5lib", "mirlib"]'
 export VERSION_MICROINCR="no"

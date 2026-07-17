@@ -175,6 +175,9 @@ set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINAR
 set( MULTIO_LIBRARIES      multio )
 
 if ( HAVE_MULTIO_OUTPUT_MANAGER )
+    if ( NOT eccodes_HAVE_FORTRAN )
+        ecbuild_critical( "MULTIO_OUTPUT_MANAGER requires eccodes built with ENABLE_FORTRAN=ON" )
+    endif()
     set( BUILD_MULTIOM 1)
 else()
     set( BUILD_MULTIOM 0)

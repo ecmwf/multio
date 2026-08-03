@@ -194,6 +194,8 @@ const char* toString(ExtractionOutcomeCode code) {
             return "ArchiveFailedSinkWrite";
         case ExtractionOutcomeCode::ExtractFailedUnknownException:
             return "ExtractFailedUnknownException";
+        case ExtractionOutcomeCode::ExtractFailedComplexExclusion:
+            return "ExtractFailedComplexExclusion";
     }
     return "UnknownExtractionOutcomeCode";
 }

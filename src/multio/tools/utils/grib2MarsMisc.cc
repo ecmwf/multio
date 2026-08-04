@@ -466,7 +466,7 @@ namespace extract {
 void handlePackingType(metkit::codes::CodesHandle& h, const std::string& packingType, dm::FullMarsRecord& mars) {
     const static std::unordered_map<std::string, std::string> packingMap{
         {"grid_simple", "ccsds"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
-        {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
+        {"grid_ccsds", "ccsds"},  {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
 
     const auto packingTypeVal = packingMap.find(packingType);
     if (packingTypeVal == packingMap.cend()) {
@@ -912,9 +912,8 @@ MessageDisposition classifyTimespanNonPositive(const TimeSpanEqualToZeroHandling
 }
 
 MessageDisposition classifyComplexExclusion() {
-        return MessageDisposition::ComplexExclusion;
+    return MessageDisposition::ComplexExclusion;
 }
-
 
 
 ExtractionOutcome makeOutcome(MessageDisposition disposition, ExtractionOutcomeCode code, std::string reason,
@@ -1229,8 +1228,9 @@ Grib2MarsMiscResult grib2MarsMisc(const eckit::message::Message& msg, const Grib
         }
 
 
-        if (marsConfig.has("param") && marsConfig.has("levtype") && marsConfig.has("levelist") ) {
-            if ( marsConfig.getLong("param") == 152 && marsConfig.getString("levtype") == "ml" && marsConfig.getLong("levelist") == 100000 ) {
+        if (marsConfig.has("param") && marsConfig.has("levtype") && marsConfig.has("levelist")) {
+            if (marsConfig.getLong("param") == 152 && marsConfig.getString("levtype") == "ml"
+                && marsConfig.getLong("levelist") == 100000) {
                 const auto disposition = classifyComplexExclusion();
                 const auto code = (disposition == MessageDisposition::ComplexExclusion)
                                     ? ExtractionOutcomeCode::ExtractFailedComplexExclusion

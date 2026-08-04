@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 
 #include "metkit/mars2grib/api/Mars2Grib.h"
@@ -44,15 +45,11 @@ public:
     void executeImpl(message::Message msg) override;
 
 private:
-    // Internal constructor delegate with prepared configuration for specific
-    // encoder
-    explicit EncodeMtg2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
-
     void print(std::ostream& os) const override;
 
     // TODO pgeier this option will be renamed and the action should get it own struct with parsing capabilities again
     EncodeMtg2Options opts_;
-    metkit::mars2grib::Mars2Grib encoder_;
+    std::unique_ptr<metkit::mars2grib::Mars2Grib> encoder_;
 
     std::optional<Cache> cache_;
 };

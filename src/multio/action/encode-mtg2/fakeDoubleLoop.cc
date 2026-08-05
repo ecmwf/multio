@@ -147,8 +147,8 @@ private:
         for (const auto& mapping : mappingConf.getSubConfigurations()) {
             const auto param = mapping.getInt64("param");
             const auto typeOfStatisticalProcessing = mapping.getInt64("typeOfStatisticalProcessing");
-//            std::cout << "MIVAL: Mapping param: " << param << " to typeOfStatisticalProcessing: "
-//                      << typeOfStatisticalProcessing << std::endl;
+            //            std::cout << "MIVAL: Mapping param: " << param << " to typeOfStatisticalProcessing: "
+            //                      << typeOfStatisticalProcessing << std::endl;
             operationMappings.emplace(param, typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing));
         }
 

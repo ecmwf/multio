@@ -11,11 +11,11 @@
 #include "Print.h"
 
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Configuration.h"
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
@@ -23,10 +23,10 @@
 #include "multio/datamod/core/EntryDumper.h"
 
 #include "multio/datamod/ContainerInterop.h"
+#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/core/Record.h"
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/PrecisionTag.h"
 

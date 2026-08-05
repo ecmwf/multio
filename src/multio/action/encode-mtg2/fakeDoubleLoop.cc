@@ -34,7 +34,9 @@ enum class TypeOfStatisticalProcessing : std::int64_t
     Minimum = 3,
     Difference = 4,
     StandardDeviation = 6,
-    InverseDifference = 8
+    InverseDifference = 8,
+    Severity = 100,
+    Mode = 101
 };
 
 
@@ -54,6 +56,10 @@ TypeOfStatisticalProcessing typeOfStatisticalProcessingFromInt(std::int64_t valu
             return TypeOfStatisticalProcessing::StandardDeviation;
         case 8:
             return TypeOfStatisticalProcessing::InverseDifference;
+        case 100:
+            return TypeOfStatisticalProcessing::Severity;
+        case 101:
+            return TypeOfStatisticalProcessing::Mode;
         default: {
             std::ostringstream os;
             os << "Unknown typeOfStatisticalProcessing value: " << value;
@@ -74,6 +80,8 @@ bool isValidStattypeOperation(TypeOfStatisticalProcessing operation) {
         case TypeOfStatisticalProcessing::Accumulation:
         case TypeOfStatisticalProcessing::Difference:
         case TypeOfStatisticalProcessing::InverseDifference:
+        case TypeOfStatisticalProcessing::Severity:
+        case TypeOfStatisticalProcessing::Mode:
             return false;
     }
 
@@ -95,6 +103,8 @@ std::string stattypeOperationCode(TypeOfStatisticalProcessing operation) {
         case TypeOfStatisticalProcessing::Accumulation:
         case TypeOfStatisticalProcessing::Difference:
         case TypeOfStatisticalProcessing::InverseDifference:
+        case TypeOfStatisticalProcessing::Severity:
+        case TypeOfStatisticalProcessing::Mode:
             break;
     }
 
@@ -137,7 +147,8 @@ private:
         for (const auto& mapping : mappingConf.getSubConfigurations()) {
             const auto param = mapping.getInt64("param");
             const auto typeOfStatisticalProcessing = mapping.getInt64("typeOfStatisticalProcessing");
-
+//            std::cout << "MIVAL: Mapping param: " << param << " to typeOfStatisticalProcessing: "
+//                      << typeOfStatisticalProcessing << std::endl;
             operationMappings.emplace(param, typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing));
         }
 
@@ -228,7 +239,7 @@ std::string reconstructStatType(const dm::FullMarsRecord& marsRec) {
 
     // Create statType by concatenating operation code and period code
     if (operationCode && periodCode) {
-        return *operationCode + *periodCode;
+        return *periodCode + *operationCode;
     }
     else {
         std::ostringstream os;

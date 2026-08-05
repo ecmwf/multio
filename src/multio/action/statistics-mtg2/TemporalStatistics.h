@@ -37,6 +37,8 @@ public:
     const OperationWindow& cwin() const;
     OperationWindow& win();
 
+    std::string periodName() const { return periodUpdater_->name(); };
+
     message::Metadata& metadata();
 
     void print(std::ostream& os) const;

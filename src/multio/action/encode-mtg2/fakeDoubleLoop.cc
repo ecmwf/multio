@@ -19,6 +19,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/types/DateTime.h"
 
 namespace multio::action::encode_mtg2::fake_double_loop {
 
@@ -192,6 +193,13 @@ bool requiresFakeDoubleLoopRepresentation(const dm::FullMarsRecord& marsRec) {
     return false;
 }
 
+bool isSeasonal(const dm::FullMarsRecord& marsRec) {
+    std::string klass = marsRec.klass.get();
+    std::string stream = marsRec.stream.get();
+
+    return (klass == "od" || klass == "rd" || klass == "c3") && (stream == "sfmd" || stream == "shmd");
+}
+
 std::optional<std::string> operationCodeFromParam(std::int64_t param) {
 
     // This is the full
@@ -249,7 +257,49 @@ std::string reconstructStatType(const dm::FullMarsRecord& marsRec) {
     }
 }
 
-}  // namespace detail
+long computeFcmonth(const dm::FullMarsRecord& marsRec) {
+    if (!marsRec.step.isSet()) {
+        throw eckit::SeriousBug("Cannot compute fcmonth for seasonal record without step", Here());
+    }
+
+    const eckit::Date epochDate{marsRec.date.get()};
+    const long epochTime = marsRec.time.get();
+    const auto epochHour = epochTime / 10000;
+    const auto epochMinute = (epochTime % 10000) / 100;
+    const eckit::DateTime epochDateTime{epochDate, eckit::Time{epochHour, epochMinute, 0}};
+    const eckit::DateTime currentDateTime
+        = epochDateTime + static_cast<eckit::Second>(marsRec.step.get().toHours() * 3600);
+
+    const auto isBeginningOfMonth = [](const eckit::DateTime& dt) {
+        return dt.date().day() == 1 && dt.time().hours() == 0 && dt.time().minutes() == 0 && dt.time().seconds() == 0;
+    };
+
+    if (!isBeginningOfMonth(epochDateTime)) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: epochDateTime is not at the beginning of a month: " << epochDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    if (!isBeginningOfMonth(currentDateTime)) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: currentDateTime is not at the beginning of a month: " << currentDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    const long fcmonth = static_cast<long>((currentDateTime.date().year() - epochDateTime.date().year()) * 12
+                                           + (currentDateTime.date().month() - epochDateTime.date().month()));
+
+    if (fcmonth < 0) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: currentDateTime precedes epochDateTime: " << currentDateTime << " < "
+           << epochDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    return fcmonth;
+}
+
+} // namespace detail
 
 void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
 
@@ -258,6 +308,11 @@ void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
             std::string stattype = detail::reconstructStatType(marsRec);
             marsRec.stattype.set(dm::TypeParser<dm::StatType>::parse(stattype));
             marsRec.timespan.set(dm::TypeParser<dm::TimeSpan>::parse("none"));
+        }
+        if (detail::isSeasonal(marsRec)) {
+            const long fcmonth = detail::computeFcmonth(marsRec);
+            marsRec.fcmonth.set(fcmonth);
+            marsRec.step.unset();
         }
     }
 }

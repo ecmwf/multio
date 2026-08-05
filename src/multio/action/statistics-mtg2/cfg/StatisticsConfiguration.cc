@@ -132,7 +132,7 @@ eckit::DateTime StatisticsConfiguration::computeEpoch() const {
 
 
 eckit::DateTime StatisticsConfiguration::computeCurr() const {
-    return epoch() + static_cast<eckit::Second>(std::max(step(), static_cast<int64_t>(0)) * timeIncrementInSeconds());
+    return epoch() + static_cast<eckit::Second>(std::max(step(), static_cast<int64_t>(0)) * 3600);
 }
 
 

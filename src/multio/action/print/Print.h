@@ -30,9 +30,13 @@ public:
 
 private:
     void print(std::ostream& os) const override;
+    void printPrefix(std::ostream& os) const;
+    void printMars(std::ostream& os, const message::Message& msg) const;
 
     bool onlyFields_;
     std::string stream_;
+    bool marsStream_;
+    mutable long count_;
 
     std::ostream* os_;
     std::string prefix_;

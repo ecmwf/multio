@@ -99,7 +99,6 @@ std::unique_ptr<metkit::codes::CodesHandle> encode(metkit::mars2grib::Mars2Grib&
     const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
     const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
 
-    // mars.set("stream", "sfdd");
 
     if (!cache) {
         return encoder.encode(values, size, mars, misc);

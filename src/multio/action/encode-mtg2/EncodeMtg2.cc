@@ -49,7 +49,8 @@ const std::unordered_set<std::string>& supportedMars2gribOptions() {
                                                                   "allowZeroLengthFsWindow",
                                                                   "allowNonEnumeratedPositiveIntegerTimespanHours",
                                                                   "allowRedundantTimeIncrement",
-                                                                  "allowMissingTimespanForInstantProduct"};
+                                                                  "allowMissingTimespanForInstantProduct",
+                                                                  "allowMissingTimespanForStatisticalProduct"};
     return supported;
 }
 

@@ -71,7 +71,7 @@ void Print::printMars(std::ostream& os, const message::Message& msg) const {
         auto md = dm::dumpRecord<message::Metadata>(mars);
 
         // printPrefix(os);
-        os << "Field: " << std::setw(6) << count_++ << " :: \"mars\":";
+        os << prefix_ << ": Field: " << std::setw(6) << count_++ << " :: \"mars\":";
         os << md << std::endl;
         return;
     }
@@ -82,10 +82,10 @@ void Print::printMars(std::ostream& os, const message::Message& msg) const {
         long flushKind = msg.metadata().getOpt<long>("flushKind").value_or(-1);
         if (flushKind == 1) {
             long step = msg.metadata().getOpt<long>("step").value_or(-1);
-            os << "Flush: step=" << step << std::endl;
+            os << prefix_ << ": Flush: step=" << step << std::endl;
         }
         else {
-            os << "Flush: " << flushKind << std::endl;
+            os << prefix_ << ": Flush: " << flushKind << std::endl;
         }
         os << std::endl << std::endl;
     }
@@ -103,7 +103,15 @@ void Print::executeImpl(message::Message msg) {
             *os_ << msg << std::endl;
         }
     }
-    executeNext(std::move(msg));
+    // try {
+        executeNext(std::move(msg));
+    // }
+    // catch (...) {
+    //     std::cerr << "Received \"mars\":";
+    //     printMars(std::cerr, msg);
+    //     std::cerr << "# =======================================================================================" << std::endl;
+    //     std::cerr << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+    // }
 }
 
 void Print::print(std::ostream& os) const {

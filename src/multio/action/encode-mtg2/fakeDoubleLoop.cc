@@ -309,11 +309,11 @@ void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
             marsRec.stattype.set(dm::TypeParser<dm::StatType>::parse(stattype));
             marsRec.timespan.set(dm::TypeParser<dm::TimeSpan>::parse("none"));
         }
-        if (detail::isSeasonal(marsRec)) {
-            const long fcmonth = detail::computeFcmonth(marsRec);
-            marsRec.fcmonth.set(fcmonth);
-            marsRec.step.unset();
-        }
+    }
+    if (detail::isSeasonal(marsRec)) {
+        const long fcmonth = detail::computeFcmonth(marsRec);
+        marsRec.fcmonth.set(fcmonth);
+        marsRec.step.unset();
     }
 }
 

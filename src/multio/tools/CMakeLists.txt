@@ -66,61 +66,6 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
 
 endif()
 
-ecbuild_add_library(
-  TARGET multio-grib2marsmisc
-
-  SOURCES
-      utils/grib2MarsMisc.cc
-      utils/grib2MarsMisc.h
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2
-
-  PRIVATE_INCLUDES
-      ${ECKIT_INCLUDE_DIRS}
-      ${METKIT_INCLUDE_DIRS}
-
-  PUBLIC_LIBS
-      multio
-      multio-mars2mars
-      eckit
-      metkit
-      eccodes
-)
-
-ecbuild_add_library(
-  TARGET multio-dist-grib1-to-grib2-utils
-
-  SOURCES
-      utils/CodesHandleToEckitMessage.cc
-      utils/CodesHandleToEckitMessage.h
-      utils/distGrib1ToGrib2LoadBalancer.cc
-      utils/distGrib1ToGrib2LoadBalancer.h
-      utils/distGrib1ToGrib2Mpi.cc
-      utils/distGrib1ToGrib2Mpi.h
-      utils/distGrib1ToGrib2Options.cc
-      utils/distGrib1ToGrib2Options.h
-      utils/distGrib1ToGrib2Logging.cc
-      utils/distGrib1ToGrib2Logging.h
-      utils/distGrib1ToGrib2OutcomesReport.cc
-      utils/distGrib1ToGrib2OutcomesReport.h
-      utils/distGrib1ToGrib2ProcessFiles.cc
-      utils/distGrib1ToGrib2ProcessFiles.h
-      utils/scalarGrib1ToGrib2DebugOutputs.cc
-      utils/scalarGrib1ToGrib2DebugOutputs.h
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
-
-  PRIVATE_INCLUDES
-      ${ECKIT_INCLUDE_DIRS}
-      ${METKIT_INCLUDE_DIRS}
-
-  PUBLIC_LIBS
-      eckit
-      metkit
-      eckit_mpi
-)
 
 ecbuild_add_executable(
 
@@ -144,51 +89,5 @@ ecbuild_add_executable(
       eccodes
 )
 
-ecbuild_add_executable(
 
-  TARGET
-      grib1-to-grib2-v2
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
-
-  SOURCES
-      grib1-to-grib2-v2.cc
-      MultioTool.cc
-
-  NO_AS_NEEDED
-
-  LIBS
-      multio
-      multio-mars2mars
-      multio-dist-grib1-to-grib2-utils
-      multio-grib2marsmisc
-      eckit
-      metkit
-      eccodes
-)
-
-ecbuild_add_executable(
-
-  TARGET
-      dist-grib1-to-grib2
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI
-
-  SOURCES
-      dist-grib1-to-grib2.cc
-
-  NO_AS_NEEDED
-
-  LIBS
-      multio
-      multio-fdb5
-      multio-mars2mars
-      multio-grib2marsmisc
-      multio-dist-grib1-to-grib2-utils
-      eckit
-      eckit_mpi
-      metkit
-      eccodes
-)
+add_subdirectory(grib2grib)

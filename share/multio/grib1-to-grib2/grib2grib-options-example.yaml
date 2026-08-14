@@ -1,0 +1,16 @@
+# Minimal example for the scalar grib2grib options parser tool.
+verbosity: 0
+
+grib1-messages-policy: try-to-handle
+grib2-messages-policy: ignore
+invalid-messages-policy: try-to-handle
+discipline192-messages-policy: ignore
+
+packing: ccsds
+# model: ifs
+ncycle: 162
+control: false
+expver: "0001"
+
+mars2grib-options:
+  applyChecks: true

@@ -24,26 +24,13 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/MultioConfiguration.h"
 #include "multio/sink/DataSink.h"
-#include "multio/tools/utils/CodesHandleToEckitMessage.h"
 #include "multio/tools/utils/distGrib1ToGrib2Logging.h"
+#include "multio/tools/utils/distGrib1ToGrib2ProcessOneMessage.h"
 #include "multio/tools/utils/grib2MarsMisc.h"
 
 namespace multio::distGrib1ToGrib2 {
 
 namespace {
-
-using grib2MarsMisc::ExtractedMsg;
-using grib2MarsMisc::ExtractionOutcome;
-using grib2MarsMisc::ExtractionOutcomeCode;
-using grib2MarsMisc::MessageDisposition;
-
-constexpr std::size_t outcomeIndex(ExtractionOutcomeCode code) {
-    return static_cast<std::size_t>(code);
-}
-
-void bumpOutcome(FileOutcome& outcome, ExtractionOutcomeCode code) {
-    ++outcome.outcomeCounters[outcomeIndex(code)];
-}
 
 std::string rankOutputPath(const std::string& outputDirectory, int rank) {
     return outputDirectory + "/output/rank" + std::to_string(rank) + ".grib2";
@@ -92,90 +79,18 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
         eckit::message::Reader reader{file};
         eckit::message::Message msg;
         while ((msg = reader.next())) {
-            ++outcome.nMessages;
-
-            auto result = grib2MarsMisc::grib2MarsMisc(msg, options);
-            ExtractedMsg& extracted = result.extractedMessage;
-            const ExtractionOutcome& extractionOutcome = result.extractionOutcome;
-
-            switch (extractionOutcome.disposition) {
-                case MessageDisposition::Encode: {
-                    auto encoded = decltype(encoder.encode(extracted.values, extracted.mars, extracted.misc)){};
-                    try {
-                        encoded = encoder.encode(extracted.values, extracted.mars, extracted.misc);
-                    }
-                    catch (const std::exception&) {
-                        bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
-                        std::cerr << timestampString()
-                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
-                                     "the code continues."
-                                  << std::endl;
-                        break;
-                    }
-                    catch (...) {
-                        bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
-                        std::cerr << timestampString()
-                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
-                                     "the code continues."
-                                  << std::endl;
-                        break;
-                    }
-
-                    try {
-                        writer.write(tools::utils::to_eckit_message(*encoded));
-                        bumpOutcome(outcome, ExtractionOutcomeCode::ProcessedAndArchived);
-                    }
-                    catch (const std::exception&) {
-                        std::cerr << timestampString()
-                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
-                                     "the code continues."
-                                  << std::endl;
-                        bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
-                    }
-                    catch (...) {
-                        std::cerr << timestampString()
-                                  << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and "
-                                     "the code continues."
-                                  << std::endl;
-                        bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
-                    }
-
-                    break;
-                }
-                case MessageDisposition::CopyGrib2Verbatim:
-                case MessageDisposition::CopyExceptMatched:
-                case MessageDisposition::CopyInvalidMessage:
-                case MessageDisposition::CopyDiscipline192:
-                case MessageDisposition::CopyTimespanNonPositive:
-                case MessageDisposition::SkipExcluded:
-                case MessageDisposition::SkipFilteredOut:
-                case MessageDisposition::SkipInvalidMessage:
-                case MessageDisposition::SkipDiscipline192:
-                case MessageDisposition::SkipTimespanNonPositive:
-                case MessageDisposition::ComplexExclusion:
-                    bumpOutcome(outcome, extractionOutcome.code);
-                    break;
-                case MessageDisposition::FailToExtract:
-                    bumpOutcome(outcome, extractionOutcome.code);
-                    break;
-                case MessageDisposition::FailToEncode:
-                    bumpOutcome(outcome, ExtractionOutcomeCode::EncodeFailedMars2Grib);
-                    break;
-                case MessageDisposition::FailToArchive:
-                    bumpOutcome(outcome, ExtractionOutcomeCode::ArchiveFailedSinkWrite);
-                    break;
-            }
+            processOneMessage(msg, options, encoder, writer, outcome);
         }
     }
     catch (const std::exception&) {
-        bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
+        ++outcome.outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
         std::cerr
             << timestampString()
             << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."
             << std::endl;
     }
     catch (...) {
-        bumpOutcome(outcome, ExtractionOutcomeCode::ExtractFailedFileRead);
+        ++outcome.outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
         std::cerr
             << timestampString()
             << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."
@@ -205,7 +120,6 @@ std::vector<FileOutcome> processLocalFiles(const std::vector<std::string>& files
     }
 
     writer->flush();
-
 
     return outcomes;
 }

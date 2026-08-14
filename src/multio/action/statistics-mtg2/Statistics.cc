@@ -25,6 +25,7 @@
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
+#include "multio/util/DateTime.h"
 #include "multio/util/Timing.h"
 
 #include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
@@ -414,6 +415,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 const std::int64_t timespan = ts.cwin().currPointInHours() - ts.cwin().creationPointInHours();
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
+                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(), ts.cwin().creationPoint().date().month());
                 if (ts.periodName() == "month" && ts.cwin().creationPoint().date().day() != 1) {
                     std::cout << "Skipping first month because it is not a full month :: " << ts.cwin().creationPoint()
                               << std::endl;
@@ -426,8 +428,6 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 }
             }
             else {
-                // std::cout << "Processing loop " << currentLoop << " for " << dm::parseEntry(dm::PARAM, md).get()
-                //           << " with operation " << opname << std::endl;
                 if (!opt_.disableSquashing()
                     && (((*it)->isComposable()
                          && operationMapping_.hasOperation(dm::parseEntry(dm::PARAM, md).get().id(), opname))
@@ -441,19 +441,11 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                             Here());
                     }
                     // Squash means we don't map (already done in previous loop), but extend the timespan
-                    const auto old_timspan = dm::parseEntry(dm::TIMESPAN, md);
                     timespan.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
-                    // std::cout << "Squashing statistics for " << dm::parseEntry(dm::PARAM, md).get() << " with operation "
-                    //           << opname << " :: creation=" << ts.cwin().creationPoint() << " :: current="
-                    //           << ts.win().currPointInHours() << " :: old_timespan=" << old_timspan.get().toHours()
-                    //           << " :: new_timespan=" << timespan.get().toHours() << std::endl;
                     dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
-                    // std::cout << "Mapping statistics for " << dm::parseEntry(dm::PARAM, md).get() << " with operation "
-                    //           << opname << " :: CurrentLoop=" << currentLoop << std::endl;
-                    /// @note: The mapping should not be applied for second loop (I don't know why this is happening here)
-                    /// paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
+
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
                                                               operationNameToStatTypeOperation(opname)};
 

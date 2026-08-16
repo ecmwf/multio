@@ -8,7 +8,7 @@ This file is written for agent restart and context recovery.
 - Standalone stage modules now live under `src/multio/tools/grib2grib/stages/`
 - The folder is self-contained: it may depend only on
   - files inside `src/multio/tools/grib2grib/`
-  - external libs: eckit, metkit, eccodes, `multio` (sink), `multio-mars2mars`
+  - external libs: eckit, metkit, eccodes, `multio` (sink)
   - the `../MultioTool.cc` framework only
 - Do not depend on any sibling file under `src/multio/tools/`
 - Scalar (non-MPI) tools must never link or inherit MPI
@@ -26,7 +26,7 @@ Local `CMakeLists.txt` defines two libraries and four executables.
   - sources: `../MultioTool.cc`, all stages, `GlobalContext`, `StageOutcomes`,
     `Utils`, `UnitOfWork`, `WorkUnitLoadBalancer`, `Sink`, `Summary`,
     `Process*`, `OptionsUtils.cc`, `CodesHandleToEckitMessage.cc`
-  - `PUBLIC_LIBS`: `multio`, `multio-mars2mars`, `eckit`, `metkit`, `eccodes`
+  - `PUBLIC_LIBS`: `multio`, `eckit`, `metkit`, `eccodes`
   - `CONDITION HAVE_GRIB1_TO_GRIB2`
 - `multio-grib2grib-mpi` (MPI library)
   - sources: `MpiUtils.cc`, `OptionsUtilsMpi.cc`, `MultioToolUtils.cc`
@@ -499,6 +499,7 @@ Current state target:
   - `--options-file`
   - `--file-list`
   - `--output-directory`
+  - `--average-work-units-per-rank` (optional, default `15`)
 - tool-level orchestration helpers live in:
   - `MultioToolUtils.h`
   - `MultioToolUtils.cc`
@@ -530,14 +531,28 @@ Current state target:
   - compute buckets
   - write `work-units.csv`
   - write `distribution-stats.csv`
+  - optionally scan every generated `WorkUnit` and iterate all messages through `UnitOfWork`
 - command line options are:
   - `--file-list`
   - `--output-directory`
   - `--n-workers`
   - `--average-work-units-per-rank`
+  - `--scan-work-unit-messages` (optional, default disabled)
 - output CSV rows are:
   - `MPI_rank,filename,offsetStart,offsetEnd,size`
 - here `MPI_rank` means the synthetic bucket index, not a real MPI rank
+- when `--scan-work-unit-messages` is enabled:
+  - the tool loops over all buckets and all generated `WorkUnit`s
+  - each `WorkUnit` is wrapped in `UnitOfWork`
+  - messages are iterated via `open()`, `newMessageAvailable()`, `nextMessage()`, `close()`
+  - one line is printed per message with fixed-width columns:
+    - `rank`
+    - `workUnitIndex` (global across all buckets)
+    - `paramId`
+    - `channel`
+    - `offset`
+    - `count`
+    - `totalLength`
 
 ## Scalar options-parser tool
 
@@ -580,6 +595,9 @@ Current state target:
 - splitting helpers should exist for:
   - filename + number of chunks
   - filename + maximum size in bytes
+- only `verbosity` is supported in options
+- missing `verbosity` should default to `0`
+- the old `verbose` compatibility shim has been removed
 
 ## Current coarse-grain options
 
@@ -619,6 +637,10 @@ Current dedicated option keys:
 - `Overrides` consumes only `mars` and `misc` as `eckit::LocalConfiguration`
 - `Overrides` returns overridden `mars` and `misc`
 - stream conversion is not part of `Overrides`; it belongs to `MarsToMars`
+- current optional misc overrides handled by `Overrides` include:
+  - `ncycle` -> `misc.generatingProcessIdentifier`
+  - `ensemble-size` -> `misc.numberOfForecastsInEnsemble`
+  - `analysis-window-length-in-hours` -> `misc.lengthOfTimeWindow`
 
 ## Discipline-192 decision
 

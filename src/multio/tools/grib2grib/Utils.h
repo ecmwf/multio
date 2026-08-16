@@ -59,7 +59,14 @@ OptionPolicy getOptionPolicy(const eckit::LocalConfiguration& options, const std
 
 std::string timestampString();
 
+/// @brief Return the shared explanation used when errors are trapped intentionally.
+/// @return Stable string literal describing the classify-and-continue error policy.
 const char* trappedErrorDisclaimer();
+
+/// @brief Print the shared trapped-error disclaimer with a timestamp prefix.
+///
+/// This helper is used by catch-and-continue paths so logs clearly distinguish
+/// intentional error trapping from unexpected silent recovery.
 void printTrappedErrorDisclaimer();
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

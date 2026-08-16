@@ -23,12 +23,21 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 
 namespace {
 
+/// @brief Apply local post-parse normalization to the raw options tree.
+/// @param options Parsed YAML options mutated in place.
+///
+/// The current implementation is intentionally a no-op. The helper remains so
+/// normalization logic can be reintroduced without changing call sites.
 void normalizeOptions(eckit::LocalConfiguration& options) {
     (void)options;
 }
 
 }  // namespace
 
+/// @brief Read an options YAML file into a single string payload.
+/// @param yamlFile Path to the YAML file on disk.
+/// @return Full file contents preserved as text.
+/// @throw eckit exception If the file cannot be opened or read completely.
 std::string readOptionsFileAsString(const std::string& yamlFile) {
     std::ifstream in(yamlFile);
     if (!in) {
@@ -45,6 +54,10 @@ std::string readOptionsFileAsString(const std::string& yamlFile) {
     return out.str();
 }
 
+/// @brief Parse a YAML text payload into an eckit local configuration.
+/// @param payload YAML text payload, not an eckit debug dump.
+/// @return Parsed local configuration ready for validation and context parsing.
+/// @throw eckit exception If the payload is empty or not valid YAML.
 eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
     if (payload.empty()) {
         throw eckit::BadValue("empty options payload", Here());

@@ -8,6 +8,9 @@
  * nor does it submit to any jurisdiction.
  */
 
+/// @file
+/// @brief Conversion bridge from `metkit::codes::CodesHandle` to `eckit::message::Message`.
+
 #pragma once
 
 #include "eckit/message/Message.h"
@@ -18,6 +21,10 @@ class CodesHandle;
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+/// @brief Copy one GRIB message out of a `CodesHandle` into an owning eckit message.
+/// @param handle Read-only ecCodes wrapper whose current encoded message will be copied.
+/// @return Owning `eckit::message::Message` whose payload remains valid independently of `handle`.
+/// @throw eckit exception If the message cannot be copied into the destination buffer.
 eckit::message::Message to_eckit_message(const metkit::codes::CodesHandle& handle);
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

@@ -135,9 +135,9 @@ void print(long rank, long workUnitIndex, const metkit::codes::CodesHandle& hand
 }
 
 void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUnit) {
-    std::cout << "Scanning work unit messages for rank " << rank << ", work unit index " << workUnitIndex
-              << ", file '" << workUnit.filename << "' in [" << workUnit.startOffset << ", " << workUnit.endOffset
-              << ")" << std::endl;
+    // std::cout << "Scanning work unit messages for rank " << rank << ", work unit index " << workUnitIndex
+    //           << ", file '" << workUnit.filename << "' in [" << workUnit.startOffset << ", " << workUnit.endOffset
+    //           << ")" << std::endl;
     multio::distGrib1ToGrib2::grib2grib::UnitOfWork unitOfWork{workUnit};
     unitOfWork.open();
     while (unitOfWork.newMessageAvailable()) {

@@ -488,7 +488,12 @@ Current state target:
 - `createPerFileOutcomes(...)` should internally use a map keyed by filename
 - `createPerFileOutcomes(...)` should return `std::vector<FileStageOutcomes>`
 - `FileStageOutcomes` should expose `add(const FileStageOutcomes&)`
-- `createSummary(...)` and `writeSummary(...)` are still placeholders in the tool-level utils
+- `createSummary(...)` currently returns the per-file outcomes unchanged
+- `writeSummary(...)` now writes two files on rank 0:
+  - `Summary.log`
+  - `Summary.json`
+- `Summary.log` is built from `formatOutcomeLine(...)`, one line per input file
+- `Summary.json` is built from `toJson(const std::vector<FileStageOutcomes>&)`
 
 ## Tool shell
 
@@ -517,6 +522,7 @@ Current state target:
   - `writeSummary(...)`
 - `distributed-grib-to-grib.cc` calls `buildGlobalContext(rawOptions)` and passes `*writer`
   (a `Grib2GribSinks&`) into the processing chain
+- `distributed-grib-to-grib.cc` writes `Summary.log` and `Summary.json` in `outputDirectory` on rank 0
 - the `Process*` chain threads `Grib2GribSinks&` end to end:
   - `ProcessOneMessage` passes `writer.testCaseSink()` to `MarsToGrib` and
     `writer.mainDataSink()` to `Grib2Fdb5`
@@ -599,6 +605,14 @@ Current state target:
 - missing `verbosity` should default to `0`
 - the old `verbose` compatibility shim has been removed
 
+## Work-unit ownership rule
+
+- a `WorkUnit` owns a GRIB message iff the message start offset lies in `[startOffset, endOffset)`
+- `UnitOfWork::open()` aligns the cursor to the first GRIB message whose start offset is at or after `startOffset`
+- `UnitOfWork::nextMessage()` stops when the next message start offset is `>= endOffset`
+- once a message is claimed by start offset, it is decoded fully even when its body crosses `endOffset`
+- `currentOffset_` is advanced to the true end of the decoded message (`ftello(file_)`)
+
 ## Current coarse-grain options
 
 Example options section:
@@ -641,6 +655,16 @@ Current dedicated option keys:
   - `ncycle` -> `misc.generatingProcessIdentifier`
   - `ensemble-size` -> `misc.numberOfForecastsInEnsemble`
   - `analysis-window-length-in-hours` -> `misc.lengthOfTimeWindow`
+
+## Documentation progress
+
+- heavy function-by-function documentation has started
+- documented pairs so far:
+  - `CodesHandleToEckitMessage.h` / `CodesHandleToEckitMessage.cc`
+  - `UnitOfWork.h` / `UnitOfWork.cc`
+  - `WorkUnitLoadBalancer.h` / `WorkUnitLoadBalancer.cc`
+  - `Utils.h` / `Utils.cc`
+  - `OptionsUtils.h` / `OptionsUtils.cc`
 
 ## Discipline-192 decision
 

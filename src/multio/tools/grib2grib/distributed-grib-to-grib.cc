@@ -81,7 +81,7 @@ private:
         if (rank == 0) {
             const auto workUnitOutcomePerFile = utils::summarizeWorkUnitOutcomePerFile(workUnitOutcomeGlobal);
             const auto summary = utils::createSummary(workUnitOutcomePerFile);
-            utils::writeSummary(summary);
+            utils::writeSummary(summary, outputDirectory_);
         }
     }
 

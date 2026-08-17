@@ -55,6 +55,6 @@ summarizeWorkUnitOutcomePerFile(const std::vector<FileStageOutcomes>& workUnitOu
 
 SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomePerFile);
 
-void writeSummary(const SummaryType& summary);
+void writeSummary(const SummaryType& summary, const std::string& outputDirectory);
 
 }  // namespace multio::grib2grib::utils

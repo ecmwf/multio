@@ -100,8 +100,29 @@ SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomeP
     return workUnitOutcomePerFile;
 }
 
-void writeSummary(const SummaryType& summary) {
-    (void)summary;
+void writeSummary(const SummaryType& summary, const std::string& outputDirectory) {
+    const std::string summaryLogPath = outputDirectory + "/Summary.log";
+    const std::string summaryJsonPath = outputDirectory + "/Summary.json";
+
+    std::ofstream summaryLog(summaryLogPath);
+    if (!summaryLog) {
+        throw eckit::CantOpenFile(summaryLogPath, Here());
+    }
+    for (const auto& outcome : summary) {
+        summaryLog << formatOutcomeLine(outcome);
+    }
+    if (!summaryLog.good()) {
+        throw eckit::WriteError("error while writing summary file: " + summaryLogPath, Here());
+    }
+
+    std::ofstream summaryJson(summaryJsonPath);
+    if (!summaryJson) {
+        throw eckit::CantOpenFile(summaryJsonPath, Here());
+    }
+    summaryJson << toJson(summary);
+    if (!summaryJson.good()) {
+        throw eckit::WriteError("error while writing summary file: " + summaryJsonPath, Here());
+    }
 }
 
 }  // namespace multio::grib2grib::utils

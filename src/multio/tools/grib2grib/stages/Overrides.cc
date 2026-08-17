@@ -42,27 +42,28 @@ PackingPolicy parsePackingPolicy(const std::string& value) {
 void applyPackingPolicyOverride(eckit::LocalConfiguration& mars, const OverridesContext& context) {
     const static std::unordered_map<std::string, std::string> ccsdsPackingMap{
         {"grid_simple", "ccsds"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
-        {"grid_ccsds", "ccsds"},  {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
+        {"grid_ccsds", "ccsds"},  {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"},
+        {"complex", "complex"},     {"simple", "ccsds"},     {"ccsds", "ccsds"}};
 
     const static std::unordered_map<std::string, std::string> simplePackingMap{
         {"grid_simple", "simple"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
-        {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
+        {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"},
+        {"complex", "complex"},     {"simple", "simple"},     {"ccsds", "simple"}};
 
-    const auto& packingMap = context.packingPolicy == PackingPolicy::Simple ? simplePackingMap : ccsdsPackingMap;
+    if (mars.has("packing")) {
 
-    if (!mars.has("packing")) {
-        throw eckit::BadValue("Overrides packing policy requires mars.packing", Here());
+        const auto& packingMap = context.packingPolicy == PackingPolicy::Simple ? simplePackingMap : ccsdsPackingMap;
+
+        const auto packing = mars.getString("packing");
+        const auto mapped = packingMap.find(packing);
+        if (mapped == packingMap.cend()) {
+            throw eckit::BadValue("Unhandled mars.packing '" + packing + "' for packing policy '"
+                                      + std::string{toString(context.packingPolicy)} + "'",
+                                  Here());
+        }
+
+        mars.set("packing", mapped->second);
     }
-
-    const auto packing = mars.getString("packing");
-    const auto mapped = packingMap.find(packing);
-    if (mapped == packingMap.cend()) {
-        throw eckit::BadValue("Unhandled mars.packing '" + packing + "' for packing policy '"
-                                  + std::string{toString(context.packingPolicy)} + "'",
-                              Here());
-    }
-
-    mars.set("packing", mapped->second);
 }
 
 /// @brief Apply the optional `model` override to the MARS dictionary.
@@ -111,15 +112,15 @@ void applyControlForecastOverride(eckit::LocalConfiguration& mars, eckit::LocalC
         return;
     }
 
-    if (!mars.has("stream") || !mars.has("type") || mars.getString("stream") != "oper"
-        || mars.getString("type") != "fc") {
-        throw eckit::UserError("control override is only supported for stream=oper and type=fc in the Overrides stage",
-                               Here());
+    if (mars.has("stream") && mars.has("type") && mars.getString("stream") == "oper"
+        && mars.getString("type") == "fc") {
+
+        mars.set("number", 0L);
+        misc.set("typeOfEnsembleForecast", 1L);
+        misc.set("numberOfForecastsInEnsemble", 51L);
+
     }
 
-    mars.set("number", 0L);
-    misc.set("typeOfEnsembleForecast", 1L);
-    misc.set("numberOfForecastsInEnsemble", 51L);
 }
 
 /// @brief Apply the optional `expver` override to the MARS dictionary.
@@ -201,6 +202,9 @@ OverridesContext parseOverridesContext(const eckit::LocalConfiguration& config) 
         const auto ncycle = config.getLong("ncycle");
         if (ncycle > 0) {
             parsed.generatingProcessIdentifierOverride = ncycle;
+        }
+        else {
+            throw eckit::BadValue("ncycle must be > 0", Here());
         }
     }
     if (config.has("ensemble-size")) {

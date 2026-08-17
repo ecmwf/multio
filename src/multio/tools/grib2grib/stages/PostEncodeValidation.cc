@@ -47,7 +47,7 @@ PostEncodeValidationCode runPostEncodeValidationStage(const metkit::codes::Codes
 
     try {
         return encodedHandle.getLong("isMessageValid") == 1 ? PostEncodeValidationCode::Valid
-                                                             : PostEncodeValidationCode::InvalidEncodedMessage;
+                                                            : PostEncodeValidationCode::InvalidEncodedMessage;
     }
     catch (...) {
         printTrappedErrorDisclaimer();

@@ -33,7 +33,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 struct WorkUnit {
     std::string filename;
     off_t startOffset = 0;  // Inclusive
-    off_t endOffset   = 0;  // Exclusive
+    off_t endOffset = 0;    // Exclusive
 };
 
 /// @brief Query the size of one regular file in bytes.

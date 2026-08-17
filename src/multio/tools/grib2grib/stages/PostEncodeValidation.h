@@ -15,8 +15,8 @@
 
 #include <cstdint>
 
-#include "metkit/codes/api/CodesAPI.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "metkit/codes/api/CodesAPI.h"
 
 #include "multio/tools/grib2grib/StageOutcomes.h"
 

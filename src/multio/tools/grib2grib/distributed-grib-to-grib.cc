@@ -15,21 +15,20 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/tools/grib2grib/MultioToolUtils.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/tools/grib2grib/MultioToolUtils.h"
 
 namespace multio::grib2grib {
 
 class DistributedGribToGrib final : public multio::MultioTool {
 public:
     DistributedGribToGrib(int argc, char** argv) : multio::MultioTool(argc, argv) {
-        options_.push_back(
-            new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
+        options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
         options_.push_back(new eckit::option::SimpleOption<std::string>("file-list", "Path to file list"));
         options_.push_back(
             new eckit::option::SimpleOption<std::string>("output-directory", "Path to output directory"));
-        options_.push_back(new eckit::option::SimpleOption<long>("average-work-units-per-rank",
-                                                                 "Average number of work units per MPI rank, default=15"));
+        options_.push_back(new eckit::option::SimpleOption<long>(
+            "average-work-units-per-rank", "Average number of work units per MPI rank, default=15"));
     }
 
 private:

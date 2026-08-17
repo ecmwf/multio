@@ -56,8 +56,7 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept;
 /// @param context Parsed stage-local runtime context.
 /// @param writer Rank-local sink writer.
 /// @return Stage outcome.
-Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle,
-                                  const Grib2Fdb5Context& context,
+Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
                                   multio::sink::DataSink& writer) noexcept;
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

@@ -24,8 +24,7 @@ namespace multio::grib2grib {
 class Grib2GribOptionsParser final : public multio::MultioTool {
 public:
     Grib2GribOptionsParser(int argc, char** argv) : multio::MultioTool(argc, argv) {
-        options_.push_back(
-            new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
+        options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
     }
 
 private:

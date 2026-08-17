@@ -32,7 +32,8 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 ///
 /// The stage order is part of the processing contract and is documented here so
 /// all later modules can share the same vocabulary.
-enum class ProcessingStage : std::uint8_t {
+enum class ProcessingStage : std::uint8_t
+{
     OpenFile = 0,
     ReadMessage,
     GribBasedFilter,
@@ -47,21 +48,24 @@ enum class ProcessingStage : std::uint8_t {
 };
 
 /// @brief Final per-file summary derived from stage counters.
-enum class FileSummary : std::uint8_t {
+enum class FileSummary : std::uint8_t
+{
     Success = 0,
     Partial,
     Fail,
 };
 
 /// @brief File-level outcome codes for the `OpenFile` stage.
-enum class OpenFileCode : std::uint8_t {
+enum class OpenFileCode : std::uint8_t
+{
     Valid = 0,
     OpenFailed,
     UnknownFailure,
 };
 
 /// @brief Message-level outcome codes for the `ReadMessage` stage.
-enum class ReadMessageCode : std::uint8_t {
+enum class ReadMessageCode : std::uint8_t
+{
     Valid = 0,
     ReadFailed,
     UnknownFailure,
@@ -71,7 +75,8 @@ enum class ReadMessageCode : std::uint8_t {
 ///
 /// This stage contains intentional early rejections and one generic technical
 /// failure bucket for unexpected classification failures.
-enum class GribBasedFilterCode : std::uint8_t {
+enum class GribBasedFilterCode : std::uint8_t
+{
     Accepted = 0,
     RejectedDiscipline192,
     RejectedGrib1ByEditionPolicy,
@@ -81,7 +86,8 @@ enum class GribBasedFilterCode : std::uint8_t {
 };
 
 /// @brief Message-level outcome codes for the `GribToMars` stage.
-enum class GribToMarsCode : std::uint8_t {
+enum class GribToMarsCode : std::uint8_t
+{
     Valid = 0,
     MapGribToMarsFailed,
     ValuesExtractionFailed,
@@ -89,7 +95,8 @@ enum class GribToMarsCode : std::uint8_t {
 };
 
 /// @brief Message-level outcome codes for the `MarsToMars` stage.
-enum class MarsToMarsCode : std::uint8_t {
+enum class MarsToMarsCode : std::uint8_t
+{
     Valid = 0,
     MappingsFailed,
     MergeMiscFailed,
@@ -101,21 +108,24 @@ enum class MarsToMarsCode : std::uint8_t {
 };
 
 /// @brief Message-level outcome codes for the `MarsOverrides` stage.
-enum class MarsOverridesCode : std::uint8_t {
+enum class MarsOverridesCode : std::uint8_t
+{
     Valid = 0,
     OptionOverridesFailed,
     UnknownFailure,
 };
 
 /// @brief Message-level outcome codes for the `MarsBasedFilter` stage.
-enum class MarsBasedFilterCode : std::uint8_t {
+enum class MarsBasedFilterCode : std::uint8_t
+{
     Accepted = 0,
     RejectedTimespanNonPositive,
     RejectedComplexExclusion,
 };
 
 /// @brief Message-level outcome codes for the `MarsToGrib` stage.
-enum class MarsToGribCode : std::uint8_t {
+enum class MarsToGribCode : std::uint8_t
+{
     Valid = 0,
     EncodeFailed,
     TestCaseGenerationFailed,
@@ -124,20 +134,23 @@ enum class MarsToGribCode : std::uint8_t {
 };
 
 /// @brief Message-level outcome codes for the `PostEncodeValidation` stage.
-enum class PostEncodeValidationCode : std::uint8_t {
+enum class PostEncodeValidationCode : std::uint8_t
+{
     Valid = 0,
     InvalidEncodedMessage,
 };
 
 /// @brief Message-level outcome codes for the `Grib2Fdb5` stage.
-enum class Grib2Fdb5Code : std::uint8_t {
+enum class Grib2Fdb5Code : std::uint8_t
+{
     Valid = 0,
     ArchiveFailed,
     UnknownFailure,
 };
 
 /// @brief File-level outcome codes for the `FileFlush` stage.
-enum class FileFlushCode : std::uint8_t {
+enum class FileFlushCode : std::uint8_t
+{
     Valid = 0,
     FileFlushFailed,
     UnknownFailure,

@@ -71,13 +71,12 @@ std::vector<WorkUnit> distributeWork(const std::string& fileList, long averageWo
                                      const eckit::mpi::Comm& comm) {
     std::vector<WorkBucket> rootBuckets;
     if (comm.rank() == 0) {
-        rootBuckets = multio::distGrib1ToGrib2::grib2grib::createBuckets(readFileList(fileList), comm.size(),
-                                                                         static_cast<std::size_t>(averageWorkUnitsPerRank));
+        rootBuckets = multio::distGrib1ToGrib2::grib2grib::createBuckets(
+            readFileList(fileList), comm.size(), static_cast<std::size_t>(averageWorkUnitsPerRank));
     }
 
-    const auto rankBucket
-        = multio::distGrib1ToGrib2::grib2grib::distributeRankOwnedBucket(comm.rank() == 0 ? &rootBuckets : nullptr,
-                                                                         comm);
+    const auto rankBucket = multio::distGrib1ToGrib2::grib2grib::distributeRankOwnedBucket(
+        comm.rank() == 0 ? &rootBuckets : nullptr, comm);
     return rankBucket.workUnits;
 }
 
@@ -91,8 +90,8 @@ std::vector<FileStageOutcomes> gatherWorkUnitOutcome(const std::vector<FileStage
     return multio::distGrib1ToGrib2::grib2grib::gatherOutcomes(localOutcomes, comm);
 }
 
-std::vector<FileStageOutcomes>
-summarizeWorkUnitOutcomePerFile(const std::vector<FileStageOutcomes>& workUnitOutcomeGlobal) {
+std::vector<FileStageOutcomes> summarizeWorkUnitOutcomePerFile(
+    const std::vector<FileStageOutcomes>& workUnitOutcomeGlobal) {
     return multio::distGrib1ToGrib2::grib2grib::createPerFileOutcomes(workUnitOutcomeGlobal);
 }
 

@@ -515,8 +515,7 @@ std::string toJson(const FileStageOutcomes& outcomes) {
         << "  \"summary\": \"" << toString(deriveSummary(outcomes)) << "\",\n"
         << "  \"filename\": \"" << jsonEscape(outcomes.filename) << "\",\n"
         << "  \"nMessages\": " << outcomes.nMessages << ",\n"
-        << "  \"nFailedMarsToGribTestCaseGenerations\": " << outcomes.nFailedMarsToGribTestCaseGenerations
-        << ",\n"
+        << "  \"nFailedMarsToGribTestCaseGenerations\": " << outcomes.nFailedMarsToGribTestCaseGenerations << ",\n"
         << "  \"nFailedMarsToGribTestCaseWrites\": " << outcomes.nFailedMarsToGribTestCaseWrites << ",\n"
         << "  \"nCloseFailures\": " << outcomes.nCloseFailures << ",\n"
         << "  \"nGenericProcessOneMessageFailures\": " << outcomes.nGenericProcessOneMessageFailures << ",\n"
@@ -555,8 +554,7 @@ std::string toJson(const OutcomeAggregate& aggregate) {
     out << "{\n"
         << "  \"nFiles\": " << aggregate.nFiles << ",\n"
         << "  \"nMessages\": " << aggregate.nMessages << ",\n"
-        << "  \"nFailedMarsToGribTestCaseGenerations\": " << aggregate.nFailedMarsToGribTestCaseGenerations
-        << ",\n"
+        << "  \"nFailedMarsToGribTestCaseGenerations\": " << aggregate.nFailedMarsToGribTestCaseGenerations << ",\n"
         << "  \"nFailedMarsToGribTestCaseWrites\": " << aggregate.nFailedMarsToGribTestCaseWrites << ",\n"
         << "  \"nCloseFailures\": " << aggregate.nCloseFailures << ",\n"
         << "  \"nGenericProcessOneMessageFailures\": " << aggregate.nGenericProcessOneMessageFailures << ",\n"

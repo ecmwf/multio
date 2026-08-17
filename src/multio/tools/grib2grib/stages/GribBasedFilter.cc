@@ -286,7 +286,7 @@ bool isDiscipline192Param(long paramId) {
     };
 
     static const std::unordered_set<long> discipline192ParamsToMap{35,  36,  37,  38,  39,  40,     41,     42,
-                                                                    123, 139, 170, 183, 236, 151130, 151148, 151164};
+                                                                   123, 139, 170, 183, 236, 151130, 151148, 151164};
 
     return discipline192Params.find(paramId) != discipline192Params.end()
         && discipline192ParamsToMap.find(paramId) == discipline192ParamsToMap.end();
@@ -328,8 +328,7 @@ bool isDiscipline192Message(const metkit::codes::CodesHandle& handle) {
 /// @param options Parsed coarse-grain options.
 /// @return `true` when the message should be rejected by the discipline-192
 ///         classifier.
-bool rejectByDiscipline192(const metkit::codes::CodesHandle& inputHandle,
-                           const GribBasedFilterContext& context) {
+bool rejectByDiscipline192(const metkit::codes::CodesHandle& inputHandle, const GribBasedFilterContext& context) {
     return context.discipline192Policy == OptionPolicy::Ignore && isDiscipline192Message(inputHandle);
 }
 
@@ -338,8 +337,7 @@ bool rejectByDiscipline192(const metkit::codes::CodesHandle& inputHandle,
 /// @param options Parsed coarse-grain options.
 /// @return `true` when the message is GRIB1 and the configured policy is
 ///         `OptionPolicy::Ignore`.
-bool rejectByEditionPolicyGrib1(const metkit::codes::CodesHandle& inputHandle,
-                                const GribBasedFilterContext& context) {
+bool rejectByEditionPolicyGrib1(const metkit::codes::CodesHandle& inputHandle, const GribBasedFilterContext& context) {
     const auto edition = inputHandle.getString("edition");
     return edition == "1" && context.grib1Policy == OptionPolicy::Ignore;
 }
@@ -349,8 +347,7 @@ bool rejectByEditionPolicyGrib1(const metkit::codes::CodesHandle& inputHandle,
 /// @param options Parsed coarse-grain options.
 /// @return `true` when the message is GRIB2 and the configured policy is
 ///         `OptionPolicy::Ignore`.
-bool rejectByEditionPolicyGrib2(const metkit::codes::CodesHandle& inputHandle,
-                                const GribBasedFilterContext& context) {
+bool rejectByEditionPolicyGrib2(const metkit::codes::CodesHandle& inputHandle, const GribBasedFilterContext& context) {
     const auto edition = inputHandle.getString("edition");
     return edition == "2" && context.grib2Policy == OptionPolicy::Ignore;
 }
@@ -360,8 +357,7 @@ bool rejectByEditionPolicyGrib2(const metkit::codes::CodesHandle& inputHandle,
 /// @param options Parsed coarse-grain options.
 /// @return `true` when `isMessageValid != 1` and the configured policy is
 ///         `OptionPolicy::Ignore`.
-bool rejectByInvalidInputMessage(const metkit::codes::CodesHandle& inputHandle,
-                                 const GribBasedFilterContext& context) {
+bool rejectByInvalidInputMessage(const metkit::codes::CodesHandle& inputHandle, const GribBasedFilterContext& context) {
     return context.invalidMessagesPolicy == OptionPolicy::Ignore && inputHandle.getLong("isMessageValid") != 1;
 }
 

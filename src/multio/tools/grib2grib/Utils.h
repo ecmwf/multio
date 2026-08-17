@@ -30,7 +30,8 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// but the current intended meaning is:
 /// - `TryToHandle`: allow the message to continue to the next step
 /// - `Ignore`: reject the message intentionally at the current stage
-enum class OptionPolicy {
+enum class OptionPolicy
+{
     TryToHandle = 0,
     Ignore,
 };

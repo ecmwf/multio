@@ -48,8 +48,7 @@ void applyPackingPolicyOverride(eckit::LocalConfiguration& mars, const Overrides
         {"grid_simple", "simple"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
         {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"}};
 
-    const auto& packingMap
-        = context.packingPolicy == PackingPolicy::Simple ? simplePackingMap : ccsdsPackingMap;
+    const auto& packingMap = context.packingPolicy == PackingPolicy::Simple ? simplePackingMap : ccsdsPackingMap;
 
     if (!mars.has("packing")) {
         throw eckit::BadValue("Overrides packing policy requires mars.packing", Here());

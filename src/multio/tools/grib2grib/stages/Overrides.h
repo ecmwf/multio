@@ -30,7 +30,8 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 ///
 /// `Ccsds` applies the frozen mapping used in `grib2MarsMisc`.
 /// `Simple` applies the separate mapping used in `grib1-to-grib2`.
-enum class PackingPolicy : std::uint8_t {
+enum class PackingPolicy : std::uint8_t
+{
     Ccsds = 0,
     Simple,
 };

@@ -15,8 +15,8 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-#include "multio/tools/grib2grib/stages/GribBasedFilter.h"
 #include "multio/tools/grib2grib/stages/Grib2Fdb5.h"
+#include "multio/tools/grib2grib/stages/GribBasedFilter.h"
 #include "multio/tools/grib2grib/stages/GribToMars.h"
 #include "multio/tools/grib2grib/stages/MarsBasedFilter.h"
 #include "multio/tools/grib2grib/stages/MarsToGrib.h"

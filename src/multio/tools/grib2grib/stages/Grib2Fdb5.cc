@@ -45,8 +45,7 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept {
     (void)context;
 }
 
-Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle,
-                                  const Grib2Fdb5Context& context,
+Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
                                   multio::sink::DataSink& writer) noexcept {
     Grib2Fdb5Result result;
 

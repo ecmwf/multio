@@ -16,12 +16,12 @@
 #include <vector>
 
 
-#include "metkit/codes/api/CodesAPI.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+#include "metkit/codes/api/CodesAPI.h"
 
 
 #include <eccodes.h>
@@ -104,7 +104,8 @@ void writeDistributionStats(const std::vector<WorkBucket>& buckets, const std::s
         maxWeight = std::max(maxWeight, bucket.totalWeightBytes);
     }
 
-    const double idealWeight = buckets.empty() ? 0.0 : static_cast<double>(totalWeight) / static_cast<double>(buckets.size());
+    const double idealWeight
+        = buckets.empty() ? 0.0 : static_cast<double>(totalWeight) / static_cast<double>(buckets.size());
     const std::uint64_t maxMinusMin = maxWeight - minWeight;
     const double imbalancePercent = idealWeight > 0.0 ? 100.0 * static_cast<double>(maxMinusMin) / idealWeight : 0.0;
 
@@ -129,9 +130,9 @@ void print(long rank, long workUnitIndex, const metkit::codes::CodesHandle& hand
     const long totalLength = handle.getLong("totalLength");
     const long isMessageValid = handle.getLong("isMessageValid");
 
-    std::cout << std::setw(12) << rank << std::setw(12) << workUnitIndex << std::setw(12) << paramId
-              << std::setw(12) << channel << std::setw(12) << offset << std::setw(12) << count
-              << std::setw(12) << totalLength << std::setw(12) << isMessageValid << std::endl;
+    std::cout << std::setw(12) << rank << std::setw(12) << workUnitIndex << std::setw(12) << paramId << std::setw(12)
+              << channel << std::setw(12) << offset << std::setw(12) << count << std::setw(12) << totalLength
+              << std::setw(12) << isMessageValid << std::endl;
 }
 
 void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUnit) {

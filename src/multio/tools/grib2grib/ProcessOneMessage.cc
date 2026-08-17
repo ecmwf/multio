@@ -35,7 +35,8 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             return;
         }
 
-        const auto marsToMarsResult = runMarsToMarsStage(gribToMarsResult.mars, gribToMarsResult.misc, context.marsToMars);
+        const auto marsToMarsResult
+            = runMarsToMarsStage(gribToMarsResult.mars, gribToMarsResult.misc, context.marsToMars);
         outcomes.marsToMars.bump(marsToMarsResult.outcome);
         if (marsToMarsResult.outcome != MarsToMarsCode::Valid) {
             return;
@@ -54,8 +55,9 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             return;
         }
 
-        const auto marsToGribResult = runMarsToGribStage(gribToMarsResult.values, overridesResult.mars,
-                                                         overridesResult.misc, context.marsToGrib, writer.testCaseSink());
+        const auto marsToGribResult
+            = runMarsToGribStage(gribToMarsResult.values, overridesResult.mars, overridesResult.misc,
+                                 context.marsToGrib, writer.testCaseSink());
         outcomes.marsToGrib.bump(marsToGribResult.outcome);
         if (marsToGribResult.testCaseGenerationFailed) {
             ++outcomes.nFailedMarsToGribTestCaseGenerations;
@@ -74,7 +76,8 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             return;
         }
 
-        const auto grib2Fdb5Result = runGrib2Fdb5Stage(*marsToGribResult.encoded, context.grib2Fdb5, writer.mainDataSink());
+        const auto grib2Fdb5Result
+            = runGrib2Fdb5Stage(*marsToGribResult.encoded, context.grib2Fdb5, writer.mainDataSink());
         outcomes.grib2Fdb5.bump(grib2Fdb5Result.outcome);
     }
     catch (...) {

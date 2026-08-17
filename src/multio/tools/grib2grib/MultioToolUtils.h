@@ -50,8 +50,8 @@ std::vector<FileStageOutcomes> processWorkUnits(const std::vector<WorkUnit>& wor
 std::vector<FileStageOutcomes> gatherWorkUnitOutcome(const std::vector<FileStageOutcomes>& localOutcomes,
                                                      const eckit::mpi::Comm& comm);
 
-std::vector<FileStageOutcomes>
-summarizeWorkUnitOutcomePerFile(const std::vector<FileStageOutcomes>& workUnitOutcomeGlobal);
+std::vector<FileStageOutcomes> summarizeWorkUnitOutcomePerFile(
+    const std::vector<FileStageOutcomes>& workUnitOutcomeGlobal);
 
 SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomePerFile);
 

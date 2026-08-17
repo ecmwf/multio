@@ -105,8 +105,8 @@ std::optional<off_t> findNextGribOffset(std::FILE* file, const std::string& file
     off_t messageOffset = 0;
     error = codes_get_message_offset(handle.get(), &messageOffset);
     if (error != CODES_SUCCESS) {
-        throw std::runtime_error("codes_get_message_offset() failed for '" + filename + "': "
-                                 + codes_get_error_message(error));
+        throw std::runtime_error("codes_get_message_offset() failed for '" + filename
+                                 + "': " + codes_get_error_message(error));
     }
 
     return messageOffset;
@@ -402,15 +402,15 @@ std::unique_ptr<metkit::codes::CodesHandle> UnitOfWork::nextMessage() {
         }
 
         throw std::runtime_error("ecCodes failed while processing '" + workUnit_.filename + "' in ["
-                                 + std::to_string(workUnit_.startOffset) + ", "
-                                 + std::to_string(workUnit_.endOffset) + "): " + codes_get_error_message(error));
+                                 + std::to_string(workUnit_.startOffset) + ", " + std::to_string(workUnit_.endOffset)
+                                 + "): " + codes_get_error_message(error));
     }
 
     off_t messageOffset = 0;
     error = codes_get_message_offset(handle.get(), &messageOffset);
     if (error != CODES_SUCCESS) {
-        throw std::runtime_error("codes_get_message_offset() failed for '" + workUnit_.filename + "': "
-                                 + codes_get_error_message(error));
+        throw std::runtime_error("codes_get_message_offset() failed for '" + workUnit_.filename
+                                 + "': " + codes_get_error_message(error));
     }
 
     if (messageOffset >= workUnit_.endOffset) {
@@ -427,8 +427,8 @@ std::unique_ptr<metkit::codes::CodesHandle> UnitOfWork::nextMessage() {
     size_t size = 0;
     error = codes_get_message(handle.get(), &buffer, &size);
     if (error != CODES_SUCCESS) {
-        throw std::runtime_error("codes_get_message() failed for '" + workUnit_.filename + "': "
-                                 + codes_get_error_message(error));
+        throw std::runtime_error("codes_get_message() failed for '" + workUnit_.filename
+                                 + "': " + codes_get_error_message(error));
     }
 
     // ecCodes advances the file handle to the end of the decoded message, which

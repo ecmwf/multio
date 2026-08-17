@@ -232,8 +232,8 @@ LoadBalancePlan makeLoadBalancePlan(const std::string& listFile, std::size_t nWo
     }
 
     plan.sizePerWorkerBytes = plan.totalSizeBytes / static_cast<std::uint64_t>(nWorkers);
-    plan.referenceWorkUnitSizeBytes = std::max<std::uint64_t>(
-        1, plan.sizePerWorkerBytes / static_cast<std::uint64_t>(averageWorkUnitsPerWorker));
+    plan.referenceWorkUnitSizeBytes
+        = std::max<std::uint64_t>(1, plan.sizePerWorkerBytes / static_cast<std::uint64_t>(averageWorkUnitsPerWorker));
 
     plan.workUnits = makeEstimatedWorkUnits(plan.files, plan.referenceWorkUnitSizeBytes);
     plan.buckets = makeBalancedWorkBuckets(plan.workUnits, nWorkers);
@@ -282,7 +282,6 @@ WorkBucket deserializeWorkBucketImpl(const std::vector<char>& payload) {
 }  // namespace implementation
 
 
-
 /// @brief Build balanced work buckets from a list of input files.
 /// @param filenames Input files whose sizes drive work-unit generation.
 /// @param nWorkers Number of target buckets to create.
@@ -305,7 +304,8 @@ std::vector<WorkBucket> createBuckets(const std::vector<std::string>& filenames,
 
     plan.files.reserve(filenames.size());
     for (const auto& filename : filenames) {
-        plan.files.push_back(implementation::FileWithSize{filename, static_cast<std::uint64_t>(fileSizeBytes(filename))});
+        plan.files.push_back(
+            implementation::FileWithSize{filename, static_cast<std::uint64_t>(fileSizeBytes(filename))});
     }
 
     for (const auto& file : plan.files) {
@@ -313,8 +313,8 @@ std::vector<WorkBucket> createBuckets(const std::vector<std::string>& filenames,
     }
 
     plan.sizePerWorkerBytes = plan.totalSizeBytes / static_cast<std::uint64_t>(nWorkers);
-    plan.referenceWorkUnitSizeBytes = std::max<std::uint64_t>(
-        1, plan.sizePerWorkerBytes / static_cast<std::uint64_t>(averageWorkUnitsPerWorker));
+    plan.referenceWorkUnitSizeBytes
+        = std::max<std::uint64_t>(1, plan.sizePerWorkerBytes / static_cast<std::uint64_t>(averageWorkUnitsPerWorker));
 
     plan.workUnits = implementation::makeEstimatedWorkUnits(plan.files, plan.referenceWorkUnitSizeBytes);
     plan.buckets = implementation::makeBalancedWorkBuckets(plan.workUnits, nWorkers);

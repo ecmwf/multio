@@ -1,49 +1,48 @@
 # grib2grib Restart Context
 
-This file is written for agent restart and context recovery.
+This document is the current architecture and recovery reference for
+`src/multio/tools/grib2grib/`.
 
-## Scope and isolation rules
+It describes the code as it exists now. It does not describe historical target
+states, intermediate migration steps, or deferred design ideas unless they are
+explicitly called out as non-goals.
+
+## Scope
 
 - Work only under `src/multio/tools/grib2grib/`
-- Standalone stage modules now live under `src/multio/tools/grib2grib/stages/`
-- The folder is self-contained: it may depend only on
+- Standalone stage modules live under `src/multio/tools/grib2grib/stages/`
+- The folder is intentionally self-contained and may depend only on:
   - files inside `src/multio/tools/grib2grib/`
-  - external libs: eckit, metkit, eccodes, `multio` (sink)
-  - the `../MultioTool.cc` framework only
-- Do not depend on any sibling file under `src/multio/tools/`
-- Scalar (non-MPI) tools must never link or inherit MPI
-- Do not modify legacy `grib2MarsMisc`
-- The parent `src/multio/tools/CMakeLists.txt` is intentionally NOT modified;
-  the folder will not build until `add_subdirectory(grib2grib)` is added there
-  (deferred on purpose)
-- Build the new pipeline stage by stage in isolation
+  - external libraries: `eckit`, `metkit`, `eccodes`, `multio`
+  - the shared `../MultioTool.cc` framework
+- Do not reintroduce dependencies on sibling code under `src/multio/tools/`
+- Scalar tools must remain MPI-free
+- `grib2grib` owns its own `CodesHandle -> eckit::message::Message` bridge
+- `grib2grib` does not modify the legacy `grib2MarsMisc` tooling
 
-## Build and CMake layout
+## Build Graph
 
-Local `CMakeLists.txt` defines two libraries and four executables.
+`CMakeLists.txt` defines:
 
-- `multio-grib2grib` (MPI-free core library)
-  - sources: `../MultioTool.cc`, all stages, `GlobalContext`, `StageOutcomes`,
-    `Utils`, `UnitOfWork`, `WorkUnitLoadBalancer`, `Sink`, `Summary`,
-    `Process*`, `OptionsUtils.cc`, `CodesHandleToEckitMessage.cc`
-  - `PUBLIC_LIBS`: `multio`, `eckit`, `metkit`, `eccodes`
-  - `CONDITION HAVE_GRIB1_TO_GRIB2`
-- `multio-grib2grib-mpi` (MPI library)
-  - sources: `MpiUtils.cc`, `OptionsUtilsMpi.cc`, `MultioToolUtils.cc`
-  - `PUBLIC_LIBS`: `multio-grib2grib`, `eckit`, `eckit_mpi`
-  - `CONDITION HAVE_GRIB1_TO_GRIB2 AND HAVE_MPI`
-- Executables:
-  - `grib2grib-options-parser` (scalar, `LIBS multio-grib2grib`)
-  - `grib2grib-data-distribution-test` (scalar, `LIBS multio-grib2grib`)
-  - `grib2grib-sink-test` (scalar, `LIBS multio-grib2grib`)
-  - `distributed-grib-to-grib` (`LIBS multio-grib2grib-mpi`, needs `HAVE_MPI`)
+- `multio-grib2grib`
+  - MPI-free shared library
+  - owns the core pipeline, stage modules, sink utilities, unit reader,
+    load balancer, summary utilities, and scalar helper code
+- `multio-grib2grib-mpi`
+  - thin MPI-dependent shared library
+  - owns `OptionsUtilsMpi.cc`, `MpiUtils.cc`, and tool-level orchestration
+- executables:
+  - `grib2grib-options-parser`
+  - `grib2grib-data-distribution-test`
+  - `grib2grib-sink-test`
+  - `distributed-grib-to-grib`
 
-The two-library split is required: the MPI-dependent symbol in
-`OptionsUtilsMpi.cc` (`loadAndBroadcastOptionsAsConfiguration`) would otherwise
-force `eckit_mpi` onto the scalar tools. Keeping it in a separate library lets
-the scalar tools stay MPI-free.
+The two-library split is required because `OptionsUtilsMpi.cc` and `MpiUtils.cc`
+would otherwise pull `eckit_mpi` into the scalar tools.
 
-## Current stage order
+## Pipeline Order
+
+The runtime stage order is fixed:
 
 1. `OpenFile`
 2. `ReadMessage`
@@ -57,644 +56,274 @@ the scalar tools stay MPI-free.
 10. `Grib2Fdb5`
 11. `FileFlush`
 
-## Summary semantics
+`OpenFile`, `ReadMessage`, and `FileFlush` are handled outside
+`ProcessOneMessage(...)`.
 
-- `Success`: all messages converted and archived successfully
-- `Partial`: some messages intentionally rejected, no technical failures
-- `Fail`: any technical failure in any stage, including open and flush
+## Strict YAML Schema
 
-## Implemented modules
+The runtime configuration is strict. The parser requires top-level `reader` and
+`stages` sections. Stage-local keys must live inside the corresponding
+`stages.<name>` block.
 
-### `StageOutcomes`
+### Required top-level structure
 
-Files:
+```yaml
+reader:
+  mode: eccodes-stream
 
-- `StageOutcomes.h`
-- `StageOutcomes.cc`
+stages:
+  grib-based-filter: {}
+  grib-to-mars: {}
+  mars-to-mars: {}
+  overrides: {}
+  mars-based-filter: {}
+  mars-to-grib: {}
+  post-encode-validation: {}
+  grib2fdb5: {}
 
-Contains:
+sink:
+  type: file
+  path: /path/output.grib2
+```
 
-- stage enums
-- counters per stage
-- per-file and aggregated outcomes
-- summary derivation
-- JSON helpers
-- serialization and deserialization helpers
-- compact text formatting helpers
+### Optional top-level sections
 
-### `Utils`
+- `sink`
+  - if missing, defaults to a rank-local file sink under
+    `output/rank<rank>.grib2`
+- `debug-sinks`
+  - optional stage-specific best-effort side sinks
+  - each entry uses the exact same schema as the top-level `sink`
 
-Files:
+### Reader section
 
-- `Utils.h`
-- `Utils.cc`
+```yaml
+reader:
+  mode: eccodes-stream
+```
 
-Contains:
+Supported values:
 
-- generic `OptionPolicy`
-  - `TryToHandle`
-  - `Ignore`
-- `toString(OptionPolicy)`
-- `parseOptionPolicy(...)`
-- `getOptionPolicy(...)`
+- `eccodes-stream`
+- `candidate-boundary`
 
-### `CodesHandleToEckitMessage`
+### Stage sections
 
-Files:
+#### `stages.grib-based-filter`
 
-- `CodesHandleToEckitMessage.h`
-- `CodesHandleToEckitMessage.cc`
+```yaml
+stages:
+  grib-based-filter:
+    verbosity: 0
+    grib1-messages-policy: try-to-handle
+    grib2-messages-policy: try-to-handle
+    invalid-messages-policy: ignore
+    discipline192-messages-policy: ignore
+```
 
-Contains:
+#### `stages.grib-to-mars`
 
-- `to_eckit_message(const metkit::codes::CodesHandle&)`
-- created for self-containment (replaces a dependency on a sibling `tools/` file)
-- used by `stages/Grib2Fdb5.cc` and by `grib2grib-sink-test.cc`
+```yaml
+stages:
+  grib-to-mars:
+    verbosity: 0
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+```
+
+`api-options` is optional. If absent, `metkit::grib2mars::Grib2Mars` is
+default-constructed. If present, the `LocalConfiguration` constructor is used.
+
+#### `stages.mars-to-mars`
+
+```yaml
+stages:
+  mars-to-mars:
+    verbosity: 0
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+```
+
+`api-options` is optional. If absent, `metkit::mars2mars::Mars2Mars` is
+default-constructed. If present, the `LocalConfiguration` constructor is used.
+
+#### `stages.overrides`
+
+```yaml
+stages:
+  overrides:
+    verbosity: 0
+    packing: ccsds
+    model: ifs
+    ncycle: 162
+    ensemble-size: 50
+    analysis-window-length-in-hours: 6
+    control: false
+    expver: "2250"
+```
+
+All keys are optional.
+
+#### `stages.mars-based-filter`
+
+```yaml
+stages:
+  mars-based-filter:
+    verbosity: 0
+    selectors:
+      any:
+        - stream: ["oper"]
+        - type: ["fc"]
+```
+
+`selectors` is optional.
+
+If `selectors` is absent:
+
+- every message is accepted by this stage
+
+If `selectors` is present:
+
+- the block is converted into `multio::message::match::MatchReduce`
+- the post-override `mars` and `misc` dictionaries are converted into
+  `multio::message::Metadata`
+- `misc` values overwrite duplicate keys from `mars`
+- if the selector matches, the stage returns `Rejected`
+- if the selector does not match, the stage returns `Accepted`
+
+This stage uses inverted selector semantics relative to the MultIO `select`
+action:
+
+- `select` match means keep
+- `mars-based-filter` match means reject
+
+#### `stages.mars-to-grib`
+
+```yaml
+stages:
+  mars-to-grib:
+    verbosity: 0
+    generate-testcases: false
+    testcases-dir: /path/to/output
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+```
+
+Current stage-local keys:
+
+- `verbosity`
+- `generate-testcases`
+- `testcases-dir`
+- `api-options`
+
+`api-options` is optional. If absent, both:
+
+- `metkit::mars2grib::Mars2Grib`
+- `metkit::mars2grib::Mars2GribTestCaseGenerator`
+
+are default-constructed. If present, both use the `LocalConfiguration`
+constructor.
+
+`generate-testcases: true` requires `testcases-dir`.
+
+#### `stages.post-encode-validation`
+
+```yaml
+stages:
+  post-encode-validation:
+    verbosity: 0
+```
+
+#### `stages.grib2fdb5`
+
+```yaml
+stages:
+  grib2fdb5:
+    verbosity: 0
+```
+
+## Reader Modes
+
+`UnitOfWork` supports two reader implementations.
+
+### `eccodes-stream`
+
+- current historical behavior
+- seeks to the coarse byte offset
+- calls `codes_grib_handle_new_from_file(...)`
+- asks ecCodes for the actual message start offset
+- copies the decoded message bytes out of the ecCodes handle
+
+### `candidate-boundary`
+
+- explicit candidate-based scanning behavior
+- searches for candidate `GRIB` starts only within the owned start range
+- validates the full message against physical EOF
+- accepts messages whose start is owned, even when the body crosses the unit end
+- copies the validated bytes and constructs the handle from memory via
+  `codesHandleFromMessageCopy(...)`
+
+### CLI override
+
+The following tools accept `--reader-mode`:
+
+- `distributed-grib-to-grib`
+- `grib2grib-sink-test`
+- `grib2grib-data-distribution-test`
+
+The CLI override wins over `reader.mode` from YAML.
+
+Supported values are the same as in YAML:
+
+- `eccodes-stream`
+- `candidate-boundary`
+
+## GlobalContext
+
+`GlobalContext` is the immutable config-derived runtime bundle for the whole
+pipeline.
+
+It contains:
+
+- `ReaderContext reader`
+- `GribBasedFilterContext gribBasedFilter`
+- `GribToMarsContext gribToMars`
+- `MarsToMarsContext marsToMars`
+- `OverridesContext overrides`
+- `MarsBasedFilterContext marsBasedFilter`
+- `MarsToGribContext marsToGrib`
+- `PostEncodeValidationContext postEncodeValidation`
+- `Grib2Fdb5Context grib2Fdb5`
+
+It does not contain:
+
+- sink runtime state
+- open files
+- MPI communicator state
+
+`validateGlobalContext(...)` requires top-level `reader` and `stages`.
+Missing stage sub-blocks are allowed and are parsed as empty
+`eckit::LocalConfiguration{}` blocks.
+
+## Stage Contracts
 
 ### `GribBasedFilter`
 
-Files:
+Input:
 
-- `stages/GribBasedFilter.h`
-- `stages/GribBasedFilter.cc`
+- `const metkit::codes::CodesHandle&`
 
-Current state:
+Output:
 
-- parsed option struct exists
-- options validator exists
-- options parser exists
-- classifier entry point exists
-- stage consumes `const metkit::codes::CodesHandle&` directly
-- discipline-192 classifier is implemented
-- edition-policy classifiers are implemented
-- invalid-message classifier is implemented
-- the public entry point calls the stage predicates explicitly in order
-- whole stage is wrapped in a single `try/catch`
-- catch returns `FailedGribBasedFilter`
+- `GribBasedFilterCode`
 
-### `Overrides`
-
-Files:
-
-- `Overrides.h`
-- `Overrides.cc`
-
-Current state:
-
-- stage-local options struct exists
-- stage-local result struct exists
-- `PackingPolicy` exists with `Ccsds` and `Simple`
-- options validator exists
-- options parser exists
-- stage entry point exists
-- flat explicit override callbacks are in place
-- implemented callbacks:
-  - packing policy override
-  - model override
-  - generating process identifier override
-  - control override
-  - expver override
-- stage operates only on post-`MarsToMars` `mars` and `misc` dictionaries
-- stage does not access the input GRIB message
-- `ccsds` is the default packing policy
-- packing policy selects one of two explicit frozen maps:
-  - `ccsds`: exact mapping from `grib2MarsMisc`
-  - `simple`: exact mapping from `grib1-to-grib2`
-- explicit field-exclusion rules are deferred until after Monday
-- do not wire `MetadataMatcher` into `Overrides` for Monday delivery
-
-## Context model
-
-- stage `Options` have been renamed to stage `Context`
-- runtime callback arguments should use `context`, not `options`
-- runtime stage entry points should use uniform `run...Stage(...)` naming
-- every stage should expose:
-  - `validate<Stage>Context(...)`
-  - `parse<Stage>Context(...)`
-  - `free<Stage>Context(...)`
-- `free<Stage>Context(...)` should be `noexcept`
-- a dedicated `GlobalContext` should aggregate all stage contexts
-- `GlobalContext` should expose:
-  - `validateGlobalContext(...)`
-  - `parseGlobalContext(...)`
-  - `freeGlobalContext(...)`
-- `GlobalContext` is config-derived only and must not contain rank-local sink state
-
-### `GribToMars`
-
-Current state target:
-
-- fake stage-local context struct should exist with `verbosity` only
-- fake context validator should exist
-- fake context parser should exist
-- fake context free callback should exist
-- stage-local result struct should contain:
-  - `mars` as `eckit::LocalConfiguration`
-  - `misc` as `eckit::LocalConfiguration`
-  - `values` as `std::vector<double>`
-- stage consumes `const metkit::codes::CodesHandle&`
-- stage calls metkit `grib2mars.convert<eckit::LocalConfiguration>(...)`
-- stage extracts values with `inputHandle.getDoubleArray("values")`
-- main callback should be `noexcept`
-- main runtime callback should be `runGribToMarsStage(...)`
-- stage result should contain `outcome`, `mars`, `misc`, and `values`
-- source of truth for the metkit call sequence is:
-  - `/ec/res4/hpcperm/mavm/ba/multio-bundle/source/metkit/src/tools/grib1-to-grib2.cc`
-- stage outcomes should be:
-  - `Valid`
-  - `MapGribToMarsFailed`
-  - `ValuesExtractionFailed`
-  - `UnknownFailure`
-
-### `MarsToMars`
-
-Current state target:
-
-- fake stage-local context struct should exist with `verbosity` only
-- fake context validator should exist
-- fake context parser should exist
-- fake context free callback should exist
-- stage consumes `mars` and `misc`
-- stage calls metkit `mars2mars.convert<eckit::LocalConfiguration>(mars)`
-- stage merges returned `misc` with incoming `misc`
-- main callback should be `noexcept`
-- main runtime callback should be `runMarsToMarsStage(...)`
-- stage result should contain `outcome`, `mars`, and `misc`
-- effective prototype is `[mars, misc] = mars2marsStage(mars, misc)`
-- WMO-unit mapping is always active
-- no `wmo-units` switch in the new pipeline
-- values are not rescaled in `MarsToMars`
-- scale factor and offset stay in `misc`
-- stage outcomes should separate mapping failure and misc-merge failure
-
-### `MarsBasedFilter`
-
-Monday target:
-
-- fake stage-local context struct should exist with `verbosity` only
-- fake context validator should exist
-- fake context parser should exist
-- fake context free callback should exist
-- stage exists
-- main callback should be `noexcept`
-- current behavior is accept-all
-- real rejection rules will be added after first test feedback
-
-### `MarsToGrib`
-
-Monday target (updated to current state):
-
-- context struct `MarsToGribContext` now contains only:
-  - `verbosity`
-  - `encoderConfig` as `eckit::LocalConfiguration`
-- the encoder (`Mars2Grib`) and testcase generator
-  (`Mars2GribTestCaseGenerator`) are no longer stored in the context
-- they are built fresh per message inside `runMarsToGribStage(...)`
-- `parseMarsToGribContext(...)` no longer opens any file
-- `freeMarsToGribContext(...)` is now a no-op (kept for API symmetry)
-- main callback should be `noexcept`
-- main runtime callback should be `runMarsToGribStage(...)`
-- `runMarsToGribStage(values, mars, misc, context, TestCaseFileSink* testCaseSink)`
-- stage result should contain `outcome` and encoded `std::unique_ptr<metkit::codes::CodesHandle>`
-- `MarsToGribResult` also carries `testCaseGenerationFailed` and `testCaseWriteFailed` flags
-- testcase generation runs only when `testCaseSink != nullptr`
-  (the old `mars2grib-generate-testcases` gate now lives in `Grib2GribSinks`)
-- testcase lines are written via `testCaseSink->write(...)`
-- testcase generation and testcase write failures are non-fatal diagnostics
-- failed testcase generation and failed testcase write should increment dedicated counters
-  (bumped in `ProcessOneMessage`)
-- `mars2grib-options` are parsed from YAML into `encoderConfig` and passed to both:
-  - `metkit::mars2grib::Mars2Grib`
-  - `metkit::mars2grib::Mars2GribTestCaseGenerator`
-- supported `mars2grib-options` currently match the existing `encode-mtg2` boolean option surface
-
-### testcase output
-
-- ownership: the testcase file sink is owned by `Grib2GribSinks`, not by the stage context
-- enabling is decided in the `Grib2GribSinks` constructor from top-level options:
-  - `mars2grib-generate-testcases`
-  - `mars2grib-testcases-dir`
-- filename helper `testCaseFilePath(...)` lives in an anonymous namespace in `Sink.cc`
-- one output file per MPI rank
-- filename pattern: `mars2grib-testcases.<MPI_RANK>.json`
-- append one testcase JSON string per line
-
-### `PostEncodeValidation`
-
-Current state target:
-
-- fake stage-local context struct should exist with `verbosity` only
-- fake context validator should exist
-- fake context parser should exist
-- fake context free callback should exist
-- main callback should be `noexcept`
-- main runtime callback should be `runPostEncodeValidationStage(...)`
-- stage consumes encoded `const metkit::codes::CodesHandle&`
-- stage checks ecCodes `isMessageValid`
-- current outcomes are:
-  - `Valid`
-  - `InvalidEncodedMessage`
-
-### `Grib2Fdb5`
-
-Current state target:
-
-- context struct `Grib2Fdb5Context` contains only:
-  - `verbosity`
-- the sink writer is no longer part of the context
-- fake context validator should exist
-- fake context parser should exist
-- fake context free callback should exist
-- main callback should be `noexcept`
-- main runtime callback should be `runGrib2Fdb5Stage(...)`
-- `runGrib2Fdb5Stage(encodedHandle, context, multio::sink::DataSink& writer)`
-- the writer is passed in as `Grib2GribSinks::mainDataSink()`
-- stage consumes encoded `const metkit::codes::CodesHandle&`
-- stage writes through `sink::DataSink`
-- `Grib2Fdb5.cc` includes `multio/sink/DataSink.h` and uses `to_eckit_message(...)`
-- current outcomes are:
-  - `Valid`
-  - `ArchiveFailed`
-  - `UnknownFailure`
-
-## Exception style
-
-- use `eckit` exceptions, not `std` exceptions
-- attach `Here()` to thrown `eckit` exceptions
-- runtime stage entry points are classifier callbacks and must not throw
-
-## ProcessOneMessage scope for Monday
-
-- `ReadMessage` remains outside `ProcessOneMessage` for now
-- `OpenFile` remains outside `ProcessOneMessage` for now
-- `Flush` remains outside `ProcessOneMessage` for now
-- `ProcessOneMessage` itself should stay flat and explicit
-- update stage counters inline at each stage call site
-- return immediately after every non-success or non-accepted stage outcome
-- `processOneMessage(...)` should keep the rank-local writer as an explicit argument
-- `processOneMessage(...)` should have an outer generic safety-net that increments `nGenericProcessOneMessageFailures`
-
-## UnitOfWork
-
-- `WorkUnit` should be the serializable orchestration payload
-- `WorkUnit` contains:
-  - `filename`
-  - `startOffset`
-  - `endOffset`
-- `UnitOfWork` should store an immutable copy of `WorkUnit`
-- `UnitOfWork` should expose:
-  - `workUnit()`
-  - `theoreticalSize()`
-  - `open()`
-  - `newMessageAvailable()`
-  - `nextMessage()`
-  - `close()`
-- `open()` should seek to the start offset and advance to the next valid GRIB message
-- `nextMessage()` should return `std::unique_ptr<metkit::codes::CodesHandle>` built via copy
-- `nextMessage()` should return `nullptr` when no more messages are available inside the unit
-- `close()` now returns `bool` so the caller can count close failures
-
-## Unit processing
-
-- `processOneUnitOfWork(...)` should:
-  - `open()` the unit
-  - loop on `newMessageAvailable()`
-  - call `nextMessage()`
-  - call `processOneMessage(...)` for each returned handle
-  - `close()` the unit
-- `processOneUnitOfWork(...)` should classify `open()`, `nextMessage()`, and `flush()` failures into the existing counters
-- `processOneUnitOfWork(...)` should wrap `close()` as best-effort cleanup and count close failures through `nCloseFailures`
-- diagnostic counters should exist for:
-  - `nCloseFailures`
-  - `nGenericProcessOneMessageFailures`
-  - `nGenericProcessUnitOfWorkFailures`
-- `processRankOwnedUnitsOfWork(...)` should process all `WorkUnit`s assigned to the current MPI rank
-- `processRankOwnedUnitsOfWork(...)` should continue with the next unit when one unit fails
-- `processOneUnitOfWork(...)` should return one `FileStageOutcomes` per processed `UnitOfWork`
-- `processRankOwnedUnitsOfWork(...)` should return `std::vector<FileStageOutcomes>`
-- `processOneUnitOfWork(...)` is now `noexcept`
-- `processOneUnitOfWork(...)` should flush after every `UnitOfWork`
-
-## Load balancing
-
-- load balancing should remain MPI-free
-- worker count should be an explicit function argument
-- `FileWithSize` should contain:
-  - `filename`
-  - `totalSizeBytes`
-- `WorkBucket` should contain:
-  - `workUnits`
-  - cached `totalWeightBytes`
-- `LoadBalancePlan` should contain:
-  - files
-  - estimated work units
-  - balanced buckets
-  - total size
-  - size per worker
-  - reference work-unit size
-  - worker count
-  - average work-units per worker
-- reference work-unit size should be computed from:
-  - total size
-  - number of workers
-  - average work-units per worker
-- Monday split rule:
-  - split when file size is strictly larger than the reference work-unit size
-  - no tolerance parameter yet
-- balancing should use estimated `WorkUnit::theoreticalSize()` only
-- bucket assignment should reuse the old greedy min-heap strategy
-- public load-balancer API is intentionally small:
-  - `createBuckets(...)`
-  - `serializeWorkBucket(...)`
-  - `deserializeWorkBucket(...)`
-
-## Distribution
-
-- MPI wrapper/helper code should live in `MpiUtils`
-- `MpiUtils` public API should only expose:
-  - `broadcastOptionsStringFromRoot(...)`
-  - `distributeRankOwnedBucket(...)`
-  - `gatherOutcomes(...)`
-- use `eckit::mpi::Comm`, not raw `MPI_*`
-- root should distribute balanced work buckets to ranks
-- ranks should receive only their rank-owned bucket payload
-
-## OptionsUtils
-
-- options/context loading code is split into a scalar file and an MPI file:
-  - `OptionsUtils.cc` (scalar, MPI-free) holds:
-    - `readOptionsFileAsString(...)`
-    - `parseOptionsYaml(...)` (plus internal `normalizeOptions(...)`)
-  - `OptionsUtilsMpi.cc` (MPI library) holds:
-    - `loadAndBroadcastOptionsAsConfiguration(...)`
-- this split keeps the MPI symbol out of the scalar core library
-- `parseGlobalContext(config)` and `parseMarsToGribContext(config)` no longer take an `mpiRank`
-- root should load the options file as a raw string
-- raw options string should be broadcast to every rank
-- every rank should parse the same raw string into `eckit::LocalConfiguration`
-- every rank should then build its own `GlobalContext` from the already parsed local `rawOptions`
-- the correct flow is:
-  - `rawOptions = loadAndBroadcastOptionsAsConfiguration(...)`
-  - local sink built from `rawOptions`
-  - `GlobalContext` built from `rawOptions`
-- no rank should reopen the options file except rank 0
-
-## Sink
-
-- sink initialization logic should be copied as literally as possible from the old distributed tool
-- sink writer is rank-local runtime state
-- sink writer must not be part of `GlobalContext`
-- sink files now exist:
-  - `Sink.h`
-  - `Sink.cc`
-- free functions:
-  - `rankOutputPath(...)`
-  - `sinkConfigurationForRank(...)`
-  - `buildSink(...)` returns `std::unique_ptr<multio::sink::DataSink>`
-- sink initialization should preserve the old behavior bit by bit
-
-### `TestCaseFileSink`
-
-- append-only text file sink for mars2grib testcases
-- RAII wrapper: `fopen("a")` / `fwrite` / `fflush` / `fclose`
-- throws `eckit::CantOpenFile` on open failure, `eckit::WriteError` on short write
-- non-copyable and non-movable
-- exposes `write(const std::string&)` and `flush()`
-- replaces the old manual `std::FILE*` lifecycle that lived in the `MarsToGrib` context
-
-### `Grib2GribSinks`
-
-- rank-local class owning all sinks for one rank
-- members:
-  - `std::vector<std::unique_ptr<multio::sink::DataSink>> sinks_` (currently one, built via `buildSink`)
-  - `std::unique_ptr<TestCaseFileSink> testCaseSink_` (optional)
-- constructor builds the data sink and, when enabled by options, the testcase sink
-  - testcase enabling read from top-level `mars2grib-generate-testcases` / `mars2grib-testcases-dir`
-- public API:
-  - `mainDataSink()` returns `*sinks_[0]` (no magic index leaked to callers)
-  - `testCaseSink()` returns `nullptr` when testcase generation is disabled
-  - `flush()` flushes the data sink(s) and the testcase sink (separate flush)
-- the vector-of-sinks is future preparation; only `sinks_[0]` is exposed today
-- has an out-of-line destructor defined in `Sink.cc`, because `unique_ptr<DataSink>`
-  sees `DataSink` as an incomplete type in `Sink.h` (only `Sink.cc` / `Grib2Fdb5.cc`
-  include `multio/sink/DataSink.h`)
-- created in `buildRankLocalWriter(...)`, where the multio sink is initialised, and
-  passed down the whole processing chain exactly like the writer used to be
-
-## Summary
-
-- gather should collect `std::vector<FileStageOutcomes>` where each entry corresponds to one processed `UnitOfWork`
-- `Summary` should expose `createPerFileOutcomes(...)`
-- `createPerFileOutcomes(...)` should internally use a map keyed by filename
-- `createPerFileOutcomes(...)` should return `std::vector<FileStageOutcomes>`
-- `FileStageOutcomes` should expose `add(const FileStageOutcomes&)`
-- `createSummary(...)` currently returns the per-file outcomes unchanged
-- `writeSummary(...)` now writes two files on rank 0:
-  - `Summary.log`
-  - `Summary.json`
-- `Summary.log` is built from `formatOutcomeLine(...)`, one line per input file
-- `Summary.json` is built from `toJson(const std::vector<FileStageOutcomes>&)`
-
-## Tool shell
-
-- the new distributed tool shell exists in:
-  - `distributed-grib-to-grib.cc`
-- it derives from `multio::MultioTool`
-- command line options are:
-  - `--options-file`
-  - `--file-list`
-  - `--output-directory`
-  - `--average-work-units-per-rank` (optional, default `15`)
-- tool-level orchestration helpers live in:
-  - `MultioToolUtils.h`
-  - `MultioToolUtils.cc`
-- these helpers are in:
-  - `namespace multio::grib2grib::utils`
-- current tool-level helper set is:
-  - `loadAndBroadcastOptionsAsConfiguration(...)`
-  - `buildGlobalContext(rawOptions)` (no longer takes a comm)
-  - `buildRankLocalWriter(...)` returns `std::unique_ptr<Grib2GribSinks>`
-  - `distributeWork(...)`
-  - `processWorkUnits(..., Grib2GribSinks& writer)`
-  - `gatherWorkUnitOutcome(...)`
-  - `summarizeWorkUnitOutcomePerFile(...)`
-  - `createSummary(...)`
-  - `writeSummary(...)`
-- `distributed-grib-to-grib.cc` calls `buildGlobalContext(rawOptions)` and passes `*writer`
-  (a `Grib2GribSinks&`) into the processing chain
-- `distributed-grib-to-grib.cc` writes `Summary.log` and `Summary.json` in `outputDirectory` on rank 0
-- the `Process*` chain threads `Grib2GribSinks&` end to end:
-  - `ProcessOneMessage` passes `writer.testCaseSink()` to `MarsToGrib` and
-    `writer.mainDataSink()` to `Grib2Fdb5`
-  - `ProcessOneUnitOfWork` calls `writer.flush()` after every unit
-
-## Scalar distribution test tool
-
-- a new non-MPI scalar tool exists:
-  - `grib2grib-data-distribution-test.cc`
-- purpose:
-  - read file list
-  - compute buckets
-  - write `work-units.csv`
-  - write `distribution-stats.csv`
-  - optionally scan every generated `WorkUnit` and iterate all messages through `UnitOfWork`
-- command line options are:
-  - `--file-list`
-  - `--output-directory`
-  - `--n-workers`
-  - `--average-work-units-per-rank`
-  - `--scan-work-unit-messages` (optional, default disabled)
-- output CSV rows are:
-  - `MPI_rank,filename,offsetStart,offsetEnd,size`
-- here `MPI_rank` means the synthetic bucket index, not a real MPI rank
-- when `--scan-work-unit-messages` is enabled:
-  - the tool loops over all buckets and all generated `WorkUnit`s
-  - each `WorkUnit` is wrapped in `UnitOfWork`
-  - messages are iterated via `open()`, `newMessageAvailable()`, `nextMessage()`, `close()`
-  - one line is printed per message with fixed-width columns:
-    - `rank`
-    - `workUnitIndex` (global across all buckets)
-    - `paramId`
-    - `channel`
-    - `offset`
-    - `count`
-    - `totalLength`
-
-## Scalar options-parser tool
-
-- a non-MPI scalar tool exists:
-  - `grib2grib_options-parser.cc`
-- command line options are:
-  - `--options-file`
-- flow:
-  - `readOptionsFileAsString(...)`
-  - `parseOptionsYaml(...)`
-  - `validateGlobalContext(...)`
-  - `parseGlobalContext(...)`
-  - `freeGlobalContext(...)`
-- purpose: exercise options loading and full context parsing in isolation
-
-## Scalar sink-test tool
-
-- a throwaway non-MPI scalar isolation harness for `Grib2GribSinks` exists:
-  - `grib2grib-sink-test.cc`
-- minimal by design; will be deleted later (no summary/log counters)
-- command line options are:
-  - `--options-file` (must be exactly the distributed tool's options file, loaded identically)
-  - `--input-file`
-  - `--output-directory`
-  - `--rank` (optional, default 0)
-- flow:
-  - load options via `readOptionsFileAsString(...)` + `parseOptionsYaml(...)`
-  - construct `Grib2GribSinks{rawOptions, outputDirectory, rank}`
-  - read messages from the input file via `UnitOfWork`
-  - write each message to `mainDataSink().write(to_eckit_message(*msg))`
-  - write a synthetic line to `testCaseSink()` when it is non-null
-  - call `flush()` at the end
-
-## Logging
-
-- `timestampString()` is now available in the new `Utils`
-- a shared trapped-error disclaimer helper is also available in `Utils`
-- classify-and-continue catches should print the disclaimer with timestamp
-- fatal orchestration paths should still fail hard and do not need the disclaimer
-- splitting helpers should exist for:
-  - filename + number of chunks
-  - filename + maximum size in bytes
-- only `verbosity` is supported in options
-- missing `verbosity` should default to `0`
-- the old `verbose` compatibility shim has been removed
-
-## Work-unit ownership rule
-
-- a `WorkUnit` owns a GRIB message iff the message start offset lies in `[startOffset, endOffset)`
-- `UnitOfWork::open()` aligns the cursor to the first GRIB message whose start offset is at or after `startOffset`
-- `UnitOfWork::nextMessage()` stops when the next message start offset is `>= endOffset`
-- once a message is claimed by start offset, it is decoded fully even when its body crosses `endOffset`
-- `currentOffset_` is advanced to the true end of the decoded message (`ftello(file_)`)
-
-## Current coarse-grain options
-
-Example options section:
-
-```yaml
-coarse-grain-options:
-  grib1-messages-policy: try-to-handle
-  grib2-messages-policy: ignore
-  invalid-messages-policy: try-to-handle
-  discipline192-messages-policy: ignore
-  verbosity: 0
-```
-
-Parsed structure:
-
-- `discipline192Policy`
-- `grib1Policy`
-- `grib2Policy`
-- `invalidMessagesPolicy`
-- `verbosity`
-
-Current dedicated option keys:
-
-- `grib1-messages-policy`
-- `grib2-messages-policy`
-- `invalid-messages-policy`
-- `discipline192-messages-policy`
-- `verbosity`
-
-## Important design decisions
-
-- The coarse-grain classifier should consume `const metkit::codes::CodesHandle&` directly
-- `ProcessOneMessage` should also consume `const metkit::codes::CodesHandle&`
-- The message should be decoded into a `CodesHandle` once before stage processing begins
-- `GribToMars` should return `mars`, `misc`, and `values`
-- `Overrides` consumes only `mars` and `misc` as `eckit::LocalConfiguration`
-- `Overrides` returns overridden `mars` and `misc`
-- stream conversion is not part of `Overrides`; it belongs to `MarsToMars`
-- current optional misc overrides handled by `Overrides` include:
-  - `ncycle` -> `misc.generatingProcessIdentifier`
-  - `ensemble-size` -> `misc.numberOfForecastsInEnsemble`
-  - `analysis-window-length-in-hours` -> `misc.lengthOfTimeWindow`
-
-## Documentation progress
-
-- heavy function-by-function documentation has started
-- documented pairs so far:
-  - `CodesHandleToEckitMessage.h` / `CodesHandleToEckitMessage.cc`
-  - `UnitOfWork.h` / `UnitOfWork.cc`
-  - `WorkUnitLoadBalancer.h` / `WorkUnitLoadBalancer.cc`
-  - `Utils.h` / `Utils.cc`
-  - `OptionsUtils.h` / `OptionsUtils.cc`
-
-## Discipline-192 decision
-
-The discipline-192 logic should stay readable and explicit.
-
-Private helpers to use in `GribBasedFilter.cc`:
-
-- `isDiscipline192Grib1(const metkit::codes::CodesHandle&)`
-- `isDiscipline192Grib2(const metkit::codes::CodesHandle&)`
-- `isDiscipline192Message(const metkit::codes::CodesHandle&)`
-
-Current ordered coarse classifiers:
-
-1. `rejectByDiscipline192(...)`
-2. `rejectByEditionPolicyGrib1(...)`
-3. `rejectByEditionPolicyGrib2(...)`
-4. `rejectByInvalidInputMessage(...)`
-
-Behaviour:
-
-- GRIB1: use the lookup-table based `paramId` test
-- GRIB2: read `discipline` from the header and compare with `192`
-
-Classifier rule:
-
-- if `discipline192Policy == OptionPolicy::Ignore`
-- and the message is discipline 192
-- return `RejectedDiscipline192`
-
-Current coarse-grain outcomes:
+Current outcomes:
 
 - `Accepted`
 - `RejectedDiscipline192`
@@ -703,13 +332,466 @@ Current coarse-grain outcomes:
 - `RejectedInvalidInputMessage`
 - `FailedGribBasedFilter`
 
-## Next likely steps after Stage 1
+### `GribToMars`
 
-1. implement standalone `GribToMars`
-2. implement standalone `MarsToMars`
-3. implement standalone `MarsBasedFilter` stub
-4. implement standalone `MarsToGrib`
-5. implement standalone `PostEncodeValidation`
-6. implement standalone `Grib2Fdb5`
-7. revisit stage names and options only after standalone stages exist
-8. leave `ProcessOneMessage` for final assembly
+Input:
+
+- `const metkit::codes::CodesHandle&`
+
+Output:
+
+- `GribToMarsResult`
+  - `outcome`
+  - `mars` as `eckit::LocalConfiguration`
+  - `misc` as `eckit::LocalConfiguration`
+  - `values` as `std::vector<double>`
+
+The stage:
+
+- runs `grib2mars.convert<eckit::LocalConfiguration>(...)`
+- extracts data values from `inputHandle.getDoubleArray("values")`
+
+### `MarsToMars`
+
+Input:
+
+- `mars`
+- `misc`
+
+Output:
+
+- `MarsToMarsResult`
+  - `outcome`
+  - mapped `mars`
+  - merged `misc`
+
+The stage:
+
+- runs `mars2mars.convert<eckit::LocalConfiguration>(mars)`
+- merges returned `misc` with incoming `misc`
+- keeps the merged `misc` as stage output
+
+### `Overrides`
+
+Input:
+
+- `mars`
+- `misc`
+
+Output:
+
+- `OverrideResult`
+  - `outcome`
+  - overridden `mars`
+  - overridden `misc`
+
+Implemented override families:
+
+- packing policy
+- model
+- generating process identifier
+- ensemble size
+- analysis-window length in hours
+- control-forecast override
+- expver
+
+### `MarsBasedFilter`
+
+Input:
+
+- post-override `mars`
+- post-override `misc`
+
+Output:
+
+- `MarsBasedFilterCode`
+  - `Accepted`
+  - `Rejected`
+
+Selector matching uses `mars + misc` converted to `multio::message::Metadata`.
+
+### `MarsToGrib`
+
+Input:
+
+- `values`
+- `mars`
+- `misc`
+- `MarsToGribContext`
+- optional `TestCaseFileSink*`
+
+Output:
+
+- `MarsToGribResult`
+  - `outcome`
+  - encoded `std::unique_ptr<metkit::codes::CodesHandle>`
+  - `testCaseGenerationFailed`
+  - `testCaseWriteFailed`
+
+Testcase generation is best-effort and non-fatal.
+
+### `PostEncodeValidation`
+
+Input:
+
+- encoded `const metkit::codes::CodesHandle&`
+
+Output:
+
+- `PostEncodeValidationCode`
+  - `Valid`
+  - `InvalidEncodedMessage`
+
+### `Grib2Fdb5`
+
+Input:
+
+- encoded `const metkit::codes::CodesHandle&`
+- `multio::sink::DataSink&`
+
+Output:
+
+- `Grib2Fdb5Result`
+  - `Valid`
+  - `ArchiveFailed`
+  - `UnknownFailure`
+
+## Sink Model
+
+### Main sink
+
+Top-level `sink` config is the main accepted-output sink.
+
+If `sink` is absent, a file sink is synthesized with rank-local default output
+path:
+
+- `output/rank<rank>.grib2`
+
+### `Grib2GribSinks`
+
+`Grib2GribSinks` is the rank-local runtime owner of:
+
+- the main accepted-output sink
+- optional per-stage debug sinks
+- optional testcase sink
+
+It is constructed once per rank and threaded through the processing chain.
+
+### Testcase sink
+
+When enabled by `stages.mars-to-grib.generate-testcases`,
+`Grib2GribSinks` owns one append-only `TestCaseFileSink`.
+
+One file is created per rank:
+
+- `mars2grib-testcases.<MPI_RANK>.json`
+
+### Debug sinks
+
+Top-level `debug-sinks` is optional.
+
+If it is missing:
+
+- no debug sinks are instantiated
+- the pipeline behaves exactly as before
+
+If it exists:
+
+- each configured stage entry must be a subconfiguration
+- each stage entry uses the exact same schema as `sink`
+- file sinks get default path:
+  - `debug/<stage-key>/rank<rank>.grib`
+
+Supported stage keys:
+
+- `grib-based-filter`
+- `grib-to-mars`
+- `mars-to-mars`
+- `overrides`
+- `mars-based-filter`
+- `mars-to-grib`
+- `post-encode-validation`
+- `grib2fdb5`
+
+Debug sink payload policy:
+
+- every configured debug sink receives the original input GRIB message
+- this is true even for late-stage failures such as `grib2fdb5`
+
+Debug sink write policy:
+
+- best-effort only
+- write failures are caught internally
+- write failures do not change the main outcome classification
+
+## ProcessOneMessage
+
+`processOneMessage(...)` is intentionally flat and explicit.
+
+Behavior:
+
+1. bump message count
+2. run `GribBasedFilter`
+3. on reject/failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+4. run `GribToMars`
+5. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+6. run `MarsToMars`
+7. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+8. run `Overrides`
+9. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+10. run `MarsBasedFilter`
+11. on reject:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+12. run `MarsToGrib`
+13. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+14. run `PostEncodeValidation`
+15. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+   - return
+16. run `Grib2Fdb5`
+17. on failure:
+   - bump counters
+   - best-effort debug-sink original input
+
+An outer safety net increments `nGenericProcessOneMessageFailures` on any
+unexpected exception that escapes this logic.
+
+## WorkUnit Ownership Rule
+
+- a `WorkUnit` owns a message iff the message start offset lies in
+  `[startOffset, endOffset)`
+- ownership is determined by message start offset only
+- a claimed message may extend beyond `endOffset`
+- a message that starts before `startOffset` is not owned by the unit even if it
+  overlaps the unit span
+
+## UnitOfWork
+
+`UnitOfWork` is the runtime iterator bound to one immutable `WorkUnit`.
+
+It stores:
+
+- immutable `WorkUnit`
+- immutable `WorkUnitReaderMode`
+- open file handle
+- physical file end offset
+- current cursor offset
+
+API:
+
+- `workUnit()`
+- `theoreticalSize()`
+- `open()`
+- `newMessageAvailable()`
+- `nextMessage()`
+- `close()`
+
+### `open()`
+
+- opens the file
+- computes physical file size
+- aligns `currentOffset_` to the first owned GRIB message start according to the
+  selected reader mode
+
+### `nextMessage()`
+
+- returns one copied `CodesHandle`
+- returns `nullptr` when no further owned message exists
+
+### `close()`
+
+- best-effort resource cleanup
+- returns `bool` so close failures can be counted separately
+
+## Candidate boundary helper
+
+`handleGribBoundaries.*` contains an unused/optional helper for explicit
+boundary-driven scanning.
+
+Current contract:
+
+- search for message starts only in `[searchOffset, endOffset)`
+- validate the full message against `fileEndOffset`
+- accept a message that starts inside the owned range even if it ends beyond
+  `endOffset`
+- reject truncated or invalid candidates and keep scanning
+
+Validation sequence:
+
+1. scan for `GRIB`
+2. parse GRIB1 or GRIB2 total length
+3. check trailing `7777`
+4. validate with ecCodes from memory via `codes_handle_new_from_message_copy(...)`
+
+## Load Balancing
+
+Load balancing is MPI-free and based only on raw work-unit spans.
+
+Key types:
+
+- `WorkUnit`
+- `WorkBucket`
+- `LoadBalancePlan`
+
+Public API remains intentionally small:
+
+- `createBuckets(...)`
+- `serializeWorkBucket(...)`
+- `deserializeWorkBucket(...)`
+
+Split rule:
+
+- split a file when its size is strictly larger than the reference work-unit
+  size
+
+## MPI Flow
+
+MPI-specific code lives outside the scalar core.
+
+Correct distributed flow:
+
+1. rank 0 reads options file as raw string
+2. raw string is broadcast to all ranks
+3. every rank parses the same YAML into `rawOptions`
+4. every rank builds its own `GlobalContext`
+5. rank 0 computes balanced buckets and distributes rank-owned buckets
+6. each rank builds its rank-local sinks
+7. each rank processes only its local units
+8. outcomes are gathered to rank 0
+9. rank 0 writes summaries and prints aggregate summary
+
+## Summary Model
+
+### Per-work-unit outcomes
+
+The processing chain returns one `FileStageOutcomes` per processed `UnitOfWork`.
+
+### Per-file outcomes
+
+`Summary.cc` groups work-unit outcomes by filename using `std::map`, so the
+result is filename-sorted.
+
+### File summary classification
+
+Current `FileSummary` values:
+
+- `SUCCESS`
+- `PARTIAL`
+- `FAIL`
+
+High-level meaning:
+
+- `SUCCESS`: all messages from the file converted and archived successfully
+- `PARTIAL`: some messages intentionally rejected, but no technical failures
+- `FAIL`: technical failures occurred in reading, mapping, encoding, archiving,
+  flushing, or generic catch-all buckets
+
+### Output files
+
+Rank 0 writes:
+
+- `Summary.log`
+- `Summary.json`
+
+### Aggregate terminal summary
+
+Rank 0 also prints three aggregate lines before exit:
+
+```text
+SUCCESS,<numFiles>,<totalMessages>,<percentOfFiles>
+PARTIAL,<numFiles>,<totalMessages>,<percentOfFiles>
+FAIL,<numFiles>,<totalMessages>,<percentOfFiles>
+```
+
+The percentage is file-based, not message-based.
+
+## CLI Tools
+
+### `distributed-grib-to-grib`
+
+Options:
+
+- `--options-file`
+- `--file-list`
+- `--output-directory`
+- `--average-work-units-per-rank`
+- `--reader-mode`
+
+### `grib2grib-options-parser`
+
+Options:
+
+- `--options-file`
+
+Purpose:
+
+- parse YAML
+- validate `GlobalContext`
+- parse `GlobalContext`
+- free `GlobalContext`
+
+### `grib2grib-sink-test`
+
+Options:
+
+- `--options-file`
+- `--input-file`
+- `--output-directory`
+- `--rank`
+- `--reader-mode`
+
+Purpose:
+
+- scalar harness for `Grib2GribSinks`
+- iterates one file through `UnitOfWork`
+- writes to main sink and optional testcase sink
+
+### `grib2grib-data-distribution-test`
+
+Options:
+
+- `--file-list`
+- `--output-directory`
+- `--n-workers`
+- `--average-work-units-per-rank`
+- `--scan-work-unit-messages`
+- `--reader-mode`
+
+Purpose:
+
+- compute synthetic work distribution without MPI
+- optionally iterate all generated units through `UnitOfWork`
+- dump distribution CSV files
+
+## Exception and failure rules
+
+- runtime stage entry points are `noexcept`
+- stage-local failures are converted into explicit outcome codes
+- `ProcessOneMessage(...)` and `ProcessOneUnitOfWork(...)` classify and continue
+- sink debug writes are best-effort and non-fatal
+- testcase generation and testcase write are best-effort diagnostics
+
+## Non-goals
+
+- no fallback support for the old flat YAML schema
+- no reuse of the `select` action class itself; only matcher semantics are reused
+- no sink-side `MultioConfiguration` integration beyond the currently isolated
+  sink construction path

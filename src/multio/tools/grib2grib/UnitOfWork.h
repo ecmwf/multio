@@ -86,12 +86,17 @@ std::vector<WorkUnit> deserializeWorkUnits(const std::vector<char>& payload);
 ///
 /// The class owns the open file handle and exposes a pull-based API that returns
 /// one copied `CodesHandle` per message. Reading starts at the first GRIB message
-/// whose offset is at or after `workUnit.startOffset` and stops before
-/// `workUnit.endOffset`.
+/// whose start offset is at or after `workUnit.startOffset` and stops when the
+/// next owned start offset is outside `[startOffset, endOffset)`.
+///
+/// Ownership is determined only by message start offset. A message claimed by a
+/// unit may extend beyond `endOffset` and is still decoded fully by the owning
+/// unit.
 class UnitOfWork {
 public:
     /// @brief Bind the reader to one immutable scheduled byte range.
-    /// @param workUnit Scheduled file slice whose messages will be iterated.
+    /// @param workUnit Scheduled file slice whose message starts are owned.
+    /// @param readerMode Runtime strategy used to locate owned message starts.
     UnitOfWork(WorkUnit workUnit, WorkUnitReaderMode readerMode);
 
     /// @brief Close any open file handle on destruction.
@@ -132,6 +137,7 @@ private:
     const WorkUnitReaderMode readerMode_;
 
     std::FILE* file_ = nullptr;
+    /// Physical file end used by candidate-boundary validation.
     off_t fileEndOffset_ = 0;
     off_t currentOffset_ = 0;
     bool isOpen_ = false;

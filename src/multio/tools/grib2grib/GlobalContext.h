@@ -27,6 +27,12 @@
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+/// @brief Immutable configuration-derived context for the full `grib2grib` pipeline.
+///
+/// `GlobalContext` is the single runtime bundle produced from the strict YAML
+/// schema rooted at `reader` and `stages`. It contains only parsed configuration
+/// state. It intentionally does not own rank-local runtime resources such as
+/// sinks, files, or MPI communicators.
 struct GlobalContext {
     ReaderContext reader;
     GribBasedFilterContext gribBasedFilter;
@@ -39,10 +45,18 @@ struct GlobalContext {
     Grib2Fdb5Context grib2Fdb5;
 };
 
+/// @brief Validate the strict `grib2grib` YAML configuration.
+/// @param config Parsed root configuration.
+/// @throw eckit::BadValue If required sections are missing or malformed.
 void validateGlobalContext(const eckit::LocalConfiguration& config);
 
+/// @brief Parse the strict `grib2grib` YAML configuration into stage contexts.
+/// @param config Parsed root configuration.
+/// @return Fully materialized immutable stage contexts.
 GlobalContext parseGlobalContext(const eckit::LocalConfiguration& config);
 
+/// @brief Symmetric no-throw cleanup hook for stage contexts.
+/// @param context Parsed global context.
 void freeGlobalContext(GlobalContext& context) noexcept;
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

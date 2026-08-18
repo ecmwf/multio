@@ -32,6 +32,11 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 class TestCaseFileSink;
 
 /// @brief Parsed runtime context for the standalone `MarsToGrib` stage.
+///
+/// This context contains only configuration-derived state. The metkit encoder
+/// and testcase generator are constructed per message inside the runtime stage
+/// callback. `apiOptions` is optional: when absent, the metkit APIs use their
+/// default constructors.
 struct MarsToGribContext {
     std::int64_t verbosity = 0;
     bool generateTestcases = false;

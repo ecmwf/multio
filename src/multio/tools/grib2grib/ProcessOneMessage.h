@@ -27,7 +27,7 @@ class Grib2GribSinks;
 /// @brief Process one already-decoded input GRIB message through all standalone stages.
 /// @param inputHandle Read-only GRIB handle for the current message.
 /// @param context Aggregated stage contexts.
-/// @param writer Rank-local sinks (data + testcase).
+/// @param writer Rank-local sinks (main sink, debug sinks, testcase sink).
 /// @param outcomes Per-file stage counters updated in place.
 void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const GlobalContext& context,
                        Grib2GribSinks& writer, FileStageOutcomes& outcomes) noexcept;

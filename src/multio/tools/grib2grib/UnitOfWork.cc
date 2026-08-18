@@ -10,6 +10,13 @@
 
 /// @file
 /// @brief Work-unit abstraction implementation for chunk-based MPI orchestration in `grib2grib`.
+///
+/// This implementation owns the runtime consequences of the message-start
+/// ownership rule:
+/// - a unit owns a message iff its start offset lies in `[startOffset, endOffset)`
+/// - a claimed message may extend beyond `endOffset`
+/// - `candidate-boundary` validates complete messages against physical EOF,
+///   not against `endOffset`
 
 #include "multio/tools/grib2grib/UnitOfWork.h"
 

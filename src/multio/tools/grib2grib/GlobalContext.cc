@@ -10,6 +10,16 @@
 
 /// @file
 /// @brief Aggregated stage context implementation for the isolated `grib2grib` pipeline.
+///
+/// The strict root schema currently consists of:
+/// - required top-level `reader`
+/// - required top-level `stages`
+/// - optional top-level `sink`
+/// - optional top-level `debug-sinks`
+///
+/// `GlobalContext` is intentionally populated only from `reader` and `stages`.
+/// Sink runtime state is created separately and does not live in the parsed
+/// stage-context model.
 
 #include "multio/tools/grib2grib/GlobalContext.h"
 

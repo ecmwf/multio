@@ -10,6 +10,11 @@
 
 /// @file
 /// @brief Root-side summary utilities for `grib2grib` outcomes.
+///
+/// This file performs two distinct aggregation steps:
+/// - group work-unit outcomes into one filename-sorted per-file summary
+/// - classify the per-file summary into `SUCCESS`, `PARTIAL`, and `FAIL`
+///   aggregate buckets used for the final rank-0 terminal summary
 
 #include "multio/tools/grib2grib/Summary.h"
 
@@ -37,6 +42,29 @@ std::vector<FileStageOutcomes> createPerFileOutcomes(const std::vector<FileStage
     }
 
     return perFileOutcomes;
+}
+
+AggregateSummary summarizeByFileSummary(const std::vector<FileStageOutcomes>& summary) {
+    AggregateSummary aggregate;
+
+    for (const auto& outcome : summary) {
+        switch (deriveSummary(outcome)) {
+            case FileSummary::Success:
+                ++aggregate.success.nFiles;
+                aggregate.success.nMessages += outcome.nMessages;
+                break;
+            case FileSummary::Partial:
+                ++aggregate.partial.nFiles;
+                aggregate.partial.nMessages += outcome.nMessages;
+                break;
+            case FileSummary::Fail:
+                ++aggregate.fail.nFiles;
+                aggregate.fail.nMessages += outcome.nMessages;
+                break;
+        }
+    }
+
+    return aggregate;
 }
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

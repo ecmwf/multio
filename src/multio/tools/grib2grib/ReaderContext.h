@@ -20,16 +20,33 @@
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+/// @brief Runtime strategy used by `UnitOfWork` to locate owned GRIB messages.
+///
+/// `EccodesStream` preserves the historical probing behavior where ecCodes is
+/// asked to scan the file stream directly from the coarse offset.
+///
+/// `CandidateBoundary` first scans for candidate `GRIB` starts inside the owned
+/// start range and then validates complete messages against physical EOF before
+/// decoding them from memory.
 enum class WorkUnitReaderMode : std::uint8_t
 {
     EccodesStream = 0,
     CandidateBoundary,
 };
 
+/// @brief Parsed reader-specific runtime configuration.
+///
+/// The `reader` section is intentionally small. Today it contains only the
+/// reader mode. The structure still exists as a dedicated context so more
+/// reader-local policies can be added later without changing `GlobalContext`.
 struct ReaderContext {
     WorkUnitReaderMode mode = WorkUnitReaderMode::EccodesStream;
 };
 
+/// @brief Parse one textual reader-mode spelling used by YAML and CLI options.
+/// @param mode String value such as `eccodes-stream` or `candidate-boundary`.
+/// @return Parsed reader-mode enum.
+/// @throw eckit::BadValue If the string does not map to a supported mode.
 inline WorkUnitReaderMode parseWorkUnitReaderMode(const std::string& mode) {
     if (mode == "eccodes-stream") {
         return WorkUnitReaderMode::EccodesStream;

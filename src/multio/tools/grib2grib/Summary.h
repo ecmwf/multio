@@ -13,12 +13,36 @@
 
 #pragma once
 
+#include <cstddef>
 #include <vector>
 
 #include "multio/tools/grib2grib/StageOutcomes.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+/// @brief Aggregate file-bucket statistics for one `FileSummary` class.
+struct AggregateSummaryBucket {
+    std::size_t nFiles = 0;
+    std::size_t nMessages = 0;
+};
+
+/// @brief Aggregate summary of the final per-file classification.
+///
+/// Counts are grouped by file outcome class. Percentages are not stored here.
+/// They are derived at print time from the file counters.
+struct AggregateSummary {
+    AggregateSummaryBucket success;
+    AggregateSummaryBucket partial;
+    AggregateSummaryBucket fail;
+};
+
+/// @brief Group work-unit outcomes by filename.
+///
+/// The returned vector is filename-sorted because the implementation groups via
+/// `std::map<std::string, FileStageOutcomes>`.
 std::vector<FileStageOutcomes> createPerFileOutcomes(const std::vector<FileStageOutcomes>& outcomesPerWorkUnit);
+
+/// @brief Aggregate final file-status buckets from the per-file summary.
+AggregateSummary summarizeByFileSummary(const std::vector<FileStageOutcomes>& summary);
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

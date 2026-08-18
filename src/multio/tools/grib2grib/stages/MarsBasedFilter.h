@@ -14,16 +14,23 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 
 #include "eckit/config/LocalConfiguration.h"
 
+#include "multio/message/MetadataMatcher.h"
 #include "multio/tools/grib2grib/StageOutcomes.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
 /// @brief Parsed context consumed by the standalone `MarsBasedFilter` stage.
+///
+/// When `selectors` is absent, the stage accepts every message. When present,
+/// the selector is evaluated against `mars + misc` converted into
+/// `multio::message::Metadata`. A selector match means the message is rejected.
 struct MarsBasedFilterContext {
     std::int64_t verbosity = 0;
+    std::optional<multio::message::match::MatchReduce> selectors;
 };
 
 /// @brief Validate the raw context consumed by the `MarsBasedFilter` stage.
@@ -42,7 +49,8 @@ void freeMarsBasedFilterContext(MarsBasedFilterContext& context) noexcept;
 /// @param mars Input MARS dictionary.
 /// @param misc Input misc dictionary.
 /// @param context Parsed stage-local context.
-/// @return Current stage outcome.
+/// @return `Rejected` when the configured selector matches the combined
+///         metadata, otherwise `Accepted`.
 MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mars,
                                             const eckit::LocalConfiguration& misc,
                                             const MarsBasedFilterContext& context) noexcept;

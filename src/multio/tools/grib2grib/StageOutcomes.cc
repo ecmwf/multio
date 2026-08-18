@@ -289,10 +289,8 @@ const char* toString(MarsBasedFilterCode code) {
     switch (code) {
         case MarsBasedFilterCode::Accepted:
             return "Accepted";
-        case MarsBasedFilterCode::RejectedTimespanNonPositive:
-            return "RejectedTimespanNonPositive";
-        case MarsBasedFilterCode::RejectedComplexExclusion:
-            return "RejectedComplexExclusion";
+        case MarsBasedFilterCode::Rejected:
+            return "Rejected";
     }
     return "UnknownMarsBasedFilterCode";
 }

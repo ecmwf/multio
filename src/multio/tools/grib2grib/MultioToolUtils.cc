@@ -14,6 +14,8 @@
 #include "multio/tools/grib2grib/MultioToolUtils.h"
 
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 
 #include "eckit/exception/Exceptions.h"
 
@@ -101,6 +103,10 @@ SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomeP
     return workUnitOutcomePerFile;
 }
 
+AggregateSummary buildAggregateSummary(const SummaryType& summary) {
+    return multio::distGrib1ToGrib2::grib2grib::summarizeByFileSummary(summary);
+}
+
 void writeSummary(const SummaryType& summary, const std::string& outputDirectory) {
     const std::string summaryLogPath = outputDirectory + "/Summary.log";
     const std::string summaryJsonPath = outputDirectory + "/Summary.json";
@@ -124,6 +130,20 @@ void writeSummary(const SummaryType& summary, const std::string& outputDirectory
     if (!summaryJson.good()) {
         throw eckit::WriteError("error while writing summary file: " + summaryJsonPath, Here());
     }
+}
+
+void printAggregateSummary(const AggregateSummary& summary) {
+    const std::size_t totalFiles = summary.success.nFiles + summary.partial.nFiles + summary.fail.nFiles;
+
+    const auto printBucket = [totalFiles](const char* label, const multio::grib2grib::utils::AggregateSummaryBucket& bucket) {
+        const double percent = totalFiles == 0 ? 0.0 : 100.0 * static_cast<double>(bucket.nFiles) / totalFiles;
+        std::cout << label << ',' << bucket.nFiles << ',' << bucket.nMessages << ',' << std::fixed
+                  << std::setprecision(2) << percent << std::endl;
+    };
+
+    printBucket("SUCCESS", summary.success);
+    printBucket("PARTIAL", summary.partial);
+    printBucket("FAIL", summary.fail);
 }
 
 }  // namespace multio::grib2grib::utils

@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
@@ -22,19 +23,28 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-namespace multio::sink {
-class DataSink;
+#include "multio/sink/DataSink.h"
+#include "multio/tools/grib2grib/StageOutcomes.h"
+
+namespace metkit::codes {
+class CodesHandle;
 }
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+/// @brief Default rank-local file output path for the main accepted-output sink.
 std::string rankOutputPath(const std::string& outputDirectory, int rank);
 
+/// @brief Resolve the effective main sink configuration for one rank.
+///
+/// If the top-level `sink` block is absent, a file sink is synthesized. For a
+/// file sink with no explicit `path`, the rank-local default path is injected.
 eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfiguration& options,
                                                    const std::string& outputDirectory, int rank);
 
+/// @brief Build the main accepted-output sink for one rank.
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
-                                                  const std::string& outputDirectory, int rank);
+                                                   const std::string& outputDirectory, int rank);
 
 /// @brief Append-only text file sink for mars2grib testcases.
 ///
@@ -62,9 +72,15 @@ private:
 
 /// @brief Rank-local sinks used by the distributed `grib2grib` pipeline.
 ///
-/// Owns the encoded-GRIB2 data sink(s) and, when testcase generation is
-/// enabled, the testcase file sink. Initialised once per rank alongside the
-/// data sink and passed down the whole processing chain.
+/// Owns:
+/// - the main accepted-output sink;
+/// - optional per-stage debug sinks, configured under `debug-sinks` using the
+///   exact same grammar as the top-level `sink`;
+/// - the optional testcase text sink used by `MarsToGrib`.
+///
+/// Debug sinks are best-effort observational side outputs. Missing stage entries
+/// are treated as no-ops. Write failures are caught internally and never change
+/// the main pipeline classification result.
 class Grib2GribSinks {
 public:
     Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
@@ -77,11 +93,17 @@ public:
     /// @brief Testcase file sink, or `nullptr` when testcase generation is disabled.
     TestCaseFileSink* testCaseSink();
 
+    /// @brief Best-effort side sink for stage-specific rejected inputs.
+    void debugStageInput(ProcessingStage stage, const metkit::codes::CodesHandle& inputHandle) noexcept;
+
     /// @brief Flush the main data sink(s) and the testcase sink.
     void flush();
 
 private:
+    static constexpr std::size_t processingStageCount = static_cast<std::size_t>(ProcessingStage::FileFlush) + 1;
+
     std::vector<std::unique_ptr<multio::sink::DataSink>> sinks_;
+    std::array<std::unique_ptr<multio::sink::DataSink>, processingStageCount> debugSinks_{};
     std::unique_ptr<TestCaseFileSink> testCaseSink_;
 };
 

@@ -10,6 +10,10 @@
 
 /// @file
 /// @brief Helpers for scanning likely GRIB message boundaries before ecCodes validation.
+///
+/// These helpers implement a two-step boundary strategy:
+/// - search for candidate `GRIB` starts only inside an owned start range
+/// - validate the full candidate message against physical EOF and ecCodes
 
 #pragma once
 

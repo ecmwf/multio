@@ -119,8 +119,7 @@ enum class MarsOverridesCode : std::uint8_t
 enum class MarsBasedFilterCode : std::uint8_t
 {
     Accepted = 0,
-    RejectedTimespanNonPositive,
-    RejectedComplexExclusion,
+    Rejected,
 };
 
 /// @brief Message-level outcome codes for the `MarsToGrib` stage.

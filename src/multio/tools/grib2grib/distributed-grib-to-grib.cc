@@ -87,6 +87,7 @@ private:
             const auto workUnitOutcomePerFile = utils::summarizeWorkUnitOutcomePerFile(workUnitOutcomeGlobal);
             const auto summary = utils::createSummary(workUnitOutcomePerFile);
             utils::writeSummary(summary, outputDirectory_);
+            utils::printAggregateSummary(utils::buildAggregateSummary(summary));
         }
     }
 

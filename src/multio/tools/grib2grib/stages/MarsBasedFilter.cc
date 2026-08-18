@@ -13,12 +13,40 @@
 
 #include "multio/tools/grib2grib/stages/MarsBasedFilter.h"
 
+#include "eckit/exception/Exceptions.h"
+
+#include "multio/message/Metadata.h"
+
 namespace multio::distGrib1ToGrib2::grib2grib {
+
+namespace {
+
+std::optional<multio::message::match::MatchReduce> parseSelectors(const eckit::LocalConfiguration& config) {
+    if (!config.has("selectors")) {
+        return std::nullopt;
+    }
+
+    if (!config.isSubConfiguration("selectors")) {
+        throw eckit::BadValue("mars-based-filter option 'selectors' must be a configuration section", Here());
+    }
+
+    return multio::message::match::MatchReduce::construct(config.getSubConfiguration("selectors"));
+}
+
+multio::message::Metadata buildMetadata(const eckit::LocalConfiguration& mars, const eckit::LocalConfiguration& misc) {
+    multio::message::Metadata metadata = multio::message::toMetadata(mars);
+    metadata.updateOverwrite(multio::message::toMetadata(misc));
+    return metadata;
+}
+
+}  // namespace
 
 void validateMarsBasedFilterContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+
+    (void)parseSelectors(config);
 }
 
 MarsBasedFilterContext parseMarsBasedFilterContext(const eckit::LocalConfiguration& config) {
@@ -32,6 +60,8 @@ MarsBasedFilterContext parseMarsBasedFilterContext(const eckit::LocalConfigurati
         parsed.verbosity = 3;
     }
 
+    parsed.selectors = parseSelectors(config);
+
     return parsed;
 }
 
@@ -42,11 +72,18 @@ void freeMarsBasedFilterContext(MarsBasedFilterContext& context) noexcept {
 MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mars,
                                             const eckit::LocalConfiguration& misc,
                                             const MarsBasedFilterContext& context) noexcept {
-    (void)mars;
-    (void)misc;
-    (void)context;
+    if (!context.selectors) {
+        return MarsBasedFilterCode::Accepted;
+    }
 
-    return MarsBasedFilterCode::Accepted;
+    try {
+        const multio::message::Metadata metadata = buildMetadata(mars, misc);
+        return context.selectors->matches(metadata) ? MarsBasedFilterCode::Rejected : MarsBasedFilterCode::Accepted;
+    }
+    catch (...) {
+        return MarsBasedFilterCode::Rejected;
+    }
+
 }
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

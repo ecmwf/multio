@@ -133,6 +133,47 @@ std::string formatCounters(const char* label, const Counters& counters) {
 }
 
 template <typename Counters>
+std::size_t countTotal(const Counters& counters) {
+    std::size_t total = 0;
+    for (const auto count : counters.counts) {
+        total += count;
+    }
+    return total;
+}
+
+std::size_t countGribBasedFilterRejections(const GribBasedFilterCounters& counters) {
+    return counters.get(GribBasedFilterCode::RejectedDiscipline192)
+         + counters.get(GribBasedFilterCode::RejectedGrib1ByEditionPolicy)
+         + counters.get(GribBasedFilterCode::RejectedGrib2ByEditionPolicy)
+         + counters.get(GribBasedFilterCode::RejectedInvalidInputMessage);
+}
+
+std::size_t countGribBasedFilterFailures(const GribBasedFilterCounters& counters) {
+    return counters.get(GribBasedFilterCode::FailedGribBasedFilter);
+}
+
+std::size_t countMarsBasedFilterRejections(const MarsBasedFilterCounters& counters) {
+    return counters.get(MarsBasedFilterCode::Rejected);
+}
+
+std::string formatCountsList(std::initializer_list<std::size_t> counts) {
+    std::ostringstream out;
+    out << '[';
+
+    bool first = true;
+    for (const auto count : counts) {
+        if (!first) {
+            out << ',';
+        }
+        first = false;
+        out << count;
+    }
+
+    out << ']';
+    return out.str();
+}
+
+template <typename Counters>
 void appendCounts(std::ostringstream& out, const Counters& counters) {
     for (const auto count : counters.counts) {
         out << '\t' << count;
@@ -411,22 +452,25 @@ void FileStageOutcomes::add(const FileStageOutcomes& other) {
 }
 
 FileSummary deriveSummary(const FileStageOutcomes& outcomes) {
-    const std::size_t failures = countNonSuccess(outcomes.openFile) + countNonSuccess(outcomes.readMessage)
-                               + countNonSuccess(outcomes.gribToMars) + countNonSuccess(outcomes.marsOverrides)
-                               + countNonSuccess(outcomes.marsToMars) + countNonSuccess(outcomes.marsToGrib)
-                               + countNonSuccess(outcomes.postEncodeValidation) + countNonSuccess(outcomes.grib2Fdb5)
-                               + countNonSuccess(outcomes.fileFlush);
+    const std::size_t failures
+        = countNonSuccess(outcomes.openFile) + countNonSuccess(outcomes.readMessage)
+        + countGribBasedFilterFailures(outcomes.gribBasedFilter) + countNonSuccess(outcomes.gribToMars)
+        + countNonSuccess(outcomes.marsOverrides) + countNonSuccess(outcomes.marsToMars)
+        + countNonSuccess(outcomes.marsToGrib) + countNonSuccess(outcomes.postEncodeValidation)
+        + countNonSuccess(outcomes.grib2Fdb5) + countNonSuccess(outcomes.fileFlush) + outcomes.nCloseFailures
+        + outcomes.nGenericProcessOneMessageFailures + outcomes.nGenericProcessUnitOfWorkFailures;
 
     if (failures > 0) {
         return FileSummary::Fail;
     }
 
-    if (outcomes.openFile.get(OpenFileCode::Valid) != 1 || outcomes.fileFlush.get(FileFlushCode::Valid) != 1) {
+    const std::size_t nSuccessfulWorkUnits = countSuccess(outcomes.openFile);
+    if (nSuccessfulWorkUnits == 0 || outcomes.fileFlush.get(FileFlushCode::Valid) != nSuccessfulWorkUnits) {
         return FileSummary::Fail;
     }
 
-    const std::size_t intentionalRejects
-        = countNonSuccess(outcomes.gribBasedFilter) + countNonSuccess(outcomes.marsBasedFilter);
+    const std::size_t intentionalRejects = countGribBasedFilterRejections(outcomes.gribBasedFilter)
+                                         + countMarsBasedFilterRejections(outcomes.marsBasedFilter);
     const std::size_t converted = countSuccess(outcomes.grib2Fdb5);
 
     if (converted + intentionalRejects != outcomes.nMessages) {
@@ -464,24 +508,19 @@ void accumulate(OutcomeAggregate& aggregate, const FileStageOutcomes& outcomes) 
 
 std::string formatOutcomeLine(const FileStageOutcomes& outcomes) {
     std::ostringstream out;
-    out << '[' << toString(deriveSummary(outcomes)) << "] " << quoteForLog(outcomes.filename)
-        << ", nMessages=" << outcomes.nMessages << ", "
-        << "nFailedMarsToGribTestCaseGenerations=" << outcomes.nFailedMarsToGribTestCaseGenerations << ", "
-        << "nFailedMarsToGribTestCaseWrites=" << outcomes.nFailedMarsToGribTestCaseWrites << ", "
-        << "nCloseFailures=" << outcomes.nCloseFailures << ", "
-        << "nGenericProcessOneMessageFailures=" << outcomes.nGenericProcessOneMessageFailures << ", "
-        << "nGenericProcessUnitOfWorkFailures=" << outcomes.nGenericProcessUnitOfWorkFailures << ", "
-        << formatCounters<OpenFileCode>("OpenFile", outcomes.openFile) << ' '
-        << formatCounters<ReadMessageCode>("ReadMessage", outcomes.readMessage) << ' '
-        << formatCounters<GribBasedFilterCode>("GribBasedFilter", outcomes.gribBasedFilter) << ' '
-        << formatCounters<GribToMarsCode>("GribToMars", outcomes.gribToMars) << ' '
-        << formatCounters<MarsOverridesCode>("MarsOverrides", outcomes.marsOverrides) << ' '
-        << formatCounters<MarsToMarsCode>("MarsToMars", outcomes.marsToMars) << ' '
-        << formatCounters<MarsBasedFilterCode>("MarsBasedFilter", outcomes.marsBasedFilter) << ' '
-        << formatCounters<MarsToGribCode>("MarsToGrib", outcomes.marsToGrib) << ' '
-        << formatCounters<PostEncodeValidationCode>("PostEncodeValidation", outcomes.postEncodeValidation) << ' '
-        << formatCounters<Grib2Fdb5Code>("Grib2Fdb5", outcomes.grib2Fdb5) << ' '
-        << formatCounters<FileFlushCode>("FileFlush", outcomes.fileFlush) << '\n';
+    out << '[' << toString(deriveSummary(outcomes)) << "], " << quoteForLog(outcomes.filename)
+        << ", nMessages=" << outcomes.nMessages << ", nWorkUnits=" << countTotal(outcomes.openFile)
+        << ", nSuccess=" << countSuccess(outcomes.grib2Fdb5) << ", nRejected="
+        << formatCountsList({countGribBasedFilterRejections(outcomes.gribBasedFilter),
+                             countMarsBasedFilterRejections(outcomes.marsBasedFilter)})
+        << ", nFail="
+        << formatCountsList({countNonSuccess(outcomes.openFile), countNonSuccess(outcomes.readMessage),
+                             countGribBasedFilterFailures(outcomes.gribBasedFilter),
+                             countNonSuccess(outcomes.gribToMars), countNonSuccess(outcomes.marsOverrides),
+                             countNonSuccess(outcomes.marsToMars), 0, countNonSuccess(outcomes.marsToGrib),
+                             countNonSuccess(outcomes.postEncodeValidation), countNonSuccess(outcomes.grib2Fdb5),
+                             countNonSuccess(outcomes.fileFlush)})
+        << '\n';
     return out.str();
 }
 

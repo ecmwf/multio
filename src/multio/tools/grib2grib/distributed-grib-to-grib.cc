@@ -79,6 +79,8 @@ private:
         // Process rank-owned work units and gather outcomes from all ranks
         const auto workUnitsOutcomePerTask = utils::processWorkUnits(workUnits, context, *writer);
 
+        comm.barrier();
+
         //  Gather and summarize outcomes from all ranks, and write summary on rank 0
         const auto workUnitOutcomeGlobal = utils::gatherWorkUnitOutcome(workUnitsOutcomePerTask, comm);
 
@@ -89,6 +91,8 @@ private:
             utils::writeSummary(summary, outputDirectory_);
             utils::printAggregateSummary(utils::buildAggregateSummary(summary));
         }
+
+        comm.barrier();
     }
 
     void finish(const eckit::option::CmdArgs&) override {}

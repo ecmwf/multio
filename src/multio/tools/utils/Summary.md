@@ -102,25 +102,35 @@ Each line in `Summary.log` corresponds to one processed input file.
 The format is:
 
 ```text
-[STATUS] "filename", nMessages=N, CounterA=X CounterB=Y ...
+[STATUS], "filename", nMessages=N, nWorkUnits=N, nSuccess=N, nRejected=[N,N], nFail=[N,N,N,N,N,N,N,N,N,N,N]
 ```
 
 Example:
 
 ```text
-[SUCCESS] "/path/to/input/file.grib", nMessages=42, ExtractOK=42 EncodeOK=42 ArchiveOK=42
+[SUCCESS], "/path/to/input/file.grib", nMessages=42, nWorkUnits=1, nSuccess=42, nRejected=[0,0], nFail=[0,0,0,0,0,0,0,0,0,0,0]
 ```
 
 The fields mean:
 
-| Field                       | Meaning                                           |
-| --------------------------- | ------------------------------------------------- |
-| `STATUS`                    | Final status for that input file                  |
-| `filename`                  | Input file path                                   |
-| `nMessages`                 | Number of GRIB messages read from that input file |
-| `CounterA=X CounterB=Y ...` | Non-zero outcome counters for that file           |
+| Field         | Meaning                                           |
+| ------------- | ------------------------------------------------- |
+| `STATUS`      | Final status for that input file                  |
+| `filename`    | Input file path                                   |
+| `nMessages`   | Number of GRIB messages read from that input file |
+| `nWorkUnits`  | Number of merged work-unit attempts for that file |
+| `nSuccess`    | Number of messages successfully archived          |
+| `nRejected`   | Rejection totals per rejection stage              |
+| `nFail`       | Failure totals per processing stage               |
 
-The exact counter names depend on the outcome categories reported by the tool.
+The array order is fixed:
+
+* `nRejected=[GribBasedFilter, MarsBasedFilter]`
+* `nFail=[OpenFile, ReadMessage, GribBasedFilter, GribToMars, MarsOverrides, MarsToMars, MarsBasedFilter, MarsToGrib, PostEncodeValidation, Grib2Fdb5, FileFlush]`
+
+The `GribBasedFilter` fail slot counts only technical filter failures. Policy-driven filter rejections are reported in `nRejected`.
+
+For files processed across multiple work units, the final status is derived from the merged per-file totals. A file is not considered failed merely because `nWorkUnits` is greater than `1`.
 
 ---
 

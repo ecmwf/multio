@@ -43,6 +43,34 @@ std::uint64_t readUint64BE(const unsigned char* p) {
          | (static_cast<std::uint64_t>(p[6]) << 8) | static_cast<std::uint64_t>(p[7]);
 }
 
+std::optional<std::uint64_t> readLargeGrib1Length(std::FILE* file, const std::string& filename, off_t candidateOffset,
+                                                  off_t fileEndOffset) {
+    clearerr(file);
+    if (fseeko(file, candidateOffset, SEEK_SET) != 0) {
+        throwSystemError("fseeko", filename);
+    }
+
+    int error = CODES_SUCCESS;
+    codes_handle* handle = codes_grib_handle_new_from_file(nullptr, file, &error);
+    if (handle == nullptr) {
+        return std::nullopt;
+    }
+
+    off_t messageOffset = 0;
+    error = codes_get_message_offset(handle, &messageOffset);
+    codes_handle_delete(handle);
+    if (error != CODES_SUCCESS || messageOffset != candidateOffset) {
+        return std::nullopt;
+    }
+
+    const off_t messageEndOffset = ftello(file);
+    if (messageEndOffset <= candidateOffset || messageEndOffset > fileEndOffset) {
+        return std::nullopt;
+    }
+
+    return static_cast<std::uint64_t>(messageEndOffset - candidateOffset);
+}
+
 bool readExactlyAt(std::FILE* file, const std::string& filename, off_t offset, void* out, std::size_t length) {
     clearerr(file);
 
@@ -95,6 +123,15 @@ std::optional<CandidateMessage> tryValidateCandidate(std::FILE* file, const std:
     switch (edition) {
         case 1:
             messageLength = readUint24BE(header + 4);
+            // Bit 23 denotes the legacy large-GRIB1 representation. Its raw
+            // header value is not necessarily the physical message length.
+            if ((messageLength & 0x800000u) != 0) {
+                const auto largeMessageLength = readLargeGrib1Length(file, filename, candidateOffset, fileEndOffset);
+                if (!largeMessageLength) {
+                    return std::nullopt;
+                }
+                messageLength = *largeMessageLength;
+            }
             if (messageLength < 12) {
                 return std::nullopt;
             }
@@ -132,17 +169,6 @@ std::optional<CandidateMessage> tryValidateCandidate(std::FILE* file, const std:
         return std::nullopt;
     }
 
-    std::vector<unsigned char> message(static_cast<std::size_t>(messageLength));
-    if (!readExactlyAt(file, filename, candidateOffset, message.data(), message.size())) {
-        return std::nullopt;
-    }
-
-    codes_handle* handle = codes_handle_new_from_message_copy(nullptr, message.data(), message.size());
-    if (handle == nullptr) {
-        return std::nullopt;
-    }
-
-    codes_handle_delete(handle);
     return CandidateMessage{candidateOffset, messageLength};
 }
 

@@ -25,11 +25,14 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 
 /// @brief Parsed context consumed by the standalone `MarsBasedFilter` stage.
 ///
-/// When `selectors` is absent, the stage accepts every message. When present,
-/// the selector is evaluated against `mars + misc` converted into
-/// `multio::message::Metadata`. A selector match means the message is rejected.
+/// The stage applies the configured statistical-product checks first. When
+/// `selectors` is present, it is then evaluated against `mars + misc` converted
+/// into `multio::message::Metadata`; a selector match means rejection.
 struct MarsBasedFilterContext {
     std::int64_t verbosity = 0;
+    bool allowExtendedSetOfOperationsForZeroLengthFsWindow = false;
+    bool allowFromStartStatisticsForAnalysis = false;
+    bool allowPartialStatisticsWindow = true;
     std::optional<multio::message::match::MatchReduce> selectors;
 };
 
@@ -49,8 +52,8 @@ void freeMarsBasedFilterContext(MarsBasedFilterContext& context) noexcept;
 /// @param mars Input MARS dictionary.
 /// @param misc Input misc dictionary.
 /// @param context Parsed stage-local context.
-/// @return `Rejected` when the configured selector matches the combined
-///         metadata, otherwise `Accepted`.
+/// @return `Rejected` when a statistical-product rule or configured selector
+///         rejects the message, otherwise `Accepted`.
 MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mars,
                                             const eckit::LocalConfiguration& misc,
                                             const MarsBasedFilterContext& context) noexcept;

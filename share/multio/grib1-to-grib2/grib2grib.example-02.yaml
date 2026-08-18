@@ -8,12 +8,15 @@ stages:
     verbosity: 0
     grib1-messages-policy: try-to-handle
     grib2-messages-policy: try-to-handle
-    invalid-messages-policy: ignore
+    invalid-messages-policy: try-to-handle
     discipline192-messages-policy: ignore
 
   grib-to-mars:
     verbosity: 0
     api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_StandardisedAnomalyAsInstant: true
       saveErrorStack: false
       errorStackPath: "./"
       printErrorStackToStdErr: false
@@ -21,8 +24,9 @@ stages:
   mars-to-mars:
     verbosity: 0
     api-options:
+      tryFixBadInput_ZeroAccumulation: true
       saveErrorStack: false
-      errorStackPath: "./"
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
       printErrorStackToStdErr: false
 
   overrides:
@@ -35,21 +39,19 @@ stages:
   mars-based-filter:
     verbosity: 0
     api-options:
+      allowFromStartStatisticsForAnalisys: false 
+      allowPartialStatisticsWindow: false 
       allowExtendedSetOfOperationsForZeroLengthFsWindow: false
-    # selectors:
-    #   match:
-    #     - param: [ 123456 ]
-    #     - stream: ["oper"]
-    #     - type: ["fc"]
+
 
   mars-to-grib:
     verbosity: 0
     generate-testcases: false
     testcases-dir: "/ec/project/mdst/MDST/re-encode-scripts/test-distribution/mtg2_convert_mavm_20260817_1233_0da514ba217a/output"
     api-options:
-      saveErrorStack: false
-      errorStackPath: "./"
-      printErrorStackToStdErr: false
+      saveErrorStack: true
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
+      printErrorStackToStdErr: true
 
   post-encode-validation:
     verbosity: 0
@@ -60,39 +62,7 @@ stages:
 sink:
   type: fdb5
   config:
-    fdb_home: "/home/fdbsc"
+    # fdb_home: "/home/fdbsc"
+    fdb_home: "/lus/h1tcst01/mavm_temp_scratch_mtg2/fdb-mdst/"
     userConfig:
       useSubToc: true
-
-# debug-sinks:
-#   grib-based-filter:
-#     type: file
-#     path: /tmp/grib-based-filter.grib
-#
-#   grib-to-mars:
-#     type: file
-#     path: /tmp/grib-to-mars.grib
-#
-#   mars-to-mars:
-#     type: file
-#     path: /tmp/mars-to-mars.grib
-#
-#   overrides:
-#     type: file
-#     path: /tmp/overrides.grib
-#
-#   mars-based-filter:
-#     type: file
-#     path: /tmp/mars-based-filter.grib
-#
-#   mars-to-grib:
-#     type: file
-#     path: /tmp/mars-to-grib.grib
-#
-#   post-encode-validation:
-#     type: file
-#     path: /tmp/post-encode-validation.grib
-#
-#   grib2fdb5:
-#     type: file
-#     path: /tmp/grib2fdb5.grib

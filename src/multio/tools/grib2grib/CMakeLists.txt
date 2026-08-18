@@ -10,6 +10,9 @@ ecbuild_add_library(
         CodesHandleToEckitMessage.h
         GlobalContext.cc
         GlobalContext.h
+        handleGribBoundaries.cc
+        handleGribBoundaries.h
+        ReaderContext.h
         OptionsUtils.cc
         OptionsUtils.h
         StageOutcomes.cc
@@ -56,6 +59,7 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
+        multio-fdb5
         eckit
         metkit
         eccodes

@@ -24,7 +24,7 @@ std::vector<FileStageOutcomes> processRankOwnedUnitsOfWork(const std::vector<Wor
     outcomes.reserve(workUnits.size());
 
     for (const auto& workUnitState : workUnits) {
-        UnitOfWork unitOfWork{workUnitState};
+        UnitOfWork unitOfWork{workUnitState, context.reader.mode};
         outcomes.push_back(processOneUnitOfWork(unitOfWork, context, writer));
     }
 

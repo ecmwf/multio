@@ -25,6 +25,8 @@
 
 #include "metkit/codes/api/CodesAPI.h"
 
+#include "multio/tools/grib2grib/handleGribBoundaries.h"
+
 namespace multio::distGrib1ToGrib2::grib2grib {
 
 namespace {
@@ -110,6 +112,36 @@ std::optional<off_t> findNextGribOffset(std::FILE* file, const std::string& file
     }
 
     return messageOffset;
+}
+
+std::optional<CandidateMessage> findNextGribOffsetByCandidateBoundary(std::FILE* file, const std::string& filename,
+                                                                     off_t searchOffset, off_t endOffset,
+                                                                     off_t fileEndOffset) {
+    return searchCandidateMessage(file, filename, searchOffset, endOffset, fileEndOffset);
+}
+
+std::unique_ptr<metkit::codes::CodesHandle> decodeMessageAtCandidateBoundary(std::FILE* file, const std::string& filename,
+                                                                              const CandidateMessage& candidate) {
+    if (candidate.length > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
+        throw std::runtime_error("Candidate message length exceeds size_t for '" + filename + "'");
+    }
+
+    std::vector<std::uint8_t> buffer(static_cast<std::size_t>(candidate.length));
+
+    if (fseeko(file, candidate.offset, SEEK_SET) != 0) {
+        throwSystemError("fseeko", filename);
+    }
+
+    const auto nread = std::fread(buffer.data(), 1, buffer.size(), file);
+    if (nread != buffer.size()) {
+        if (ferror(file)) {
+            throwSystemError("fread", filename);
+        }
+
+        throw std::runtime_error("Short read while decoding candidate message for '" + filename + "'");
+    }
+
+    return metkit::codes::codesHandleFromMessageCopy(metkit::codes::Span<const std::uint8_t>(buffer.data(), buffer.size()));
 }
 
 /// @brief Append one unsigned 64-bit integer to a binary payload.
@@ -327,7 +359,8 @@ std::vector<WorkUnit> deserializeWorkUnits(const std::vector<char>& payload) {
 
 /// @brief Bind the reader to one immutable scheduled byte range.
 /// @param workUnit Scheduled file slice whose messages will be iterated.
-UnitOfWork::UnitOfWork(WorkUnit workUnit) : workUnit_{std::move(workUnit)} {}
+UnitOfWork::UnitOfWork(WorkUnit workUnit, WorkUnitReaderMode readerMode) :
+    workUnit_{std::move(workUnit)}, readerMode_{readerMode} {}
 
 /// @brief Close any open file handle on destruction.
 UnitOfWork::~UnitOfWork() noexcept {
@@ -358,14 +391,33 @@ void UnitOfWork::open() {
         throwSystemError("fopen", workUnit_.filename);
     }
 
+    fileEndOffset_ = checkedOffset(static_cast<std::uint64_t>(fileSizeBytes(workUnit_.filename)), workUnit_.filename);
+
     // Work-unit offsets come from coarse byte-based scheduling, so align the
     // effective cursor to the first actual GRIB message starting inside range.
-    const auto firstMessageOffset = findNextGribOffset(file_, workUnit_.filename, workUnit_.startOffset);
-    if (!firstMessageOffset || *firstMessageOffset >= workUnit_.endOffset) {
-        currentOffset_ = workUnit_.endOffset;
+    if (readerMode_ == WorkUnitReaderMode::CandidateBoundary) {
+        const auto firstCandidate =
+            findNextGribOffsetByCandidateBoundary(file_, workUnit_.filename, workUnit_.startOffset, workUnit_.endOffset,
+                                                  fileEndOffset_);
+        if (!firstCandidate) {
+            currentOffset_ = workUnit_.endOffset;
+        }
+        else {
+            currentOffset_ = firstCandidate->offset;
+        }
     }
     else {
-        currentOffset_ = *firstMessageOffset;
+        const auto firstMessageOffset = findNextGribOffset(file_, workUnit_.filename, workUnit_.startOffset);
+        if (!firstMessageOffset || *firstMessageOffset >= workUnit_.endOffset) {
+            currentOffset_ = workUnit_.endOffset;
+        }
+        else {
+            currentOffset_ = *firstMessageOffset;
+        }
+    }
+
+    if (currentOffset_ >= workUnit_.endOffset) {
+        currentOffset_ = workUnit_.endOffset;
     }
 
     isOpen_ = true;
@@ -391,6 +443,18 @@ std::unique_ptr<metkit::codes::CodesHandle> UnitOfWork::nextMessage() {
 
     if (fseeko(file_, currentOffset_, SEEK_SET) != 0) {
         throwSystemError("fseeko", workUnit_.filename);
+    }
+
+    if (readerMode_ == WorkUnitReaderMode::CandidateBoundary) {
+        const auto candidate = findNextGribOffsetByCandidateBoundary(file_, workUnit_.filename, currentOffset_,
+                                                                     workUnit_.endOffset, fileEndOffset_);
+        if (!candidate) {
+            currentOffset_ = workUnit_.endOffset;
+            return nullptr;
+        }
+
+        currentOffset_ = candidate->offset + static_cast<off_t>(candidate->length);
+        return decodeMessageAtCandidateBoundary(file_, workUnit_.filename, *candidate);
     }
 
     int error = CODES_SUCCESS;
@@ -454,6 +518,7 @@ bool UnitOfWork::close() noexcept {
         success = std::fclose(file_) == 0;
         file_ = nullptr;
     }
+    fileEndOffset_ = 0;
     currentOffset_ = 0;
     isOpen_ = false;
     return success;

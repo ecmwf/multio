@@ -37,6 +37,7 @@ namespace detail {
 
 using WorkBucket = multio::distGrib1ToGrib2::grib2grib::WorkBucket;
 using WorkUnit = multio::distGrib1ToGrib2::grib2grib::WorkUnit;
+using WorkUnitReaderMode = multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode;
 using multio::distGrib1ToGrib2::grib2grib::createBuckets;
 using multio::distGrib1ToGrib2::grib2grib::timestampString;
 
@@ -135,11 +136,11 @@ void print(long rank, long workUnitIndex, const metkit::codes::CodesHandle& hand
               << std::setw(12) << isMessageValid << std::endl;
 }
 
-void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUnit) {
+void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUnit, WorkUnitReaderMode readerMode) {
     // std::cout << "Scanning work unit messages for rank " << rank << ", work unit index " << workUnitIndex
     //           << ", file '" << workUnit.filename << "' in [" << workUnit.startOffset << ", " << workUnit.endOffset
     //           << ")" << std::endl;
-    multio::distGrib1ToGrib2::grib2grib::UnitOfWork unitOfWork{workUnit};
+    multio::distGrib1ToGrib2::grib2grib::UnitOfWork unitOfWork{workUnit, readerMode};
     unitOfWork.open();
     while (unitOfWork.newMessageAvailable()) {
         const auto message = unitOfWork.nextMessage();
@@ -151,12 +152,12 @@ void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUni
     unitOfWork.close();
 }
 
-void scanBucketMessages(const std::vector<WorkBucket>& buckets) {
+void scanBucketMessages(const std::vector<WorkBucket>& buckets, WorkUnitReaderMode readerMode) {
     long workUnitIndex = 0;
     for (std::size_t rank = 0; rank < buckets.size(); ++rank) {
         const auto& bucket = buckets[rank];
         for (const auto& workUnit : bucket.workUnits) {
-            scanWorkUnitMessages(static_cast<long>(rank), workUnitIndex, workUnit);
+            scanWorkUnitMessages(static_cast<long>(rank), workUnitIndex, workUnit, readerMode);
             ++workUnitIndex;
         }
     }
@@ -175,13 +176,15 @@ public:
                                                                  "Average number of work units per synthetic rank"));
         options_.push_back(new eckit::option::SimpleOption<bool>("scan-work-unit-messages",
                                                                  "Scan all generated work units and iterate messages"));
+        options_.push_back(new eckit::option::SimpleOption<std::string>(
+            "reader-mode", "Reader mode override: eccodes-stream or candidate-boundary"));
     }
 
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --file-list <file-list.txt> --output-directory <path> --n-workers <N>"
-                              " --average-work-units-per-rank <N> [--scan-work-unit-messages]\n";
+                               " --average-work-units-per-rank <N> [--scan-work-unit-messages] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {
@@ -190,6 +193,7 @@ private:
         args.get("n-workers", nWorkers_);
         args.get("average-work-units-per-rank", averageWorkUnitsPerRank_);
         args.get("scan-work-unit-messages", scanWorkUnitMessages_);
+        args.get("reader-mode", readerModeOverride_);
 
         if (fileList_.empty()) {
             throw eckit::UserError("Missing required option --file-list", Here());
@@ -215,8 +219,12 @@ private:
         const auto buckets = detail::createBuckets(filenames, static_cast<std::size_t>(nWorkers_),
                                                    static_cast<std::size_t>(averageWorkUnitsPerRank_));
 
+        const auto readerMode = readerModeOverride_.empty()
+                                    ? multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode::EccodesStream
+                                    : multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
+
         if (scanWorkUnitMessages_) {
-            detail::scanBucketMessages(buckets);
+            detail::scanBucketMessages(buckets, readerMode);
         }
 
         detail::writeWorkUnitsCsv(buckets, outputDirectory_);
@@ -238,6 +246,7 @@ private:
     long nWorkers_ = 0;
     long averageWorkUnitsPerRank_ = 0;
     bool scanWorkUnitMessages_ = false;
+    std::string readerModeOverride_;
 };
 
 }  // namespace multio::grib2grib

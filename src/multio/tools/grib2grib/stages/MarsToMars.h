@@ -14,6 +14,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 
 #include "eckit/config/LocalConfiguration.h"
 
@@ -24,6 +25,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed context consumed by the standalone `MarsToMars` stage.
 struct MarsToMarsContext {
     std::int64_t verbosity = 0;
+    std::optional<eckit::LocalConfiguration> apiOptions;
 };
 
 /// @brief Result of the standalone `MarsToMars` stage.

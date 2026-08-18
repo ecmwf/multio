@@ -51,10 +51,28 @@ eckit::LocalConfiguration mergeLocalConfigurations(const eckit::LocalConfigurati
 
 }  // namespace implementation
 
+namespace {
+
+std::optional<eckit::LocalConfiguration> parseMars2MarsApiOptions(const eckit::LocalConfiguration& config) {
+    if (!config.has("api-options")) {
+        return std::nullopt;
+    }
+
+    if (!config.isSubConfiguration("api-options")) {
+        throw eckit::BadValue("mars-to-mars option 'api-options' must be a configuration section", Here());
+    }
+
+    return config.getSubConfiguration("api-options");
+}
+
+}  // namespace
+
 void validateMarsToMarsContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+
+    (void)parseMars2MarsApiOptions(config);
 }
 
 MarsToMarsContext parseMarsToMarsContext(const eckit::LocalConfiguration& config) {
@@ -67,6 +85,8 @@ MarsToMarsContext parseMarsToMarsContext(const eckit::LocalConfiguration& config
     if (parsed.verbosity > 3) {
         parsed.verbosity = 3;
     }
+
+    parsed.apiOptions = parseMars2MarsApiOptions(config);
 
     return parsed;
 }
@@ -85,11 +105,20 @@ MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const
     eckit::LocalConfiguration mappedMisc;
 
     try {
-        metkit::mars2mars::Mars2Mars mars2mars;
-        const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
-        mappedMars = mappedMarsMisc.mars;
-        mappedMisc = mappedMarsMisc.misc;
-        result.mars = mappedMars;
+        if (context.apiOptions) {
+            metkit::mars2mars::Mars2Mars mars2mars(*context.apiOptions);
+            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            mappedMars = mappedMarsMisc.mars;
+            mappedMisc = mappedMarsMisc.misc;
+            result.mars = mappedMars;
+        }
+        else {
+            metkit::mars2mars::Mars2Mars mars2mars;
+            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            mappedMars = mappedMarsMisc.mars;
+            mappedMisc = mappedMarsMisc.misc;
+            result.mars = mappedMars;
+        }
     }
     catch (...) {
         printTrappedErrorDisclaimer();

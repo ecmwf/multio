@@ -41,13 +41,15 @@ public:
         options_.push_back(
             new eckit::option::SimpleOption<std::string>("output-directory", "Path to output directory"));
         options_.push_back(new eckit::option::SimpleOption<long>("rank", "Rank used for output filenames (default 0)"));
+        options_.push_back(new eckit::option::SimpleOption<std::string>(
+            "reader-mode", "Reader mode override: eccodes-stream or candidate-boundary"));
     }
 
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --options-file <options.yaml> --input-file <input.grib>"
-                              " --output-directory <dir> [--rank <n>]\n";
+                               " --output-directory <dir> [--rank <n>] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {
@@ -55,6 +57,7 @@ private:
         args.get("input-file", inputFile_);
         args.get("output-directory", outputDirectory_);
         args.get("rank", rank_);
+        args.get("reader-mode", readerModeOverride_);
 
         if (optionsFile_.empty()) {
             throw eckit::UserError("Missing required option --options-file", Here());
@@ -71,10 +74,15 @@ private:
         namespace g2g = multio::distGrib1ToGrib2::grib2grib;
 
         const auto rawOptions = g2g::parseOptionsYaml(g2g::readOptionsFileAsString(optionsFile_));
+        auto context = g2g::parseGlobalContext(rawOptions);
+        if (!readerModeOverride_.empty()) {
+            context.reader.mode = g2g::parseWorkUnitReaderMode(readerModeOverride_);
+        }
 
-        g2g::Grib2GribSinks sinks{rawOptions, outputDirectory_, static_cast<int>(rank_)};
+        g2g::Grib2GribSinks sinks{rawOptions, outputDirectory_, static_cast<int>(rank_),
+                                  context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir};
 
-        g2g::UnitOfWork unitOfWork{g2g::WorkUnit{inputFile_, 0, g2g::fileSizeBytes(inputFile_)}};
+        g2g::UnitOfWork unitOfWork{g2g::WorkUnit{inputFile_, 0, g2g::fileSizeBytes(inputFile_)}, context.reader.mode};
         unitOfWork.open();
         while (unitOfWork.newMessageAvailable()) {
             const auto message = unitOfWork.nextMessage();
@@ -102,6 +110,7 @@ private:
     std::string optionsFile_;
     std::string inputFile_;
     std::string outputDirectory_;
+    std::string readerModeOverride_;
     long rank_ = 0;
 };
 

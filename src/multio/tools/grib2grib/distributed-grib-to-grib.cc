@@ -29,13 +29,15 @@ public:
             new eckit::option::SimpleOption<std::string>("output-directory", "Path to output directory"));
         options_.push_back(new eckit::option::SimpleOption<long>(
             "average-work-units-per-rank", "Average number of work units per MPI rank, default=15"));
+        options_.push_back(new eckit::option::SimpleOption<std::string>(
+            "reader-mode", "Reader mode override: eccodes-stream or candidate-boundary"));
     }
 
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --options-file <options.yaml> --file-list <file-list.txt> --output-directory <path>"
-                              " [--average-work-units-per-rank <N>]\n";
+                               " [--average-work-units-per-rank <N>] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {
@@ -43,6 +45,7 @@ private:
         args.get("file-list", fileList_);
         args.get("output-directory", outputDirectory_);
         args.get("average-work-units-per-rank", averageWorkUnitsPerRank_);
+        args.get("reader-mode", readerModeOverride_);
 
         if (optionsFile_.empty()) {
             throw eckit::UserError("Missing required option --options-file", Here());
@@ -64,11 +67,14 @@ private:
 
         // Gloal initialisation of the MPI environment and loading of options
         const auto rawOptions = utils::loadAndBroadcastOptionsAsConfiguration(optionsFile_, comm);
+        auto context = utils::buildGlobalContext(rawOptions);
+        if (!readerModeOverride_.empty()) {
+            context.reader.mode = multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
+        }
         const auto workUnits = utils::distributeWork(fileList_, averageWorkUnitsPerRank_, comm);
 
         // Local initialisation of Processing environment and processing of rank-owned work units
-        auto writer = utils::buildRankLocalWriter(rawOptions, outputDirectory_, comm);
-        const auto context = utils::buildGlobalContext(rawOptions);
+        auto writer = utils::buildRankLocalWriter(rawOptions, context, outputDirectory_, comm);
 
         // Process rank-owned work units and gather outcomes from all ranks
         const auto workUnitsOutcomePerTask = utils::processWorkUnits(workUnits, context, *writer);
@@ -93,6 +99,7 @@ private:
     std::string optionsFile_;
     std::string fileList_;
     std::string outputDirectory_;
+    std::string readerModeOverride_;
     long averageWorkUnitsPerRank_ = 15;
 };
 

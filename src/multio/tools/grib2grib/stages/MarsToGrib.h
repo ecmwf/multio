@@ -15,6 +15,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
@@ -32,7 +34,9 @@ class TestCaseFileSink;
 /// @brief Parsed runtime context for the standalone `MarsToGrib` stage.
 struct MarsToGribContext {
     std::int64_t verbosity = 0;
-    eckit::LocalConfiguration encoderConfig;
+    bool generateTestcases = false;
+    std::optional<std::string> testcasesDir;
+    std::optional<eckit::LocalConfiguration> apiOptions;
 };
 
 /// @brief Result of the standalone `MarsToGrib` stage.

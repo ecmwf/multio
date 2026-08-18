@@ -99,15 +99,15 @@ void TestCaseFileSink::flush() {
     }
 }
 
-Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank) {
+Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
+                               bool generateTestcases, const std::optional<std::string>& testcasesDirectory) {
     sinks_.push_back(buildSink(options, outputDirectory, rank));
 
-    if (options.has("mars2grib-generate-testcases") && options.getBool("mars2grib-generate-testcases")) {
-        if (!options.has("mars2grib-testcases-dir")) {
-            throw eckit::BadValue("mars2grib option 'mars2grib-testcases-dir' is required when testcases are enabled",
-                                  Here());
+    if (generateTestcases) {
+        if (!testcasesDirectory) {
+            throw eckit::BadValue("mars-to-grib option 'testcases-dir' is required when testcases are enabled", Here());
         }
-        testCaseSink_ = std::make_unique<TestCaseFileSink>(options.getString("mars2grib-testcases-dir"), rank);
+        testCaseSink_ = std::make_unique<TestCaseFileSink>(*testcasesDirectory, rank);
     }
 }
 

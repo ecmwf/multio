@@ -15,6 +15,7 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
+#include "multio/tools/grib2grib/ReaderContext.h"
 #include "multio/tools/grib2grib/stages/Grib2Fdb5.h"
 #include "multio/tools/grib2grib/stages/GribBasedFilter.h"
 #include "multio/tools/grib2grib/stages/GribToMars.h"
@@ -27,6 +28,7 @@
 namespace multio::distGrib1ToGrib2::grib2grib {
 
 struct GlobalContext {
+    ReaderContext reader;
     GribBasedFilterContext gribBasedFilter;
     GribToMarsContext gribToMars;
     MarsToMarsContext marsToMars;

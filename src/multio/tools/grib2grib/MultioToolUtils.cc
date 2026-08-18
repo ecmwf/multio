@@ -63,8 +63,10 @@ GlobalContext buildGlobalContext(const eckit::LocalConfiguration& rawOptions) {
 }
 
 std::unique_ptr<Grib2GribSinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
-                                                     const std::string& outputDirectory, const eckit::mpi::Comm& comm) {
-    return std::make_unique<Grib2GribSinks>(rawOptions, outputDirectory, static_cast<int>(comm.rank()));
+                                                     const GlobalContext& context, const std::string& outputDirectory,
+                                                     const eckit::mpi::Comm& comm) {
+    return std::make_unique<Grib2GribSinks>(rawOptions, outputDirectory, static_cast<int>(comm.rank()),
+                                            context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir);
 }
 
 std::vector<WorkUnit> distributeWork(const std::string& fileList, long averageWorkUnitsPerRank,

@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "multio/tools/grib2grib/ReaderContext.h"
+
 namespace metkit::codes {
 class CodesHandle;
 }
@@ -90,7 +92,7 @@ class UnitOfWork {
 public:
     /// @brief Bind the reader to one immutable scheduled byte range.
     /// @param workUnit Scheduled file slice whose messages will be iterated.
-    explicit UnitOfWork(WorkUnit workUnit);
+    UnitOfWork(WorkUnit workUnit, WorkUnitReaderMode readerMode);
 
     /// @brief Close any open file handle on destruction.
     ~UnitOfWork() noexcept;
@@ -127,8 +129,10 @@ public:
 
 private:
     const WorkUnit workUnit_;
+    const WorkUnitReaderMode readerMode_;
 
     std::FILE* file_ = nullptr;
+    off_t fileEndOffset_ = 0;
     off_t currentOffset_ = 0;
     bool isOpen_ = false;
 };

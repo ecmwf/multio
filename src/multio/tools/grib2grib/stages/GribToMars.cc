@@ -21,10 +21,28 @@
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
+namespace {
+
+std::optional<eckit::LocalConfiguration> parseGrib2MarsApiOptions(const eckit::LocalConfiguration& config) {
+    if (!config.has("api-options")) {
+        return std::nullopt;
+    }
+
+    if (!config.isSubConfiguration("api-options")) {
+        throw eckit::BadValue("grib-to-mars option 'api-options' must be a configuration section", Here());
+    }
+
+    return config.getSubConfiguration("api-options");
+}
+
+}  // namespace
+
 void validateGribToMarsContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+
+    (void)parseGrib2MarsApiOptions(config);
 }
 
 GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config) {
@@ -37,6 +55,8 @@ GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config
     if (parsed.verbosity > 3) {
         parsed.verbosity = 3;
     }
+
+    parsed.apiOptions = parseGrib2MarsApiOptions(config);
 
     return parsed;
 }
@@ -52,10 +72,18 @@ GribToMarsResult runGribToMarsStage(const metkit::codes::CodesHandle& inputHandl
     GribToMarsResult result;
 
     try {
-        metkit::grib2mars::Grib2Mars grib2mars;
-        const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
-        result.mars = marsMisc.mars;
-        result.misc = marsMisc.misc;
+        if (context.apiOptions) {
+            metkit::grib2mars::Grib2Mars grib2mars(*context.apiOptions);
+            const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
+            result.mars = marsMisc.mars;
+            result.misc = marsMisc.misc;
+        }
+        else {
+            metkit::grib2mars::Grib2Mars grib2mars;
+            const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
+            result.mars = marsMisc.mars;
+            result.misc = marsMisc.misc;
+        }
     }
     catch (...) {
         printTrappedErrorDisclaimer();

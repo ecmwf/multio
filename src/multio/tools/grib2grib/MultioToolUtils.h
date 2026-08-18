@@ -39,7 +39,8 @@ eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::stri
 GlobalContext buildGlobalContext(const eckit::LocalConfiguration& rawOptions);
 
 std::unique_ptr<Grib2GribSinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
-                                                     const std::string& outputDirectory, const eckit::mpi::Comm& comm);
+                                                     const GlobalContext& context, const std::string& outputDirectory,
+                                                     const eckit::mpi::Comm& comm);
 
 std::vector<WorkUnit> distributeWork(const std::string& fileList, long averageWorkUnitsPerRank,
                                      const eckit::mpi::Comm& comm);

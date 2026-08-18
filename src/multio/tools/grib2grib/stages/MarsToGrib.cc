@@ -28,48 +28,16 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 
 namespace implementation {
 
-const std::unordered_set<std::string>& supportedMars2gribOptions() {
-    static const auto supported = std::unordered_set<std::string>{"applyChecks",
-                                                                  "enableOverride",
-                                                                  "enableBitsPerValueCompression",
-                                                                  "normalizeMars",
-                                                                  "normalizeMisc",
-                                                                  "fixMarsGrid",
-                                                                  "skipSection3",
-                                                                  "allowDefaultTimeIncrement",
-                                                                  "allowZeroLengthFsWindow",
-                                                                  "allowNonEnumeratedPositiveIntegerTimespanHours",
-                                                                  "allowRedundantTimeIncrement",
-                                                                  "allowMissingTimespanForInstantProduct",
-                                                                  "allowMissingTimespanForStatisticalProduct"};
-    return supported;
-}
-
-eckit::LocalConfiguration validateMars2gribConfiguration(const eckit::LocalConfiguration& options) {
-    eckit::LocalConfiguration validated{};
-
-    if (!options.has("mars2grib-options")) {
-        return validated;
+std::optional<eckit::LocalConfiguration> parseMars2GribApiOptions(const eckit::LocalConfiguration& config) {
+    if (!config.has("api-options")) {
+        return std::nullopt;
     }
 
-    if (!options.isSubConfiguration("mars2grib-options")) {
-        throw eckit::BadValue("mars2grib option 'mars2grib-options' must be a configuration section", Here());
+    if (!config.isSubConfiguration("api-options")) {
+        throw eckit::BadValue("mars-to-grib option 'api-options' must be a configuration section", Here());
     }
 
-    const auto rawEncoderConf = options.getSubConfiguration("mars2grib-options");
-    for (const auto& key : rawEncoderConf.keys()) {
-        if (supportedMars2gribOptions().find(key) == supportedMars2gribOptions().end()) {
-            throw eckit::BadValue("Unsupported mars2grib option 'mars2grib-options." + key + "'", Here());
-        }
-
-        if (!rawEncoderConf.isBoolean(key)) {
-            throw eckit::BadValue("mars2grib option 'mars2grib-options." + key + "' must be boolean", Here());
-        }
-
-        validated.set(key, rawEncoderConf.getBool(key));
-    }
-
-    return validated;
+    return config.getSubConfiguration("api-options");
 }
 
 }  // namespace implementation
@@ -79,20 +47,18 @@ void validateMarsToGribContext(const eckit::LocalConfiguration& config) {
         (void)config.getLong("verbosity");
     }
 
-    if (config.has("mars2grib-generate-testcases")) {
-        (void)config.getBool("mars2grib-generate-testcases");
+    if (config.has("generate-testcases")) {
+        (void)config.getBool("generate-testcases");
     }
 
-    if (config.has("mars2grib-testcases-dir")) {
-        (void)config.getString("mars2grib-testcases-dir");
+    if (config.has("testcases-dir")) {
+        (void)config.getString("testcases-dir");
     }
 
-    (void)implementation::validateMars2gribConfiguration(config);
+    (void)implementation::parseMars2GribApiOptions(config);
 
-    if (config.has("mars2grib-generate-testcases") && config.getBool("mars2grib-generate-testcases")
-        && !config.has("mars2grib-testcases-dir")) {
-        throw eckit::BadValue("mars2grib option 'mars2grib-testcases-dir' is required when testcases are enabled",
-                              Here());
+    if (config.has("generate-testcases") && config.getBool("generate-testcases") && !config.has("testcases-dir")) {
+        throw eckit::BadValue("mars-to-grib option 'testcases-dir' is required when testcases are enabled", Here());
     }
 }
 
@@ -107,7 +73,16 @@ MarsToGribContext parseMarsToGribContext(const eckit::LocalConfiguration& config
         parsed.verbosity = 3;
     }
 
-    parsed.encoderConfig = implementation::validateMars2gribConfiguration(config);
+    parsed.generateTestcases = config.has("generate-testcases") ? config.getBool("generate-testcases") : false;
+
+    if (config.has("testcases-dir")) {
+        const std::string testcasesDir = config.getString("testcases-dir");
+        if (!testcasesDir.empty()) {
+            parsed.testcasesDir = testcasesDir;
+        }
+    }
+
+    parsed.apiOptions = implementation::parseMars2GribApiOptions(config);
 
     return parsed;
 }
@@ -122,8 +97,14 @@ MarsToGribResult runMarsToGribStage(const std::vector<double>& values, const eck
     MarsToGribResult result;
 
     try {
-        metkit::mars2grib::Mars2Grib encoder{context.encoderConfig};
-        result.encoded = encoder.encode(values, mars, misc);
+        if (context.apiOptions) {
+            metkit::mars2grib::Mars2Grib encoder(*context.apiOptions);
+            result.encoded = encoder.encode(values, mars, misc);
+        }
+        else {
+            metkit::mars2grib::Mars2Grib encoder;
+            result.encoded = encoder.encode(values, mars, misc);
+        }
     }
     catch (...) {
         printTrappedErrorDisclaimer();
@@ -134,8 +115,14 @@ MarsToGribResult runMarsToGribStage(const std::vector<double>& values, const eck
     if (testCaseSink != nullptr) {
         std::string testCase;
         try {
-            metkit::mars2grib::Mars2GribTestCaseGenerator generator{context.encoderConfig};
-            testCase = generator.generate(mars, misc) + "\n";
+            if (context.apiOptions) {
+                metkit::mars2grib::Mars2GribTestCaseGenerator generator(*context.apiOptions);
+                testCase = generator.generate(mars, misc) + "\n";
+            }
+            else {
+                metkit::mars2grib::Mars2GribTestCaseGenerator generator;
+                testCase = generator.generate(mars, misc) + "\n";
+            }
         }
         catch (...) {
             printTrappedErrorDisclaimer();

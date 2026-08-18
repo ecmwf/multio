@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -66,7 +67,8 @@ private:
 /// data sink and passed down the whole processing chain.
 class Grib2GribSinks {
 public:
-    Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank);
+    Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
+                   bool generateTestcases, const std::optional<std::string>& testcasesDirectory);
     ~Grib2GribSinks();
 
     /// @brief Main encoded-GRIB2 output sink (internally `sinks_[0]`).

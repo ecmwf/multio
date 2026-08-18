@@ -43,12 +43,12 @@ void applyPackingPolicyOverride(eckit::LocalConfiguration& mars, const Overrides
     const static std::unordered_map<std::string, std::string> ccsdsPackingMap{
         {"grid_simple", "ccsds"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
         {"grid_ccsds", "ccsds"},  {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"},
-        {"complex", "complex"},     {"simple", "ccsds"},     {"ccsds", "ccsds"}};
+        {"complex", "complex"},   {"simple", "ccsds"},         {"ccsds", "ccsds"}};
 
     const static std::unordered_map<std::string, std::string> simplePackingMap{
         {"grid_simple", "simple"}, {"grid_complex", "complex"}, {"spectral_complex", "complex"},
         {"grid_ccsds", "ccsds"},   {"grid_ieee", "ccsds"},      {"grid_second_order", "ccsds"},
-        {"complex", "complex"},     {"simple", "simple"},     {"ccsds", "simple"}};
+        {"complex", "complex"},    {"simple", "simple"},        {"ccsds", "simple"}};
 
     if (mars.has("packing")) {
 
@@ -118,9 +118,7 @@ void applyControlForecastOverride(eckit::LocalConfiguration& mars, eckit::LocalC
         mars.set("number", 0L);
         misc.set("typeOfEnsembleForecast", 1L);
         misc.set("numberOfForecastsInEnsemble", 51L);
-
     }
-
 }
 
 /// @brief Apply the optional `expver` override to the MARS dictionary.

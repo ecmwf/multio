@@ -49,7 +49,7 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --options-file <options.yaml> --input-file <input.grib>"
-                               " --output-directory <dir> [--rank <n>] [--reader-mode <mode>]\n";
+                              " --output-directory <dir> [--rank <n>] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {

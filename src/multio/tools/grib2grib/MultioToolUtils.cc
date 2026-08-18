@@ -135,11 +135,12 @@ void writeSummary(const SummaryType& summary, const std::string& outputDirectory
 void printAggregateSummary(const AggregateSummary& summary) {
     const std::size_t totalFiles = summary.success.nFiles + summary.partial.nFiles + summary.fail.nFiles;
 
-    const auto printBucket = [totalFiles](const char* label, const multio::grib2grib::utils::AggregateSummaryBucket& bucket) {
-        const double percent = totalFiles == 0 ? 0.0 : 100.0 * static_cast<double>(bucket.nFiles) / totalFiles;
-        std::cout << label << ',' << bucket.nFiles << ',' << bucket.nMessages << ',' << std::fixed
-                  << std::setprecision(2) << percent << std::endl;
-    };
+    const auto printBucket
+        = [totalFiles](const char* label, const multio::grib2grib::utils::AggregateSummaryBucket& bucket) {
+              const double percent = totalFiles == 0 ? 0.0 : 100.0 * static_cast<double>(bucket.nFiles) / totalFiles;
+              std::cout << label << ',' << bucket.nFiles << ',' << bucket.nMessages << ',' << std::fixed
+                        << std::setprecision(2) << percent << std::endl;
+          };
 
     printBucket("SUCCESS", summary.success);
     printBucket("PARTIAL", summary.partial);

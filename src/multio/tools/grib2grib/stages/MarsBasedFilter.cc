@@ -83,7 +83,6 @@ MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mar
     catch (...) {
         return MarsBasedFilterCode::Rejected;
     }
-
 }
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

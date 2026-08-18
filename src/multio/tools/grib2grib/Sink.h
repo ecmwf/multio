@@ -44,7 +44,7 @@ eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfigurati
 
 /// @brief Build the main accepted-output sink for one rank.
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
-                                                   const std::string& outputDirectory, int rank);
+                                                  const std::string& outputDirectory, int rank);
 
 /// @brief Append-only text file sink for mars2grib testcases.
 ///

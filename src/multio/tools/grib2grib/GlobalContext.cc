@@ -43,7 +43,8 @@ eckit::LocalConfiguration getRequiredSubConfiguration(const eckit::LocalConfigur
     return config.getSubConfiguration(key);
 }
 
-eckit::LocalConfiguration getOptionalStageConfiguration(const eckit::LocalConfiguration& stages, const std::string& key) {
+eckit::LocalConfiguration getOptionalStageConfiguration(const eckit::LocalConfiguration& stages,
+                                                        const std::string& key) {
     if (!stages.has(key)) {
         return eckit::LocalConfiguration{};
     }
@@ -108,8 +109,8 @@ GlobalContext parseGlobalContext(const eckit::LocalConfiguration& config) {
     context.overrides = parseOverridesContext(getOptionalStageConfiguration(stages, "overrides"));
     context.marsBasedFilter = parseMarsBasedFilterContext(getOptionalStageConfiguration(stages, "mars-based-filter"));
     context.marsToGrib = parseMarsToGribContext(getOptionalStageConfiguration(stages, "mars-to-grib"));
-    context.postEncodeValidation =
-        parsePostEncodeValidationContext(getOptionalStageConfiguration(stages, "post-encode-validation"));
+    context.postEncodeValidation
+        = parsePostEncodeValidationContext(getOptionalStageConfiguration(stages, "post-encode-validation"));
     context.grib2Fdb5 = parseGrib2Fdb5Context(getOptionalStageConfiguration(stages, "grib2fdb5"));
 
     return context;

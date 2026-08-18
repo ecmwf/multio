@@ -25,7 +25,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 namespace {
 
 constexpr unsigned char gribMagic[4] = {'G', 'R', 'I', 'B'};
-constexpr unsigned char gribEnd[4]   = {'7', '7', '7', '7'};
+constexpr unsigned char gribEnd[4] = {'7', '7', '7', '7'};
 
 [[noreturn]] void throwSystemError(const char* operation, const std::string& filename) {
     throw std::runtime_error(std::string(operation) + " failed for '" + filename + "': " + std::strerror(errno));
@@ -148,8 +148,8 @@ std::optional<CandidateMessage> tryValidateCandidate(std::FILE* file, const std:
 
 }  // namespace
 
-std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const std::string& filename,
-                                                       off_t searchOffset, off_t endOffset, off_t fileEndOffset) {
+std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const std::string& filename, off_t searchOffset,
+                                                       off_t endOffset, off_t fileEndOffset) {
     if (file == nullptr) {
         throw std::invalid_argument("searchCandidateMessage() received a null FILE*");
     }
@@ -179,8 +179,8 @@ std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const st
 
     while (windowStart < endOffset) {
         const off_t span = endOffset - windowStart;
-        const std::size_t toRead =
-            span >= static_cast<off_t>(window.size()) ? window.size() : static_cast<std::size_t>(span);
+        const std::size_t toRead
+            = span >= static_cast<off_t>(window.size()) ? window.size() : static_cast<std::size_t>(span);
 
         clearerr(file);
         if (fseeko(file, windowStart, SEEK_SET) != 0) {

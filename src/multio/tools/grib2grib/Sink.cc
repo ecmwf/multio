@@ -74,7 +74,8 @@ std::size_t debugStageIndex(ProcessingStage stage) {
     return static_cast<std::size_t>(stage);
 }
 
-eckit::LocalConfiguration sinkConfigurationWithDefaults(eckit::LocalConfiguration sinkConf, const std::string& defaultPath) {
+eckit::LocalConfiguration sinkConfigurationWithDefaults(eckit::LocalConfiguration sinkConf,
+                                                        const std::string& defaultPath) {
     if (!sinkConf.has("type")) {
         sinkConf.set("type", std::string{"file"});
     }
@@ -117,7 +118,7 @@ eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfigurati
 }
 
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
-                                                   const std::string& outputDirectory, int rank) {
+                                                  const std::string& outputDirectory, int rank) {
     return buildSinkFromConfiguration(sinkConfigurationForRank(options, outputDirectory, rank), rank);
 }
 
@@ -159,10 +160,10 @@ Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const s
         }
 
         const eckit::LocalConfiguration debugSinksConf = options.getSubConfiguration("debug-sinks");
-        for (ProcessingStage stage : {ProcessingStage::GribBasedFilter, ProcessingStage::GribToMars,
-                                      ProcessingStage::MarsToMars, ProcessingStage::MarsOverrides,
-                                      ProcessingStage::MarsBasedFilter, ProcessingStage::MarsToGrib,
-                                      ProcessingStage::PostEncodeValidation, ProcessingStage::Grib2Fdb5}) {
+        for (ProcessingStage stage :
+             {ProcessingStage::GribBasedFilter, ProcessingStage::GribToMars, ProcessingStage::MarsToMars,
+              ProcessingStage::MarsOverrides, ProcessingStage::MarsBasedFilter, ProcessingStage::MarsToGrib,
+              ProcessingStage::PostEncodeValidation, ProcessingStage::Grib2Fdb5}) {
             const char* stageKey = debugStageKey(stage);
             if (stageKey == nullptr || !debugSinksConf.has(stageKey)) {
                 continue;

@@ -20,8 +20,8 @@
 
 #include "multio/tools/grib2grib/GlobalContext.h"
 #include "multio/tools/grib2grib/Sink.h"
-#include "multio/tools/grib2grib/Summary.h"
 #include "multio/tools/grib2grib/StageOutcomes.h"
+#include "multio/tools/grib2grib/Summary.h"
 #include "multio/tools/grib2grib/UnitOfWork.h"
 #include "multio/tools/grib2grib/WorkUnitLoadBalancer.h"
 

@@ -37,7 +37,7 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --options-file <options.yaml> --file-list <file-list.txt> --output-directory <path>"
-                               " [--average-work-units-per-rank <N>] [--reader-mode <mode>]\n";
+                              " [--average-work-units-per-rank <N>] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {

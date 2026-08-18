@@ -122,13 +122,14 @@ std::optional<off_t> findNextGribOffset(std::FILE* file, const std::string& file
 }
 
 std::optional<CandidateMessage> findNextGribOffsetByCandidateBoundary(std::FILE* file, const std::string& filename,
-                                                                     off_t searchOffset, off_t endOffset,
-                                                                     off_t fileEndOffset) {
+                                                                      off_t searchOffset, off_t endOffset,
+                                                                      off_t fileEndOffset) {
     return searchCandidateMessage(file, filename, searchOffset, endOffset, fileEndOffset);
 }
 
-std::unique_ptr<metkit::codes::CodesHandle> decodeMessageAtCandidateBoundary(std::FILE* file, const std::string& filename,
-                                                                              const CandidateMessage& candidate) {
+std::unique_ptr<metkit::codes::CodesHandle> decodeMessageAtCandidateBoundary(std::FILE* file,
+                                                                             const std::string& filename,
+                                                                             const CandidateMessage& candidate) {
     if (candidate.length > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
         throw std::runtime_error("Candidate message length exceeds size_t for '" + filename + "'");
     }
@@ -148,7 +149,8 @@ std::unique_ptr<metkit::codes::CodesHandle> decodeMessageAtCandidateBoundary(std
         throw std::runtime_error("Short read while decoding candidate message for '" + filename + "'");
     }
 
-    return metkit::codes::codesHandleFromMessageCopy(metkit::codes::Span<const std::uint8_t>(buffer.data(), buffer.size()));
+    return metkit::codes::codesHandleFromMessageCopy(
+        metkit::codes::Span<const std::uint8_t>(buffer.data(), buffer.size()));
 }
 
 /// @brief Append one unsigned 64-bit integer to a binary payload.
@@ -403,9 +405,8 @@ void UnitOfWork::open() {
     // Work-unit offsets come from coarse byte-based scheduling, so align the
     // effective cursor to the first actual GRIB message starting inside range.
     if (readerMode_ == WorkUnitReaderMode::CandidateBoundary) {
-        const auto firstCandidate =
-            findNextGribOffsetByCandidateBoundary(file_, workUnit_.filename, workUnit_.startOffset, workUnit_.endOffset,
-                                                  fileEndOffset_);
+        const auto firstCandidate = findNextGribOffsetByCandidateBoundary(
+            file_, workUnit_.filename, workUnit_.startOffset, workUnit_.endOffset, fileEndOffset_);
         if (!firstCandidate) {
             currentOffset_ = workUnit_.endOffset;
         }

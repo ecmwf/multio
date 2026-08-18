@@ -29,7 +29,7 @@ struct CandidateMessage {
     std::uint64_t length = 0;
 };
 
-std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const std::string& filename,
-                                                       off_t searchOffset, off_t endOffset, off_t fileEndOffset);
+std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const std::string& filename, off_t searchOffset,
+                                                       off_t endOffset, off_t fileEndOffset);
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

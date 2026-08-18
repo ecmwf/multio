@@ -184,7 +184,7 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --file-list <file-list.txt> --output-directory <path> --n-workers <N>"
-                               " --average-work-units-per-rank <N> [--scan-work-unit-messages] [--reader-mode <mode>]\n";
+                              " --average-work-units-per-rank <N> [--scan-work-unit-messages] [--reader-mode <mode>]\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {
@@ -220,8 +220,8 @@ private:
                                                    static_cast<std::size_t>(averageWorkUnitsPerRank_));
 
         const auto readerMode = readerModeOverride_.empty()
-                                    ? multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode::EccodesStream
-                                    : multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
+                                  ? multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode::EccodesStream
+                                  : multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
 
         if (scanWorkUnitMessages_) {
             detail::scanBucketMessages(buckets, readerMode);

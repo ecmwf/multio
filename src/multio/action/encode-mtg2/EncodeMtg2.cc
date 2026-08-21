@@ -11,6 +11,7 @@
 #include "EncodeMtg2.h"
 
 #include <iostream>
+#include <unordered_set>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -34,11 +35,61 @@ namespace dm = multio::datamod;
 using message::Message;
 using message::Peer;
 
+namespace {
+
+const std::unordered_set<std::string>& supportedMars2gribOptions() {
+    static const auto supported = std::unordered_set<std::string>{"applyChecks",
+                                                                  "enableOverride",
+                                                                  "enableBitsPerValueCompression",
+                                                                  "normalizeMars",
+                                                                  "normalizeMisc",
+                                                                  "fixMarsGrid",
+                                                                  "skipSection3",
+                                                                  "allowDefaultTimeIncrement",
+                                                                  "allowZeroLengthFsWindow",
+                                                                  "allowNonEnumeratedPositiveIntegerTimespanHours",
+                                                                  "allowRedundantTimeIncrement",
+                                                                  "allowMissingTimespanForInstantProduct",
+                                                                  "allowMissingTimespanForStatisticalProduct"};
+    return supported;
+}
+
+std::unique_ptr<metkit::mars2grib::Mars2Grib> makeEncoder(const ComponentConfiguration& compConf) {
+    const auto& actionConf = compConf.parsedConfig();
+
+    if (!actionConf.has("mars2grib-options")) {
+        return std::make_unique<metkit::mars2grib::Mars2Grib>();
+    }
+
+    if (!actionConf.isSubConfiguration("mars2grib-options")) {
+        throw EncodeMtg2Exception("encode-mtg2 option 'mars2grib-options' must be a configuration section", Here());
+    }
+
+    const auto rawEncoderConf = actionConf.getSubConfiguration("mars2grib-options");
+    eckit::LocalConfiguration validatedEncoderConf{};
+
+    for (const auto& key : rawEncoderConf.keys()) {
+        if (supportedMars2gribOptions().find(key) == supportedMars2gribOptions().end()) {
+            throw EncodeMtg2Exception("Unsupported mars2grib option 'mars2grib-options." + key + "'", Here());
+        }
+
+        if (!rawEncoderConf.isBoolean(key)) {
+            throw EncodeMtg2Exception("mars2grib option 'mars2grib-options." + key + "' must be boolean", Here());
+        }
+
+        validatedEncoderConf.set(key, rawEncoderConf.getBool(key));
+    }
+
+    return std::make_unique<metkit::mars2grib::Mars2Grib>(validatedEncoderConf);
+}
+
+}  // namespace
+
 
 EncodeMtg2::EncodeMtg2(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     opts_{cf::parseActionConfig<EncodeMtg2Options>(compConf)},
-    encoder_{},
+    encoder_{makeEncoder(compConf)},
     cache_{opts_.cached ? std::optional<Cache>{Cache{}} : std::optional<Cache>{}} {}
 
 
@@ -48,6 +99,7 @@ std::unique_ptr<metkit::codes::CodesHandle> encode(metkit::mars2grib::Mars2Grib&
                                                    const dm::MiscRecord& miscRec) {
     const auto mars = dm::dumpRecord<eckit::LocalConfiguration>(marsRec);
     const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
+
 
     if (!cache) {
         return encoder.encode(values, size, mars, misc);
@@ -116,7 +168,7 @@ void EncodeMtg2::executeImpl(Message msg) {
         }
 
         // Call the GRIB2 encoder in metkit
-        const auto sample = encode(encoder_, cache_, values, size, marsRec, miscRec);
+        const auto sample = encode(*encoder_, cache_, values, size, marsRec, miscRec);
 
         eckit::Buffer buf{sample->messageSize()};
         sample->copyInto(reinterpret_cast<uint8_t*>(buf.data()), buf.size());

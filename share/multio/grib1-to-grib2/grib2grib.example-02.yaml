@@ -1,0 +1,68 @@
+reader:
+  # mode: eccodes-stream
+  # Use this instead to enable candidate-based boundary detection:
+  mode: candidate-boundary
+
+stages:
+  grib-based-filter:
+    verbosity: 0
+    grib1-messages-policy: try-to-handle
+    grib2-messages-policy: try-to-handle
+    invalid-messages-policy: try-to-handle
+    discipline192-messages-policy: ignore
+
+  grib-to-mars:
+    verbosity: 0
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_StandardisedAnomalyAsInstant: true
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+
+  mars-to-mars:
+    verbosity: 0
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      saveErrorStack: false
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
+      printErrorStackToStdErr: false
+
+  overrides:
+    verbosity: 0
+    packing: ccsds
+    ncycle: 162
+    control: false
+    expver: "2250"
+
+  mars-based-filter:
+    verbosity: 0
+    api-options:
+      allowFromStartStatisticsForAnalisys: false 
+      allowPartialStatisticsWindow: false 
+      allowExtendedSetOfOperationsForZeroLengthFsWindow: false
+
+
+  mars-to-grib:
+    verbosity: 0
+    generate-testcases: false
+    testcases-dir: "/ec/project/mdst/MDST/re-encode-scripts/test-distribution/mtg2_convert_mavm_20260817_1233_0da514ba217a/output"
+    api-options:
+      saveErrorStack: true
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
+      printErrorStackToStdErr: true
+
+  post-encode-validation:
+    verbosity: 0
+
+  grib2fdb5:
+    verbosity: 0
+
+sink:
+  type: fdb5
+  config:
+    # fdb_home: "/home/fdbsc"
+    fdb_home: "/lus/h1tcst01/mavm_temp_scratch_mtg2/fdb-mdst/"
+    userConfig:
+      useSubToc: true

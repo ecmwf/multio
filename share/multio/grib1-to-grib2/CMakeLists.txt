@@ -36,6 +36,8 @@ install(
 # -----------------------------------------------------------------------------
 
 install(
-    FILES ${CMAKE_CURRENT_SOURCE_DIR}/optionfile.yaml
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/optionfile.yaml
+        ${CMAKE_CURRENT_SOURCE_DIR}/grib2grib-options-example.yaml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/multio/grib1-to-grib2
 )

@@ -19,6 +19,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/types/DateTime.h"
 
 namespace multio::action::encode_mtg2::fake_double_loop {
 
@@ -34,7 +35,9 @@ enum class TypeOfStatisticalProcessing : std::int64_t
     Minimum = 3,
     Difference = 4,
     StandardDeviation = 6,
-    InverseDifference = 8
+    InverseDifference = 8,
+    Severity = 100,
+    Mode = 101
 };
 
 
@@ -54,6 +57,10 @@ TypeOfStatisticalProcessing typeOfStatisticalProcessingFromInt(std::int64_t valu
             return TypeOfStatisticalProcessing::StandardDeviation;
         case 8:
             return TypeOfStatisticalProcessing::InverseDifference;
+        case 100:
+            return TypeOfStatisticalProcessing::Severity;
+        case 101:
+            return TypeOfStatisticalProcessing::Mode;
         default: {
             std::ostringstream os;
             os << "Unknown typeOfStatisticalProcessing value: " << value;
@@ -74,6 +81,8 @@ bool isValidStattypeOperation(TypeOfStatisticalProcessing operation) {
         case TypeOfStatisticalProcessing::Accumulation:
         case TypeOfStatisticalProcessing::Difference:
         case TypeOfStatisticalProcessing::InverseDifference:
+        case TypeOfStatisticalProcessing::Severity:
+        case TypeOfStatisticalProcessing::Mode:
             return false;
     }
 
@@ -95,6 +104,8 @@ std::string stattypeOperationCode(TypeOfStatisticalProcessing operation) {
         case TypeOfStatisticalProcessing::Accumulation:
         case TypeOfStatisticalProcessing::Difference:
         case TypeOfStatisticalProcessing::InverseDifference:
+        case TypeOfStatisticalProcessing::Severity:
+        case TypeOfStatisticalProcessing::Mode:
             break;
     }
 
@@ -137,7 +148,8 @@ private:
         for (const auto& mapping : mappingConf.getSubConfigurations()) {
             const auto param = mapping.getInt64("param");
             const auto typeOfStatisticalProcessing = mapping.getInt64("typeOfStatisticalProcessing");
-
+            //            std::cout << "MIVAL: Mapping param: " << param << " to typeOfStatisticalProcessing: "
+            //                      << typeOfStatisticalProcessing << std::endl;
             operationMappings.emplace(param, typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing));
         }
 
@@ -179,6 +191,13 @@ bool requiresFakeDoubleLoopRepresentation(const dm::FullMarsRecord& marsRec) {
     }
 
     return false;
+}
+
+bool isSeasonal(const dm::FullMarsRecord& marsRec) {
+    std::string klass = marsRec.klass.get();
+    std::string stream = marsRec.stream.get();
+
+    return (klass == "od" || klass == "rd" || klass == "c3") && (stream == "sfmd" || stream == "shmd");
 }
 
 std::optional<std::string> operationCodeFromParam(std::int64_t param) {
@@ -228,7 +247,7 @@ std::string reconstructStatType(const dm::FullMarsRecord& marsRec) {
 
     // Create statType by concatenating operation code and period code
     if (operationCode && periodCode) {
-        return *operationCode + *periodCode;
+        return *periodCode + *operationCode;
     }
     else {
         std::ostringstream os;
@@ -236,6 +255,48 @@ std::string reconstructStatType(const dm::FullMarsRecord& marsRec) {
         os << "with param: " << param << " and timespan (hours): " << timespan;
         throw eckit::SeriousBug(os.str(), Here());
     }
+}
+
+long computeFcmonth(const dm::FullMarsRecord& marsRec) {
+    if (!marsRec.step.isSet()) {
+        throw eckit::SeriousBug("Cannot compute fcmonth for seasonal record without step", Here());
+    }
+
+    const eckit::Date epochDate{marsRec.date.get()};
+    const long epochTime = marsRec.time.get();
+    const auto epochHour = epochTime / 10000;
+    const auto epochMinute = (epochTime % 10000) / 100;
+    const eckit::DateTime epochDateTime{epochDate, eckit::Time{epochHour, epochMinute, 0}};
+    const eckit::DateTime currentDateTime
+        = epochDateTime + static_cast<eckit::Second>(marsRec.step.get().toHours() * 3600);
+
+    const auto isBeginningOfMonth = [](const eckit::DateTime& dt) {
+        return dt.date().day() == 1 && dt.time().hours() == 0 && dt.time().minutes() == 0 && dt.time().seconds() == 0;
+    };
+
+    if (!isBeginningOfMonth(epochDateTime)) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: epochDateTime is not at the beginning of a month: " << epochDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    if (!isBeginningOfMonth(currentDateTime)) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: currentDateTime is not at the beginning of a month: " << currentDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    const long fcmonth = static_cast<long>((currentDateTime.date().year() - epochDateTime.date().year()) * 12
+                                           + (currentDateTime.date().month() - epochDateTime.date().month()));
+
+    if (fcmonth < 0) {
+        std::ostringstream os;
+        os << "Cannot compute fcmonth: currentDateTime precedes epochDateTime: " << currentDateTime << " < "
+           << epochDateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    return fcmonth;
 }
 
 }  // namespace detail
@@ -248,6 +309,11 @@ void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
             marsRec.stattype.set(dm::TypeParser<dm::StatType>::parse(stattype));
             marsRec.timespan.set(dm::TypeParser<dm::TimeSpan>::parse("none"));
         }
+    }
+    if (detail::isSeasonal(marsRec)) {
+        const long fcmonth = detail::computeFcmonth(marsRec);
+        marsRec.fcmonth.set(fcmonth);
+        marsRec.step.unset();
     }
 }
 

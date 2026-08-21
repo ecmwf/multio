@@ -25,6 +25,7 @@
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
+#include "multio/util/DateTime.h"
 #include "multio/util/Timing.h"
 
 #include "multio/action/statistics-mtg2/cfg/StatisticsConfiguration.h"
@@ -411,9 +412,21 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto opname = (*it)->operation();
         if (opname != "instant") {
             if (currentLoop == 1) {
-                const std::int64_t timespan = ts.win().currPointInHours() - ts.win().creationPointInHours();
+                const std::int64_t timespan = ts.cwin().currPointInHours() - ts.cwin().creationPointInHours();
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
+                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(),
+                                                           ts.cwin().creationPoint().date().month());
+                if (ts.periodName() == "month" && ts.cwin().creationPoint().date().day() != 1) {
+                    std::cout << "Skipping first month because it is not a full month :: " << ts.cwin().creationPoint()
+                              << std::endl;
+                    return;  // Skip the first month if it is not a full month, as discussed with DGOV and scientists
+                }
+                if (ts.periodName() == "day" && ts.cwin().creationPoint().time().hours() != 1) {
+                    std::cout << "Skipping first day because it is not a full day :: " << ts.cwin().creationPoint()
+                              << std::endl;
+                    return;  // Skip the first day if it is not a full day, as discussed with DGOV and scientists
+                }
             }
             else {
                 if (!opt_.disableSquashing()
@@ -433,6 +446,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                     dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
+
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
                                                               operationNameToStatTypeOperation(opname)};
 

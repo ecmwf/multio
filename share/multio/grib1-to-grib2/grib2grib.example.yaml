@@ -1,0 +1,98 @@
+reader:
+  # mode: eccodes-stream
+  # Use this instead to enable candidate-based boundary detection:
+  mode: candidate-boundary
+
+stages:
+  grib-based-filter:
+    verbosity: 0
+    grib1-messages-policy: try-to-handle
+    grib2-messages-policy: try-to-handle
+    invalid-messages-policy: ignore
+    discipline192-messages-policy: ignore
+
+  grib-to-mars:
+    verbosity: 0
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+
+  mars-to-mars:
+    verbosity: 0
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+
+  overrides:
+    verbosity: 0
+    packing: ccsds
+    ncycle: 162
+    control: false
+    expver: "2250"
+
+  mars-based-filter:
+    verbosity: 0
+    api-options:
+      allowExtendedSetOfOperationsForZeroLengthFsWindow: false
+    # selectors:
+    #   match:
+    #     - param: [ 123456 ]
+    #     - stream: ["oper"]
+    #     - type: ["fc"]
+
+  mars-to-grib:
+    verbosity: 0
+    generate-testcases: false
+    testcases-dir: "/ec/project/mdst/MDST/re-encode-scripts/test-distribution/mtg2_convert_mavm_20260817_1233_0da514ba217a/output"
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
+
+  post-encode-validation:
+    verbosity: 0
+
+  grib2fdb5:
+    verbosity: 0
+
+sink:
+  type: fdb5
+  config:
+    fdb_home: "/home/fdbsc"
+    userConfig:
+      useSubToc: true
+
+# debug-sinks:
+#   grib-based-filter:
+#     type: file
+#     path: /tmp/grib-based-filter.grib
+#
+#   grib-to-mars:
+#     type: file
+#     path: /tmp/grib-to-mars.grib
+#
+#   mars-to-mars:
+#     type: file
+#     path: /tmp/mars-to-mars.grib
+#
+#   overrides:
+#     type: file
+#     path: /tmp/overrides.grib
+#
+#   mars-based-filter:
+#     type: file
+#     path: /tmp/mars-based-filter.grib
+#
+#   mars-to-grib:
+#     type: file
+#     path: /tmp/mars-to-grib.grib
+#
+#   post-encode-validation:
+#     type: file
+#     path: /tmp/post-encode-validation.grib
+#
+#   grib2fdb5:
+#     type: file
+#     path: /tmp/grib2fdb5.grib

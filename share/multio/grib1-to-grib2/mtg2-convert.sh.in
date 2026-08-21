@@ -431,6 +431,8 @@ echo "RUNDIR=\${RUNDIR}"
 echo "OPTIONFILE=\${OPTIONFILE}"
 echo "ARCHITECTURE_FILE=\${ARCHITECTURE_FILE}"
 
+export FDB_HOME="/home/fdbsc"
+
 module purge
 source "\${ARCHITECTURE_FILE}"
 
@@ -442,7 +444,11 @@ fi
 srun \\
     --cpu-bind=cores \\
     --distribution=block:block \\
-    "\${EXE}" "\${LIST_FILE}" "\${RUNDIR}" "\${OPTIONFILE}"
+    "\${EXE}" \\
+          --file-list "\${LIST_FILE}" \\
+          --output-directory "\${RUNDIR}" \\
+          --options-file "\${OPTIONFILE}" \\
+          --average-work-units-per-rank 4
 
 EOF
 

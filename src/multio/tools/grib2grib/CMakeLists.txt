@@ -80,8 +80,7 @@ ecbuild_add_library(
         MultioToolUtils.h
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
-# AND HAVE_MPI
+        HAVE_GRIB1_TO_GRIB2 AND eckit_HAVE_MPI
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -155,8 +154,7 @@ ecbuild_add_executable(
         distributed-grib-to-grib
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
-# AND HAVE_MPI
+        HAVE_GRIB1_TO_GRIB2 AND eckit_HAVE_MPI
 
     SOURCES
         distributed-grib-to-grib.cc

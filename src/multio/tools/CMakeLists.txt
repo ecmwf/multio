@@ -67,27 +67,4 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
 endif()
 
 
-ecbuild_add_executable(
-
-  TARGET
-      grib1-to-grib2
-
-  CONDITION
-    HAVE_GRIB1_TO_GRIB2
-
-  SOURCES
-      grib1-to-grib2.cc
-      MultioTool.cc
-
-  NO_AS_NEEDED
-
-  LIBS
-      multio
-      multio-mars2mars
-      eckit
-      metkit
-      eccodes
-)
-
-
 add_subdirectory(grib2grib)

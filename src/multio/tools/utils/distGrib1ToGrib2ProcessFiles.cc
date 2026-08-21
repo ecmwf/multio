@@ -83,14 +83,16 @@ FileOutcome processOneFile(int rank, const std::string& file, const grib2MarsMis
         }
     }
     catch (const std::exception&) {
-        ++outcome.outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
+        ++outcome
+              .outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
         std::cerr
             << timestampString()
             << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."
             << std::endl;
     }
     catch (...) {
-        ++outcome.outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
+        ++outcome
+              .outcomeCounters[static_cast<std::size_t>(grib2MarsMisc::ExtractionOutcomeCode::ExtractFailedFileRead)];
         std::cerr
             << timestampString()
             << "DISCLAIMER: This code is designed to classify errors. All errors are trapped and the code continues."

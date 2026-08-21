@@ -299,7 +299,7 @@ long computeFcmonth(const dm::FullMarsRecord& marsRec) {
     return fcmonth;
 }
 
-} // namespace detail
+}  // namespace detail
 
 void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
 

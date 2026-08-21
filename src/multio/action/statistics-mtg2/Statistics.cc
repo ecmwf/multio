@@ -415,7 +415,8 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 const std::int64_t timespan = ts.cwin().currPointInHours() - ts.cwin().creationPointInHours();
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
-                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(), ts.cwin().creationPoint().date().month());
+                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(),
+                                                           ts.cwin().creationPoint().date().month());
                 if (ts.periodName() == "month" && ts.cwin().creationPoint().date().day() != 1) {
                     std::cout << "Skipping first month because it is not a full month :: " << ts.cwin().creationPoint()
                               << std::endl;

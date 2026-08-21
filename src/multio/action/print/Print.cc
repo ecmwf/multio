@@ -104,13 +104,14 @@ void Print::executeImpl(message::Message msg) {
         }
     }
     // try {
-        executeNext(std::move(msg));
+    executeNext(std::move(msg));
     // }
     // catch (...) {
     //     std::cerr << "Received \"mars\":";
     //     printMars(std::cerr, msg);
-    //     std::cerr << "# =======================================================================================" << std::endl;
-    //     std::cerr << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+    //     std::cerr << "# =======================================================================================" <<
+    //     std::endl; std::cerr << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl <<
+    //     std::endl;
     // }
 }
 

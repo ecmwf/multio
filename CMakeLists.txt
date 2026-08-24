@@ -145,6 +145,7 @@ ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
 ###  Definitions used by the output manager
 ecbuild_add_option( FEATURE MULTIO_OUTPUT_MANAGER
 	            DEFAULT ON
+                    CONDITION HAVE_FORTRAN
                     DESCRIPTION "Build the output manager" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
@@ -174,6 +175,9 @@ set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINAR
 set( MULTIO_LIBRARIES      multio )
 
 if ( HAVE_MULTIO_OUTPUT_MANAGER )
+    if ( NOT eccodes_HAVE_FORTRAN )
+        ecbuild_critical( "MULTIO_OUTPUT_MANAGER requires eccodes built with ENABLE_FORTRAN=ON" )
+    endif()
     set( BUILD_MULTIOM 1)
 else()
     set( BUILD_MULTIOM 0)

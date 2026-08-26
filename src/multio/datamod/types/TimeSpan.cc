@@ -8,6 +8,10 @@ std::variant<std::int64_t, std::string> DumpType<TimeSpan>::dump(const TimeSpan&
         return std::string{"none"};
     }
 
+    if (value.isFromStart()) {
+        return std::string{"fs"};
+    }
+
     return TypeDumper<TimeDuration>::dump(value.duration());
 }
 
@@ -22,8 +26,12 @@ TimeSpan ParseType<TimeSpan>::parse(const std::string& value) {
         return TimeSpan::none();
     }
 
+    if (value == "fs") {
+        return TimeSpan::fromStart();
+    }
+
     throw DataModellingException(
-        std::string{"Invalid timespan value: "} + value + ". Only integer hours or string \"none\" are supported.",
+        std::string{"Invalid timespan value: "} + value + ". Only integer hours, string \"none\" or string \"fs\" are supported.",
         Here());
 }
 

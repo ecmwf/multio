@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -15,27 +14,43 @@
 
 namespace multio::datamod {
 
+namespace {
+    enum TimeSpanVariant {
+        None,
+        FromStart,
+        Duration,
+    };
+}
+
 class TimeSpan {
 public:
     TimeSpan() = default;
 
-    explicit TimeSpan(TimeDuration duration) : value_{std::move(duration)} {}
+    explicit TimeSpan(TimeDuration duration) : variant_{TimeSpanVariant::Duration}, duration_{std::move(duration)} {}
 
     static TimeSpan none() {
         TimeSpan ret;
-        ret.value_ = std::monostate{};
+        ret.variant_ = TimeSpanVariant::None;
         return ret;
     }
 
-    bool isNone() const { return std::holds_alternative<std::monostate>(value_); }
+    static TimeSpan fromStart() {
+        TimeSpan ret;
+        ret.variant_ = TimeSpanVariant::FromStart;
+        return ret;
+    }
 
-    bool isDuration() const { return std::holds_alternative<TimeDuration>(value_); }
+    bool isNone() const { return variant_ == TimeSpanVariant::None; }
+
+    bool isFromStart() const { return variant_ == TimeSpanVariant::FromStart; }
+
+    bool isDuration() const { return variant_ == TimeSpanVariant::Duration; }
 
     const TimeDuration& duration() const {
         if (!isDuration()) {
             throw DataModellingException("TimeSpan does not contain a duration", Here());
         }
-        return std::get<TimeDuration>(value_);
+        return *duration_;
     }
 
     std::int64_t toHours() const { return duration().toHours(); }
@@ -47,13 +62,18 @@ public:
             return lhs.isNone() && rhs.isNone();
         }
 
+        if (lhs.isFromStart() || rhs.isFromStart()) {
+            return lhs.isFromStart() && rhs.isFromStart();
+        }
+
         return lhs.toSeconds() == rhs.toSeconds();
     }
 
     friend bool operator!=(const TimeSpan& lhs, const TimeSpan& rhs) { return !(lhs == rhs); }
 
 private:
-    std::variant<TimeDuration, std::monostate> value_{std::chrono::hours{0}};
+    TimeSpanVariant variant_{None};
+    std::optional<TimeDuration> duration_{std::nullopt};
 
     friend struct DumpType<TimeSpan>;
     friend struct ParseType<TimeSpan>;
@@ -84,6 +104,10 @@ struct std::hash<multio::datamod::TimeSpan> {
     std::size_t operator()(const multio::datamod::TimeSpan& v) const noexcept {
         if (v.isNone()) {
             return multio::util::hashCombine(std::string{"TimeSpan"}, std::string{"none"});
+        }
+
+        if (v.isFromStart()) {
+            return multio::util::hashCombine(std::string{"TimeSpan"}, std::string{"fs"});
         }
 
         return multio::util::hashCombine(std::string{"TimeSpan"}, v.duration());

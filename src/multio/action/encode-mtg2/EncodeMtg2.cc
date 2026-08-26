@@ -24,6 +24,7 @@
 #include "multio/action/encode-mtg2/EncodeMtg2Exception.h"
 #include "multio/action/encode-mtg2/fakeDoubleLoop.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/types/TimeSpan.h"
 #include "multio/mars2mars/Rules.h"
 #include "multio/message/Parametrization.h"
 #include "multio/util/PrecisionTag.h"
@@ -137,6 +138,11 @@ void EncodeMtg2::executeImpl(Message msg) {
     // Read mars and misc keys from the message metadata
     auto marsRec = dm::readRecord<dm::FullMarsRecord>(md);
     auto miscRec = dm::readRecord<dm::MiscRecord>(md);
+
+    // Hack to convert step=0,timespan=0 messages to timespan=fs
+    if (marsRec.step.get().toHours() == 0 && marsRec.timespan.isSet() && marsRec.timespan.get().isDuration() && marsRec.timespan.get().duration().toHours() == 0) {
+        marsRec.timespan.set(datamod::TimeSpan::fromStart());
+    }
 
     // Apply mappings
     fake_double_loop::fakeDoubleLoop(marsRec);

@@ -173,6 +173,15 @@ auto fixMapToSol() {
         setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));                                             //
 }
 
+auto fixSnowMapToSol() {
+    return rule(
+        all(OneOf{&dm::FullMarsRecord::levtype, {dm::LevType::SFC}}, Has{&dm::FullMarsRecord::levelist},
+            NoneOf{&dm::FullMarsRecord::levelist, {0}},
+            matchParams(235078, 237078, 238078, 239078, 235238, 237238, 238238, 239238,
+                        235406, 237406, 238406, 239406)),  //
+        setKey(&dm::FullMarsRecord::levtype, dm::LevType::SOL));
+}
+
 
 auto fixRunOffWaterParam205() {
     return rule(all(matchParams(205)),                                                //
@@ -662,6 +671,7 @@ const RuleList& fixIFSOutput() {
         fixHeightAboveGround10m(),      //
         fixHeightAboveSea(),            //
         fixMapToSol(),                  //
+        fixSnowMapToSol(),              //
         fixWindspeedU100m(),            //
         fixWindspeedU200m(),            //
         fixWindspeedV100m(),            //

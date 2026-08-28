@@ -466,7 +466,9 @@ CASE("Test mapToSol") {
     using namespace multio::mars2mars;
     using namespace multio::datamod;
 
-    std::vector<std::int64_t> paramIds{{33, 238, 228038, 260360, 262000, 262024, 260199}};
+    std::vector<std::int64_t> paramIds{{33, 238, 228038, 228141, 235078, 237078, 238078, 239078, 235080, 237080,
+                                        238080, 239080, 235238, 237238, 238238, 239238, 235406, 237406, 238406,
+                                        239406, 260360, 262000, 262024, 260199}};
 
     for (auto paramId : paramIds) {
         FullMarsRecord mars;
@@ -481,6 +483,18 @@ CASE("Test mapToSol") {
         EXPECT(res);
         EXPECT(mars.levtype.get() == LevType::SOL);
     }
+
+    FullMarsRecord levelZeroMars;
+    MiscRecord levelZeroMisc;
+
+    levelZeroMars.param.set(235406);
+    levelZeroMars.levtype.set(LevType::SFC);
+    levelZeroMars.levelist.set(0);
+
+    auto levelZeroResult = mars2mars::applyMappings(mars2mars::allRules(), levelZeroMars, levelZeroMisc);
+
+    EXPECT(!levelZeroResult);
+    EXPECT(levelZeroMars.levtype.get() == LevType::SFC);
 };
 
 

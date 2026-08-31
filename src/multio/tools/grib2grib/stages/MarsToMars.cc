@@ -14,42 +14,13 @@
 #include "multio/tools/grib2grib/stages/MarsToMars.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/config/LocalConfiguration.h"
 
 #include "metkit/mars2mars/api/Mars2Mars.h"
 
 #include "multio/tools/grib2grib/Utils.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
-
-namespace implementation {
-
-eckit::LocalConfiguration mergeLocalConfigurations(const eckit::LocalConfiguration& base,
-                                                   const eckit::LocalConfiguration& overwrite) {
-    eckit::LocalConfiguration result{base};
-    for (const auto& key : overwrite.keys()) {
-        if (overwrite.isString(key)) {
-            result.set(key, overwrite.getString(key));
-        }
-        else if (overwrite.isIntegral(key)) {
-            result.set(key, overwrite.getLong(key));
-        }
-        else if (overwrite.isFloatingPoint(key)) {
-            result.set(key, overwrite.getDouble(key));
-        }
-        else if (overwrite.isBoolean(key)) {
-            result.set(key, overwrite.getBool(key));
-        }
-        else if (overwrite.isFloatingPointList(key)) {
-            result.set(key, overwrite.getDoubleVector(key));
-        }
-        else {
-            throw eckit::NotImplemented("Unexpected type for '" + key + "'", Here());
-        }
-    }
-    return result;
-}
-
-}  // namespace implementation
 
 namespace {
 
@@ -97,41 +68,21 @@ void freeMarsToMarsContext(MarsToMarsContext& context) noexcept {
 
 MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const eckit::LocalConfiguration& misc,
                                     const MarsToMarsContext& context) noexcept {
+    using metkit::mars2mars::Mars2Mars;
+
     (void)context;
 
     MarsToMarsResult result;
-    result.misc = misc;
-    eckit::LocalConfiguration mappedMars;
-    eckit::LocalConfiguration mappedMisc;
 
     try {
-        if (context.apiOptions) {
-            metkit::mars2mars::Mars2Mars mars2mars(*context.apiOptions);
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
-            mappedMars = mappedMarsMisc.mars;
-            mappedMisc = mappedMarsMisc.misc;
-            result.mars = mappedMars;
-        }
-        else {
-            metkit::mars2mars::Mars2Mars mars2mars;
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
-            mappedMars = mappedMarsMisc.mars;
-            mappedMisc = mappedMarsMisc.misc;
-            result.mars = mappedMars;
-        }
+        auto mars2mars = context.apiOptions ? Mars2Mars(*context.apiOptions) : Mars2Mars();
+        const auto marsMisc= mars2mars.convert(mars, misc);
+        result.mars = marsMisc.mars;
+        result.misc = marsMisc.misc;
     }
     catch (...) {
         printTrappedErrorDisclaimer();
         result.outcome = MarsToMarsCode::MappingsFailed;
-        return result;
-    }
-
-    try {
-        result.misc = implementation::mergeLocalConfigurations(mappedMisc, misc);
-    }
-    catch (...) {
-        printTrappedErrorDisclaimer();
-        result.outcome = MarsToMarsCode::MergeMiscFailed;
         return result;
     }
 

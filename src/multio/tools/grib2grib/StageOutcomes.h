@@ -99,7 +99,6 @@ enum class MarsToMarsCode : std::uint8_t
 {
     Valid = 0,
     MappingsFailed,
-    MergeMiscFailed,
     MarsDefaultsFailed,
     MarsValidationFailed,
     MiscDefaultsFailed,

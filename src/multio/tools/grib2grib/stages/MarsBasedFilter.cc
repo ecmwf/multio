@@ -199,9 +199,26 @@ bool isStepZero(const eckit::LocalConfiguration& mars) {
     return mars.getString("step") == "0";
 }
 
+bool hasStatisticalProcessing(const eckit::LocalConfiguration& mars) {
+
+    bool hasTimespan = mars.has("timespan");
+    bool hasStatType = mars.has("stattype");
+
+    bool timespanIsNone = mars.isString("timespan") && mars.getString("timespan") == "none";
+
+    // If timespan is present and not none it is a statistics independently from stattype
+    bool c1 = hasTimespan && !timespanIsNone;
+
+    // If timespan is present and none, it is a statistics only if stattype is present
+    bool c2 = (hasTimespan && timespanIsNone) && hasStatType;
+
+    return c1 || c2;
+
+}
+
 bool rejectUnsupportedStatisticalProcessingAtStepZero(const eckit::LocalConfiguration& mars,
                                                       const MarsBasedFilterContext& context) {
-    if (!isStepZero(mars) || (!mars.has("timespan") && !mars.has("stattype"))) {
+    if (!isStepZero(mars) || !hasStatisticalProcessing(mars)) {
         return false;
     }
 

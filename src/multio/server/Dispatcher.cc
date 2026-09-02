@@ -31,6 +31,11 @@ Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Qu
 
 util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,
                                                        util::DefaultFailureState&) const {
+    if (t == util::OnDispatchError::Recover) {
+        // Log and continue: do not interrupt the queue, otherwise the model side
+        // hangs/aborts during close_connections.
+        return util::FailureHandlerResponse::Ignore;
+    }
     queue_.interrupt(c.eptr);
     return util::FailureHandlerResponse::Rethrow;
 };

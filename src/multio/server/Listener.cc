@@ -112,6 +112,11 @@ Listener::~Listener() = default;
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c,
                                                      util::DefaultFailureState&) const {
+    if (t == util::OnReceiveError::Recover) {
+        // Log and continue: do not interrupt the queue nor abort other transports,
+        // otherwise the model side hangs/aborts during close_connections.
+        return util::FailureHandlerResponse::Ignore;
+    }
     msgQueue_.interrupt(c.eptr);
     transport::TransportRegistry::instance().abortAll(c.eptr);
 
@@ -129,48 +134,69 @@ void Listener::start() {
 
     withFailureHandling([&]() {
         do {
-            Message msg = transport_.receive();
+            // Wrap each iteration in its own failure-handling scope so that a
+            // parse/transport error on one message logs and continues with the
+            // next one, instead of exiting the loop and leaving peer clients
+            // blocked in MPI_Wait inside closeConnections().
+            try {
+                Message msg = transport_.receive();
 
-            switch (msg.tag()) {
-                case Message::Tag::Open:
-                    connections_.insert(msg.source());
-                    ++openedCount_;
-                    LOG_DEBUG_LIB(LibMultio)
-                        << "*** OPENING connection to " << msg.source() << ":    client count = " << clientCount_
-                        << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
-                        << std::endl;
-                    break;
+                switch (msg.tag()) {
+                    case Message::Tag::Open:
+                        connections_.insert(msg.source());
+                        ++openedCount_;
+                        LOG_DEBUG_LIB(LibMultio)
+                            << "*** OPENING connection to " << msg.source() << ":    client count = " << clientCount_
+                            << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
+                            << std::endl;
+                        break;
 
-                case Message::Tag::Close:
-                    connections_.erase(connections_.find(msg.source()));
-                    LOG_DEBUG_LIB(LibMultio)
-                        << "*** CLOSING connection to " << msg.source() << ":    client count = " << clientCount_
-                        << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
-                        << std::endl;
-                    break;
+                    case Message::Tag::Close:
+                        connections_.erase(connections_.find(msg.source()));
+                        LOG_DEBUG_LIB(LibMultio)
+                            << "*** CLOSING connection to " << msg.source() << ":    client count = " << clientCount_
+                            << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
+                            << std::endl;
+                        break;
 
-                case Message::Tag::Synchronization: {
-                    checkConnection(msg.source());
-                    LOG_DEBUG_LIB(LibMultio) << "*** SYNCHRONIZATION received from " << msg.source() << std::endl;
-                    msgQueue_.emplace(std::move(msg));
-                    break;
+                    case Message::Tag::Synchronization: {
+                        checkConnection(msg.source());
+                        LOG_DEBUG_LIB(LibMultio) << "*** SYNCHRONIZATION received from " << msg.source() << std::endl;
+                        msgQueue_.emplace(std::move(msg));
+                        break;
+                    }
+
+                    case Message::Tag::Domain:
+                    case Message::Tag::Parametrization:
+                    case Message::Tag::Mask:
+                    case Message::Tag::Notification:
+                    case Message::Tag::Flush:
+                    case Message::Tag::Field:
+                        checkConnection(msg.source());
+                        LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
+                        msgQueue_.emplace(std::move(msg));
+                        break;
+
+                    default:
+                        std::ostringstream oss;
+                        oss << "Unhandled message: " << msg << std::endl;
+                        throw eckit::SeriousBug(oss.str());
                 }
-
-                case Message::Tag::Domain:
-                case Message::Tag::Parametrization:
-                case Message::Tag::Mask:
-                case Message::Tag::Notification:
-                case Message::Tag::Flush:
-                case Message::Tag::Field:
-                    checkConnection(msg.source());
-                    LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
-                    msgQueue_.emplace(std::move(msg));
-                    break;
-
-                default:
-                    std::ostringstream oss;
-                    oss << "Unhandled message: " << msg << std::endl;
-                    throw eckit::SeriousBug(oss.str());
+            }
+            catch (...) {
+                if (this->parsedOnErrTag_ != util::OnReceiveError::Recover) {
+                    throw;
+                }
+                // Log via the FailureAware machinery (Ignore branch) and
+                // continue with the next message. Do NOT touch the
+                // connection counters: that corrupts tracking for unrelated
+                // peers and causes spurious "Connection ... not open" errors.
+                // With Recover, the surviving Close messages on the wire are
+                // what eventually drains openedCount_/connections_ and lets
+                // the loop exit cleanly.
+                util::DefaultFailureState st;
+                (void)handleFailure(util::OnReceiveError::Recover,
+                                    util::FailureContext{std::current_exception(), "Listener receive failed"}, st);
             }
         } while (moreConnections() && msgQueue_.checkInterrupt());
     });

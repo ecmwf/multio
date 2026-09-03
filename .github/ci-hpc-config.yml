@@ -15,6 +15,7 @@ intel_mpi:
         - eckit:intel-mpi
         - atlas:intel-mpi
       dependency_cmake_options:
+        - "ecmwf/eccodes: '-DENABLE_ECKIT_GEO=ON'"
         - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
@@ -47,6 +48,7 @@ hpcx_openmpi:
         - eckit:hpcx-openmpi
         - atlas:hpcx-openmpi
       dependency_cmake_options:
+        - "ecmwf/eccodes: '-DENABLE_ECKIT_GEO=ON'"
         - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
@@ -79,6 +81,7 @@ openmpi:
         - eckit:openmpi
         - atlas:openmpi
       dependency_cmake_options:
+        - "ecmwf/eccodes: '-DENABLE_ECKIT_GEO=ON'"
         - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
@@ -107,6 +110,7 @@ mpi_off:
         - ninja
         - qhull
       dependency_cmake_options:
+        - "ecmwf/eccodes: '-DENABLE_ECKIT_GEO=ON'"
         - "ecmwf/atlas: '-DENABLE_TESSELATION=ON'"
         - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
         - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"

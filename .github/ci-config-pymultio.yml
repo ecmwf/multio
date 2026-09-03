@@ -1,4 +1,5 @@
 dependency_cmake_options: |
+  ecmwf/eccodes: '-DENABLE_ECKIT_GEO=ON'
   ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
   ecmwf/atlas: "-DENABLE_TESSELATION=ON"
 dependencies: |

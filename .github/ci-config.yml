@@ -1,7 +1,7 @@
 dependency_cmake_options: |
-  ecmwf/eccodes: "-DENABLE_ECKIT_GEO=ON"
   ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
   ecmwf/atlas: "-DENABLE_TESSELATION=ON"
+  ecmwf/eccodes: "-DENABLE_ECKIT_GEO=ON"
 dependencies: |
   ecmwf/ecbuild
   qhull/qhull@refs/tags/v8.0.2

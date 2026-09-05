@@ -164,3 +164,21 @@ ecbuild_add_executable(
     LIBS
         multio-grib2grib-mpi
 )
+
+
+ecbuild_add_executable(
+
+    TARGET
+        scalar-grib-to-grib
+
+    CONDITION
+        HAVE_GRIB1_TO_GRIB2
+
+    SOURCES
+        scalar-grib-to-grib.cc
+
+    NO_AS_NEEDED
+
+    LIBS
+        multio-grib2grib
+)

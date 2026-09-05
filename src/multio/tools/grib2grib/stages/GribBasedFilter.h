@@ -22,11 +22,15 @@
 ///   grib1-messages-policy: try-to-handle
 ///   grib2-messages-policy: ignore
 ///   invalid-messages-policy: try-to-handle
-///   discipline192-messages-policy: ignore
+///   discipline192-messages-policy:
+///     try-to-handle: [me, 4v]
 ///   verbosity: 0
 /// @endcode
 
 #pragma once
+
+#include <string>
+#include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
 
@@ -46,6 +50,9 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 struct GribBasedFilterContext {
     /// Policy controlling whether discipline-192 messages are rejected here.
     OptionPolicy discipline192Policy = OptionPolicy::Ignore;
+
+    /// Named callbacks that may allow selected discipline-192 messages.
+    std::vector<std::string> discipline192AllowRules;
 
     /// Policy controlling whether GRIB1 messages are allowed to proceed.
     OptionPolicy grib1Policy = OptionPolicy::TryToHandle;

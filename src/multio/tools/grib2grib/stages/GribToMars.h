@@ -30,6 +30,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed context consumed by the standalone `GribToMars` stage.
 struct GribToMarsContext {
     std::int64_t verbosity = 0;
+    bool tryFixDiscipline192MeAnd4i = false;
     std::optional<eckit::LocalConfiguration> apiOptions;
 };
 

@@ -24,6 +24,7 @@
 #include <optional>
 #include <unordered_set>
 
+#include "eckit/exception/Exceptions.h"
 #include "metkit/codes/api/CodesAPI.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
@@ -323,13 +324,34 @@ bool isDiscipline192Message(const metkit::codes::CodesHandle& handle) {
     return false;
 }
 
+bool allowDiscipline192Me(const metkit::codes::CodesHandle& handle) {
+    return isDiscipline192Message(handle) && handle.getString("type") == "me";
+}
+
+bool allowDiscipline1924i(const metkit::codes::CodesHandle& handle) {
+    return isDiscipline192Message(handle) && handle.getString("type") == "4i";
+}
+
+bool allowSelectedDiscipline192(const metkit::codes::CodesHandle& handle,
+                                const std::vector<std::string>& allowRules) {
+    for (const auto& rule : allowRules) {
+        if ((rule == "me" && allowDiscipline192Me(handle)) || (rule == "4i" && allowDiscipline1924i(handle))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// @brief Reject a message when the discipline-192 policy says to ignore it.
 /// @param inputHandle Read-only input GRIB handle.
 /// @param options Parsed coarse-grain options.
 /// @return `true` when the message should be rejected by the discipline-192
 ///         classifier.
 bool rejectByDiscipline192(const metkit::codes::CodesHandle& inputHandle, const GribBasedFilterContext& context) {
-    return context.discipline192Policy == OptionPolicy::Ignore && isDiscipline192Message(inputHandle);
+    if (!isDiscipline192Message(inputHandle) || context.discipline192Policy == OptionPolicy::TryToHandle) {
+        return false;
+    }
+    return !allowSelectedDiscipline192(inputHandle, context.discipline192AllowRules);
 }
 
 /// @brief Reject a GRIB1 message when the GRIB1 edition policy says to ignore it.
@@ -363,6 +385,30 @@ bool rejectByInvalidInputMessage(const metkit::codes::CodesHandle& inputHandle, 
 
 }  // namespace implementation
 
+namespace {
+
+std::vector<std::string> parseDiscipline192AllowRules(const eckit::LocalConfiguration& config) {
+    if (!config.has("discipline192-messages-policy")
+        || !config.isSubConfiguration("discipline192-messages-policy")) {
+        return {};
+    }
+
+    const auto policy = config.getSubConfiguration("discipline192-messages-policy");
+    if (!policy.has("try-to-handle")) {
+        throw eckit::BadValue("discipline192-messages-policy requires 'try-to-handle'", Here());
+    }
+
+    const auto rules = policy.getStringVector("try-to-handle");
+    for (const auto& rule : rules) {
+        if (rule != "me" && rule != "4i") {
+            throw eckit::BadValue("Unsupported discipline-192 allow rule: " + rule, Here());
+        }
+    }
+    return rules;
+}
+
+}  // namespace
+
 /// @brief Validate the raw configuration keys consumed by the coarse classifier.
 /// @param options Stage-local coarse-grain configuration.
 /// @throw eckit exception If one of the known option values is invalid.
@@ -379,7 +425,12 @@ void validateGribBasedFilterContext(const eckit::LocalConfiguration& config) {
         (void)parseOptionPolicy(config.getString("invalid-messages-policy"));
     }
     if (config.has("discipline192-messages-policy")) {
-        (void)parseOptionPolicy(config.getString("discipline192-messages-policy"));
+        if (config.isSubConfiguration("discipline192-messages-policy")) {
+            (void)parseDiscipline192AllowRules(config);
+        }
+        else {
+            (void)parseOptionPolicy(config.getString("discipline192-messages-policy"));
+        }
     }
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
@@ -408,7 +459,13 @@ GribBasedFilterContext parseGribBasedFilterContext(const eckit::LocalConfigurati
         parsed.invalidMessagesPolicy = getOptionPolicy(config, "invalid-messages-policy", OptionPolicy::TryToHandle);
     }
     if (config.has("discipline192-messages-policy")) {
-        parsed.discipline192Policy = getOptionPolicy(config, "discipline192-messages-policy", OptionPolicy::Ignore);
+        if (config.isSubConfiguration("discipline192-messages-policy")) {
+            parsed.discipline192Policy = OptionPolicy::Ignore;
+            parsed.discipline192AllowRules = parseDiscipline192AllowRules(config);
+        }
+        else {
+            parsed.discipline192Policy = getOptionPolicy(config, "discipline192-messages-policy", OptionPolicy::Ignore);
+        }
     }
 
     // Local verbosity override for the coarse-grain classifier.

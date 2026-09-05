@@ -35,6 +35,32 @@ std::optional<eckit::LocalConfiguration> parseGrib2MarsApiOptions(const eckit::L
     return config.getSubConfiguration("api-options");
 }
 
+bool parseTryFixDiscipline192MeAnd4i(const eckit::LocalConfiguration& config) {
+    const auto apiOptions = parseGrib2MarsApiOptions(config);
+    return apiOptions && apiOptions->has("tryFixDiscipline192-me-and-4i")
+        ? apiOptions->getBool("tryFixDiscipline192-me-and-4i")
+        : false;
+}
+
+void tryFixDiscipline192MeAnd4i( eckit::LocalConfiguration& mars ) {
+    if (!mars.has("type")) {
+        return;
+    }
+    if (!mars.has("param")) {
+        return;
+    }
+
+    const auto type = mars.getString("type");
+    const long param = mars.getLong("param");
+
+    if (type == "me" || type == "4i") {
+        // TODO: Fix discipline-192 fields for me and 4i messages.
+        if (param/1000 == 200){
+            mars.set( "param", param%1000 );
+        }
+    }
+}
+
 }  // namespace
 
 void validateGribToMarsContext(const eckit::LocalConfiguration& config) {
@@ -43,6 +69,7 @@ void validateGribToMarsContext(const eckit::LocalConfiguration& config) {
     }
 
     (void)parseGrib2MarsApiOptions(config);
+    (void)parseTryFixDiscipline192MeAnd4i(config);
 }
 
 GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config) {
@@ -57,6 +84,7 @@ GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config
     }
 
     parsed.apiOptions = parseGrib2MarsApiOptions(config);
+    parsed.tryFixDiscipline192MeAnd4i = parseTryFixDiscipline192MeAnd4i(config);
 
     return parsed;
 }
@@ -67,8 +95,6 @@ void freeGribToMarsContext(GribToMarsContext& context) noexcept {
 
 GribToMarsResult runGribToMarsStage(const metkit::codes::CodesHandle& inputHandle,
                                     const GribToMarsContext& context) noexcept {
-    (void)context;
-
     GribToMarsResult result;
 
     try {
@@ -83,6 +109,10 @@ GribToMarsResult runGribToMarsStage(const metkit::codes::CodesHandle& inputHandl
             const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
             result.mars = marsMisc.mars;
             result.misc = marsMisc.misc;
+        }
+
+        if (context.tryFixDiscipline192MeAnd4i) {
+            tryFixDiscipline192MeAnd4i(result.mars);
         }
     }
     catch (...) {

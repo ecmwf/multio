@@ -1,62 +1,73 @@
-# Top-level keys supported by the current implementation are listed below.
+reader:
+  # mode: eccodes-stream
+  # Use this instead to enable candidate-based boundary detection:
+  mode: candidate-boundary
 
-# Optional. If true and `verbosity` is not set, it is normalised to `verbosity: 2`.
-verbose: false
+stages:
+  grib-based-filter:
+    verbosity: 0
+    grib1-messages-policy: try-to-handle
+    grib2-messages-policy: try-to-handle
+    invalid-messages-policy: try-to-handle
+    discipline192-messages-policy:
+        try-to-handle: ["4i", "me"]
 
-# Optional. Kept for compatibility with the existing config loader.
-verbosity: 0
+  grib-to-mars:
+    verbosity: 0
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_StandardisedAnomalyAsInstant: true
+      tryFixDiscipline192-me-and-4i: true
+      saveErrorStack: false
+      errorStackPath: "./"
+      printErrorStackToStdErr: false
 
-# Optional message selection rules.
-# Format: "key=value1,value2;other_key=value3,value4"
-# Matching is satisfied when any configured key matches one of its values.
-exclude: ""
-filter: ""
-except: ""
+  mars-to-mars:
+    verbosity: 0
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      saveErrorStack: false
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
+      printErrorStackToStdErr: false
 
-# Optional.
-# false: copy GRIB2 messages verbatim and only encode GRIB1 messages
-# true:  force all messages through the encode path
-all: true
+  overrides:
+    verbosity: 0
+    packing: ccsds
+    ncycle: 162
+    control: false
+    expver: "2250"
 
-# Optional. Valid values: abort, log-and-skip, skip, try-to-handle, copy
-on-error: log-and-skip
+  mars-based-filter:
+    verbosity: 0
+    api-options:
+      allowFromStartStatisticsForAnalisys: false
+      allowPartialStatisticsWindow: false
+      allowExtendedSetOfOperationsForZeroLengthFsWindow: false
+    selectors:
+      match:
+        param: [133093, 133094, 133095, 133096, 133097, 133098]
 
-# Optional. Valid values: log-and-ignore, ignore, try-to-handle, copy
-discipline-192: ignore
+  mars-to-grib:
+    verbosity: 0
+    generate-testcases: true
+    testcases-dir: "/lus/h1tcst01/mavm_temp_scratch_mtg2/test-cases-02"
+    api-options:
+      saveErrorStack: true
+      errorStackPath: "/lus/h1tcst01/mavm_temp_scratch_mtg2/errors"
+      printErrorStackToStdErr: true
 
-# Optional override fields applied to the generated MARS/misc records.
-wmo-units: true
-model: ""
-ncycle: 162
-control: false
-convert-wave-stream-to-oper: true
-expver: "2250"
-wmo-units: true
-default-ensemble-size: 50
+  post-encode-validation:
+    verbosity: 0
 
-# Optional. Valid values: log-and-ignore, ignore, copy
-timespan-equal-to-zero: ignore
-invalid-input-message: try-to-handle
+  grib2fdb5:
+    verbosity: 0
 
-# Output sink selection.
-# For file output, omit `sink` completely or switch `type` to `file`.
 sink:
+  enabled: false
   type: fdb5
   config:
-    # Optional FDB5 userConfig. If omitted, the sink defaults to `useSubToc: true`.
-    fdb_home: '/home/fdbsc'
+    # fdb_home: /home/fdbsc
+    fdb_home: "/lus/h1tcst01/mavm_temp_scratch_mtg2/fdb-mdst/"
     userConfig:
       useSubToc: true
-
-# File sink alternative:
-# sink:
-#   type: file
-#   path: /path/to/output.rank${MPI_RANK}.grib2
-#   append: false
-#   per-server: false
-#
-# Notes for the file sink in this tool:
-# - if `sink` is omitted entirely, the tool defaults to:
-#     type: file
-#     path: <output_prefix>.rank<R>.grib2
-# - if `type: file` is selected and `path` is omitted, the same default path is used

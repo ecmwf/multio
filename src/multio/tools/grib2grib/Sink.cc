@@ -27,6 +27,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/runtime/Main.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/MultioConfiguration.h"
@@ -37,11 +38,6 @@
 namespace multio::distGrib1ToGrib2::grib2grib {
 
 namespace {
-
-std::string testCaseFilePath(const std::string& directory, std::int64_t mpiRank) {
-    eckit::PathName dir{directory};
-    return (dir / ("mars2grib-testcases." + std::to_string(mpiRank) + ".json")).asString();
-}
 
 std::string debugRankOutputPath(const std::string& outputDirectory, const std::string& stageKey, int rank) {
     return outputDirectory + "/debug/" + stageKey + "/rank" + std::to_string(rank) + ".grib";
@@ -119,12 +115,20 @@ eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfigurati
 
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
                                                   const std::string& outputDirectory, int rank) {
+    if (options.has("sink")) {
+        const auto sinkConf = options.getSubConfiguration("sink");
+        if (sinkConf.has("enabled") && !sinkConf.getBool("enabled")) {
+            return nullptr;
+        }
+    }
     return buildSinkFromConfiguration(sinkConfigurationForRank(options, outputDirectory, rank), rank);
 }
 
 TestCaseFileSink::TestCaseFileSink(const std::string& directory, std::int64_t mpiRank) {
-    const auto filePath = testCaseFilePath(directory, mpiRank);
-    file_ = std::fopen(filePath.c_str(), "a");
+    const eckit::PathName outputDirectory = eckit::PathName{directory} / eckit::Main::hostname();
+    outputDirectory.mkdir();
+    const eckit::PathName filePath = outputDirectory / ("file." + std::to_string(mpiRank) + ".jsonl");
+    file_ = std::fopen(filePath.asString().c_str(), "a");
     if (file_ == nullptr) {
         throw eckit::CantOpenFile(filePath, Here());
     }
@@ -152,7 +156,9 @@ void TestCaseFileSink::flush() {
 
 Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
                                bool generateTestcases, const std::optional<std::string>& testcasesDirectory) {
-    sinks_.push_back(buildSink(options, outputDirectory, rank));
+    if (auto sink = buildSink(options, outputDirectory, rank)) {
+        sinks_.push_back(std::move(sink));
+    }
 
     if (options.has("debug-sinks")) {
         if (!options.isSubConfiguration("debug-sinks")) {
@@ -190,8 +196,8 @@ Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const s
 
 Grib2GribSinks::~Grib2GribSinks() = default;
 
-multio::sink::DataSink& Grib2GribSinks::mainDataSink() {
-    return *sinks_[0];
+multio::sink::DataSink* Grib2GribSinks::mainDataSink() {
+    return sinks_.empty() ? nullptr : sinks_[0].get();
 }
 
 TestCaseFileSink* Grib2GribSinks::testCaseSink() {

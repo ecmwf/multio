@@ -90,7 +90,9 @@ private:
                 break;
             }
 
-            sinks.mainDataSink().write(g2g::to_eckit_message(*message));
+            if (auto* sink = sinks.mainDataSink()) {
+                sink->write(g2g::to_eckit_message(*message));
+            }
 
             if (sinks.testCaseSink() != nullptr) {
                 sinks.testCaseSink()->write("grib2grib-sink-test synthetic testcase line\n");

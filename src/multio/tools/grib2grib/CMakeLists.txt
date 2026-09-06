@@ -115,6 +115,24 @@ ecbuild_add_executable(
 ecbuild_add_executable(
 
     TARGET
+        classify-mars2grib-testcases
+
+    CONDITION
+        HAVE_GRIB1_TO_GRIB2
+
+    SOURCES
+        classify-mars2grib-testcases.cc
+
+    NO_AS_NEEDED
+
+    LIBS
+        multio-grib2grib
+)
+
+
+ecbuild_add_executable(
+
+    TARGET
         grib2grib-data-distribution-test
 
     CONDITION

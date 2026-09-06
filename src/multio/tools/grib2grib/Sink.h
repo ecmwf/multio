@@ -42,14 +42,11 @@ std::string rankOutputPath(const std::string& outputDirectory, int rank);
 eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfiguration& options,
                                                    const std::string& outputDirectory, int rank);
 
-/// @brief Build the main accepted-output sink for one rank.
+/// @brief Build the main accepted-output sink for one rank, or return `nullptr` when disabled.
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
-                                                  const std::string& outputDirectory, int rank);
+                                                   const std::string& outputDirectory, int rank);
 
-/// @brief Append-only text file sink for mars2grib testcases.
-///
-/// RAII wrapper around a raw file handle, replacing the manual `std::FILE*`
-/// lifecycle that previously lived in the `MarsToGrib` stage context.
+/// @brief Append-only file sink for rank-local mars2grib testcases.
 class TestCaseFileSink {
 public:
     TestCaseFileSink(const std::string& directory, std::int64_t mpiRank);
@@ -60,7 +57,7 @@ public:
     TestCaseFileSink(TestCaseFileSink&&) = delete;
     TestCaseFileSink& operator=(TestCaseFileSink&&) = delete;
 
-    /// @brief Append one testcase record to the file.
+    /// @brief Append one testcase record.
     /// @throw eckit::WriteError On a short write.
     void write(const std::string& testCase);
 
@@ -87,8 +84,8 @@ public:
                    bool generateTestcases, const std::optional<std::string>& testcasesDirectory);
     ~Grib2GribSinks();
 
-    /// @brief Main encoded-GRIB2 output sink (internally `sinks_[0]`).
-    multio::sink::DataSink& mainDataSink();
+    /// @brief Main encoded-GRIB2 output sink, or `nullptr` when disabled.
+    multio::sink::DataSink* mainDataSink();
 
     /// @brief Testcase file sink, or `nullptr` when testcase generation is disabled.
     TestCaseFileSink* testCaseSink();

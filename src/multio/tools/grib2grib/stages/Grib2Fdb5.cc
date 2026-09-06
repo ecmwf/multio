@@ -46,13 +46,18 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept {
 }
 
 Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
-                                  multio::sink::DataSink& writer) noexcept {
+                                   multio::sink::DataSink* writer) noexcept {
     Grib2Fdb5Result result;
 
     (void)context;
 
+    if (writer == nullptr) {
+        result.outcome = Grib2Fdb5Code::Valid;
+        return result;
+    }
+
     try {
-        writer.write(to_eckit_message(encodedHandle));
+        writer->write(to_eckit_message(encodedHandle));
     }
     catch (...) {
         printTrappedErrorDisclaimer();

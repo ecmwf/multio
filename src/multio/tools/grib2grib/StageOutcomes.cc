@@ -310,8 +310,6 @@ const char* toString(MarsToMarsCode code) {
             return "Valid";
         case MarsToMarsCode::MappingsFailed:
             return "MappingsFailed";
-        case MarsToMarsCode::MergeMiscFailed:
-            return "MergeMiscFailed";
         case MarsToMarsCode::MarsDefaultsFailed:
             return "MarsDefaultsFailed";
         case MarsToMarsCode::MarsValidationFailed:

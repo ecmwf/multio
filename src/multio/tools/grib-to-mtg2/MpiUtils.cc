@@ -13,7 +13,6 @@
 
 #include "multio/tools/grib-to-mtg2/MpiUtils.h"
 
-#include <limits>
 #include <vector>
 
 #include "eckit/exception/Exceptions.h"
@@ -32,19 +31,15 @@ constexpr int outcomesPayloadTag = 5001;
 }  // namespace
 
 std::string broadcastOptionsStringFromRoot(const std::string& rootPayload, const eckit::mpi::Comm& comm) {
-    std::uint64_t size = comm.rank() == rootRank ? static_cast<std::uint64_t>(rootPayload.size()) : 0;
+    std::size_t size = comm.rank() == rootRank ? rootPayload.size() : 0;
     comm.broadcast(size, rootRank);
-
-    if (size > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
-        throw eckit::BadValue("broadcast payload too large for std::string", Here());
-    }
 
     std::vector<char> payload;
     if (comm.rank() == rootRank) {
         payload.assign(rootPayload.begin(), rootPayload.end());
     }
     else {
-        payload.resize(static_cast<std::size_t>(size));
+        payload.resize(size);
     }
 
     if (size > 0) {
@@ -66,7 +61,7 @@ WorkBucket distributeRankOwnedBucket(const std::vector<WorkBucket>* rootBuckets,
 
         for (std::size_t rank = 1; rank < comm.size(); ++rank) {
             const auto payload = serializeWorkBucket((*rootBuckets)[rank]);
-            const auto payloadSize = static_cast<std::uint64_t>(payload.size());
+            const auto payloadSize = payload.size();
             comm.send(payloadSize, static_cast<int>(rank), bucketSizeTag);
             if (payloadSize > 0) {
                 comm.send(payload.data(), payload.size(), static_cast<int>(rank), bucketPayloadTag);
@@ -76,14 +71,10 @@ WorkBucket distributeRankOwnedBucket(const std::vector<WorkBucket>* rootBuckets,
         return (*rootBuckets)[rootRank];
     }
 
-    std::uint64_t payloadSize = 0;
+    std::size_t payloadSize = 0;
     comm.receive(payloadSize, static_cast<int>(rootRank), bucketSizeTag);
 
-    if (payloadSize > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
-        throw eckit::BadValue("incoming bucket payload too large", Here());
-    }
-
-    std::vector<char> payload(static_cast<std::size_t>(payloadSize));
+    std::vector<char> payload(payloadSize);
     if (payloadSize > 0) {
         comm.receive(payload.data(), payload.size(), static_cast<int>(rootRank), bucketPayloadTag);
     }
@@ -100,14 +91,10 @@ std::vector<FileStageOutcomes> gatherOutcomes(const std::vector<FileStageOutcome
         std::vector<FileStageOutcomes> gathered = localOutcomes;
 
         for (std::size_t rank = 1; rank < comm.size(); ++rank) {
-            std::uint64_t payloadSize = 0;
+            std::size_t payloadSize = 0;
             comm.receive(payloadSize, static_cast<int>(rank), outcomesSizeTag);
 
-            if (payloadSize > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max())) {
-                throw eckit::BadValue("incoming outcomes payload too large", Here());
-            }
-
-            std::vector<char> payload(static_cast<std::size_t>(payloadSize));
+            std::vector<char> payload(payloadSize);
             if (payloadSize > 0) {
                 comm.receive(payload.data(), payload.size(), static_cast<int>(rank), outcomesPayloadTag);
             }
@@ -119,7 +106,7 @@ std::vector<FileStageOutcomes> gatherOutcomes(const std::vector<FileStageOutcome
         return gathered;
     }
 
-    const auto payloadSize = static_cast<std::uint64_t>(localPayload.size());
+    const auto payloadSize = localPayload.size();
     comm.send(payloadSize, static_cast<int>(rootRank), outcomesSizeTag);
     if (payloadSize > 0) {
         comm.send(localPayload.data(), localPayload.size(), static_cast<int>(rootRank), outcomesPayloadTag);

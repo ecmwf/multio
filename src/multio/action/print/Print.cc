@@ -79,9 +79,9 @@ void Print::printMars(std::ostream& os, const message::Message& msg) const {
     if (msg.tag() == message::Message::Tag::Flush) {
         count_ = 1;
         // printPrefix(os);
-        long flushKind = msg.metadata().getOpt<long>("flushKind").value_or(-1);
+        std::int64_t flushKind = msg.metadata().getOpt<std::int64_t>("flushKind").value_or(-1);
         if (flushKind == 1) {
-            long step = msg.metadata().getOpt<long>("step").value_or(-1);
+            std::int64_t step = msg.metadata().getOpt<std::int64_t>("step").value_or(-1);
             os << prefix_ << ": Flush: step=" << step << std::endl;
         }
         else {

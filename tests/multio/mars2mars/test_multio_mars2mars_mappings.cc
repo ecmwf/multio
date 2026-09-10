@@ -484,17 +484,19 @@ CASE("Test mapToSol") {
         EXPECT(mars.levtype.get() == LevType::SOL);
     }
 
-    FullMarsRecord levelZeroMars;
-    MiscRecord levelZeroMisc;
+    for (auto paramId : paramIds) {
+        FullMarsRecord levelZeroMars;
+        MiscRecord levelZeroMisc;
 
-    levelZeroMars.param.set(235406);
-    levelZeroMars.levtype.set(LevType::SFC);
-    levelZeroMars.levelist.set(0);
+        levelZeroMars.param.set(paramId);
+        levelZeroMars.levtype.set(LevType::SFC);
+        levelZeroMars.levelist.set(0);
 
-    auto levelZeroResult = mars2mars::applyMappings(mars2mars::allRules(), levelZeroMars, levelZeroMisc);
+        auto levelZeroResult = mars2mars::applyMappings(mars2mars::allRules(), levelZeroMars, levelZeroMisc);
 
-    EXPECT(!levelZeroResult);
-    EXPECT(levelZeroMars.levtype.get() == LevType::SFC);
+        EXPECT(!levelZeroResult);
+        EXPECT(levelZeroMars.levtype.get() == LevType::SFC);
+    }
 };
 
 

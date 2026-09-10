@@ -334,11 +334,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! NGRBRSN  - 33     - Snow density
-  ! NGRBTSN  - 238    - Temperature of snow layer
-  ! NGRBWSN  - 228038 - Snow liquid water (multi-layer)
-  ! NGRBSD   - 228141 - Snow depth (multi-layer)
-
   SELECT CASE ( IPREFIX )
 
   CASE ( PREFIX_MODEL_LEVEL_E )
@@ -360,16 +355,11 @@ IMPLICIT NONE
   CASE ( PREFIX_THETA_LEVEL_E )
     ILEVTYPE = LEVTYPE_PT_E
   CASE ( PREFIX_SURFACE_E )
-    SELECT CASE (PARAM_ID)
-    CASE ( NGRBRSN, NGRBTSN, NGRBWSN, NGRBSD, 231027 )
-      IF ( LEVEL .NE. 0 ) THEN
-        ILEVTYPE = LEVTYPE_SOL_E
-      ELSE
-        ILEVTYPE = LEVTYPE_SFC_E
-      END IF
-    CASE DEFAULT
+    IF ( LEVEL .NE. 0 ) THEN
+      ILEVTYPE = LEVTYPE_SOL_E
+    ELSE
       ILEVTYPE = LEVTYPE_SFC_E
-    END SELECT
+    END IF
   CASE ( PREFIX_WAVE_INT_E )
     ILEVTYPE = LEVTYPE_SFC_E
   CASE ( PREFIX_WAVE_SPEC_E )

@@ -73,11 +73,13 @@ enum class OnActionError : unsigned
 
 enum class OnReceiveError : unsigned
 {
-    Propagate = PROPAGATE_ERROR
+    Propagate = PROPAGATE_ERROR,
+    Recover = RECOVER_ERROR
 };
 enum class OnDispatchError : unsigned
 {
-    Propagate = PROPAGATE_ERROR
+    Propagate = PROPAGATE_ERROR,
+    Recover = RECOVER_ERROR
 };
 
 
@@ -208,7 +210,7 @@ void printFailureContext(std::ostream& out, const FailureContext& c);
 
 template <typename ComponentFailureTraits>
 class FailureAware {
-private:
+protected:
     using OnErrorType = typename ComponentFailureTraits::OnErrorType;
     using FailureOptions = typename ComponentFailureTraits::FailureOptions;
     using FailureState = typename ComponentFailureTraits::FailureState;
@@ -219,6 +221,10 @@ private:
 
 public:
     FailureAware(const config::ComponentConfiguration& compConf) : peerTag_{compConf.multioConfig().localPeerTag()} {
+        // Seed with the trait-supplied default so that, when the YAML key is
+        // absent, parsedOnErrTag_ does not silently fall back to the
+        // value-initialised enum (= Propagate = 0) and ignore the trait.
+        parsedOnErrTag_ = ComponentFailureTraits::defaultOnErrorTag();
         if (compConf.parsedConfig().has(ComponentFailureTraits::configKey())) {
             auto unparsedOnErrTagMaybe = ([&]() {
                 try {
@@ -299,11 +305,26 @@ protected:
                 callable();
             }
             catch (...) {
+                // Recover the inner exception's what() so that the log shows
+                // the real cause instead of the default "unknown" context
+                // produced by the no-arg withFailureHandling overload.
+                std::string innerWhat;
+                try {
+                    std::rethrow_exception(std::current_exception());
+                }
+                catch (const std::exception& _ie) {
+                    innerWhat = _ie.what();
+                }
+                catch (...) {
+                    innerWhat = "<non-std::exception thrown>";
+                }
+
                 std::ostringstream oss;
                 oss << "FailureAware<" << ComponentFailureTraits::componentName() << "> with behaviour \""
                     << eckit::translate<std::string>(parsedOnErrTag_) << "\" on "
                     << eckit::translate<std::string>(peerTag_) << " for context: [" << std::endl
                     << contextString() << std::endl
+                    << "Inner exception: " << innerWhat << std::endl
                     << "]";
 
                 FailureContext fctx{std::current_exception(), oss.str()};

@@ -295,12 +295,35 @@ Message MpiTransport::receive() {
         ReceivedBuffer streamArgs;
         streamQueue_.pop(streamArgs);
         if (streamArgs.buffer) {
+            // RAII: ensure the buffer is always released back to the pool,
+            // even if a decodeMessage call below throws. Otherwise a single
+            // bad message would permanently leak a buffer slot and eventually
+            // stall the transport.
+            struct ReleaseGuard {
+                decltype(streamArgs.buffer) buf;
+                ~ReleaseGuard() {
+                    if (buf) {
+                        buf->status.store(BufferStatus::available, std::memory_order_release);
+                    }
+                }
+            } releaseGuard{streamArgs.buffer};
+
             eckit::ResizableMemoryStream strm{streamArgs.buffer->content};
             while (strm.position() < streamArgs.size) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTiming_};
-                auto msg = decodeMessage(strm);
-                msgPack_.push(std::move(msg));
+                try {
+                    auto msg = decodeMessage(strm);
+                    msgPack_.push(std::move(msg));
+                }
+                catch (...) {
+                    // A corrupt message would leave the stream cursor at an
+                    // unknown position; we cannot safely keep decoding the
+                    // remainder of the buffer. Rethrow so the listener's
+                    // on-error policy (recover / propagate) decides what to do.
+                    throw;
+                }
             }
+            releaseGuard.buf = nullptr;
             streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
     }

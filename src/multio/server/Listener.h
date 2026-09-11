@@ -45,11 +45,11 @@ struct ReceiverFailureTraits {
     using OnErrorType = util::OnReceiveError;
     using FailureOptions = util::DefaultFailureOptions;
     using FailureState = util::DefaultFailureState;
-    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate>;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover>;
     static inline std::optional<OnErrorType> parse(const std::string& str) {
         return util::parseErrorTag<OnErrorType, TagSequence>(str);
     }
-    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Recover; };
     static inline std::string configKey() { return std::string("on-receive-error"); };
     static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
         return util::parseDefaultFailureOptions(conf);

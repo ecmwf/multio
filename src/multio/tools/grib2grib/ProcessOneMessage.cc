@@ -25,6 +25,7 @@
 
 #include "multio/tools/grib2grib/Sink.h"
 #include "multio/tools/grib2grib/Utils.h"
+#include "multio/tools/grib2grib/stages/Hacks.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
@@ -92,6 +93,8 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             writer.debugStageInput(ProcessingStage::PostEncodeValidation, inputHandle);
             return;
         }
+
+        runHacksStage(writer.mainDataSink(), inputHandle, *marsToGribResult.encoded);
 
         const auto grib2Fdb5Result
             = runGrib2Fdb5Stage(*marsToGribResult.encoded, context.grib2Fdb5, writer.mainDataSink());

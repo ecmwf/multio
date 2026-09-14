@@ -35,6 +35,8 @@ ecbuild_add_library(
         ProcessRankOwnedUnitsOfWork.h
         stages/GribBasedFilter.cc
         stages/GribBasedFilter.h
+        stages/Hacks.cc
+        stages/Hacks.h
         stages/GribToMars.cc
         stages/GribToMars.h
         stages/MarsToMars.cc

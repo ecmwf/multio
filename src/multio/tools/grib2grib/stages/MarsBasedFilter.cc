@@ -166,6 +166,24 @@ bool rejectFromStartStatisticsForAnalysis(const eckit::LocalConfiguration& mars,
     return timespan == "fs" || timespan == "from-start" || timespan == "fromstart";
 }
 
+bool reject152pl(const eckit::LocalConfiguration& mars,
+                 const MarsBasedFilterContext& context) {
+
+    bool hasParam = mars.has("param");
+    bool hasLevtype = mars.has("levtype");
+    bool hasLevelist = mars.has("levelist");
+
+    if (!hasParam || !hasLevtype || !hasLevelist) {
+        return false;
+    }
+
+    long param = mars.getLong("param");
+    std::string levtype = mars.getString("levtype");
+    long levelist = mars.getLong("levelist");
+
+    return param == 152 && levtype == "pl" && levelist == 1000;
+}
+
 bool rejectPartialStatisticsWindow(const eckit::LocalConfiguration& mars, const MarsBasedFilterContext& context) {
     if (context.allowPartialStatisticsWindow || !mars.has("type") || !mars.has("step") || !mars.has("timespan")) {
         return false;

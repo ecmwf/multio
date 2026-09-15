@@ -61,6 +61,8 @@ struct OverridesContext {
 
     /// Local verbosity override for this stage.
     std::int64_t verbosity = 0;
+
+    bool enableDebugSink = false;
 };
 
 /// @brief Result of applying overrides to the `mars` and `misc` dictionaries.

@@ -15,7 +15,7 @@
 /// - required top-level `reader`
 /// - required top-level `stages`
 /// - optional top-level `sink`
-/// - optional top-level `debug-sinks`
+/// - optional top-level `debug-sink`
 ///
 /// `GlobalContext` is intentionally populated only from `reader` and `stages`.
 /// Sink runtime state is created separately and does not live in the parsed

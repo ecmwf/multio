@@ -435,6 +435,9 @@ void validateGribBasedFilterContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 }
 
 /// @brief Parse the coarse-grain options once for reuse across many messages.
@@ -470,6 +473,7 @@ GribBasedFilterContext parseGribBasedFilterContext(const eckit::LocalConfigurati
 
     // Local verbosity override for the coarse-grain classifier.
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
 
     // Clamp verbosity to a reasonable range.
     if (parsed.verbosity < 0) {

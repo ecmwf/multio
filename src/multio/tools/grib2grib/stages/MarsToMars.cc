@@ -71,6 +71,9 @@ void validateMarsToMarsContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 
     (void)parseMars2MarsApiOptions(config);
 }
@@ -79,6 +82,7 @@ MarsToMarsContext parseMarsToMarsContext(const eckit::LocalConfiguration& config
     MarsToMarsContext parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }
@@ -107,14 +111,14 @@ MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const
     try {
         if (context.apiOptions) {
             metkit::mars2mars::Mars2Mars mars2mars(*context.apiOptions);
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            const auto mappedMarsMisc = mars2mars.convert(mars);
             mappedMars = mappedMarsMisc.mars;
             mappedMisc = mappedMarsMisc.misc;
             result.mars = mappedMars;
         }
         else {
             metkit::mars2mars::Mars2Mars mars2mars;
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            const auto mappedMarsMisc = mars2mars.convert(mars);
             mappedMars = mappedMarsMisc.mars;
             mappedMisc = mappedMarsMisc.misc;
             result.mars = mappedMars;

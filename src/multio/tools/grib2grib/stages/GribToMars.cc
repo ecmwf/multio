@@ -67,6 +67,9 @@ void validateGribToMarsContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 
     (void)parseGrib2MarsApiOptions(config);
     (void)parseTryFixDiscipline192MeAnd4i(config);
@@ -76,6 +79,7 @@ GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config
     GribToMarsContext parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }

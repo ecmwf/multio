@@ -21,12 +21,16 @@ void validatePostEncodeValidationContext(const eckit::LocalConfiguration& config
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 }
 
 PostEncodeValidationContext parsePostEncodeValidationContext(const eckit::LocalConfiguration& config) {
     PostEncodeValidationContext parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }

@@ -32,6 +32,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed runtime context for the standalone `Grib2Fdb5` stage.
 struct Grib2Fdb5Context {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
 };
 
 /// @brief Result of the standalone `Grib2Fdb5` stage.

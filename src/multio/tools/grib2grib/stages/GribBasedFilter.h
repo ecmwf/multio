@@ -65,6 +65,8 @@ struct GribBasedFilterContext {
 
     /// Local coarse-classifier verbosity override.
     std::int64_t verbosity = 0;
+
+    bool enableDebugSink = false;
 };
 
 /// @brief Validate the dedicated coarse-grain options subconfiguration.

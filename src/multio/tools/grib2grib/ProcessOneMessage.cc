@@ -16,16 +16,14 @@
 /// each stage is called in order, its outcome is accounted immediately, and any
 /// non-accepted / non-valid outcome returns early.
 ///
-/// Every early return also triggers a best-effort write of the original input
-/// GRIB to the corresponding stage-specific debug sink, if that sink is
-/// configured. Debug sink failures are intentionally ignored apart from the
-/// shared trapped-error disclaimer.
+/// Every early return can trigger a best-effort write of the original input
+/// GRIB to the debug sink, relabelled with the failing stage's diagnostic
+/// experiment version. Debug sink failures are intentionally ignored.
 
 #include "multio/tools/grib2grib/ProcessOneMessage.h"
 
 #include "multio/tools/grib2grib/Sink.h"
 #include "multio/tools/grib2grib/Utils.h"
-#include "multio/tools/grib2grib/stages/Hacks.h"
 
 namespace multio::distGrib1ToGrib2::grib2grib {
 
@@ -37,14 +35,18 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
         const auto gribBasedFilterOutcome = runGribBasedFilterStage(inputHandle, context.gribBasedFilter);
         outcomes.gribBasedFilter.bump(gribBasedFilterOutcome);
         if (gribBasedFilterOutcome != GribBasedFilterCode::Accepted) {
-            writer.debugStageInput(ProcessingStage::GribBasedFilter, inputHandle);
+            if (context.gribBasedFilter.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::GribBasedFilter, gribBasedFilterOutcome, inputHandle);
+            }
             return;
         }
 
         const auto gribToMarsResult = runGribToMarsStage(inputHandle, context.gribToMars);
         outcomes.gribToMars.bump(gribToMarsResult.outcome);
         if (gribToMarsResult.outcome != GribToMarsCode::Valid) {
-            writer.debugStageInput(ProcessingStage::GribToMars, inputHandle);
+            if (context.gribToMars.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::GribToMars, gribToMarsResult.outcome, inputHandle);
+            }
             return;
         }
 
@@ -52,14 +54,18 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             = runMarsToMarsStage(gribToMarsResult.mars, gribToMarsResult.misc, context.marsToMars);
         outcomes.marsToMars.bump(marsToMarsResult.outcome);
         if (marsToMarsResult.outcome != MarsToMarsCode::Valid) {
-            writer.debugStageInput(ProcessingStage::MarsToMars, inputHandle);
+            if (context.marsToMars.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::MarsToMars, marsToMarsResult.outcome, inputHandle);
+            }
             return;
         }
 
         const auto overridesResult = runOverridesStage(marsToMarsResult.mars, marsToMarsResult.misc, context.overrides);
         outcomes.marsOverrides.bump(overridesResult.outcome);
         if (overridesResult.outcome != MarsOverridesCode::Valid) {
-            writer.debugStageInput(ProcessingStage::MarsOverrides, inputHandle);
+            if (context.overrides.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::MarsOverrides, overridesResult.outcome, inputHandle);
+            }
             return;
         }
 
@@ -67,7 +73,9 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             = runMarsBasedFilterStage(overridesResult.mars, overridesResult.misc, context.marsBasedFilter);
         outcomes.marsBasedFilter.bump(marsBasedFilterOutcome);
         if (marsBasedFilterOutcome != MarsBasedFilterCode::Accepted) {
-            writer.debugStageInput(ProcessingStage::MarsBasedFilter, inputHandle);
+            if (context.marsBasedFilter.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::MarsBasedFilter, marsBasedFilterOutcome, inputHandle);
+            }
             return;
         }
 
@@ -82,7 +90,9 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             ++outcomes.nFailedMarsToGribTestCaseWrites;
         }
         if (marsToGribResult.outcome != MarsToGribCode::Valid) {
-            writer.debugStageInput(ProcessingStage::MarsToGrib, inputHandle);
+            if (context.marsToGrib.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::MarsToGrib, marsToGribResult.outcome, inputHandle);
+            }
             return;
         }
 
@@ -90,17 +100,23 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
             = runPostEncodeValidationStage(*marsToGribResult.encoded, context.postEncodeValidation);
         outcomes.postEncodeValidation.bump(postEncodeValidationOutcome);
         if (postEncodeValidationOutcome != PostEncodeValidationCode::Valid) {
-            writer.debugStageInput(ProcessingStage::PostEncodeValidation, inputHandle);
+            if (context.postEncodeValidation.enableDebugSink) {
+                writer.debugStageInput(ProcessingStage::PostEncodeValidation, postEncodeValidationOutcome,
+                                       inputHandle);
+            }
             return;
         }
-
-        runHacksStage(writer.mainDataSink(), inputHandle, *marsToGribResult.encoded);
 
         const auto grib2Fdb5Result
             = runGrib2Fdb5Stage(*marsToGribResult.encoded, context.grib2Fdb5, writer.mainDataSink());
         outcomes.grib2Fdb5.bump(grib2Fdb5Result.outcome);
-        if (grib2Fdb5Result.outcome != Grib2Fdb5Code::Valid) {
-            writer.debugStageInput(ProcessingStage::Grib2Fdb5, inputHandle);
+        if (context.grib2Fdb5.enableDebugSink) {
+            if (grib2Fdb5Result.outcome == Grib2Fdb5Code::Valid) {
+                writer.debugSuccessfulInput(inputHandle);
+            }
+            else {
+                writer.debugStageInput(ProcessingStage::Grib2Fdb5, grib2Fdb5Result.outcome, inputHandle);
+            }
         }
     }
     catch (...) {

@@ -29,6 +29,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed context consumed by the standalone `PostEncodeValidation` stage.
 struct PostEncodeValidationContext {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
 };
 
 /// @brief Validate the raw context consumed by the `PostEncodeValidation` stage.

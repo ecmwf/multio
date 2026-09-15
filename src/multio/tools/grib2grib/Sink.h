@@ -13,7 +13,6 @@
 
 #pragma once
 
-#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
@@ -71,13 +70,12 @@ private:
 ///
 /// Owns:
 /// - the main accepted-output sink;
-/// - optional per-stage debug sinks, configured under `debug-sinks` using the
-///   exact same grammar as the top-level `sink`;
+/// - one optional debug sink, configured under `debug-sink` using the exact
+///   same grammar as the top-level `sink`;
 /// - the optional testcase text sink used by `MarsToGrib`.
 ///
-/// Debug sinks are best-effort observational side outputs. Missing stage entries
-/// are treated as no-ops. Write failures are caught internally and never change
-/// the main pipeline classification result.
+/// The debug sink is a best-effort observational side output. When disabled,
+/// debug operations are no-ops. Its failures never change pipeline results.
 class Grib2GribSinks {
 public:
     Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
@@ -90,17 +88,27 @@ public:
     /// @brief Testcase file sink, or `nullptr` when testcase generation is disabled.
     TestCaseFileSink* testCaseSink();
 
-    /// @brief Best-effort side sink for stage-specific rejected inputs.
-    void debugStageInput(ProcessingStage stage, const metkit::codes::CodesHandle& inputHandle) noexcept;
+    /// @brief Best-effort side sink for a failed or rejected stage input.
+    template <typename OutcomeCode>
+    void debugStageInput(ProcessingStage stage, OutcomeCode outcome,
+                         const metkit::codes::CodesHandle& inputHandle) noexcept {
+        debugStageInputCode(stage, static_cast<std::uint8_t>(outcome), inputHandle);
+    }
 
-    /// @brief Flush the main data sink(s) and the testcase sink.
+    /// @brief Best-effort side sink for an input whose converted output was accepted.
+    void debugSuccessfulInput(const metkit::codes::CodesHandle& inputHandle) noexcept;
+
+    /// @brief Flush the main data sink(s), debug sink, and testcase sink.
     void flush();
 
 private:
-    static constexpr std::size_t processingStageCount = static_cast<std::size_t>(ProcessingStage::FileFlush) + 1;
+    void debugStageInputCode(ProcessingStage stage, std::uint8_t outcome,
+                             const metkit::codes::CodesHandle& inputHandle) noexcept;
+    void writeDebugInput(const metkit::codes::CodesHandle& inputHandle, const std::string& expver) noexcept;
 
     std::vector<std::unique_ptr<multio::sink::DataSink>> sinks_;
-    std::array<std::unique_ptr<multio::sink::DataSink>, processingStageCount> debugSinks_{};
+    std::unique_ptr<multio::sink::DataSink> debugSink_;
+    bool stripDebugData_ = false;
     std::unique_ptr<TestCaseFileSink> testCaseSink_;
 };
 

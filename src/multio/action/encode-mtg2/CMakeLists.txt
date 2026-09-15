@@ -18,7 +18,6 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        multio-mars2mars
         eccodes
         metkit
 )

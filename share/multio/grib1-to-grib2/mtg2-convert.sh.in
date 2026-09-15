@@ -9,7 +9,7 @@ BINDIR="@BINDIR@"
 SHAREDIR="@SHAREDIR@"
 
 EXE="${BINDIR}/dist-grib1-to-grib2"
-DEFAULT_OPTIONS_YAML="${SHAREDIR}/multio/grib1-to-grib2/optionfile.yaml"
+DEFAULT_OPTIONS_YAML="${SHAREDIR}/multio/grib1-to-grib2/optionfile-full.yaml"
 
 NODES=1
 RUN_DIRECTORY=""
@@ -431,7 +431,7 @@ echo "RUNDIR=\${RUNDIR}"
 echo "OPTIONFILE=\${OPTIONFILE}"
 echo "ARCHITECTURE_FILE=\${ARCHITECTURE_FILE}"
 
-export FDB_HOME="/home/fdbsc"
+export FDB_HOME="\${FDB_HOME:-/home/fdbsc}"
 
 module purge
 source "\${ARCHITECTURE_FILE}"

@@ -20,9 +20,9 @@
 
 namespace multio::grib2grib {
 
-class DistributedGribToGrib final : public multio::MultioTool {
+class DistributedGribToMtg2 final : public multio::MultioTool {
 public:
-    DistributedGribToGrib(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    DistributedGribToMtg2(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
         options_.push_back(new eckit::option::SimpleOption<std::string>("file-list", "Path to file list"));
         options_.push_back(
@@ -111,6 +111,6 @@ private:
 }  // namespace multio::grib2grib
 
 int main(int argc, char** argv) {
-    multio::grib2grib::DistributedGribToGrib tool(argc, argv);
+    multio::grib2grib::DistributedGribToMtg2 tool(argc, argv);
     return tool.start();
 }

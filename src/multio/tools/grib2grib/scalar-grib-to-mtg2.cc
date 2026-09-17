@@ -27,9 +27,9 @@
 
 namespace multio::grib2grib {
 
-class ScalarGribToGrib final : public multio::MultioTool {
+class ScalarGribToMtg2 final : public multio::MultioTool {
 public:
-    ScalarGribToGrib(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    ScalarGribToMtg2(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
         options_.push_back(new eckit::option::SimpleOption<std::string>("input-file", "Path to input GRIB file"));
         options_.push_back(
@@ -106,6 +106,6 @@ private:
 }  // namespace multio::grib2grib
 
 int main(int argc, char** argv) {
-    multio::grib2grib::ScalarGribToGrib tool(argc, argv);
+    multio::grib2grib::ScalarGribToMtg2 tool(argc, argv);
     return tool.start();
 }

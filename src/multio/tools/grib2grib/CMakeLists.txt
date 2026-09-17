@@ -171,13 +171,13 @@ ecbuild_add_executable(
 ecbuild_add_executable(
 
     TARGET
-        distributed-grib-to-grib
+        distributed-grib-to-mtg2
 
     CONDITION
         HAVE_GRIB1_TO_GRIB2 AND eckit_HAVE_MPI
 
     SOURCES
-        distributed-grib-to-grib.cc
+        distributed-grib-to-mtg2.cc
 
     NO_AS_NEEDED
 
@@ -189,13 +189,13 @@ ecbuild_add_executable(
 ecbuild_add_executable(
 
     TARGET
-        scalar-grib-to-grib
+        scalar-grib-to-mtg2
 
     CONDITION
         HAVE_GRIB1_TO_GRIB2
 
     SOURCES
-        scalar-grib-to-grib.cc
+        scalar-grib-to-mtg2.cc
 
     NO_AS_NEEDED
 

@@ -30,6 +30,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// into `multio::message::Metadata`; a selector match means rejection.
 struct MarsBasedFilterContext {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
     bool allowExtendedSetOfOperationsForZeroLengthFsWindow = false;
     bool allowFromStartStatisticsForAnalysis = false;
     bool allowPartialStatisticsWindow = true;

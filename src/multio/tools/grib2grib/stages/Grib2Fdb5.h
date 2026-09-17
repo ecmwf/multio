@@ -32,6 +32,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed runtime context for the standalone `Grib2Fdb5` stage.
 struct Grib2Fdb5Context {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
 };
 
 /// @brief Result of the standalone `Grib2Fdb5` stage.
@@ -54,9 +55,9 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept;
 /// @brief Write one encoded GRIB2 message to the sink writer.
 /// @param encodedHandle Encoded GRIB2 handle.
 /// @param context Parsed stage-local runtime context.
-/// @param writer Rank-local sink writer.
+/// @param writer Rank-local sink writer, or `nullptr` when output is disabled.
 /// @return Stage outcome.
 Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
-                                  multio::sink::DataSink& writer) noexcept;
+                                  multio::sink::DataSink* writer) noexcept;
 
 }  // namespace multio::distGrib1ToGrib2::grib2grib

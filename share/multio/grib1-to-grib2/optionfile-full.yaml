@@ -1,0 +1,156 @@
+# Full grib2grib configuration reference.
+# Values below form a usable baseline; comments document alternatives.
+
+reader:
+  # Valid values: eccodes-stream, candidate-boundary.
+  mode: candidate-boundary
+
+stages:
+  grib-based-filter:
+    # Effective range: 0-3.
+    verbosity: 0
+    enable-debug-sink: true
+
+    # Valid values: try-to-handle, ignore.
+    # The aliases skip and log-and-ignore are equivalent to ignore.
+    grib1-messages-policy: try-to-handle
+    grib2-messages-policy: try-to-handle
+    invalid-messages-policy: try-to-handle
+
+    # This option can instead be the scalar value ignore or try-to-handle.
+    # In section form, discipline 192 is ignored except for the listed types.
+    # Valid try-to-handle entries: me, 4i.
+    discipline192-messages-policy:
+      try-to-handle: [me, 4i]
+
+  grib-to-mars:
+    verbosity: 0
+    enable-debug-sink: true
+    # This section is forwarded to metkit Grib2Mars. The options below are
+    # those currently used by the grib2grib reference configurations.
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_StandardisedAnomalyAsInstant: true
+      tryFixDiscipline192-me-and-4i: true
+      saveErrorStack: false
+      errorStackPath: "./errors"
+      printErrorStackToStdErr: false
+
+  mars-to-mars:
+    verbosity: 0
+    enable-debug-sink: true
+    # This section is forwarded unchanged to metkit Mars2Mars.
+    api-options:
+      tryFixBadInput_ZeroAccumulation: true
+      saveErrorStack: false
+      errorStackPath: "./errors"
+      printErrorStackToStdErr: false
+
+  overrides:
+    verbosity: 0
+    enable-debug-sink: true
+    # Valid values: ccsds, simple. Default: ccsds.
+    packing: ccsds
+    # Empty model or expver values mean no override.
+    model: ""
+    # Positive integer overrides.
+    ncycle: 162
+    ensemble-size: 51
+    analysis-window-length-in-hours: 6
+    # For stream=oper,type=fc, control also sets ensemble metadata.
+    control: false
+    # Remove or leave empty to preserve the input expver.
+    expver: "2250"
+
+  mars-based-filter:
+    verbosity: 0
+    enable-debug-sink: true
+    api-options:
+      allowExtendedSetOfOperationsForZeroLengthFsWindow: false
+      allowFromStartStatisticsForAnalysis: false
+      allowPartialStatisticsWindow: true
+
+    # A selector match rejects the message. Remove selectors to disable it.
+    # Supported combinators include match, ignore, any, all, and not.
+    selectors:
+      enforce-same-key-types: true
+      match:
+        - param: [133093, 133094, 133095, 133096, 133097, 133098]
+        - param: [152]
+          levtype: [ml]
+          levelist: [100000]
+        - param: [152]
+          levtype: [pl]
+
+  mars-to-grib:
+    verbosity: 0
+    enable-debug-sink: true
+    # testcases-dir is required when generate-testcases is true.
+    generate-testcases: false
+    testcases-dir: "./testcases"
+    # This section is forwarded unchanged to metkit Mars2Grib.
+    api-options:
+      saveErrorStack: false
+      errorStackPath: "./errors"
+      printErrorStackToStdErr: false
+
+  post-encode-validation:
+    verbosity: 0
+    enable-debug-sink: true
+
+  grib2fdb5:
+    verbosity: 0
+    # This also writes successful input messages to the debug sink.
+    enable-debug-sink: true
+
+# Main output sink. If omitted, a rank-local file sink is created.
+#sink:
+#  enabled: true
+#  type: file
+#  failOnError: true
+#  # Omit path for <output-directory>/output/rank<rank>.grib2.
+#  path: "./output.grib2"
+#  append: false
+#  per-server: false
+
+# FDB5 alternative for the main sink:
+# sink:
+#   enabled: true
+#   type: fdb5
+#   failOnError: true
+#   config:
+#     fdb_home: "./fdb"
+#     userConfig:
+#       useSubToc: true
+
+# One shared diagnostic sink receives inputs classified through expver.
+# A stage writes here only when its enable-debug-sink option is true.
+#debug-sink:
+#  enabled: true
+#  type: file
+#  failOnError: true
+#  # Omit path for <output-directory>/debug/rank<rank>.grib.
+#  path: "./debug.grib"
+#  append: false
+#  per-server: false
+#  # Reserved for metadata-only diagnostics; currently has no effect.
+#  strip-data: false
+
+sink:
+  enabled: true
+  type: fdb5
+  config:
+    # fdb_home: "/home/fdbsc"
+    fdb_home: "/lus/h1tcst01/mavm_temp_scratch_mtg2/fdb-mdst/"
+    userConfig:
+      useSubToc: true
+
+debug-sink:
+  enabled: true
+  type: fdb5
+  config:
+    # fdb_home: "/home/fdbsc"
+    fdb_home: "/lus/h1tcst01/mavm_temp_scratch_mtg2/fdb-mdst/"
+    userConfig:
+      useSubToc: true

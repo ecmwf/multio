@@ -8,13 +8,6 @@
  * nor does it submit to any jurisdiction.
  */
 
-/// @file
-/// @brief Throwaway isolation harness for `Grib2GribSinks`.
-///
-/// Reads GRIB messages from an input file and pushes them through a
-/// `Grib2GribSinks` constructed from the same options file used by the
-/// distributed tool, exercising the data sink, the testcase sink and flush.
-
 #include <string>
 
 #include "eckit/exception/Exceptions.h"
@@ -24,40 +17,36 @@
 
 #include "metkit/codes/api/CodesAPI.h"
 
-#include "multio/sink/DataSink.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/tools/grib2grib/CodesHandleToEckitMessage.h"
+#include "multio/tools/grib2grib/GlobalContext.h"
 #include "multio/tools/grib2grib/OptionsUtils.h"
+#include "multio/tools/grib2grib/ProcessOneMessage.h"
 #include "multio/tools/grib2grib/Sink.h"
+#include "multio/tools/grib2grib/StageOutcomes.h"
 #include "multio/tools/grib2grib/UnitOfWork.h"
 
 namespace multio::grib2grib {
 
-class Grib2GribSinkTest final : public multio::MultioTool {
+class ScalarGribToGrib final : public multio::MultioTool {
 public:
-    Grib2GribSinkTest(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    ScalarGribToGrib(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
         options_.push_back(new eckit::option::SimpleOption<std::string>("input-file", "Path to input GRIB file"));
         options_.push_back(
             new eckit::option::SimpleOption<std::string>("output-directory", "Path to output directory"));
-        options_.push_back(new eckit::option::SimpleOption<long>("rank", "Rank used for output filenames (default 0)"));
-        options_.push_back(new eckit::option::SimpleOption<std::string>(
-            "reader-mode", "Reader mode override: eccodes-stream or candidate-boundary"));
     }
 
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << "\nUsage: " << tool
                            << " --options-file <options.yaml> --input-file <input.grib>"
-                              " --output-directory <dir> [--rank <n>] [--reader-mode <mode>]\n";
+                              " --output-directory <path>\n";
     }
 
     void init(const eckit::option::CmdArgs& args) override {
         args.get("options-file", optionsFile_);
         args.get("input-file", inputFile_);
         args.get("output-directory", outputDirectory_);
-        args.get("rank", rank_);
-        args.get("reader-mode", readerModeOverride_);
 
         if (optionsFile_.empty()) {
             throw eckit::UserError("Missing required option --options-file", Here());
@@ -74,33 +63,33 @@ private:
         namespace g2g = multio::distGrib1ToGrib2::grib2grib;
 
         const auto rawOptions = g2g::parseOptionsYaml(g2g::readOptionsFileAsString(optionsFile_));
+        g2g::validateGlobalContext(rawOptions);
         auto context = g2g::parseGlobalContext(rawOptions);
-        if (!readerModeOverride_.empty()) {
-            context.reader.mode = g2g::parseWorkUnitReaderMode(readerModeOverride_);
-        }
+        g2g::Grib2GribSinks writer{rawOptions, outputDirectory_, 0, context.marsToGrib.generateTestcases,
+                                   context.marsToGrib.testcasesDir};
+        g2g::FileStageOutcomes outcomes;
+        outcomes.filename = inputFile_;
 
-        g2g::Grib2GribSinks sinks{rawOptions, outputDirectory_, static_cast<int>(rank_),
-                                  context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir};
+        g2g::UnitOfWork input{g2g::WorkUnit{inputFile_, 0, g2g::fileSizeBytes(inputFile_)}, context.reader.mode};
+        input.open();
+        outcomes.openFile.bump(g2g::OpenFileCode::Valid);
 
-        g2g::UnitOfWork unitOfWork{g2g::WorkUnit{inputFile_, 0, g2g::fileSizeBytes(inputFile_)}, context.reader.mode};
-        unitOfWork.open();
-        while (unitOfWork.newMessageAvailable()) {
-            const auto message = unitOfWork.nextMessage();
+        while (input.newMessageAvailable()) {
+            auto message = input.nextMessage();
             if (!message) {
                 break;
             }
 
-            if (auto* sink = sinks.mainDataSink()) {
-                sink->write(g2g::to_eckit_message(*message));
-            }
-
-            if (sinks.testCaseSink() != nullptr) {
-                sinks.testCaseSink()->write("grib2grib-sink-test synthetic testcase line\n");
-            }
+            outcomes.readMessage.bump(g2g::ReadMessageCode::Valid);
+            g2g::processOneMessage(*message, context, writer, outcomes);
         }
-        unitOfWork.close();
 
-        sinks.flush();
+        writer.flush();
+        outcomes.fileFlush.bump(g2g::FileFlushCode::Valid);
+        if (!input.close()) {
+            ++outcomes.nCloseFailures;
+        }
+        g2g::freeGlobalContext(context);
     }
 
     void finish(const eckit::option::CmdArgs&) override {}
@@ -112,13 +101,11 @@ private:
     std::string optionsFile_;
     std::string inputFile_;
     std::string outputDirectory_;
-    std::string readerModeOverride_;
-    long rank_ = 0;
 };
 
 }  // namespace multio::grib2grib
 
 int main(int argc, char** argv) {
-    multio::grib2grib::Grib2GribSinkTest tool(argc, argv);
+    multio::grib2grib::ScalarGribToGrib tool(argc, argv);
     return tool.start();
 }

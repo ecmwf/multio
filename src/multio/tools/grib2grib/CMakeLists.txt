@@ -35,6 +35,8 @@ ecbuild_add_library(
         ProcessRankOwnedUnitsOfWork.h
         stages/GribBasedFilter.cc
         stages/GribBasedFilter.h
+        stages/Hacks.cc
+        stages/Hacks.h
         stages/GribToMars.cc
         stages/GribToMars.h
         stages/MarsToMars.cc
@@ -115,6 +117,24 @@ ecbuild_add_executable(
 ecbuild_add_executable(
 
     TARGET
+        classify-mars2grib-testcases
+
+    CONDITION
+        HAVE_GRIB1_TO_GRIB2
+
+    SOURCES
+        classify-mars2grib-testcases.cc
+
+    NO_AS_NEEDED
+
+    LIBS
+        multio-grib2grib
+)
+
+
+ecbuild_add_executable(
+
+    TARGET
         grib2grib-data-distribution-test
 
     CONDITION
@@ -163,4 +183,22 @@ ecbuild_add_executable(
 
     LIBS
         multio-grib2grib-mpi
+)
+
+
+ecbuild_add_executable(
+
+    TARGET
+        scalar-grib-to-grib
+
+    CONDITION
+        HAVE_GRIB1_TO_GRIB2
+
+    SOURCES
+        scalar-grib-to-grib.cc
+
+    NO_AS_NEEDED
+
+    LIBS
+        multio-grib2grib
 )

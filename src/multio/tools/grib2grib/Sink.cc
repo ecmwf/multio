@@ -13,12 +13,11 @@
 ///
 /// This file owns all rank-local sink construction for the new pipeline:
 /// - the main accepted-output sink built from top-level `sink`
-/// - optional per-stage debug sinks built from top-level `debug-sinks`
+/// - one optional debug sink built from top-level `debug-sink`
 /// - the optional append-only testcase text sink used by `MarsToGrib`
 ///
 /// Debug sinks deliberately reuse the exact same sink grammar as the main sink.
-/// The only additional policy is the stage-key dispatch done inside
-/// `Grib2GribSinks`.
+/// Diagnostic messages are relabelled by stage before they are written.
 
 #include "multio/tools/grib2grib/Sink.h"
 
@@ -27,6 +26,9 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/runtime/Main.h"
+
+#include "metkit/codes/api/CodesAPI.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/MultioConfiguration.h"
@@ -38,40 +40,101 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 
 namespace {
 
-std::string testCaseFilePath(const std::string& directory, std::int64_t mpiRank) {
-    eckit::PathName dir{directory};
-    return (dir / ("mars2grib-testcases." + std::to_string(mpiRank) + ".json")).asString();
+std::string debugRankOutputPath(const std::string& outputDirectory, int rank) {
+    return outputDirectory + "/debug/rank" + std::to_string(rank) + ".grib";
 }
 
-std::string debugRankOutputPath(const std::string& outputDirectory, const std::string& stageKey, int rank) {
-    return outputDirectory + "/debug/" + stageKey + "/rank" + std::to_string(rank) + ".grib";
-}
-
-const char* debugStageKey(ProcessingStage stage) {
+// Diagnostic expver uses 3SRR: S is the one-based message stage and RR is
+// 01-49 for rejection, 51-98 for known failure, or 99 for unknown failure.
+const char* debugExpver(ProcessingStage stage, std::uint8_t outcome) {
     switch (stage) {
         case ProcessingStage::GribBasedFilter:
-            return "grib-based-filter";
+            switch (static_cast<GribBasedFilterCode>(outcome)) {
+                case GribBasedFilterCode::RejectedDiscipline192:
+                    return "3101";
+                case GribBasedFilterCode::RejectedGrib1ByEditionPolicy:
+                    return "3102";
+                case GribBasedFilterCode::RejectedGrib2ByEditionPolicy:
+                    return "3103";
+                case GribBasedFilterCode::RejectedInvalidInputMessage:
+                    return "3104";
+                case GribBasedFilterCode::FailedGribBasedFilter:
+                    return "3151";
+                default:
+                    return nullptr;
+            }
         case ProcessingStage::GribToMars:
-            return "grib-to-mars";
+            switch (static_cast<GribToMarsCode>(outcome)) {
+                case GribToMarsCode::MapGribToMarsFailed:
+                    return "3251";
+                case GribToMarsCode::ValuesExtractionFailed:
+                    return "3252";
+                case GribToMarsCode::UnknownFailure:
+                    return "3299";
+                default:
+                    return nullptr;
+            }
         case ProcessingStage::MarsToMars:
-            return "mars-to-mars";
+            switch (static_cast<MarsToMarsCode>(outcome)) {
+                case MarsToMarsCode::MappingsFailed:
+                    return "3351";
+                case MarsToMarsCode::MarsDefaultsFailed:
+                    return "3353";
+                case MarsToMarsCode::MarsValidationFailed:
+                    return "3354";
+                case MarsToMarsCode::MiscDefaultsFailed:
+                    return "3355";
+                case MarsToMarsCode::MiscValidationFailed:
+                    return "3356";
+                case MarsToMarsCode::UnknownFailure:
+                    return "3399";
+                default:
+                    return nullptr;
+            }
         case ProcessingStage::MarsOverrides:
-            return "overrides";
+            switch (static_cast<MarsOverridesCode>(outcome)) {
+                case MarsOverridesCode::OptionOverridesFailed:
+                    return "3451";
+                case MarsOverridesCode::UnknownFailure:
+                    return "3499";
+                default:
+                    return nullptr;
+            }
         case ProcessingStage::MarsBasedFilter:
-            return "mars-based-filter";
+            return static_cast<MarsBasedFilterCode>(outcome) == MarsBasedFilterCode::Rejected ? "3501" : nullptr;
         case ProcessingStage::MarsToGrib:
-            return "mars-to-grib";
+            switch (static_cast<MarsToGribCode>(outcome)) {
+                case MarsToGribCode::EncodeFailed:
+                    return "3651";
+                case MarsToGribCode::TestCaseGenerationFailed:
+                    return "3652";
+                case MarsToGribCode::TestCaseWriteFailed:
+                    return "3653";
+                case MarsToGribCode::UnknownFailure:
+                    return "3699";
+                default:
+                    return nullptr;
+            }
         case ProcessingStage::PostEncodeValidation:
-            return "post-encode-validation";
+            return static_cast<PostEncodeValidationCode>(outcome) == PostEncodeValidationCode::InvalidEncodedMessage
+                     ? "3751"
+                     : nullptr;
         case ProcessingStage::Grib2Fdb5:
-            return "grib2fdb5";
+            switch (static_cast<Grib2Fdb5Code>(outcome)) {
+                case Grib2Fdb5Code::ArchiveFailed:
+                    return "3851";
+                case Grib2Fdb5Code::UnknownFailure:
+                    return "3899";
+                default:
+                    return nullptr;
+            }
         default:
             return nullptr;
     }
 }
 
-std::size_t debugStageIndex(ProcessingStage stage) {
-    return static_cast<std::size_t>(stage);
+void stripDebugData(metkit::codes::CodesHandle&) {
+    // Reserved for metadata-only diagnostic messages.
 }
 
 eckit::LocalConfiguration sinkConfigurationWithDefaults(eckit::LocalConfiguration sinkConf,
@@ -119,12 +182,20 @@ eckit::LocalConfiguration sinkConfigurationForRank(const eckit::LocalConfigurati
 
 std::unique_ptr<multio::sink::DataSink> buildSink(const eckit::LocalConfiguration& options,
                                                   const std::string& outputDirectory, int rank) {
+    if (options.has("sink")) {
+        const auto sinkConf = options.getSubConfiguration("sink");
+        if (sinkConf.has("enabled") && !sinkConf.getBool("enabled")) {
+            return nullptr;
+        }
+    }
     return buildSinkFromConfiguration(sinkConfigurationForRank(options, outputDirectory, rank), rank);
 }
 
 TestCaseFileSink::TestCaseFileSink(const std::string& directory, std::int64_t mpiRank) {
-    const auto filePath = testCaseFilePath(directory, mpiRank);
-    file_ = std::fopen(filePath.c_str(), "a");
+    const eckit::PathName outputDirectory = eckit::PathName{directory} / eckit::Main::hostname();
+    outputDirectory.mkdir();
+    const eckit::PathName filePath = outputDirectory / ("file." + std::to_string(mpiRank) + ".jsonl");
+    file_ = std::fopen(filePath.asString().c_str(), "a");
     if (file_ == nullptr) {
         throw eckit::CantOpenFile(filePath, Here());
     }
@@ -152,31 +223,26 @@ void TestCaseFileSink::flush() {
 
 Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
                                bool generateTestcases, const std::optional<std::string>& testcasesDirectory) {
-    sinks_.push_back(buildSink(options, outputDirectory, rank));
+    if (auto sink = buildSink(options, outputDirectory, rank)) {
+        sinks_.push_back(std::move(sink));
+    }
 
-    if (options.has("debug-sinks")) {
-        if (!options.isSubConfiguration("debug-sinks")) {
-            throw eckit::BadValue("debug-sinks must be a configuration section", Here());
+    if (options.has("debug-sink")) {
+        if (!options.isSubConfiguration("debug-sink")) {
+            throw eckit::BadValue("debug-sink must be a configuration section", Here());
         }
 
-        const eckit::LocalConfiguration debugSinksConf = options.getSubConfiguration("debug-sinks");
-        for (ProcessingStage stage :
-             {ProcessingStage::GribBasedFilter, ProcessingStage::GribToMars, ProcessingStage::MarsToMars,
-              ProcessingStage::MarsOverrides, ProcessingStage::MarsBasedFilter, ProcessingStage::MarsToGrib,
-              ProcessingStage::PostEncodeValidation, ProcessingStage::Grib2Fdb5}) {
-            const char* stageKey = debugStageKey(stage);
-            if (stageKey == nullptr || !debugSinksConf.has(stageKey)) {
-                continue;
+        eckit::LocalConfiguration debugSinkConf = options.getSubConfiguration("debug-sink");
+        stripDebugData_ = debugSinkConf.has("strip-data") ? debugSinkConf.getBool("strip-data") : false;
+        if (!debugSinkConf.has("enabled") || debugSinkConf.getBool("enabled")) {
+            try {
+                debugSinkConf = sinkConfigurationWithDefaults(std::move(debugSinkConf),
+                                                              debugRankOutputPath(outputDirectory, rank));
+                debugSink_ = buildSinkFromConfiguration(std::move(debugSinkConf), rank);
             }
-
-            if (!debugSinksConf.isSubConfiguration(stageKey)) {
-                throw eckit::BadValue(std::string("debug-sinks.") + stageKey + " must be a configuration section",
-                                      Here());
+            catch (...) {
+                // Debug output must never prevent the conversion from starting.
             }
-
-            const eckit::LocalConfiguration stageSinkConf = sinkConfigurationWithDefaults(
-                debugSinksConf.getSubConfiguration(stageKey), debugRankOutputPath(outputDirectory, stageKey, rank));
-            debugSinks_[debugStageIndex(stage)] = buildSinkFromConfiguration(stageSinkConf, rank);
         }
     }
 
@@ -190,25 +256,44 @@ Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const s
 
 Grib2GribSinks::~Grib2GribSinks() = default;
 
-multio::sink::DataSink& Grib2GribSinks::mainDataSink() {
-    return *sinks_[0];
+multio::sink::DataSink* Grib2GribSinks::mainDataSink() {
+    return sinks_.empty() ? nullptr : sinks_[0].get();
 }
 
 TestCaseFileSink* Grib2GribSinks::testCaseSink() {
     return testCaseSink_.get();
 }
 
-void Grib2GribSinks::debugStageInput(ProcessingStage stage, const metkit::codes::CodesHandle& inputHandle) noexcept {
-    const std::size_t index = debugStageIndex(stage);
-    if (index >= debugSinks_.size() || !debugSinks_[index]) {
+void Grib2GribSinks::debugStageInputCode(ProcessingStage stage, std::uint8_t outcome,
+                                         const metkit::codes::CodesHandle& inputHandle) noexcept {
+    const char* expver = debugExpver(stage, outcome);
+    if (expver == nullptr) {
+        return;
+    }
+
+    writeDebugInput(inputHandle, expver);
+}
+
+void Grib2GribSinks::debugSuccessfulInput(const metkit::codes::CodesHandle& inputHandle) noexcept {
+    writeDebugInput(inputHandle, "2251");
+}
+
+void Grib2GribSinks::writeDebugInput(const metkit::codes::CodesHandle& inputHandle,
+                                     const std::string& expver) noexcept {
+    if (!debugSink_) {
         return;
     }
 
     try {
-        debugSinks_[index]->write(to_eckit_message(inputHandle));
+        auto diagnosticInput = inputHandle.clone();
+        diagnosticInput->set("expver", expver);
+        if (stripDebugData_) {
+            stripDebugData(*diagnosticInput);
+        }
+        debugSink_->write(to_eckit_message(*diagnosticInput));
     }
     catch (...) {
-        printTrappedErrorDisclaimer();
+        // Debug output must never affect processing or classification.
     }
 }
 
@@ -216,9 +301,12 @@ void Grib2GribSinks::flush() {
     for (const auto& sink : sinks_) {
         sink->flush();
     }
-    for (const auto& sink : debugSinks_) {
-        if (sink) {
-            sink->flush();
+    if (debugSink_) {
+        try {
+            debugSink_->flush();
+        }
+        catch (...) {
+            // Debug output must never affect processing or classification.
         }
     }
     if (testCaseSink_ != nullptr) {

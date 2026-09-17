@@ -39,6 +39,7 @@ class TestCaseFileSink;
 /// default constructors.
 struct MarsToGribContext {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
     bool generateTestcases = false;
     std::optional<std::string> testcasesDir;
     std::optional<eckit::LocalConfiguration> apiOptions;

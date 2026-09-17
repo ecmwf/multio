@@ -25,12 +25,16 @@ void validateGrib2Fdb5Context(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 }
 
 Grib2Fdb5Context parseGrib2Fdb5Context(const eckit::LocalConfiguration& config) {
     Grib2Fdb5Context parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }
@@ -46,13 +50,18 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept {
 }
 
 Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
-                                  multio::sink::DataSink& writer) noexcept {
+                                  multio::sink::DataSink* writer) noexcept {
     Grib2Fdb5Result result;
 
     (void)context;
 
+    if (writer == nullptr) {
+        result.outcome = Grib2Fdb5Code::Valid;
+        return result;
+    }
+
     try {
-        writer.write(to_eckit_message(encodedHandle));
+        writer->write(to_eckit_message(encodedHandle));
     }
     catch (...) {
         printTrappedErrorDisclaimer();

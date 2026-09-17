@@ -166,6 +166,23 @@ bool rejectFromStartStatisticsForAnalysis(const eckit::LocalConfiguration& mars,
     return timespan == "fs" || timespan == "from-start" || timespan == "fromstart";
 }
 
+bool reject152pl(const eckit::LocalConfiguration& mars, const MarsBasedFilterContext& context) {
+
+    bool hasParam = mars.has("param");
+    bool hasLevtype = mars.has("levtype");
+    bool hasLevelist = mars.has("levelist");
+
+    if (!hasParam || !hasLevtype || !hasLevelist) {
+        return false;
+    }
+
+    long param = mars.getLong("param");
+    std::string levtype = mars.getString("levtype");
+    long levelist = mars.getLong("levelist");
+
+    return param == 152 && levtype == "pl" && levelist == 1000;
+}
+
 bool rejectPartialStatisticsWindow(const eckit::LocalConfiguration& mars, const MarsBasedFilterContext& context) {
     if (context.allowPartialStatisticsWindow || !mars.has("type") || !mars.has("step") || !mars.has("timespan")) {
         return false;
@@ -258,6 +275,9 @@ void validateMarsBasedFilterContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 
     (void)parseApiOption(config, "allowExtendedSetOfOperationsForZeroLengthFsWindow");
     (void)parseApiOption(config, "allowFromStartStatisticsForAnalysis");
@@ -269,6 +289,7 @@ MarsBasedFilterContext parseMarsBasedFilterContext(const eckit::LocalConfigurati
     MarsBasedFilterContext parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }

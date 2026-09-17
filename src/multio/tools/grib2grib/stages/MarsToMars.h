@@ -25,6 +25,7 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @brief Parsed context consumed by the standalone `MarsToMars` stage.
 struct MarsToMarsContext {
     std::int64_t verbosity = 0;
+    bool enableDebugSink = false;
     std::optional<eckit::LocalConfiguration> apiOptions;
 };
 

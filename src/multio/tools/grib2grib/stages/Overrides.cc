@@ -178,6 +178,9 @@ void validateOverridesContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 }
 
 /// @brief Parse the stage-local `Overrides` options once for reuse.
@@ -222,6 +225,7 @@ OverridesContext parseOverridesContext(const eckit::LocalConfiguration& config) 
     }
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }

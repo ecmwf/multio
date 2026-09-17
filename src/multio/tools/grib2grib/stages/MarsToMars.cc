@@ -42,6 +42,9 @@ void validateMarsToMarsContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
         (void)config.getLong("verbosity");
     }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
 
     (void)parseMars2MarsApiOptions(config);
 }
@@ -50,6 +53,7 @@ MarsToMarsContext parseMarsToMarsContext(const eckit::LocalConfiguration& config
     MarsToMarsContext parsed;
 
     parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
     if (parsed.verbosity < 0) {
         parsed.verbosity = 0;
     }

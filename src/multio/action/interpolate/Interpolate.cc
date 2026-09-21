@@ -24,7 +24,7 @@
 #include "eckit/parser/YAMLParser.h"
 #include "eckit/types/Fraction.h"
 
-#include "metkit/mars/MarsLanguage.h"
+#include "metkit/config/LibMetkit.h"
 
 #include "mir/api/MIRJob.h"
 #include "mir/input/RawInput.h"
@@ -300,7 +300,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
 
     static const struct PostProcKeys : std::vector<std::string> {
         PostProcKeys() {
-            const auto yaml = eckit::YAMLParser::decodeFile(metkit::mars::MarsLanguage::languageYamlFile());
+            const auto yaml = eckit::YAMLParser::decodeFile(metkit::LibMetkit::languageYamlFile());
             for (const auto& key : yaml["_postproc"].keys().as<eckit::ValueList>()) {
                 emplace_back(key.as<std::string>());
             }

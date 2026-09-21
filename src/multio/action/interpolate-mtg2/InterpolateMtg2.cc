@@ -12,20 +12,12 @@
 
 #include "multio/action/interpolate-mtg2/InterpolateMtg2.h"
 
-#include <algorithm>
-#include <array>
-#include <iomanip>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
-#include "eckit/parser/YAMLParser.h"
-#include "eckit/types/Fraction.h"
-
-#include "metkit/mars/MarsLanguage.h"
 
 #include "mir/api/MIRJob.h"
 #include "mir/input/RawInput.h"
@@ -33,7 +25,6 @@
 #include "mir/param/GridSpecParametrisation.h"
 #include "mir/param/RuntimeParametrisation.h"
 #include "mir/param/SimpleParametrisation.h"
-#include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
 #include "multio/datamod/ContainerInterop.h"

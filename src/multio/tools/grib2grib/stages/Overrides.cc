@@ -130,6 +130,13 @@ void applyExpverOverride(eckit::LocalConfiguration& mars, const OverridesContext
     }
 }
 
+/// @brief Drop `typeOfEnsembleForecast` so that mars2grib will deduce it from the MARS keys
+void dropInputEnsembleType(eckit::LocalConfiguration& misc) {
+    if (misc.has("typeOfEnsembleForecast")) {
+        misc.remove("typeOfEnsembleForecast");
+    }
+}
+
 }  // namespace implementation
 
 /// @brief Convert a packing policy to a stable string representation.
@@ -258,6 +265,7 @@ OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const ec
         implementation::applyGeneratingProcessIdentifierOverride(result.misc, context);
         implementation::applyEnsembleSizeOverride(result.misc, context);
         implementation::applyAnalysisWindowLengthInHoursOverride(result.misc, context);
+        implementation::dropInputEnsembleType(result.misc);
         implementation::applyControlForecastOverride(result.mars, result.misc, context);
         implementation::applyExpverOverride(result.mars, context);
 

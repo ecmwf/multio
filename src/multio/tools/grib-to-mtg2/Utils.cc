@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Small generic utilities shared by the new isolated `grib2grib` pipeline.
+/// @brief Small generic utilities shared by the new isolated `grib-to-mtg2` pipeline.
 
 #include "multio/tools/grib-to-mtg2/Utils.h"
 

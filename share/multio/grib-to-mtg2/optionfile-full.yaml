@@ -1,4 +1,4 @@
-# Full grib2grib configuration reference.
+# Full grib-to-mtg2 configuration reference.
 # Values below form a usable baseline; comments document alternatives.
 
 reader:
@@ -27,7 +27,7 @@ stages:
     verbosity: 0
     enable-debug-sink: true
     # This section is forwarded to metkit Grib2Mars. The options below are
-    # those currently used by the grib2grib reference configurations.
+    # those currently used by the grib-to-mtg2 reference configurations.
     api-options:
       tryFixBadInput_ZeroAccumulation: true
       tryFixBadInput_RemoveStepRangeForStrikeProbability: true

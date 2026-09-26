@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Draft override stage for the isolated `grib2grib` pipeline.
+/// @brief Draft override stage for the isolated `grib-to-mtg2` pipeline.
 ///
 /// This stage operates only on the post-`MarsToMars` `mars` and `misc`
 /// dictionaries. It does not access the input GRIB message.
@@ -29,7 +29,7 @@ namespace multio::grib_to_mtg2 {
 /// @brief Packing override policy.
 ///
 /// `Ccsds` applies the frozen mapping used in `grib2MarsMisc`.
-/// `Simple` applies the separate mapping used in `grib1-to-grib2`.
+/// `Simple` applies the separate mapping used in the metkit `grib-to-mtg2` tool.
 enum class PackingPolicy : std::uint8_t
 {
     Ccsds = 0,

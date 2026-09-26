@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Options and context utilities for `grib2grib`.
+/// @brief Options and context utilities for `grib-to-mtg2`.
 
 #pragma once
 

@@ -95,7 +95,7 @@ private:
             }
 
             if (sinks.testCaseSink() != nullptr) {
-                sinks.testCaseSink()->write("grib2grib-sink-test synthetic testcase line\n");
+                sinks.testCaseSink()->write("grib-to-mtg2-sink-test synthetic testcase line\n");
             }
         }
         unitOfWork.close();

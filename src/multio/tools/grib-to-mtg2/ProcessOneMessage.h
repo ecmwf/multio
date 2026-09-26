@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Flat `ProcessOneMessage` orchestration for the isolated `grib2grib` pipeline.
+/// @brief Flat `ProcessOneMessage` orchestration for the isolated `grib-to-mtg2` pipeline.
 
 #pragma once
 

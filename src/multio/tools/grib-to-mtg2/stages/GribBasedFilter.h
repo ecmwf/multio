@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief GRIB-based filtering stage for the new isolated `grib2grib` pipeline.
+/// @brief GRIB-based filtering stage for the new isolated `grib-to-mtg2` pipeline.
 ///
 /// This stage performs the earliest intentional message rejections. It operates
 /// on a read-only `metkit::codes::CodesHandle` and is designed to stay small and

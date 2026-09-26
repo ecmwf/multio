@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Standalone `MarsToMars` stage for the isolated `grib2grib` pipeline.
+/// @brief Standalone `MarsToMars` stage for the isolated `grib-to-mtg2` pipeline.
 
 #pragma once
 

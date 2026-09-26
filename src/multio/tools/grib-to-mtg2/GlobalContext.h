@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Aggregated stage context for the isolated `grib2grib` pipeline.
+/// @brief Aggregated stage context for the isolated `grib-to-mtg2` pipeline.
 
 #pragma once
 
@@ -27,7 +27,7 @@
 
 namespace multio::grib_to_mtg2 {
 
-/// @brief Immutable configuration-derived context for the full `grib2grib` pipeline.
+/// @brief Immutable configuration-derived context for the full `grib-to-mtg2` pipeline.
 ///
 /// `GlobalContext` is the single runtime bundle produced from the strict YAML
 /// schema rooted at `reader` and `stages`. It contains only parsed configuration
@@ -45,12 +45,12 @@ struct GlobalContext {
     Grib2Fdb5Context grib2Fdb5;
 };
 
-/// @brief Validate the strict `grib2grib` YAML configuration.
+/// @brief Validate the strict `grib-to-mtg2` YAML configuration.
 /// @param config Parsed root configuration.
 /// @throw eckit::BadValue If required sections are missing or malformed.
 void validateGlobalContext(const eckit::LocalConfiguration& config);
 
-/// @brief Parse the strict `grib2grib` YAML configuration into stage contexts.
+/// @brief Parse the strict `grib-to-mtg2` YAML configuration into stage contexts.
 /// @param config Parsed root configuration.
 /// @return Fully materialized immutable stage contexts.
 GlobalContext parseGlobalContext(const eckit::LocalConfiguration& config);

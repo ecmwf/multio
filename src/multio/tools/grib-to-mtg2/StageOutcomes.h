@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Stage-level outcome model for the new isolated `grib2grib` pipeline.
+/// @brief Stage-level outcome model for the new isolated `grib-to-mtg2` pipeline.
 ///
 /// This header defines the complete accounting vocabulary for the new pipeline:
 /// - the ordered stages

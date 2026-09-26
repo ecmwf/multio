@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Standalone `MarsToMars` stage implementation for the isolated `grib2grib` pipeline.
+/// @brief Standalone `MarsToMars` stage implementation for the isolated `grib-to-mtg2` pipeline.
 
 #include "multio/tools/grib-to-mtg2/stages/MarsToMars.h"
 

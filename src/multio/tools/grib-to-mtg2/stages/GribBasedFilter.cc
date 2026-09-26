@@ -10,7 +10,7 @@
 
 /// @file
 /// @brief Implementation of the coarse-grain classifier for the isolated
-///        `grib2grib` pipeline.
+///        `grib-to-mtg2` pipeline.
 ///
 /// This file contains the first intentional message-rejection stage of the new
 /// pipeline. The stage is deliberately kept flat and readable: explicit helper

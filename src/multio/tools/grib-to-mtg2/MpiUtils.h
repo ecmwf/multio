@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief MPI wrapper helpers for `grib2grib`.
+/// @brief MPI wrapper helpers for `grib-to-mtg2`.
 
 #pragma once
 

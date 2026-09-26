@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Small generic utilities shared by the new isolated `grib2grib` pipeline.
+/// @brief Small generic utilities shared by the new isolated `grib-to-mtg2` pipeline.
 ///
 /// This header intentionally stays small. Its purpose is to provide only the
 /// generic option-policy datatype and a few generic parsing helpers that can be

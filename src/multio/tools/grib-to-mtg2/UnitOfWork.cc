@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Work-unit abstraction implementation for chunk-based MPI orchestration in `grib2grib`.
+/// @brief Work-unit abstraction implementation for chunk-based MPI orchestration in `grib-to-mtg2`.
 ///
 /// This implementation owns the runtime consequences of the message-start
 /// ownership rule:

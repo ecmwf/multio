@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Reader-mode configuration for `grib2grib` work-unit iteration.
+/// @brief Reader-mode configuration for `grib-to-mtg2` work-unit iteration.
 
 #pragma once
 

@@ -1,4 +1,4 @@
-# Minimal example for the scalar grib2grib options parser tool.
+# Minimal example for the scalar grib-to-mtg2 options parser tool.
 verbosity: 0
 
 grib1-messages-policy: try-to-handle

@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Standalone `Grib2Fdb5` stage implementation for the isolated `grib2grib` pipeline.
+/// @brief Standalone `Grib2Fdb5` stage implementation for the isolated `grib-to-mtg2` pipeline.
 
 #include "multio/tools/grib-to-mtg2/stages/Grib2Fdb5.h"
 

@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Flat `ProcessOneMessage` orchestration for the isolated `grib2grib` pipeline.
+/// @brief Flat `ProcessOneMessage` orchestration for the isolated `grib-to-mtg2` pipeline.
 ///
 /// This file contains the stage-by-stage message pipeline for one already
 /// decoded input GRIB message. The control flow is intentionally explicit:

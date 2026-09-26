@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief MPI-dependent options utilities for `grib2grib`.
+/// @brief MPI-dependent options utilities for `grib-to-mtg2`.
 
 #include "multio/tools/grib-to-mtg2/OptionsUtils.h"
 

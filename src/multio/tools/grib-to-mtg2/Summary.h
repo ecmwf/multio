@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Root-side summary utilities for `grib2grib` outcomes.
+/// @brief Root-side summary utilities for `grib-to-mtg2` outcomes.
 
 #pragma once
 

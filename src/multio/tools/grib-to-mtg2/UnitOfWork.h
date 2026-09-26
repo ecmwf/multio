@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Work-unit abstraction for chunk-based MPI orchestration in `grib2grib`.
+/// @brief Work-unit abstraction for chunk-based MPI orchestration in `grib-to-mtg2`.
 
 #pragma once
 

@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Standalone `MarsBasedFilter` stage implementation for the isolated `grib2grib` pipeline.
+/// @brief Standalone `MarsBasedFilter` stage implementation for the isolated `grib-to-mtg2` pipeline.
 
 #include "multio/tools/grib-to-mtg2/stages/MarsBasedFilter.h"
 

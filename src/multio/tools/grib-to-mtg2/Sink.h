@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Local sink initialization utilities for the distributed `grib2grib` tool.
+/// @brief Local sink initialization utilities for the distributed `grib-to-mtg2` tool.
 
 #pragma once
 
@@ -66,7 +66,7 @@ private:
     std::FILE* file_ = nullptr;
 };
 
-/// @brief Rank-local sinks used by the distributed `grib2grib` pipeline.
+/// @brief Rank-local sinks used by the distributed `grib-to-mtg2` pipeline.
 ///
 /// Owns:
 /// - the main accepted-output sink;

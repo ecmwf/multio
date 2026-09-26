@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief MPI-free bucket creation utilities for `grib2grib` work units.
+/// @brief MPI-free bucket creation utilities for `grib-to-mtg2` work units.
 
 #pragma once
 

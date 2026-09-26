@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Aggregated stage context implementation for the isolated `grib2grib` pipeline.
+/// @brief Aggregated stage context implementation for the isolated `grib-to-mtg2` pipeline.
 ///
 /// The strict root schema currently consists of:
 /// - required top-level `reader`

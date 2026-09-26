@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Local sink initialization utilities for the distributed `grib2grib` tool.
+/// @brief Local sink initialization utilities for the distributed `grib-to-mtg2` tool.
 ///
 /// This file owns all rank-local sink construction for the new pipeline:
 /// - the main accepted-output sink built from top-level `sink`

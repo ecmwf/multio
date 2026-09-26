@@ -9,7 +9,7 @@
  */
 
 /// @file
-/// @brief Tool-level orchestration helpers for the distributed `grib2grib` tool.
+/// @brief Tool-level orchestration helpers for the distributed `grib-to-mtg2` tool.
 
 #include "multio/tools/grib-to-mtg2/MultioToolUtils.h"
 

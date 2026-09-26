@@ -19,11 +19,11 @@
 #include "multio/tools/grib-to-mtg2/GlobalContext.h"
 #include "multio/tools/grib-to-mtg2/OptionsUtils.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
-class Grib2GribOptionsParser final : public multio::MultioTool {
+class GribToMtg2OptionsParser final : public multio::MultioTool {
 public:
-    Grib2GribOptionsParser(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    GribToMtg2OptionsParser(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
     }
 
@@ -41,12 +41,12 @@ private:
     }
 
     void execute(const eckit::option::CmdArgs&) override {
-        const auto payload = multio::distGrib1ToGrib2::grib2grib::readOptionsFileAsString(optionsFile_);
-        const auto rawOptions = multio::distGrib1ToGrib2::grib2grib::parseOptionsYaml(payload);
+        const auto payload = multio::grib_to_mtg2::readOptionsFileAsString(optionsFile_);
+        const auto rawOptions = multio::grib_to_mtg2::parseOptionsYaml(payload);
 
-        multio::distGrib1ToGrib2::grib2grib::validateGlobalContext(rawOptions);
-        auto context = multio::distGrib1ToGrib2::grib2grib::parseGlobalContext(rawOptions);
-        multio::distGrib1ToGrib2::grib2grib::freeGlobalContext(context);
+        multio::grib_to_mtg2::validateGlobalContext(rawOptions);
+        auto context = multio::grib_to_mtg2::parseGlobalContext(rawOptions);
+        multio::grib_to_mtg2::freeGlobalContext(context);
     }
 
     void finish(const eckit::option::CmdArgs&) override {}
@@ -58,9 +58,9 @@ private:
     std::string optionsFile_;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::Grib2GribOptionsParser tool(argc, argv);
+    multio::grib_to_mtg2::GribToMtg2OptionsParser tool(argc, argv);
     return tool.start();
 }

@@ -27,7 +27,7 @@ namespace multio::sink {
 class DataSink;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed runtime context for the standalone `Grib2Fdb5` stage.
 struct Grib2Fdb5Context {
@@ -60,4 +60,4 @@ void freeGrib2Fdb5Context(Grib2Fdb5Context& context) noexcept;
 Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandle, const Grib2Fdb5Context& context,
                                   multio::sink::DataSink* writer) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

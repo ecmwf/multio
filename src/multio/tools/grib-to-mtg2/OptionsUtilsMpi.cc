@@ -17,7 +17,7 @@
 
 #include "multio/tools/grib-to-mtg2/MpiUtils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::string& yamlFile,
                                                                  const eckit::mpi::Comm& comm) {
@@ -26,4 +26,4 @@ eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::stri
     return parseOptionsYaml(payload);
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

@@ -24,7 +24,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed context consumed by the standalone `PostEncodeValidation` stage.
 struct PostEncodeValidationContext {
@@ -51,4 +51,4 @@ void freePostEncodeValidationContext(PostEncodeValidationContext& context) noexc
 PostEncodeValidationCode runPostEncodeValidationStage(const metkit::codes::CodesHandle& encodedHandle,
                                                       const PostEncodeValidationContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

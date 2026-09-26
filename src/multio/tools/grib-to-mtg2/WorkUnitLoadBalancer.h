@@ -20,7 +20,7 @@
 
 #include "multio/tools/grib-to-mtg2/UnitOfWork.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Load-balanced assignment of work units to one synthetic or real worker.
 ///
@@ -52,4 +52,4 @@ std::vector<char> serializeWorkBucket(const WorkBucket& bucket);
 /// @throw std::runtime_error If the payload is truncated or inconsistent.
 WorkBucket deserializeWorkBucket(const std::vector<char>& payload);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

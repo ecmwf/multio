@@ -21,7 +21,7 @@
 
 #include "multio/message/Metadata.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -337,4 +337,4 @@ MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mar
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

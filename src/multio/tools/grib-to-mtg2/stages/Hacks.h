@@ -21,7 +21,7 @@ namespace multio::sink {
 class DataSink;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Run temporary diagnostics before the encoded output is sunk.
 ///
@@ -29,4 +29,4 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 void runHacksStage(multio::sink::DataSink* sink, const metkit::codes::CodesHandle& inputGribMessage,
                    const metkit::codes::CodesHandle& outputGribMessage) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

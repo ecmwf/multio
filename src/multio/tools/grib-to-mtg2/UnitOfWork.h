@@ -25,7 +25,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Half-open byte range assigned to one worker for one input file.
 ///
@@ -143,4 +143,4 @@ private:
     bool isOpen_ = false;
 };
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

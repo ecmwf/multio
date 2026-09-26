@@ -17,11 +17,11 @@
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 #include "multio/tools/grib-to-mtg2/UnitOfWork.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
-class Grib2GribSinks;
+class GribToMtg2Sinks;
 
 FileStageOutcomes processOneUnitOfWork(UnitOfWork& unitOfWork, const GlobalContext& context,
-                                       Grib2GribSinks& writer) noexcept;
+                                       GribToMtg2Sinks& writer) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

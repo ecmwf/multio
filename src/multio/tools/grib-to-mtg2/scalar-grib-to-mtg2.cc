@@ -25,7 +25,7 @@
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 #include "multio/tools/grib-to-mtg2/UnitOfWork.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 class ScalarGribToMtg2 final : public multio::MultioTool {
 public:
@@ -60,13 +60,13 @@ private:
     }
 
     void execute(const eckit::option::CmdArgs&) override {
-        namespace g2g = multio::distGrib1ToGrib2::grib2grib;
+        namespace g2g = multio::grib_to_mtg2;
 
         const auto rawOptions = g2g::parseOptionsYaml(g2g::readOptionsFileAsString(optionsFile_));
         g2g::validateGlobalContext(rawOptions);
         auto context = g2g::parseGlobalContext(rawOptions);
-        g2g::Grib2GribSinks writer{rawOptions, outputDirectory_, 0, context.marsToGrib.generateTestcases,
-                                   context.marsToGrib.testcasesDir};
+        g2g::GribToMtg2Sinks writer{rawOptions, outputDirectory_, 0, context.marsToGrib.generateTestcases,
+                                    context.marsToGrib.testcasesDir};
         g2g::FileStageOutcomes outcomes;
         outcomes.filename = inputFile_;
 
@@ -103,9 +103,9 @@ private:
     std::string outputDirectory_;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::ScalarGribToMtg2 tool(argc, argv);
+    multio::grib_to_mtg2::ScalarGribToMtg2 tool(argc, argv);
     return tool.start();
 }

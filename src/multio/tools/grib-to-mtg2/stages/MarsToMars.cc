@@ -20,7 +20,7 @@
 
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -94,4 +94,4 @@ MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const
     return result;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

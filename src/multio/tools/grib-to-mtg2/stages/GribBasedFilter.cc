@@ -27,7 +27,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "metkit/codes/api/CodesAPI.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace implementation {
 
@@ -524,4 +524,4 @@ GribBasedFilterCode runGribBasedFilterStage(const metkit::codes::CodesHandle& in
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

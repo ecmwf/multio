@@ -9,10 +9,10 @@
  */
 
 /// @file
-/// @brief Throwaway isolation harness for `Grib2GribSinks`.
+/// @brief Throwaway isolation harness for `GribToMtg2Sinks`.
 ///
 /// Reads GRIB messages from an input file and pushes them through a
-/// `Grib2GribSinks` constructed from the same options file used by the
+/// `GribToMtg2Sinks` constructed from the same options file used by the
 /// distributed tool, exercising the data sink, the testcase sink and flush.
 
 #include <string>
@@ -31,11 +31,11 @@
 #include "multio/tools/grib-to-mtg2/Sink.h"
 #include "multio/tools/grib-to-mtg2/UnitOfWork.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
-class Grib2GribSinkTest final : public multio::MultioTool {
+class GribToMtg2SinkTest final : public multio::MultioTool {
 public:
-    Grib2GribSinkTest(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    GribToMtg2SinkTest(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("options-file", "Path to YAML options file"));
         options_.push_back(new eckit::option::SimpleOption<std::string>("input-file", "Path to input GRIB file"));
         options_.push_back(
@@ -71,7 +71,7 @@ private:
     }
 
     void execute(const eckit::option::CmdArgs&) override {
-        namespace g2g = multio::distGrib1ToGrib2::grib2grib;
+        namespace g2g = multio::grib_to_mtg2;
 
         const auto rawOptions = g2g::parseOptionsYaml(g2g::readOptionsFileAsString(optionsFile_));
         auto context = g2g::parseGlobalContext(rawOptions);
@@ -79,8 +79,8 @@ private:
             context.reader.mode = g2g::parseWorkUnitReaderMode(readerModeOverride_);
         }
 
-        g2g::Grib2GribSinks sinks{rawOptions, outputDirectory_, static_cast<int>(rank_),
-                                  context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir};
+        g2g::GribToMtg2Sinks sinks{rawOptions, outputDirectory_, static_cast<int>(rank_),
+                                   context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir};
 
         g2g::UnitOfWork unitOfWork{g2g::WorkUnit{inputFile_, 0, g2g::fileSizeBytes(inputFile_)}, context.reader.mode};
         unitOfWork.open();
@@ -116,9 +116,9 @@ private:
     long rank_ = 0;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::Grib2GribSinkTest tool(argc, argv);
+    multio::grib_to_mtg2::GribToMtg2SinkTest tool(argc, argv);
     return tool.start();
 }

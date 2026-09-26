@@ -15,7 +15,7 @@
 
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 void validatePostEncodeValidationContext(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
@@ -59,4 +59,4 @@ PostEncodeValidationCode runPostEncodeValidationStage(const metkit::codes::Codes
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

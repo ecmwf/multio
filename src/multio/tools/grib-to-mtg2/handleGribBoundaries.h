@@ -22,7 +22,7 @@
 #include <optional>
 #include <string>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 struct CandidateMessage {
     off_t offset = 0;
@@ -32,4 +32,4 @@ struct CandidateMessage {
 std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const std::string& filename, off_t searchOffset,
                                                        off_t endOffset, off_t fileEndOffset);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

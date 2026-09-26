@@ -21,7 +21,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace implementation {
 
@@ -337,4 +337,4 @@ WorkBucket deserializeWorkBucket(const std::vector<char>& payload) {
     return implementation::deserializeWorkBucketImpl(payload);
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

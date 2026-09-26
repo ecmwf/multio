@@ -19,7 +19,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Copy one GRIB message out of a `CodesHandle` into an owning eckit message.
 /// @param handle Read-only ecCodes wrapper whose current encoded message will be copied.
@@ -27,4 +27,4 @@ namespace multio::distGrib1ToGrib2::grib2grib {
 /// @throw eckit exception If the message cannot be copied into the destination buffer.
 eckit::message::Message to_eckit_message(const metkit::codes::CodesHandle& handle);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

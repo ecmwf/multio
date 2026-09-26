@@ -21,7 +21,7 @@
 #include "multio/tools/grib-to-mtg2/CodesHandleToEckitMessage.h"
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 void runHacksStage(multio::sink::DataSink* sink, const metkit::codes::CodesHandle& inputGribMessage,
                    const metkit::codes::CodesHandle& outputGribMessage) noexcept {
@@ -48,4 +48,4 @@ void runHacksStage(multio::sink::DataSink* sink, const metkit::codes::CodesHandl
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

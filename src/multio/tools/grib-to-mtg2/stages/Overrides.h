@@ -24,7 +24,7 @@
 
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Packing override policy.
 ///
@@ -97,4 +97,4 @@ void freeOverridesContext(OverridesContext& context) noexcept;
 OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const eckit::LocalConfiguration& misc,
                                  const OverridesContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

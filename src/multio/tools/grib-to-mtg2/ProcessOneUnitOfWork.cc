@@ -17,10 +17,10 @@
 #include "multio/tools/grib-to-mtg2/Sink.h"
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 FileStageOutcomes processOneUnitOfWork(UnitOfWork& unitOfWork, const GlobalContext& context,
-                                       Grib2GribSinks& writer) noexcept {
+                                       GribToMtg2Sinks& writer) noexcept {
     FileStageOutcomes outcomes;
     outcomes.filename = unitOfWork.workUnit().filename;
 
@@ -77,4 +77,4 @@ FileStageOutcomes processOneUnitOfWork(UnitOfWork& unitOfWork, const GlobalConte
     return outcomes;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

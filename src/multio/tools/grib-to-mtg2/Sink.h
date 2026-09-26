@@ -29,7 +29,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Default rank-local file output path for the main accepted-output sink.
 std::string rankOutputPath(const std::string& outputDirectory, int rank);
@@ -76,11 +76,11 @@ private:
 ///
 /// The debug sink is a best-effort observational side output. When disabled,
 /// debug operations are no-ops. Its failures never change pipeline results.
-class Grib2GribSinks {
+class GribToMtg2Sinks {
 public:
-    Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
-                   bool generateTestcases, const std::optional<std::string>& testcasesDirectory);
-    ~Grib2GribSinks();
+    GribToMtg2Sinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
+                    bool generateTestcases, const std::optional<std::string>& testcasesDirectory);
+    ~GribToMtg2Sinks();
 
     /// @brief Main encoded-GRIB2 output sink, or `nullptr` when disabled.
     multio::sink::DataSink* mainDataSink();
@@ -112,4 +112,4 @@ private:
     std::unique_ptr<TestCaseFileSink> testCaseSink_;
 };
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

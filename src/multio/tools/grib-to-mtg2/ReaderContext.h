@@ -18,7 +18,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Runtime strategy used by `UnitOfWork` to locate owned GRIB messages.
 ///
@@ -59,4 +59,4 @@ inline WorkUnitReaderMode parseWorkUnitReaderMode(const std::string& mode) {
     throw eckit::BadValue("Unsupported reader mode: " + mode, Here());
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

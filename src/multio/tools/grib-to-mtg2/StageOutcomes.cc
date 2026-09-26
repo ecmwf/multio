@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -672,4 +672,4 @@ std::vector<FileStageOutcomes> deserializeFileStageOutcomes(const std::string& p
     return outcomes;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

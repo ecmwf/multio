@@ -19,7 +19,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -75,4 +75,4 @@ eckit::LocalConfiguration parseOptionsYaml(const std::string& payload) {
     return options;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

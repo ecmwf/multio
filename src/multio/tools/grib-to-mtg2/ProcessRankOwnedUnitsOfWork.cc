@@ -16,10 +16,10 @@
 #include "multio/tools/grib-to-mtg2/ProcessOneUnitOfWork.h"
 #include "multio/tools/grib-to-mtg2/Sink.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 std::vector<FileStageOutcomes> processRankOwnedUnitsOfWork(const std::vector<WorkUnit>& workUnits,
-                                                           const GlobalContext& context, Grib2GribSinks& writer) {
+                                                           const GlobalContext& context, GribToMtg2Sinks& writer) {
     std::vector<FileStageOutcomes> outcomes;
     outcomes.reserve(workUnits.size());
 
@@ -31,4 +31,4 @@ std::vector<FileStageOutcomes> processRankOwnedUnitsOfWork(const std::vector<Wor
     return outcomes;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

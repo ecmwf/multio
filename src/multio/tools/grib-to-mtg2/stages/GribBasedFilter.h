@@ -41,7 +41,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed options consumed by the coarse-grain classifier.
 ///
@@ -106,4 +106,4 @@ void freeGribBasedFilterContext(GribBasedFilterContext& context) noexcept;
 GribBasedFilterCode runGribBasedFilterStage(const metkit::codes::CodesHandle& inputHandle,
                                             const GribBasedFilterContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

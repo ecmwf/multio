@@ -19,7 +19,7 @@
 
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 void validateGrib2Fdb5Context(const eckit::LocalConfiguration& config) {
     if (config.has("verbosity")) {
@@ -73,4 +73,4 @@ Grib2Fdb5Result runGrib2Fdb5Stage(const metkit::codes::CodesHandle& encodedHandl
     return result;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

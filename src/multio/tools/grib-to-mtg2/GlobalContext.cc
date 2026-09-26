@@ -27,7 +27,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -127,4 +127,4 @@ void freeGlobalContext(GlobalContext& context) noexcept {
     freeGribBasedFilterContext(context.gribBasedFilter);
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

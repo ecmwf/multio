@@ -25,31 +25,31 @@
 #include "multio/tools/grib-to-mtg2/UnitOfWork.h"
 #include "multio/tools/grib-to-mtg2/WorkUnitLoadBalancer.h"
 
-namespace multio::grib2grib::utils {
+namespace multio::grib_to_mtg2::utils {
 
-using GlobalContext = multio::distGrib1ToGrib2::grib2grib::GlobalContext;
-using WorkUnit = multio::distGrib1ToGrib2::grib2grib::WorkUnit;
-using WorkBucket = multio::distGrib1ToGrib2::grib2grib::WorkBucket;
-using FileStageOutcomes = multio::distGrib1ToGrib2::grib2grib::FileStageOutcomes;
-using Grib2GribSinks = multio::distGrib1ToGrib2::grib2grib::Grib2GribSinks;
+using GlobalContext = multio::grib_to_mtg2::GlobalContext;
+using WorkUnit = multio::grib_to_mtg2::WorkUnit;
+using WorkBucket = multio::grib_to_mtg2::WorkBucket;
+using FileStageOutcomes = multio::grib_to_mtg2::FileStageOutcomes;
+using GribToMtg2Sinks = multio::grib_to_mtg2::GribToMtg2Sinks;
 using SummaryType = std::vector<FileStageOutcomes>;
-using AggregateSummaryBucket = multio::distGrib1ToGrib2::grib2grib::AggregateSummaryBucket;
-using AggregateSummary = multio::distGrib1ToGrib2::grib2grib::AggregateSummary;
+using AggregateSummaryBucket = multio::grib_to_mtg2::AggregateSummaryBucket;
+using AggregateSummary = multio::grib_to_mtg2::AggregateSummary;
 
 eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::string& optionsFile,
                                                                  const eckit::mpi::Comm& comm);
 
 GlobalContext buildGlobalContext(const eckit::LocalConfiguration& rawOptions);
 
-std::unique_ptr<Grib2GribSinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
-                                                     const GlobalContext& context, const std::string& outputDirectory,
-                                                     const eckit::mpi::Comm& comm);
+std::unique_ptr<GribToMtg2Sinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
+                                                      const GlobalContext& context, const std::string& outputDirectory,
+                                                      const eckit::mpi::Comm& comm);
 
 std::vector<WorkUnit> distributeWork(const std::string& fileList, long averageWorkUnitsPerRank,
                                      const eckit::mpi::Comm& comm);
 
 std::vector<FileStageOutcomes> processWorkUnits(const std::vector<WorkUnit>& workUnits, const GlobalContext& context,
-                                                Grib2GribSinks& writer);
+                                                GribToMtg2Sinks& writer);
 
 std::vector<FileStageOutcomes> gatherWorkUnitOutcome(const std::vector<FileStageOutcomes>& localOutcomes,
                                                      const eckit::mpi::Comm& comm);
@@ -65,4 +65,4 @@ void writeSummary(const SummaryType& summary, const std::string& outputDirectory
 
 void printAggregateSummary(const AggregateSummary& summary);
 
-}  // namespace multio::grib2grib::utils
+}  // namespace multio::grib_to_mtg2::utils

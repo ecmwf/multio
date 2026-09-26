@@ -25,7 +25,7 @@
 #include "multio/tools/grib-to-mtg2/stages/Overrides.h"
 #include "multio/tools/grib-to-mtg2/stages/PostEncodeValidation.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Immutable configuration-derived context for the full `grib2grib` pipeline.
 ///
@@ -59,4 +59,4 @@ GlobalContext parseGlobalContext(const eckit::LocalConfiguration& config);
 /// @param context Parsed global context.
 void freeGlobalContext(GlobalContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

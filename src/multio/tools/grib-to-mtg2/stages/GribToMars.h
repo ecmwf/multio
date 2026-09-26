@@ -25,7 +25,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed context consumed by the standalone `GribToMars` stage.
 struct GribToMarsContext {
@@ -63,4 +63,4 @@ void freeGribToMarsContext(GribToMarsContext& context) noexcept;
 GribToMarsResult runGribToMarsStage(const metkit::codes::CodesHandle& inputHandle,
                                     const GribToMarsContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

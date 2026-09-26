@@ -20,7 +20,7 @@
 
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed context consumed by the standalone `MarsToMars` stage.
 struct MarsToMarsContext {
@@ -56,4 +56,4 @@ void freeMarsToMarsContext(MarsToMarsContext& context) noexcept;
 MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const eckit::LocalConfiguration& misc,
                                     const MarsToMarsContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

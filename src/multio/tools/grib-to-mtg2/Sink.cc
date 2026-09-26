@@ -36,7 +36,7 @@
 #include "multio/tools/grib-to-mtg2/CodesHandleToEckitMessage.h"
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -221,8 +221,8 @@ void TestCaseFileSink::flush() {
     }
 }
 
-Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
-                               bool generateTestcases, const std::optional<std::string>& testcasesDirectory) {
+GribToMtg2Sinks::GribToMtg2Sinks(const eckit::LocalConfiguration& options, const std::string& outputDirectory, int rank,
+                                 bool generateTestcases, const std::optional<std::string>& testcasesDirectory) {
     if (auto sink = buildSink(options, outputDirectory, rank)) {
         sinks_.push_back(std::move(sink));
     }
@@ -254,18 +254,18 @@ Grib2GribSinks::Grib2GribSinks(const eckit::LocalConfiguration& options, const s
     }
 }
 
-Grib2GribSinks::~Grib2GribSinks() = default;
+GribToMtg2Sinks::~GribToMtg2Sinks() = default;
 
-multio::sink::DataSink* Grib2GribSinks::mainDataSink() {
+multio::sink::DataSink* GribToMtg2Sinks::mainDataSink() {
     return sinks_.empty() ? nullptr : sinks_[0].get();
 }
 
-TestCaseFileSink* Grib2GribSinks::testCaseSink() {
+TestCaseFileSink* GribToMtg2Sinks::testCaseSink() {
     return testCaseSink_.get();
 }
 
-void Grib2GribSinks::debugStageInputCode(ProcessingStage stage, std::uint8_t outcome,
-                                         const metkit::codes::CodesHandle& inputHandle) noexcept {
+void GribToMtg2Sinks::debugStageInputCode(ProcessingStage stage, std::uint8_t outcome,
+                                          const metkit::codes::CodesHandle& inputHandle) noexcept {
     const char* expver = debugExpver(stage, outcome);
     if (expver == nullptr) {
         return;
@@ -274,12 +274,12 @@ void Grib2GribSinks::debugStageInputCode(ProcessingStage stage, std::uint8_t out
     writeDebugInput(inputHandle, expver);
 }
 
-void Grib2GribSinks::debugSuccessfulInput(const metkit::codes::CodesHandle& inputHandle) noexcept {
+void GribToMtg2Sinks::debugSuccessfulInput(const metkit::codes::CodesHandle& inputHandle) noexcept {
     writeDebugInput(inputHandle, "2251");
 }
 
-void Grib2GribSinks::writeDebugInput(const metkit::codes::CodesHandle& inputHandle,
-                                     const std::string& expver) noexcept {
+void GribToMtg2Sinks::writeDebugInput(const metkit::codes::CodesHandle& inputHandle,
+                                      const std::string& expver) noexcept {
     if (!debugSink_) {
         return;
     }
@@ -297,7 +297,7 @@ void Grib2GribSinks::writeDebugInput(const metkit::codes::CodesHandle& inputHand
     }
 }
 
-void Grib2GribSinks::flush() {
+void GribToMtg2Sinks::flush() {
     for (const auto& sink : sinks_) {
         sink->flush();
     }
@@ -314,4 +314,4 @@ void Grib2GribSinks::flush() {
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

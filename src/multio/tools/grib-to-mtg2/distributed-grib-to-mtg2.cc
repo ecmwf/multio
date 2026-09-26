@@ -18,7 +18,7 @@
 #include "multio/tools/MultioTool.h"
 #include "multio/tools/grib-to-mtg2/MultioToolUtils.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 class DistributedGribToMtg2 final : public multio::MultioTool {
 public:
@@ -69,7 +69,7 @@ private:
         const auto rawOptions = utils::loadAndBroadcastOptionsAsConfiguration(optionsFile_, comm);
         auto context = utils::buildGlobalContext(rawOptions);
         if (!readerModeOverride_.empty()) {
-            context.reader.mode = multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
+            context.reader.mode = multio::grib_to_mtg2::parseWorkUnitReaderMode(readerModeOverride_);
         }
         const auto workUnits = utils::distributeWork(fileList_, averageWorkUnitsPerRank_, comm);
 
@@ -108,9 +108,9 @@ private:
     long averageWorkUnitsPerRank_ = 15;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::DistributedGribToMtg2 tool(argc, argv);
+    multio::grib_to_mtg2::DistributedGribToMtg2 tool(argc, argv);
     return tool.start();
 }

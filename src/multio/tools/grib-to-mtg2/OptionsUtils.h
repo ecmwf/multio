@@ -23,7 +23,7 @@ namespace eckit::mpi {
 class Comm;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Read an options YAML file into a single string payload.
 /// @param yamlFile Path to the YAML file on disk.
@@ -45,4 +45,4 @@ eckit::LocalConfiguration parseOptionsYaml(const std::string& payload);
 eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::string& yamlFile,
                                                                  const eckit::mpi::Comm& comm);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

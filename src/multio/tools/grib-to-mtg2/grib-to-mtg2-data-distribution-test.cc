@@ -31,15 +31,15 @@
 #include "multio/tools/grib-to-mtg2/Utils.h"
 #include "multio/tools/grib-to-mtg2/WorkUnitLoadBalancer.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace detail {
 
-using WorkBucket = multio::distGrib1ToGrib2::grib2grib::WorkBucket;
-using WorkUnit = multio::distGrib1ToGrib2::grib2grib::WorkUnit;
-using WorkUnitReaderMode = multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode;
-using multio::distGrib1ToGrib2::grib2grib::createBuckets;
-using multio::distGrib1ToGrib2::grib2grib::timestampString;
+using WorkBucket = multio::grib_to_mtg2::WorkBucket;
+using WorkUnit = multio::grib_to_mtg2::WorkUnit;
+using WorkUnitReaderMode = multio::grib_to_mtg2::WorkUnitReaderMode;
+using multio::grib_to_mtg2::createBuckets;
+using multio::grib_to_mtg2::timestampString;
 
 std::vector<std::string> readFileList(const std::string& fileListPath) {
     std::ifstream in(fileListPath);
@@ -140,7 +140,7 @@ void scanWorkUnitMessages(long rank, long workUnitIndex, const WorkUnit& workUni
     // std::cout << "Scanning work unit messages for rank " << rank << ", work unit index " << workUnitIndex
     //           << ", file '" << workUnit.filename << "' in [" << workUnit.startOffset << ", " << workUnit.endOffset
     //           << ")" << std::endl;
-    multio::distGrib1ToGrib2::grib2grib::UnitOfWork unitOfWork{workUnit, readerMode};
+    multio::grib_to_mtg2::UnitOfWork unitOfWork{workUnit, readerMode};
     unitOfWork.open();
     while (unitOfWork.newMessageAvailable()) {
         const auto message = unitOfWork.nextMessage();
@@ -165,9 +165,9 @@ void scanBucketMessages(const std::vector<WorkBucket>& buckets, WorkUnitReaderMo
 
 }  // namespace detail
 
-class Grib2GribDataDistributionTest final : public multio::MultioTool {
+class GribToMtg2DataDistributionTest final : public multio::MultioTool {
 public:
-    Grib2GribDataDistributionTest(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    GribToMtg2DataDistributionTest(int argc, char** argv) : multio::MultioTool(argc, argv) {
         options_.push_back(new eckit::option::SimpleOption<std::string>("file-list", "Path to file list"));
         options_.push_back(
             new eckit::option::SimpleOption<std::string>("output-directory", "Path to output directory"));
@@ -220,8 +220,8 @@ private:
                                                    static_cast<std::size_t>(averageWorkUnitsPerRank_));
 
         const auto readerMode = readerModeOverride_.empty()
-                                  ? multio::distGrib1ToGrib2::grib2grib::WorkUnitReaderMode::EccodesStream
-                                  : multio::distGrib1ToGrib2::grib2grib::parseWorkUnitReaderMode(readerModeOverride_);
+                                  ? multio::grib_to_mtg2::WorkUnitReaderMode::EccodesStream
+                                  : multio::grib_to_mtg2::parseWorkUnitReaderMode(readerModeOverride_);
 
         if (scanWorkUnitMessages_) {
             detail::scanBucketMessages(buckets, readerMode);
@@ -249,9 +249,9 @@ private:
     std::string readerModeOverride_;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::Grib2GribDataDistributionTest tool(argc, argv);
+    multio::grib_to_mtg2::GribToMtg2DataDistributionTest tool(argc, argv);
     return tool.start();
 }

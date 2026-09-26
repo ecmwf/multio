@@ -22,7 +22,7 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Generic per-stage policy value.
 ///
@@ -70,4 +70,4 @@ const char* trappedErrorDisclaimer();
 /// intentional error trapping from unexpected silent recovery.
 void printTrappedErrorDisclaimer();
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

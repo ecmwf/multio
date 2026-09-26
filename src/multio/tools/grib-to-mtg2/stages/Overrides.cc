@@ -22,7 +22,7 @@
 
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace implementation {
 
@@ -276,4 +276,4 @@ OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const ec
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

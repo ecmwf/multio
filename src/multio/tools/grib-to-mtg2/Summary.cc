@@ -21,7 +21,7 @@
 #include <map>
 #include <utility>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 std::vector<FileStageOutcomes> createPerFileOutcomes(const std::vector<FileStageOutcomes>& outcomesPerWorkUnit) {
     std::map<std::string, FileStageOutcomes> grouped;
@@ -67,4 +67,4 @@ AggregateSummary summarizeByFileSummary(const std::vector<FileStageOutcomes>& su
     return aggregate;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

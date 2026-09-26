@@ -18,7 +18,7 @@
 
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Aggregate file-bucket statistics for one `FileSummary` class.
 struct AggregateSummaryBucket {
@@ -45,4 +45,4 @@ std::vector<FileStageOutcomes> createPerFileOutcomes(const std::vector<FileStage
 /// @brief Aggregate final file-status buckets from the per-file summary.
 AggregateSummary summarizeByFileSummary(const std::vector<FileStageOutcomes>& summary);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

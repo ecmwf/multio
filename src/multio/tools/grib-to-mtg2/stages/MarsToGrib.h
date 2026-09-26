@@ -27,7 +27,7 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 class TestCaseFileSink;
 
@@ -76,4 +76,4 @@ MarsToGribResult runMarsToGribStage(const std::vector<double>& values, const eck
                                     const eckit::LocalConfiguration& misc, const MarsToGribContext& context,
                                     TestCaseFileSink* testCaseSink) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

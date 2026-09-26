@@ -21,7 +21,7 @@
 
 #include <eccodes.h>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 namespace {
 
 constexpr unsigned char gribMagic[4] = {'G', 'R', 'I', 'B'};
@@ -246,4 +246,4 @@ std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const st
     return std::nullopt;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Ordered processing stages of the new GRIB-to-GRIB conversion pipeline.
 ///
@@ -316,4 +316,4 @@ std::string serializeFileStageOutcomes(const std::vector<FileStageOutcomes>&);
 /// @throw eckit exception If the payload shape is invalid.
 std::vector<FileStageOutcomes> deserializeFileStageOutcomes(const std::string&);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

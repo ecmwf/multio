@@ -21,7 +21,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Convert an option policy to its preferred YAML spelling.
 /// @param policy The policy value to render.
@@ -99,4 +99,4 @@ void printTrappedErrorDisclaimer() {
     std::cerr << timestampString() << trappedErrorDisclaimer() << std::endl;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

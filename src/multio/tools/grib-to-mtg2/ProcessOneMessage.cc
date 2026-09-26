@@ -25,10 +25,10 @@
 #include "multio/tools/grib-to-mtg2/Sink.h"
 #include "multio/tools/grib-to-mtg2/Utils.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const GlobalContext& context,
-                       Grib2GribSinks& writer, FileStageOutcomes& outcomes) noexcept {
+                       GribToMtg2Sinks& writer, FileStageOutcomes& outcomes) noexcept {
     try {
         ++outcomes.nMessages;
 
@@ -124,4 +124,4 @@ void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const Glob
     }
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

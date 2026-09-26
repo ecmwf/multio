@@ -23,7 +23,7 @@ namespace eckit::mpi {
 class Comm;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 std::string broadcastOptionsStringFromRoot(const std::string& rootPayload, const eckit::mpi::Comm& comm);
 
@@ -32,4 +32,4 @@ WorkBucket distributeRankOwnedBucket(const std::vector<WorkBucket>* rootBuckets,
 std::vector<FileStageOutcomes> gatherOutcomes(const std::vector<FileStageOutcomes>& localOutcomes,
                                               const eckit::mpi::Comm& comm);
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

@@ -22,7 +22,7 @@
 #include "eckit/message/MessageContent.h"
 #include "metkit/codes/api/CodesAPI.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -81,4 +81,4 @@ eckit::message::Message to_eckit_message(const metkit::codes::CodesHandle& handl
     return eckit::message::Message{new OwningBufferContent(std::move(buf))};
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

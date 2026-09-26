@@ -34,7 +34,7 @@
 
 #include "multio/tools/grib-to-mtg2/handleGribBoundaries.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -532,4 +532,4 @@ bool UnitOfWork::close() noexcept {
     return success;
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

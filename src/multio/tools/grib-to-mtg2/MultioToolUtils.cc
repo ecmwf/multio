@@ -25,7 +25,7 @@
 #include "multio/tools/grib-to-mtg2/Sink.h"
 #include "multio/tools/grib-to-mtg2/Summary.h"
 
-namespace multio::grib2grib::utils {
+namespace multio::grib_to_mtg2::utils {
 
 namespace {
 
@@ -57,46 +57,46 @@ std::vector<std::string> readFileList(const std::string& fileListPath) {
 
 eckit::LocalConfiguration loadAndBroadcastOptionsAsConfiguration(const std::string& optionsFile,
                                                                  const eckit::mpi::Comm& comm) {
-    return multio::distGrib1ToGrib2::grib2grib::loadAndBroadcastOptionsAsConfiguration(optionsFile, comm);
+    return multio::grib_to_mtg2::loadAndBroadcastOptionsAsConfiguration(optionsFile, comm);
 }
 
 GlobalContext buildGlobalContext(const eckit::LocalConfiguration& rawOptions) {
-    return multio::distGrib1ToGrib2::grib2grib::parseGlobalContext(rawOptions);
+    return multio::grib_to_mtg2::parseGlobalContext(rawOptions);
 }
 
-std::unique_ptr<Grib2GribSinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
-                                                     const GlobalContext& context, const std::string& outputDirectory,
-                                                     const eckit::mpi::Comm& comm) {
-    return std::make_unique<Grib2GribSinks>(rawOptions, outputDirectory, static_cast<int>(comm.rank()),
-                                            context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir);
+std::unique_ptr<GribToMtg2Sinks> buildRankLocalWriter(const eckit::LocalConfiguration& rawOptions,
+                                                      const GlobalContext& context, const std::string& outputDirectory,
+                                                      const eckit::mpi::Comm& comm) {
+    return std::make_unique<GribToMtg2Sinks>(rawOptions, outputDirectory, static_cast<int>(comm.rank()),
+                                             context.marsToGrib.generateTestcases, context.marsToGrib.testcasesDir);
 }
 
 std::vector<WorkUnit> distributeWork(const std::string& fileList, long averageWorkUnitsPerRank,
                                      const eckit::mpi::Comm& comm) {
     std::vector<WorkBucket> rootBuckets;
     if (comm.rank() == 0) {
-        rootBuckets = multio::distGrib1ToGrib2::grib2grib::createBuckets(
-            readFileList(fileList), comm.size(), static_cast<std::size_t>(averageWorkUnitsPerRank));
+        rootBuckets = multio::grib_to_mtg2::createBuckets(readFileList(fileList), comm.size(),
+                                                          static_cast<std::size_t>(averageWorkUnitsPerRank));
     }
 
-    const auto rankBucket = multio::distGrib1ToGrib2::grib2grib::distributeRankOwnedBucket(
-        comm.rank() == 0 ? &rootBuckets : nullptr, comm);
+    const auto rankBucket
+        = multio::grib_to_mtg2::distributeRankOwnedBucket(comm.rank() == 0 ? &rootBuckets : nullptr, comm);
     return rankBucket.workUnits;
 }
 
 std::vector<FileStageOutcomes> processWorkUnits(const std::vector<WorkUnit>& workUnits, const GlobalContext& context,
-                                                Grib2GribSinks& writer) {
-    return multio::distGrib1ToGrib2::grib2grib::processRankOwnedUnitsOfWork(workUnits, context, writer);
+                                                GribToMtg2Sinks& writer) {
+    return multio::grib_to_mtg2::processRankOwnedUnitsOfWork(workUnits, context, writer);
 }
 
 std::vector<FileStageOutcomes> gatherWorkUnitOutcome(const std::vector<FileStageOutcomes>& localOutcomes,
                                                      const eckit::mpi::Comm& comm) {
-    return multio::distGrib1ToGrib2::grib2grib::gatherOutcomes(localOutcomes, comm);
+    return multio::grib_to_mtg2::gatherOutcomes(localOutcomes, comm);
 }
 
 std::vector<FileStageOutcomes> summarizeWorkUnitOutcomePerFile(
     const std::vector<FileStageOutcomes>& workUnitOutcomeGlobal) {
-    return multio::distGrib1ToGrib2::grib2grib::createPerFileOutcomes(workUnitOutcomeGlobal);
+    return multio::grib_to_mtg2::createPerFileOutcomes(workUnitOutcomeGlobal);
 }
 
 SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomePerFile) {
@@ -104,7 +104,7 @@ SummaryType createSummary(const std::vector<FileStageOutcomes>& workUnitOutcomeP
 }
 
 AggregateSummary buildAggregateSummary(const SummaryType& summary) {
-    return multio::distGrib1ToGrib2::grib2grib::summarizeByFileSummary(summary);
+    return multio::grib_to_mtg2::summarizeByFileSummary(summary);
 }
 
 void writeSummary(const SummaryType& summary, const std::string& outputDirectory) {
@@ -136,7 +136,7 @@ void printAggregateSummary(const AggregateSummary& summary) {
     const std::size_t totalFiles = summary.success.nFiles + summary.partial.nFiles + summary.fail.nFiles;
 
     const auto printBucket
-        = [totalFiles](const char* label, const multio::grib2grib::utils::AggregateSummaryBucket& bucket) {
+        = [totalFiles](const char* label, const multio::grib_to_mtg2::utils::AggregateSummaryBucket& bucket) {
               const double percent = totalFiles == 0 ? 0.0 : 100.0 * static_cast<double>(bucket.nFiles) / totalFiles;
               std::cout << label << ',' << bucket.nFiles << ',' << bucket.nMessages << ',' << std::fixed
                         << std::setprecision(2) << percent << std::endl;
@@ -147,4 +147,4 @@ void printAggregateSummary(const AggregateSummary& summary) {
     printBucket("FAIL", summary.fail);
 }
 
-}  // namespace multio::grib2grib::utils
+}  // namespace multio::grib_to_mtg2::utils

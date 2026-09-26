@@ -19,7 +19,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -128,4 +128,4 @@ std::vector<FileStageOutcomes> gatherOutcomes(const std::vector<FileStageOutcome
     return {};
 }
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

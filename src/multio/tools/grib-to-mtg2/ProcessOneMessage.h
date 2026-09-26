@@ -20,9 +20,9 @@ namespace metkit::codes {
 class CodesHandle;
 }
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
-class Grib2GribSinks;
+class GribToMtg2Sinks;
 
 /// @brief Process one already-decoded input GRIB message through all standalone stages.
 /// @param inputHandle Read-only GRIB handle for the current message.
@@ -30,6 +30,6 @@ class Grib2GribSinks;
 /// @param writer Rank-local sinks (main sink, debug sinks, testcase sink).
 /// @param outcomes Per-file stage counters updated in place.
 void processOneMessage(const metkit::codes::CodesHandle& inputHandle, const GlobalContext& context,
-                       Grib2GribSinks& writer, FileStageOutcomes& outcomes) noexcept;
+                       GribToMtg2Sinks& writer, FileStageOutcomes& outcomes) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

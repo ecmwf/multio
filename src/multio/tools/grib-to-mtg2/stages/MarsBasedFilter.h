@@ -21,7 +21,7 @@
 #include "multio/message/MetadataMatcher.h"
 #include "multio/tools/grib-to-mtg2/StageOutcomes.h"
 
-namespace multio::distGrib1ToGrib2::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 /// @brief Parsed context consumed by the standalone `MarsBasedFilter` stage.
 ///
@@ -59,4 +59,4 @@ MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mar
                                             const eckit::LocalConfiguration& misc,
                                             const MarsBasedFilterContext& context) noexcept;
 
-}  // namespace multio::distGrib1ToGrib2::grib2grib
+}  // namespace multio::grib_to_mtg2

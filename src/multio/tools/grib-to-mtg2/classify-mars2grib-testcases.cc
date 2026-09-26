@@ -26,7 +26,7 @@
 
 #include "multio/tools/MultioTool.h"
 
-namespace multio::grib2grib {
+namespace multio::grib_to_mtg2 {
 
 namespace {
 
@@ -220,9 +220,9 @@ private:
     bool skipErrors_ = false;
 };
 
-}  // namespace multio::grib2grib
+}  // namespace multio::grib_to_mtg2
 
 int main(int argc, char** argv) {
-    multio::grib2grib::ClassifyMars2GribTestcases tool(argc, argv);
+    multio::grib_to_mtg2::ClassifyMars2GribTestcases tool(argc, argv);
     return tool.start();
 }

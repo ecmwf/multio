@@ -32,13 +32,29 @@ install(
 )
 
 # -----------------------------------------------------------------------------
-# Install reference options file into share/multio/grib1-to-grib2/
+# Install reference options file into share/multio/grib-to-mtg2/
 # -----------------------------------------------------------------------------
 
 install(
     FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/optionfile.yaml
         ${CMAKE_CURRENT_SOURCE_DIR}/optionfile-full.yaml
-        ${CMAKE_CURRENT_SOURCE_DIR}/grib2grib-options-example.yaml
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/multio/grib1-to-grib2
+        ${CMAKE_CURRENT_SOURCE_DIR}/grib-to-mtg2-options-example.yaml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/multio/grib-to-mtg2
 )
+
+# -----------------------------------------------------------------------------
+# Deprecated: compatibility symlink share/multio/grib1-to-grib2 -> grib-to-mtg2
+# for scripts that still use the old install path. Remove in a later release.
+# -----------------------------------------------------------------------------
+
+install(CODE "
+    set(_mtg2_old_share \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/multio/grib1-to-grib2\")
+    if(IS_SYMLINK \"\${_mtg2_old_share}\" OR NOT EXISTS \"\${_mtg2_old_share}\")
+        file(REMOVE \"\${_mtg2_old_share}\")
+        file(CREATE_LINK grib-to-mtg2 \"\${_mtg2_old_share}\" SYMBOLIC)
+        message(STATUS \"Installing: \${_mtg2_old_share} -> grib-to-mtg2 (deprecated compatibility link)\")
+    else()
+        message(WARNING \"\${_mtg2_old_share} exists and is not a symlink: compatibility link not created\")
+    endif()
+")

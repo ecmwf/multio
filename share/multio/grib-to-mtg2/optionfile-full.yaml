@@ -78,9 +78,6 @@ stages:
       match:
         - param: [133093, 133094, 133095, 133096, 133097, 133098]
         - param: [152]
-          levtype: [ml]
-          levelist: [100000]
-        - param: [152]
           levtype: [pl]
 
   mars-to-grib:

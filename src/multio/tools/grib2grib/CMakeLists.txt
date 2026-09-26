@@ -53,7 +53,7 @@ ecbuild_add_library(
         stages/Grib2Fdb5.h
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -82,7 +82,7 @@ ecbuild_add_library(
         MultioToolUtils.h
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2 AND eckit_HAVE_MPI
+        HAVE_GRIB_TO_MTG2 AND eckit_HAVE_MPI
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -102,7 +102,7 @@ ecbuild_add_executable(
         grib2grib-options-parser
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     SOURCES
         grib2grib_options-parser.cc
@@ -120,7 +120,7 @@ ecbuild_add_executable(
         classify-mars2grib-testcases
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     SOURCES
         classify-mars2grib-testcases.cc
@@ -138,7 +138,7 @@ ecbuild_add_executable(
         grib2grib-data-distribution-test
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     SOURCES
         grib2grib-data-distribution-test.cc
@@ -156,7 +156,7 @@ ecbuild_add_executable(
         grib2grib-sink-test
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     SOURCES
         grib2grib-sink-test.cc
@@ -174,7 +174,7 @@ ecbuild_add_executable(
         distributed-grib-to-mtg2
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2 AND eckit_HAVE_MPI
+        HAVE_GRIB_TO_MTG2 AND eckit_HAVE_MPI
 
     SOURCES
         distributed-grib-to-mtg2.cc
@@ -192,7 +192,7 @@ ecbuild_add_executable(
         scalar-grib-to-mtg2
 
     CONDITION
-        HAVE_GRIB1_TO_GRIB2
+        HAVE_GRIB_TO_MTG2
 
     SOURCES
         scalar-grib-to-mtg2.cc

@@ -177,7 +177,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  LOGICAL, DIMENSION(5) :: CONDITIONS
+  LOGICAL, DIMENSION(4) :: CONDITIONS
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1717,7 +1717,7 @@ IMPLICIT NONE
 
   ! Local variables
   LOGICAL :: IS_ENSEMBLE
-  LOGICAL, DIMENSION(4) :: CONDITIONS
+  LOGICAL, DIMENSION(5) :: CONDITIONS
 
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IS_ENSEMBLE=1_JPIB_K

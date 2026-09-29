@@ -1,5 +1,6 @@
 
 add_subdirectory(encode)
+add_subdirectory(encode-tensogram)
 add_subdirectory(interpolate)
 add_subdirectory(statistics)
 add_subdirectory(statistics-mtg2)

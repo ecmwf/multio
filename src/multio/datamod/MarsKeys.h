@@ -260,13 +260,7 @@ constexpr auto PACKING =
 
 constexpr auto GRID =
     EntryDef<std::string>{"grid"}
-        .tagOptional()
         .withAccessor([](auto&& v) { return &v.grid; });
-
-constexpr auto TRUNCATION =
-    EntryDef<std::int64_t>{"truncation"}
-        .tagOptional()
-        .withAccessor([](auto&& v) { return &v.truncation; });
 
 
 // clang-format on

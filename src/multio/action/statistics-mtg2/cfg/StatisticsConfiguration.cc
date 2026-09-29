@@ -34,12 +34,8 @@ std::string deriveGridType(const FieldMetadataKeys& md) {
     if (md.grid.isSet()) {
         return md.grid.get();
     }
-    // Truncation is always present when we are dealing with Spherical Harmonics
-    if (md.truncation.isSet()) {
-        return "none";
-    }
     std::ostringstream os;
-    os << "Cannot find grid or truncation in metadata";
+    os << "Cannot find grid in metadata";
     throw eckit::SeriousBug{os.str(), Here()};
 }
 

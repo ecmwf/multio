@@ -1,0 +1,141 @@
+/*
+ * (C) Copyright 2025- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
+ */
+
+/// @file
+/// @brief Standalone `GribToMars` stage implementation for the isolated `grib-to-mtg2` pipeline.
+
+#include "multio/tools/grib-to-mtg2/stages/GribToMars.h"
+
+#include "eckit/exception/Exceptions.h"
+
+#include "metkit/grib2mars/api/Grib2Mars.h"
+
+#include "multio/tools/grib-to-mtg2/Utils.h"
+
+namespace multio::grib_to_mtg2 {
+
+namespace {
+
+std::optional<eckit::LocalConfiguration> parseGrib2MarsApiOptions(const eckit::LocalConfiguration& config) {
+    if (!config.has("api-options")) {
+        return std::nullopt;
+    }
+
+    if (!config.isSubConfiguration("api-options")) {
+        throw eckit::BadValue("grib-to-mars option 'api-options' must be a configuration section", Here());
+    }
+
+    return config.getSubConfiguration("api-options");
+}
+
+bool parseTryFixDiscipline192MeAnd4i(const eckit::LocalConfiguration& config) {
+    const auto apiOptions = parseGrib2MarsApiOptions(config);
+    return apiOptions && apiOptions->has("tryFixDiscipline192-me-and-4i")
+             ? apiOptions->getBool("tryFixDiscipline192-me-and-4i")
+             : false;
+}
+
+void tryFixDiscipline192MeAnd4i(eckit::LocalConfiguration& mars) {
+    if (!mars.has("type")) {
+        return;
+    }
+    if (!mars.has("param")) {
+        return;
+    }
+
+    const auto type = mars.getString("type");
+    const long param = mars.getLong("param");
+
+    if (type == "me" || type == "4i") {
+        // TODO: Fix discipline-192 fields for me and 4i messages.
+        if (param / 1000 == 200) {
+            mars.set("param", param % 1000);
+        }
+    }
+}
+
+}  // namespace
+
+void validateGribToMarsContext(const eckit::LocalConfiguration& config) {
+    if (config.has("verbosity")) {
+        (void)config.getLong("verbosity");
+    }
+    if (config.has("enable-debug-sink")) {
+        (void)config.getBool("enable-debug-sink");
+    }
+
+    (void)parseGrib2MarsApiOptions(config);
+    (void)parseTryFixDiscipline192MeAnd4i(config);
+}
+
+GribToMarsContext parseGribToMarsContext(const eckit::LocalConfiguration& config) {
+    GribToMarsContext parsed;
+
+    parsed.verbosity = config.has("verbosity") ? config.getLong("verbosity") : 0;
+    parsed.enableDebugSink = config.has("enable-debug-sink") && config.getBool("enable-debug-sink");
+    if (parsed.verbosity < 0) {
+        parsed.verbosity = 0;
+    }
+    if (parsed.verbosity > 3) {
+        parsed.verbosity = 3;
+    }
+
+    parsed.apiOptions = parseGrib2MarsApiOptions(config);
+    parsed.tryFixDiscipline192MeAnd4i = parseTryFixDiscipline192MeAnd4i(config);
+
+    return parsed;
+}
+
+void freeGribToMarsContext(GribToMarsContext& context) noexcept {
+    (void)context;
+}
+
+GribToMarsResult runGribToMarsStage(const metkit::codes::CodesHandle& inputHandle,
+                                    const GribToMarsContext& context) noexcept {
+    GribToMarsResult result;
+
+    try {
+        if (context.apiOptions) {
+            metkit::grib2mars::Grib2Mars grib2mars(*context.apiOptions);
+            const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
+            result.mars = marsMisc.mars;
+            result.misc = marsMisc.misc;
+        }
+        else {
+            metkit::grib2mars::Grib2Mars grib2mars;
+            const auto marsMisc = grib2mars.convert<eckit::LocalConfiguration>(inputHandle);
+            result.mars = marsMisc.mars;
+            result.misc = marsMisc.misc;
+        }
+
+        if (context.tryFixDiscipline192MeAnd4i) {
+            tryFixDiscipline192MeAnd4i(result.mars);
+        }
+    }
+    catch (...) {
+        printTrappedErrorDisclaimer();
+        result.outcome = GribToMarsCode::MapGribToMarsFailed;
+        return result;
+    }
+
+    try {
+        result.values = inputHandle.getDoubleArray("values");
+    }
+    catch (...) {
+        printTrappedErrorDisclaimer();
+        result.outcome = GribToMarsCode::ValuesExtractionFailed;
+        return result;
+    }
+
+    result.outcome = GribToMarsCode::Valid;
+    return result;
+}
+
+}  // namespace multio::grib_to_mtg2

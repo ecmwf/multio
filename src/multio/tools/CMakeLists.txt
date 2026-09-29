@@ -67,4 +67,4 @@ ecbuild_add_executable( TARGET    multio-convert-trace-log
 endif()
 
 
-add_subdirectory(grib2grib)
+add_subdirectory(grib-to-mtg2)

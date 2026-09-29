@@ -125,14 +125,14 @@ ecbuild_add_option( FEATURE MULTIO_BUILD_TOOLS
                     DESCRIPTION "Build the command line MULTIO tools" )
 
 if(HAVE_MULTIO_BUILD_TOOLS)
-    set(_default_grib1_to_grib2 ON)
+    set(_default_grib_to_mtg2 ON)
 else()
-    set(_default_grib1_to_grib2 OFF)
+    set(_default_grib_to_mtg2 OFF)
 endif()
 
-ecbuild_add_option( FEATURE GRIB1_TO_GRIB2
-                    DEFAULT ${_default_grib1_to_grib2}
-                    DESCRIPTION "Build the command line GRIB1-to-GRIB2 converter tool" )
+ecbuild_add_option( FEATURE GRIB_TO_MTG2
+                    DEFAULT ${_default_grib_to_mtg2}
+                    DESCRIPTION "Build the command line grib-to-mtg2 converter tools" )
 
 
 ### HEALPix tests

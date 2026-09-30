@@ -9,6 +9,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "eckit/geo/Grid.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/core/EntryParser.h"
@@ -31,12 +32,7 @@ std::string deriveLevType(const FieldMetadataKeys& md) {
 }
 
 std::string deriveGridType(const FieldMetadataKeys& md) {
-    if (md.grid.isSet()) {
-        return md.grid.get();
-    }
-    std::ostringstream os;
-    os << "Cannot find grid in metadata";
-    throw eckit::SeriousBug{os.str(), Here()};
+    return md.grid.get();
 }
 
 // TODO: add a proper EntryDef for precision
@@ -185,6 +181,10 @@ const eckit::DateTime& StatisticsConfiguration::curr() const {
 
 OutputTimeReference StatisticsConfiguration::outputTimeReference() const {
     return outputTimeReference_;
+}
+
+bool StatisticsConfiguration::isGridSH() const {
+    return eckit::geo::GridFactory::make_from_string(gridType_)->type() == "sh";
 }
 
 }  // namespace multio::action::statistics_mtg2

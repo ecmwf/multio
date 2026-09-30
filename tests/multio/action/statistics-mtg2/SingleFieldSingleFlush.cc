@@ -54,7 +54,7 @@ void testFieldAndFlush(std::string flushKind, int64_t steps=1) {
         Metadata md{{
             {"param", 130},
             {"levtype", "sfc"},
-            {"grid", "custom"},
+            {"grid", "N80"},
             {"date", 20250425},
             {"time", 0000},
             {"step", step},

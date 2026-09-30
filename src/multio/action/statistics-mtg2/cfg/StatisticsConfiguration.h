@@ -70,6 +70,8 @@ public:
     const eckit::DateTime& curr() const;
 
     OutputTimeReference outputTimeReference() const;
+
+    bool isGridSH() const;
 };
 
 }  // namespace multio::action::statistics_mtg2

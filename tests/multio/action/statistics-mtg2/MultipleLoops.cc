@@ -42,7 +42,7 @@ CASE("Monthly average of daily high temperature") {
     for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 19961001},
                             {"time", 0000},
                             {"step", step},
@@ -107,7 +107,7 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
     for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 19961001},
                             {"time", 0000},
                             {"step", step},

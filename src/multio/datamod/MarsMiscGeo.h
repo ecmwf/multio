@@ -179,13 +179,10 @@ struct MarsField : ComposedRecord<MarsFieldId, MarsFieldDetails, MarsSatellite> 
 
 struct MarsEncodingDetails {
     EntryType_t<decltype(GRID)> grid;
-    EntryType_t<decltype(TRUNCATION)> truncation;
-
     EntryType_t<decltype(PACKING)> packing;
 
-
     static constexpr std::string_view record_name_ = "mars-encoding";
-    static constexpr auto record_entries_ = std::make_tuple(GRID, TRUNCATION, PACKING);
+    static constexpr auto record_entries_ = std::make_tuple(GRID, PACKING);
 };
 
 
@@ -205,26 +202,6 @@ namespace multio::datamod {
 
 struct FullMarsRecord : ComposedRecord<MarsId, MarsEncodingDetails, MarsField, MarsTime> {
     static constexpr std::string_view record_name_ = "mars";
-
-    static void applyDefaults(FullMarsRecord& mars) {
-        const auto& grid = mars.grid;
-        const auto& trunc = mars.truncation;
-
-        if (!grid.isSet() && !trunc.isSet()) {
-            std::ostringstream oss;
-            oss << "Either mars key 'grid' (x)or 'truncation' need to be given to describe geometry - both are "
-                   "missing: ";
-            util::print(oss, mars);
-            throw DataModellingException(oss.str(), Here());
-        }
-        if (grid.isSet() && trunc.isSet()) {
-            std::ostringstream oss;
-            oss << "Either mars key 'grid' or 'truncation' needs to be given to describe geometry - both are "
-                   "given: ";
-            util::print(oss, mars);
-            throw DataModellingException(oss.str(), Here());
-        }
-    }
 };
 
 //-----------------------------------------------------------------------------

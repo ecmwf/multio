@@ -49,6 +49,9 @@ CONTAINS
   GENERIC :: WRITE_WAM => WRITE_WAM_SP, WRITE_WAM_DP
 
 
+  !> @brief Used to notify the start of a simulation
+  PROCEDURE(FLUSH_START_IF), DEFERRED, PASS, PUBLIC :: FLUSH_START
+
   !> @brief Used to notify a new step. Depending on the implementation different action can be taken
   PROCEDURE(FLUSH_STEP_IF), DEFERRED, PASS, PUBLIC :: FLUSH_STEP
 
@@ -201,6 +204,21 @@ IMPLICIT NONE
   TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
   INTEGER(KIND=JPIB_K) :: RET
 END FUNCTION WRITE_WAM_SP_IF
+
+
+!>
+!> @brief Notify the start of a simulation
+!>
+PP_THREAD_SAFE FUNCTION FLUSH_START_IF( THIS, KSTEP, HOOKS ) RESULT(RET)
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  IMPORT :: OUTPUT_MANAGER_BASE_A
+IMPLICIT NONE
+  CLASS(OUTPUT_MANAGER_BASE_A), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),         INTENT(IN)    :: KSTEP
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K) :: RET
+END FUNCTION FLUSH_START_IF
 
 
 !>

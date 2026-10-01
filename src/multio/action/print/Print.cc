@@ -38,6 +38,7 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
     stream_ = compConf.parsedConfig().getString("stream", "info");
     onlyFields_ = compConf.parsedConfig().getBool("only-fields", false);
     marsStream_ = (stream_ == "mars");
+    marsMiscStream_ = (stream_ == "mars-misc");
     count_ = 1;
 
     if (stream_ == "info") {
@@ -49,7 +50,7 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
     else if (stream_ == "cout") {
         os_ = &std::cout;
     }
-    else if (stream_ == "mars") {
+    else if (marsStream_ || marsMiscStream_) {
         os_ = &std::cout;
     }
     else {
@@ -65,14 +66,19 @@ void Print::printPrefix(std::ostream& os) const {
     }
 }
 
-void Print::printMars(std::ostream& os, const message::Message& msg) const {
+void Print::printMars(std::ostream& os, const message::Message& msg, bool includeMisc) const {
     if (msg.tag() == message::Message::Tag::Field) {
-        auto mars = dm::readRecord<dm::FullMarsRecord>(msg.metadata());
-        auto md = dm::dumpRecord<message::Metadata>(mars);
+        const auto marsRecord = dm::readRecord<dm::FullMarsRecord>(msg.metadata());
+        const auto mars = dm::dumpRecord<message::Metadata>(marsRecord);
 
-        // printPrefix(os);
         os << prefix_ << ": Field: " << std::setw(6) << count_++ << " :: \"mars\":";
-        os << md << std::endl;
+        os << mars;
+        if (includeMisc) {
+            const auto miscRecord = dm::readRecord<dm::MiscRecord>(msg.metadata());
+            const auto misc = dm::dumpUnscopedRecord<message::Metadata>(miscRecord);
+            os << " :: \"misc\":" << misc;
+        }
+        os << std::endl;
         return;
     }
 
@@ -95,24 +101,30 @@ void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
     bool doOutput = onlyFields_ ? (msg.tag() == message::Message::Tag::Field) : true;
     if (doOutput) {
-        if (marsStream_) {
-            printMars(*os_, msg);
+        if (marsStream_ || marsMiscStream_) {
+            printMars(*os_, msg, marsMiscStream_);
         }
         else {
             printPrefix(*os_);
             *os_ << msg << std::endl;
         }
     }
-    // try {
-    executeNext(std::move(msg));
-    // }
-    // catch (...) {
-    //     std::cerr << "Received \"mars\":";
-    //     printMars(std::cerr, msg);
-    //     std::cerr << "# =======================================================================================" <<
-    //     std::endl; std::cerr << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl <<
-    //     std::endl;
-    // }
+    const auto diagnostic = msg;
+    try {
+        executeNext(std::move(msg));
+    }
+    catch (...) {
+        std::cerr << "ERROR (Print action): offending message:" << std::endl;
+        try {
+            printMars(std::cerr, diagnostic, true);
+        }
+        catch (...) {
+            std::cerr << diagnostic << std::endl;
+        }
+        std::cerr << "# ======================================================================================="
+                  << std::endl;
+        throw;
+    }
 }
 
 void Print::print(std::ostream& os) const {

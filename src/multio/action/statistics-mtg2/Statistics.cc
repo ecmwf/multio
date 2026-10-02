@@ -69,7 +69,7 @@ void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const Op
 std::int64_t inputIncrementForNestedStatistic(const StatisticsConfiguration& cfg) {
     return inputStatisticalExtentInSeconds(cfg);
 }
-}
+}  // namespace
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -379,8 +379,7 @@ void Statistics::executeImpl(message::Message msg) {
 
     auto& ts = *(stat->second);
     validateInputStatisticalExtent(cfg, ts.cwin());
-    if (createdFromField && opt_.windowType() == WindowType::ForwardOffset
-        && cfg.curr() == ts.cwin().startPoint()) {
+    if (createdFromField && opt_.windowType() == WindowType::ForwardOffset && cfg.curr() == ts.cwin().startPoint()) {
         return;
     }
     // A restart may already contain the initial condition sent by the solver.

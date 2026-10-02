@@ -30,9 +30,9 @@ TimeSpan ParseType<TimeSpan>::parse(const std::string& value) {
         return TimeSpan::fromStart();
     }
 
-    throw DataModellingException(
-        std::string{"Invalid timespan value: "} + value + ". Only integer hours, string \"none\" or string \"fs\" are supported.",
-        Here());
+    throw DataModellingException(std::string{"Invalid timespan value: "} + value
+                                     + ". Only integer hours, string \"none\" or string \"fs\" are supported.",
+                                 Here());
 }
 
 }  // namespace multio::datamod

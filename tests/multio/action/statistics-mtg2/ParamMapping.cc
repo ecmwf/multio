@@ -5,9 +5,9 @@
 
 namespace multio::test::statistics_mtg2 {
 
-using multio::test::MultioTestEnvironment;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::test::MultioTestEnvironment;
 
 // param + operation -> param
 using StatisticsParamMapping = std::tuple<std::int64_t, std::string, std::int64_t>;
@@ -78,29 +78,30 @@ std::vector<StatisticsParamMapping> mappings = {
 };
 
 std::int64_t testParameterMapping(std::int64_t param, std::string op) {
-    const auto plan =
-        "{ \"name\": \"statistics_param_mapping_" + std::to_string(param) + "_" + op + "_test\", "
-        "\"actions\": [ { "
-        "\"type\": \"statistics-mtg2\", "
-        "\"output-frequency\": \"1h\", "
-        "\"operations\": [ \"" + op + "\" ], "
-        "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
-        "{ \"type\": \"debug-sink\" } ] }";
+    const auto plan
+        = "{ \"name\": \"statistics_param_mapping_" + std::to_string(param) + "_" + op
+        + "_test\", "
+          "\"actions\": [ { "
+          "\"type\": \"statistics-mtg2\", "
+          "\"output-frequency\": \"1h\", "
+          "\"operations\": [ \""
+        + op
+        + "\" ], "
+          "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
+          "{ \"type\": \"debug-sink\" } ] }";
 
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
     // Send step 0 and 1 message with the input parameter ID
     for (int64_t step = 0; step <= 1; ++step) {
-        auto md = Metadata({
-            {"param", param},
-            {"levtype", "sfc"},
-            {"grid", "O80"},
-            {"date", 20200721},
-            {"time", 0000},
-            {"step", step},
-            {"misc-precision", "double"}
-        });
+        auto md = Metadata({{"param", param},
+                            {"levtype", "sfc"},
+                            {"grid", "O80"},
+                            {"date", 20200721},
+                            {"time", 0000},
+                            {"step", step},
+                            {"misc-precision", "double"}});
         auto pl = eckit::Buffer();
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
         EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -130,7 +131,7 @@ CASE("statistics parameter mappings") {
     }
 }
 
-}  // multio::test::statistics_mtg2
+}  // namespace multio::test::statistics_mtg2
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

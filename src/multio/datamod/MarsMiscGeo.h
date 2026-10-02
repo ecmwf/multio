@@ -357,11 +357,10 @@ struct MiscRecord {
     static constexpr auto record_entries_ = std::make_tuple(
         TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, OutputStepInSeconds,
         IntegrationStepInSeconds, TimeIncrementInSeconds, LengthOfTimeWindow, LengthOfTimeWindowInSeconds,
-        BitmapPresent, ShapeOfTheEarth, MissingValue,
-        TypeOfEnsembleForecast, NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies,
-        ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections,
-        ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre,
-        NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
+        BitmapPresent, ShapeOfTheEarth, MissingValue, TypeOfEnsembleForecast, NumberOfForecastsInEnsemble,
+        SatelliteSeries, NumberOfFrequencies, ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber, Pv,
+        ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue,
+        LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
 };
 
 

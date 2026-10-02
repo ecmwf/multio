@@ -68,21 +68,21 @@ CASE("Squash daily + monthly average") {
     EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
     EXPECT_EQUAL(env.debugSink().size(), 4);
 
-    {   // October (31 days)
+    {  // October (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(744, md.get<std::int64_t>("step"));
         EXPECT_EQUAL(744, md.get<std::int64_t>("timespan"));
         env.debugSink().pop();
     }
-    {   // November (31 days)
+    {  // November (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(1464, md.get<std::int64_t>("step"));
         EXPECT_EQUAL(720, md.get<std::int64_t>("timespan"));
         env.debugSink().pop();
     }
-    {   // December (31 days)
+    {  // December (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(2208, md.get<std::int64_t>("step"));

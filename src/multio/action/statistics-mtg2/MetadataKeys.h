@@ -54,9 +54,8 @@ constexpr auto SERVER_RANK
     = dm::EntryDef<std::int64_t>{"serverRank"}.tagOptional().withAccessor([](auto&& v) { return &v.serverRank; });
 
 constexpr auto TIME_INCREMENT_IN_SECONDS
-    = dm::EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}.tagOptional().withAccessor([](auto&& v) {
-          return &v.timeIncrementInSeconds;
-      });
+    = dm::EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}.tagOptional().withAccessor(
+        [](auto&& v) { return &v.timeIncrementInSeconds; });
 
 //----------------------- Field Metadata Keys Record ------------------------//
 
@@ -79,11 +78,10 @@ struct FieldMetadataKeys {
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "statistics-mtg2-field";
-    static constexpr auto record_entries_
-        = std::make_tuple(dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::STATTYPE, dm::PARAM,
-                          dm::STREAM.tagOptional(), dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION,
-                          dm::OutputStepInSeconds, dm::IntegrationStepInSeconds, TIME_INCREMENT_IN_SECONDS,
-                          dm::BitmapPresent, dm::MissingValue);
+    static constexpr auto record_entries_ = std::make_tuple(
+        dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::STATTYPE, dm::PARAM, dm::STREAM.tagOptional(),
+        dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION, dm::OutputStepInSeconds,
+        dm::IntegrationStepInSeconds, TIME_INCREMENT_IN_SECONDS, dm::BitmapPresent, dm::MissingValue);
 };
 
 //------------------------ Flush Metadata Keys Record -----------------------//

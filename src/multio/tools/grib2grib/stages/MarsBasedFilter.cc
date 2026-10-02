@@ -213,7 +213,6 @@ bool hasStatisticalProcessing(const eckit::LocalConfiguration& mars) {
     bool c2 = (hasTimespan && timespanIsNone) && hasStatType;
 
     return c1 || c2;
-
 }
 
 bool rejectUnsupportedStatisticalProcessingAtStepZero(const eckit::LocalConfiguration& mars,

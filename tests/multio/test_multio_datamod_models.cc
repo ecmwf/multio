@@ -12,8 +12,8 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/datamod/ContainerInterop.h"
-#include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/MarsCachedKeys.h"
+#include "multio/datamod/MarsMiscGeo.h"
 
 #include "multio/datamod/types/LevType.h"
 #include "multio/datamod/types/TypeOfStatisticalProcessing.h"
@@ -187,25 +187,21 @@ CASE("Test encoder hashes") {
     mk2.frequency.set(11);
     mk2.direction.set(11);
 
-    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk1)),
-                 util::hash(readRecord<dm::MarsCacheRecord>(mk2)));
+    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk1)), util::hash(readRecord<dm::MarsCacheRecord>(mk2)));
 
     auto mk22 = mk2;
     mk22.levelist.set(1);  // LEVEL can change hash ?
-    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1))
-           != util::hash(readRecord<dm::MarsCacheRecord>(mk22)));
+    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1)) != util::hash(readRecord<dm::MarsCacheRecord>(mk22)));
 
 
     auto mk3 = marsKeys;
     mk3.param.set(123);  // Change param because hash should be different to mk1 & 2
-    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1))
-           != util::hash(readRecord<dm::MarsCacheRecord>(mk3)));
+    EXPECT(util::hash(readRecord<dm::MarsCacheRecord>(mk1)) != util::hash(readRecord<dm::MarsCacheRecord>(mk3)));
 
     mk3.levtype.set("ml");
     auto mk4 = mk3;
     mk3.levelist.set(9000);  // FOR ml levelist should not change hash
-    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk3)),
-                 util::hash(readRecord<dm::MarsCacheRecord>(mk4)));
+    EXPECT_EQUAL(util::hash(readRecord<dm::MarsCacheRecord>(mk3)), util::hash(readRecord<dm::MarsCacheRecord>(mk4)));
 
     // Example cache
     std::unordered_map<dm::MarsCacheRecord, int> cache{};

@@ -14,8 +14,8 @@
 
 #include "eckit/testing/Test.h"
 
-#include "testStatisticsUtils.h"
 #include "../../MultioTestEnvironment.h"
+#include "testStatisticsUtils.h"
 
 
 namespace multio::test {

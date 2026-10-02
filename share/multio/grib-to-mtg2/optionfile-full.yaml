@@ -30,7 +30,7 @@ stages:
     # those currently used by the grib-to-mtg2 reference configurations.
     api-options:
       tryFixBadInput_ZeroAccumulation: true
-      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: false
       tryFixBadInput_StandardisedAnomalyAsInstant: true
       tryFixDiscipline192-me-and-4i: true
       saveErrorStack: false

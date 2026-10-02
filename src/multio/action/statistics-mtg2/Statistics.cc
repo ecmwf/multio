@@ -12,9 +12,11 @@
 
 #include <unistd.h>  //currently needed because ECKIT PathName only has hardlinks for for the directories we need a symlink
 #include <algorithm>
+#include <chrono>
 
 
 #include "TemporalStatistics.h"
+#include "TimeUtils.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
@@ -35,16 +37,68 @@ namespace multio::action::statistics_mtg2 {
 
 namespace dm = multio::datamod;
 
+namespace {
+
+std::int64_t inputStatisticalExtentInSeconds(const StatisticsConfiguration& cfg) {
+    if (auto stattype = cfg.stattype()) {
+        switch (stattype->firstLevel().duration) {
+            case dm::StatTypeDuration::Day:
+                return 24 * 60 * 60;
+            case dm::StatTypeDuration::Month:
+                throw eckit::UserError{"Monthly statistical input cannot feed another supported statistics window",
+                                       Here()};
+        }
+    }
+    return *cfg.timespanInSeconds();
+}
+
+void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const OperationWindow& window) {
+    if (!cfg.isStatistical()) {
+        return;
+    }
+
+    const auto inputExtent = inputStatisticalExtentInSeconds(cfg);
+    if (inputExtent >= window.timeSpanInSeconds()) {
+        std::ostringstream os;
+        os << "Input statistical extent (" << inputExtent << " seconds) must be smaller than output window ("
+           << window.timeSpanInSeconds() << " seconds)";
+        throw eckit::UserError{os.str(), Here()};
+    }
+}
+
+std::int64_t inputIncrementForNestedStatistic(const StatisticsConfiguration& cfg) {
+    return inputStatisticalExtentInSeconds(cfg);
+}
+}  // namespace
+
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     needRestart_{false},
     lastDateTime_{""},
+    simulationStart_{},
     opt_{compConf.parsedConfig().getSubConfiguration("options")},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
+
+void Statistics::handleSimulationStart(const FlushMetadataKeys& flush) {
+    if (!flush.date.isSet() || !flush.time.isSet() || !flush.step.isSet()) {
+        throw eckit::SeriousBug("Simulation-start flush requires date, time and step metadata", Here());
+    }
+
+    SimulationStart next{flush.date.get(), flush.time.get(), flush.step.get().toSeconds(),
+                         dateTime(flush.date.get(), flush.time.get(), flush.step.get().toSeconds())};
+    if (simulationStart_) {
+        if (simulationStart_->date != next.date || simulationStart_->time != next.time
+            || simulationStart_->stepInSeconds != next.stepInSeconds) {
+            throw eckit::SeriousBug("Conflicting simulation-start flush received", Here());
+        }
+        return;
+    }
+    simulationStart_ = next;
+}
 
 std::string Statistics::generateRestartNameFromFlush(const message::Message& msg,
                                                      const FlushMetadataKeys& flush) const {
@@ -139,7 +193,7 @@ void Statistics::CreateMainRestartDirectory(const std::string& restartFolderName
 void Statistics::DumpTemporalStatistics() {
     for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
         LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
-                                 << it->second->cwin().currPointInSteps() << std::endl;
+                                 << it->second->cwin().currPointInSeconds() << "s" << std::endl;
         IOmanager_->pushDir(it->first);
         if (IOmanager_->currentDirExists()) {
             std::ostringstream os;
@@ -260,6 +314,9 @@ void Statistics::executeImpl(message::Message msg) {
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
         const auto flush = dm::readRecord<FlushMetadataKeys>(msg.metadata());
+        if (flush.flushKind.get() == FlushKind::FirstStep) {
+            handleSimulationStart(flush);
+        }
         TryDumpRestart(msg, flush);
 
         if (flush.flushKind.get() == FlushKind::LastStep) {
@@ -282,6 +339,16 @@ void Statistics::executeImpl(message::Message msg) {
     // Initialize local variables
     StatisticsConfiguration cfg{msg, opt_};
     std::string key = cfg.key();
+
+    if (!simulationStart_) {
+        throw eckit::SeriousBug("Field received before simulation-start flush", Here());
+    }
+    if (cfg.curr() < simulationStart_->dateTime) {
+        std::ostringstream os;
+        os << "Field current date/time " << cfg.curr() << " is before simulation start " << simulationStart_->dateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
     updateLatestDateTime(cfg);
 
     // Check if the main restart directory exists
@@ -295,30 +362,33 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Access or create the temporal statistics object
     auto stat = fieldStats_.find(key);
+    bool createdFromField = false;
     if (stat == fieldStats_.end()) {
         if (opt_.readRestart() && HasRestartKey(key)) {
             fieldStats_[key] = LoadTemporalStatisticsFromKey(key);
         }
         else {
-            fieldStats_[key]
-                = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
+            fieldStats_[key] = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg,
+                                                                    simulationStart_->dateTime);
+            createdFromField = true;
         }
         // TODO: Reorganize the code to avoid this second search
         // which is not efficient
         stat = fieldStats_.find(key);
     }
 
-    // Exit if the current time is the same as the current point in the
-    // window and the solver does not send the initial condition.
-    // This can happen when the solver is sending the initial condition
-    // and and the same point is already present in the restart
     auto& ts = *(stat->second);
-    if (cfg.curr() == ts.cwin().currPoint() && opt_.initialConditionPresent()) {
+    validateInputStatisticalExtent(cfg, ts.cwin());
+    if (createdFromField && opt_.windowType() == WindowType::ForwardOffset && cfg.curr() == ts.cwin().startPoint()) {
+        return;
+    }
+    // A restart may already contain the initial condition sent by the solver.
+    if (!createdFromField && cfg.curr() == ts.cwin().currPoint() && opt_.initialConditionPresent()) {
         return;
     }
 
     // The incomming message must occur AFTER the current point in the window!
-    if (cfg.curr() <= ts.cwin().currPoint()) {
+    if (!createdFromField && cfg.curr() <= ts.cwin().currPoint()) {
         std::ostringstream os;
         os << "Current time is before or equal to the current point in the window :: " << cfg.curr() << " > "
            << ts.cwin().currPoint() << std::endl;
@@ -326,7 +396,7 @@ void Statistics::executeImpl(message::Message msg) {
     }
 
     // Decide to emit statistics
-    if (ts.isOutsideWindow(msg, cfg)) {
+    while (ts.isOutsideWindow(msg, cfg)) {
         emitStatistics(ts, msg.source(), msg.destination());
         ts.updateWindow(msg, cfg);
     }
@@ -414,18 +484,18 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
             if (currentLoop == 1) {
                 const std::int64_t timespan = ts.cwin().currPointInHours() - ts.cwin().creationPointInHours();
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                dm::dumpEntry(dm::TimeIncrementInSeconds,
+                              dm::TimeIncrementInSeconds.makeEntry(cfg.outputStepInSeconds()), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
-                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(),
-                                                           ts.cwin().creationPoint().date().month());
-                if (ts.periodName() == "month" && ts.cwin().creationPoint().date().day() != 1) {
-                    std::cout << "Skipping first month because it is not a full month :: " << ts.cwin().creationPoint()
+                const auto expectedFirstSample
+                    = opt_.windowType() == WindowType::ForwardOffset
+                        ? ts.cwin().startPoint() + static_cast<eckit::Second>(cfg.outputStepInSeconds())
+                        : ts.cwin().startPoint();
+                const bool startsAtBoundary = ts.cwin().creationPoint() == ts.cwin().startPoint();
+                if (!startsAtBoundary && ts.cwin().creationPoint() != expectedFirstSample) {
+                    std::cout << "Skipping partial " << ts.periodName() << " window :: " << ts.cwin().creationPoint()
                               << std::endl;
-                    return;  // Skip the first month if it is not a full month, as discussed with DGOV and scientists
-                }
-                if (ts.periodName() == "day" && ts.cwin().creationPoint().time().hours() != 1) {
-                    std::cout << "Skipping first day because it is not a full day :: " << ts.cwin().creationPoint()
-                              << std::endl;
-                    return;  // Skip the first day if it is not a full day, as discussed with DGOV and scientists
+                    return;
                 }
             }
             else {
@@ -446,9 +516,11 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                     dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
-
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
                                                               operationNameToStatTypeOperation(opname)};
+
+                    dm::dumpEntry(dm::TimeIncrementInSeconds,
+                                  dm::TimeIncrementInSeconds.makeEntry(inputIncrementForNestedStatistic(cfg)), md);
 
                     if (currentLoop == 2) {
                         stattype.set(dm::StatType{currentStatType});
@@ -464,22 +536,14 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
 
         switch (cfg.outputTimeReference()) {
             case OutputTimeReference::StartOfForecast: {
-                const std::int64_t step = ts.win().currPointInHours();
+                const auto step = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds()}};
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
-                auto lengthOfWindow = timespan;
-
-                // For instant fields or on flushes, timespan is not set yet
-                if (!lengthOfWindow.isSet()) {
-                    // The window spaws between creationPoint to endPoint
-                    // Prev & Current point describe the last updated data points.
-                    // In this case we are explicitly interested in creation to current point
-                    lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
-                }
-
-                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
+                const auto step
+                    = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds(ts.win().creationPoint())}};
+                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 // We explicitly take the creation point - alternative would be the start point.
                 // The start point may be different for the first window, i.e. if the simulation starts in the mid of a
                 // month. To not confuse the output, we explicitly just output the window for which data has been

@@ -36,12 +36,6 @@ struct MarsCacheRecord : FullMarsRecord {
             cacheKeys.levelist.unset();
         }
 
-        // For the grib structure, it is just important if timespan is set or not - the actual value does not affect the
-        // structure Time keys will always get set later
-        if (cacheKeys.timespan.isSet()) {
-            cacheKeys.timespan.set(0);
-        }
-
         if (cacheKeys.step.isSet()) {
             cacheKeys.step.set(0);
         }

@@ -85,9 +85,17 @@ void applyGeneratingProcessIdentifierOverride(eckit::LocalConfiguration& misc, c
 }
 
 /// @brief Apply the optional ensemble-size override to the misc dictionary.
+///
+/// Not applied to `type=efic`: the EFI of the control forecast is computed from one forecast, and keeps the
+/// ensemble size of its input.
+/// @param mars MARS dictionary.
 /// @param misc Misc dictionary being mutated.
 /// @param options Parsed override options.
-void applyEnsembleSizeOverride(eckit::LocalConfiguration& misc, const OverridesContext& context) {
+void applyEnsembleSizeOverride(const eckit::LocalConfiguration& mars, eckit::LocalConfiguration& misc,
+                               const OverridesContext& context) {
+    if (mars.has("type") && mars.getString("type") == "efic") {
+        return;
+    }
     if (context.ensembleSizeOverride) {
         misc.set("numberOfForecastsInEnsemble", *context.ensembleSizeOverride);
     }
@@ -256,7 +264,7 @@ OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const ec
         implementation::applyPackingPolicyOverride(result.mars, context);
         implementation::applyModelOverride(result.mars, context);
         implementation::applyGeneratingProcessIdentifierOverride(result.misc, context);
-        implementation::applyEnsembleSizeOverride(result.misc, context);
+        implementation::applyEnsembleSizeOverride(result.mars, result.misc, context);
         implementation::applyAnalysisWindowLengthInHoursOverride(result.misc, context);
         implementation::applyControlForecastOverride(result.mars, result.misc, context);
         implementation::applyExpverOverride(result.mars, context);

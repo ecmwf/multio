@@ -59,20 +59,22 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
-    // Note: A subtraction eckit::DateTime - eckit::Second yields eckit::Second instead of eckit::DateTime
-    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a
-    //       workarounds
-    eckit::DateTime epoch{eckit::Date{0000, 01, 01}, eckit::Time{00, 00, 00}};
-    eckit::Second deltaCurr = cfg.curr() - epoch;
-    eckit::Second deltaStart = deltaCurr - eckit::Second{cfg.timespan().value_or(0) * 3600.0};
-
+OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg,
+                            const eckit::DateTime& simulationStart) {
     eckit::DateTime epochPoint{cfg.epoch()};
-    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
-    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(simulationStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    return OperationWindow{
-        epochPoint, startPoint, creationPoint, endPoint, cfg.timeIncrementInSeconds(), cfg.options().windowType()};
+
+    const auto isAfterWindow = [&](const eckit::DateTime& point) {
+        return cfg.options().windowType() == WindowType::ForwardOffset ? point > endPoint : point >= endPoint;
+    };
+    while (isAfterWindow(cfg.curr())) {
+        startPoint = endPoint;
+        endPoint = periodUpdater->computeWinEndTime(startPoint);
+    }
+
+    eckit::DateTime creationPoint{cfg.curr()};
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.options().windowType()};
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -94,7 +96,6 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     prevPoint_{eckit::Date{0}, eckit::Time{0}},
     endPoint_{eckit::Date{0}, eckit::Time{0}},
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
-    timeIncrementInSeconds_{0},
     count_{0},
     counts_{},
     windowType_{WindowType::ForwardOffset} {
@@ -104,7 +105,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeIncrementInSeconds, WindowType windowType) :
+                                 WindowType windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -112,7 +113,6 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     prevPoint_{creationPoint},
     endPoint_{endPoint},
     lastFlush_{epochPoint},
-    timeIncrementInSeconds_{timeIncrementInSeconds},
     count_{0},
     counts_{},
     windowType_{windowType} {}
@@ -157,8 +157,14 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
 }
 
 void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
-    gtLowerBound(currentPoint, true);
-    leUpperBound(currentPoint, true);
+    if (windowType_ == WindowType::ForwardOffset) {
+        gtLowerBound(currentPoint, true);
+        leUpperBound(currentPoint, true);
+    }
+    else {
+        geLowerBound(currentPoint, true);
+        ltUpperBound(currentPoint, true);
+    }
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
@@ -197,25 +203,24 @@ bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
 }
 
 bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ >= dt) {
+    if (throw_error && startPoint_ >= dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt > creationPoint_;
+    return dt > startPoint_;
 };
 
 bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ > dt) {
+    if (throw_error && startPoint_ > dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt >= creationPoint_;
+    return dt >= startPoint_;
 };
 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
-    // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint()) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
@@ -225,7 +230,6 @@ bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) 
 };
 
 bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) const {
-    // TODO: test without 1 second added. Now it should work
     if (throw_error && dt >= endPoint()) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
@@ -235,15 +239,11 @@ bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) 
 };
 
 long OperationWindow::timeSpanInHours() const {
-    return long(endPoint_ - creationPoint_) / 3600;
+    return long(endPoint_ - startPoint_) / 3600;
 }
 
 long OperationWindow::timeSpanInSeconds() const {
-    return long(endPoint_ - creationPoint_);
-}
-
-long OperationWindow::timeSpanInSteps() const {
-    return timeSpanInSeconds() / timeIncrementInSeconds_;
+    return long(endPoint_ - startPoint_);
 }
 
 long OperationWindow::lastPointsDiffInSeconds() const {
@@ -298,26 +298,6 @@ long OperationWindow::prevPointInHours() const {
 }
 
 
-long OperationWindow::startPointInSteps() const {
-    return startPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::creationPointInSteps() const {
-    return creationPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::endPointInSteps() const {
-    return endPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::currPointInSteps() const {
-    return currPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::prevPointInSteps() const {
-    return prevPointInSeconds() / timeIncrementInSeconds_;
-}
-
 long OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
     return startPoint_ - refPoint;
 }
@@ -360,26 +340,6 @@ long OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
 }
 
 
-long OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
-    return startPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
-    return creationPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
-    return endPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
-    return currPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
-    return prevPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
 eckit::DateTime OperationWindow::epochPoint() const {
     return epochPoint_;
 }
@@ -404,37 +364,21 @@ eckit::DateTime OperationWindow::prevPoint() const {
     return prevPoint_;
 }
 
-std::string OperationWindow::stepRange() const {
-    std::ostringstream os;
-    os << std::to_string(creationPointInSteps()) << "-" << std::to_string(endPointInSteps());
-    return os.str();
-};
-
 std::string OperationWindow::stepRangeInHours() const {
     std::ostringstream os;
-    os << std::to_string(creationPointInHours()) << "-" << std::to_string(endPointInHours());
+    os << std::to_string(startPointInHours()) << "-" << std::to_string(endPointInHours());
     return os.str();
 }
 
-std::string OperationWindow::stepRange(const eckit::DateTime& refPoint) const {
-    std::ostringstream os;
-    os << std::to_string(creationPointInSteps(refPoint)) << "-" << std::to_string(endPointInSteps(refPoint));
-    return os.str();
-};
-
 std::string OperationWindow::stepRangeInHours(const eckit::DateTime& refPoint) const {
     std::ostringstream os;
-    os << std::to_string(creationPointInHours(refPoint)) << "-" << std::to_string(endPointInHours(refPoint));
+    os << std::to_string(startPointInHours(refPoint)) << "-" << std::to_string(endPointInHours(refPoint));
     return os.str();
 }
 
 void OperationWindow::updateFlush() {
     lastFlush_ = currPoint_;
     return;
-}
-
-long OperationWindow::lastFlushInSteps() const {
-    return (lastFlush_ - epochPoint_) / timeIncrementInSeconds_;
 }
 
 void OperationWindow::initCountsLazy(size_t size) const {
@@ -462,7 +406,6 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
@@ -491,14 +434,13 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[12] = static_cast<std::uint64_t>(lastFlush_.date().yyyymmdd());
     currState[13] = static_cast<std::uint64_t>(lastFlush_.time().hhmmss());
 
-    currState[14] = static_cast<std::uint64_t>(timeIncrementInSeconds_);
-    currState[15] = static_cast<std::uint64_t>(count_);
-    currState[16] = static_cast<std::uint64_t>(windowType_);
+    currState[14] = static_cast<std::uint64_t>(count_);
+    currState[15] = static_cast<std::uint64_t>(windowType_);
 
     const size_t countsSize = counts_.size();
-    currState[17] = static_cast<std::uint64_t>(countsSize);
+    currState[16] = static_cast<std::uint64_t>(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        currState[i + 18] = static_cast<std::uint64_t>(counts_[i]);
+        currState[i + 17] = static_cast<std::uint64_t>(counts_[i]);
     }
 
     currState.computeChecksum();
@@ -516,14 +458,13 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[8]), static_cast<long>(currState[9]));
     currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[10]), static_cast<long>(currState[11]));
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
-    timeIncrementInSeconds_ = static_cast<long>(currState[14]);
-    count_ = static_cast<long>(currState[15]);
-    windowType_ = static_cast<WindowType>(currState[16]);
+    count_ = static_cast<long>(currState[14]);
+    windowType_ = static_cast<WindowType>(currState[15]);
 
-    const auto countsSize = static_cast<size_t>(currState[17]);
+    const auto countsSize = static_cast<size_t>(currState[16]);
     counts_.resize(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        counts_[i] = static_cast<long>(currState[i + 18]);
+        counts_[i] = static_cast<long>(currState[i + 17]);
     }
 
     if (opt.debugRestart()) {
@@ -535,7 +476,6 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
@@ -547,7 +487,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return 18 + counts_.size() + 1;  // values + counts + checksum
+    return 17 + counts_.size() + 1;  // values + counts + checksum
 }
 
 void OperationWindow::print(std::ostream& os) const {

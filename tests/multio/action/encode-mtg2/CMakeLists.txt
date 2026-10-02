@@ -22,3 +22,24 @@ ecbuild_add_test(
 )
 
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_cache_run
+    SOURCES test_cache.cc
+    NO_AS_NEEDED
+    LIBS multio-action-encode-mtg2 multio-action-sink
+    ENVIRONMENT "IFS_INSTALL_DIR=${IFS_INSTALL_DIR}"
+)
+
+ecbuild_add_test(
+    TARGET        ${PREFIX}_cache_timespan_fs_compare
+    TEST_REQUIRES ${PREFIX}_cache_run
+    COMMAND       grib_compare
+    ARGS          -f timespan-fs.grib timespan-fs-with-cache.grib
+)
+
+ecbuild_add_test(
+    TARGET        ${PREFIX}_cache_timespan_3_6_compare
+    TEST_REQUIRES ${PREFIX}_cache_run
+    COMMAND       grib_compare
+    ARGS          -f timespan-3-6.grib timespan-3-6-with-cache.grib
+)

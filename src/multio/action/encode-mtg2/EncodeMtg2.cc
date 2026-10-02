@@ -101,7 +101,7 @@ std::unique_ptr<metkit::codes::CodesHandle> encode(metkit::mars2grib::Mars2Grib&
     const auto misc = dm::dumpUnscopedRecord<eckit::LocalConfiguration>(miscRec);
 
 
-    if (!cache) {
+    if (!cache || (marsRec.timespan.isSet() && marsRec.timespan.get().isFromStart())) {
         return encoder.encode(values, size, mars, misc);
     }
 

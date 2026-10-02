@@ -107,14 +107,14 @@ MarsToMarsResult runMarsToMarsStage(const eckit::LocalConfiguration& mars, const
     try {
         if (context.apiOptions) {
             metkit::mars2mars::Mars2Mars mars2mars(*context.apiOptions);
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            const auto mappedMarsMisc = mars2mars.convert(mars);
             mappedMars = mappedMarsMisc.mars;
             mappedMisc = mappedMarsMisc.misc;
             result.mars = mappedMars;
         }
         else {
             metkit::mars2mars::Mars2Mars mars2mars;
-            const auto mappedMarsMisc = mars2mars.convert<eckit::LocalConfiguration>(mars);
+            const auto mappedMarsMisc = mars2mars.convert(mars);
             mappedMars = mappedMarsMisc.mars;
             mappedMisc = mappedMarsMisc.misc;
             result.mars = mappedMars;

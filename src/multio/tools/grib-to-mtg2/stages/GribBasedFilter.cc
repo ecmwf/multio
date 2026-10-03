@@ -331,7 +331,11 @@ bool allowDiscipline1924i(const metkit::codes::CodesHandle& handle) {
     return isDiscipline192Message(handle) && handle.getString("type") == "4i";
 }
 
-bool allowSelectedDiscipline192(const metkit::codes::CodesHandle& handle, const std::vector<std::string>& allowRules) {
+bool allowSelectedDiscipline192(const metkit::codes::CodesHandle& handle, const std::vector<std::string>& allowRules,
+                                const std::unordered_set<long>& allowParams) {
+    if (!allowParams.empty() && allowParams.count(handle.getLong("paramId")) != 0) {
+        return true;
+    }
     for (const auto& rule : allowRules) {
         if ((rule == "me" && allowDiscipline192Me(handle)) || (rule == "4i" && allowDiscipline1924i(handle))) {
             return true;
@@ -349,7 +353,7 @@ bool rejectByDiscipline192(const metkit::codes::CodesHandle& inputHandle, const 
     if (!isDiscipline192Message(inputHandle) || context.discipline192Policy == OptionPolicy::TryToHandle) {
         return false;
     }
-    return !allowSelectedDiscipline192(inputHandle, context.discipline192AllowRules);
+    return !allowSelectedDiscipline192(inputHandle, context.discipline192AllowRules, context.discipline192AllowParams);
 }
 
 /// @brief Reject a GRIB1 message when the GRIB1 edition policy says to ignore it.
@@ -391,8 +395,12 @@ std::vector<std::string> parseDiscipline192AllowRules(const eckit::LocalConfigur
     }
 
     const auto policy = config.getSubConfiguration("discipline192-messages-policy");
+    if (!policy.has("try-to-handle") && !policy.has("try-to-handle-params")) {
+        throw eckit::BadValue("discipline192-messages-policy requires 'try-to-handle' and/or 'try-to-handle-params'",
+                              Here());
+    }
     if (!policy.has("try-to-handle")) {
-        throw eckit::BadValue("discipline192-messages-policy requires 'try-to-handle'", Here());
+        return {};
     }
 
     const auto rules = policy.getStringVector("try-to-handle");
@@ -402,6 +410,20 @@ std::vector<std::string> parseDiscipline192AllowRules(const eckit::LocalConfigur
         }
     }
     return rules;
+}
+
+std::unordered_set<long> parseDiscipline192AllowParams(const eckit::LocalConfiguration& config) {
+    if (!config.has("discipline192-messages-policy") || !config.isSubConfiguration("discipline192-messages-policy")) {
+        return {};
+    }
+
+    const auto policy = config.getSubConfiguration("discipline192-messages-policy");
+    if (!policy.has("try-to-handle-params")) {
+        return {};
+    }
+
+    const auto params = policy.getLongVector("try-to-handle-params");
+    return std::unordered_set<long>(params.begin(), params.end());
 }
 
 }  // namespace
@@ -424,6 +446,7 @@ void validateGribBasedFilterContext(const eckit::LocalConfiguration& config) {
     if (config.has("discipline192-messages-policy")) {
         if (config.isSubConfiguration("discipline192-messages-policy")) {
             (void)parseDiscipline192AllowRules(config);
+            (void)parseDiscipline192AllowParams(config);
         }
         else {
             (void)parseOptionPolicy(config.getString("discipline192-messages-policy"));
@@ -462,6 +485,7 @@ GribBasedFilterContext parseGribBasedFilterContext(const eckit::LocalConfigurati
         if (config.isSubConfiguration("discipline192-messages-policy")) {
             parsed.discipline192Policy = OptionPolicy::Ignore;
             parsed.discipline192AllowRules = parseDiscipline192AllowRules(config);
+            parsed.discipline192AllowParams = parseDiscipline192AllowParams(config);
         }
         else {
             parsed.discipline192Policy = getOptionPolicy(config, "discipline192-messages-policy", OptionPolicy::Ignore);

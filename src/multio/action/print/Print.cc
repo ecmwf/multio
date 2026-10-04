@@ -10,6 +10,8 @@
 
 #include "Print.h"
 
+#include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -18,6 +20,8 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/mpi/Comm.h"
+#include "eckit/runtime/Main.h"
 
 #include "multio/datamod/MarsMiscGeo.h"
 #include "multio/datamod/core/EntryDumper.h"
@@ -61,9 +65,23 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
 }
 
 void Print::printPrefix(std::ostream& os) const {
-    if (!prefix_.empty()) {
-        os << prefix_ << ": ";
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm localTime;
+    localtime_r(&now, &localTime);
+
+    os << "[MultIO::print][" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "][" << eckit::Main::hostname();
+    const auto& world = eckit::mpi::comm("world");
+    if (world.size() > 1) {
+        os << ":r" << world.rank();
     }
+    os << "][";
+    if (const auto& planName = compConf_.planName()) {
+        os << *planName;
+        if (!prefix_.empty()) {
+            os << "/";
+        }
+    }
+    os << prefix_ << "] ";
 }
 
 void Print::printMars(std::ostream& os, const message::Message& msg, bool includeMisc) const {
@@ -71,7 +89,8 @@ void Print::printMars(std::ostream& os, const message::Message& msg, bool includ
         const auto marsRecord = dm::readRecord<dm::FullMarsRecord>(msg.metadata());
         const auto mars = dm::dumpRecord<message::Metadata>(marsRecord);
 
-        os << prefix_ << ": Field: " << std::setw(6) << count_++ << " :: \"mars\":";
+        printPrefix(os);
+        os << "Field: " << std::setw(6) << count_++ << " :: \"mars\":";
         os << mars;
         if (includeMisc) {
             const auto miscRecord = dm::readRecord<dm::MiscRecord>(msg.metadata());
@@ -84,14 +103,14 @@ void Print::printMars(std::ostream& os, const message::Message& msg, bool includ
 
     if (msg.tag() == message::Message::Tag::Flush) {
         count_ = 1;
-        // printPrefix(os);
         long flushKind = msg.metadata().getOpt<long>("flushKind").value_or(-1);
+        printPrefix(os);
         if (flushKind == 1) {
             long step = msg.metadata().getOpt<long>("step").value_or(-1);
-            os << prefix_ << ": Flush: step=" << step << std::endl;
+            os << "Flush: step=" << step << std::endl;
         }
         else {
-            os << prefix_ << ": Flush: " << flushKind << std::endl;
+            os << "Flush: " << flushKind << std::endl;
         }
         os << std::endl << std::endl;
     }
@@ -114,7 +133,8 @@ void Print::executeImpl(message::Message msg) {
         executeNext(std::move(msg));
     }
     catch (...) {
-        std::cerr << "ERROR (Print action): offending message:" << std::endl;
+        printPrefix(std::cerr);
+        std::cerr << "ERROR: offending message:" << std::endl;
         try {
             printMars(std::cerr, diagnostic, true);
         }

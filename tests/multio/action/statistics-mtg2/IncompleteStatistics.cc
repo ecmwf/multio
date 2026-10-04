@@ -41,10 +41,8 @@ MultioTestEnvironment makeEnvironment(bool emitIncomplete = false, bool allowNon
 }
 
 void startSimulation(MultioTestEnvironment& env) {
-    env.process({{Message::Tag::Flush,
-                  {},
-                  {},
-                  {{"flushKind", "first-step"}, {"date", 2026'01'01}, {"time", 0}, {"step", 0}}}});
+    env.process(
+        {{Message::Tag::Flush, {}, {}, {{"flushKind", "first-step"}, {"date", 2026'01'01}, {"time", 0}, {"step", 0}}}});
     env.debugSink().pop();
 }
 
@@ -76,8 +74,7 @@ CASE("complete window is emitted") {
     const auto beforeFlush = env.debugSink().size();
     EXPECT_NO_THROW(flushLastStep(env));
     EXPECT_EQUAL(env.debugSink().size(), beforeFlush + 2);
-    EXPECT_EQUAL(env.debugSink().front().metadata().get<std::int64_t>("misc-distanceFromPreviousStepInSeconds"),
-                 86400);
+    EXPECT_EQUAL(env.debugSink().front().metadata().get<std::int64_t>("misc-distanceFromPreviousStepInSeconds"), 86400);
 }
 
 CASE("trailing partial window is suppressed by default") {

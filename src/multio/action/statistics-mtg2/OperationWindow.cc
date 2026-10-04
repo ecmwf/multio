@@ -166,8 +166,7 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     return;
 }
 
-void OperationWindow::updateData(const eckit::DateTime& currentPoint,
-                                 std::int64_t distanceFromPreviousStepInSeconds) {
+void OperationWindow::updateData(const eckit::DateTime& currentPoint, std::int64_t distanceFromPreviousStepInSeconds) {
     if (windowType_ == WindowType::ForwardOffset) {
         gtLowerBound(currentPoint, true);
         leUpperBound(currentPoint, true);
@@ -642,8 +641,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return 25 + counts_.size() + 2 * declaredDistanceHistogram_.size()
-         + 2 * observedDistanceHistogram_.size();
+    return 25 + counts_.size() + 2 * declaredDistanceHistogram_.size() + 2 * observedDistanceHistogram_.size();
 }
 
 void OperationWindow::print(std::ostream& os) const {

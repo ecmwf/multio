@@ -74,9 +74,8 @@ void printLogPreamble(std::ostream& os, const std::optional<std::string>& planNa
 
 void printWindowDetails(std::ostream& os, const OperationWindow& window) {
     os << "type=" << (window.windowType() == WindowType::ForwardOffset ? "forward-offset" : "backward-offset")
-       << " epoch=" << window.epochPoint() << " start=" << window.startPoint()
-       << " creation=" << window.creationPoint() << " previous=" << window.prevPoint()
-       << " current=" << window.currPoint() << " end=" << window.endPoint()
+       << " epoch=" << window.epochPoint() << " start=" << window.startPoint() << " creation=" << window.creationPoint()
+       << " previous=" << window.prevPoint() << " current=" << window.currPoint() << " end=" << window.endPoint()
        << " span-seconds=" << window.timeSpanInSeconds() << " samples=" << window.count();
 }
 

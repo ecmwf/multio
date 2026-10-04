@@ -38,8 +38,18 @@ public:
                             : updateWithoutMissing(val, cfg);
     }
 
+    void updateWindow(const void* data, long sz, const message::Message& msg,
+                      const StatisticsConfiguration& cfg) override {
+        OperationWithData<T>::updateWindow(data, sz, msg, cfg);
+        std::fill(mean_.begin(), mean_.end(), 0.0);
+    }
+
 private:
     void computeWithoutThreshold(T* buf, const StatisticsConfiguration& cfg) {
+        if (win_.count() == 1) {
+            std::fill(buf, buf + values_.size(), 0.0);
+            return;
+        }
         const auto c = 1.0 / win_.count();
         std::transform(values_.begin(), values_.end(), buf, [c](T v) { return std::sqrt(v * c); });
     }
@@ -48,8 +58,9 @@ private:
         const auto t = cfg.options().valueCountThreshold().value();
         const auto m = cfg.missingValue();
         const auto& counts = win_.counts();
-        std::transform(values_.begin(), values_.end(), counts.begin(), buf,
-                       [t, m](T v, auto c) { return static_cast<T>(c < t ? m : std::sqrt(v / c)); });
+        std::transform(values_.begin(), values_.end(), counts.begin(), buf, [t, m](T v, auto c) {
+            return static_cast<T>(c == 0 || c < t ? m : std::sqrt(v / c));
+        });
     }
 
     void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {

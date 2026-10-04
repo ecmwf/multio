@@ -45,6 +45,9 @@ private:
 
     const bool disableStrictMapping_;
     const bool disableSquashing_;
+    const bool emitIncompleteStatistics_;
+    const bool allowNonUniformStatistics_;
+    const bool debug_;
     const std::vector<std::pair<std::string, std::string>> setMetadata_;
 
     const std::optional<OutputTimeReference> outputTimeReference_;
@@ -69,6 +72,9 @@ public:
 
     bool disableStrictMapping() const;
     bool disableSquashing() const;
+    bool emitIncompleteStatistics() const;
+    bool allowNonUniformStatistics() const;
+    bool debug() const;
     const std::vector<std::pair<std::string, std::string>>& setMetadata() const;
 
     std::optional<OutputTimeReference> outputTimeReference() const;

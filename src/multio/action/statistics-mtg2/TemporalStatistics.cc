@@ -72,7 +72,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(multio::LibMultio) << cfg.options().logPrefix() << " *** Update Data" << std::endl;
-    window_.updateData(currentDateTime(msg, cfg));
+    window_.updateData(currentDateTime(msg, cfg), cfg.distanceFromPreviousStepInSeconds());
     for (auto& stat : statistics_) {
         // Truncation is always present when we are dealing with Spherical Harmonics
         if (dm::parseEntry(dm::TRUNCATION, msg.metadata()).isSet() && !stat->supportsSH()) {

@@ -143,6 +143,10 @@ The current working changes implement the agreed model:
 - Added output `timeIncrementInSeconds` injection according to the rules above.
 - Updated emitted `step` values to remain absolute MARS durations, preserving seconds when needed.
 - Changed maximum initialization from `std::numeric_limits<T>::min()` to `std::numeric_limits<T>::lowest()` so entirely negative fields are handled correctly.
+- Added `distanceFromPreviousStepInSeconds` metadata to describe instantaneous sample distance or statistical field extent.
+- Added complete-window detection using declared and observed distance histograms.
+- Added `emit-incomplete-statistics`, `allow-non-uniform-statistics`, and window-dynamics `debug` options.
+- Incomplete output uses the nominal calendar-window extent; disallowed non-uniform input is a hard error.
 
 No build or configure was run. Verification was limited to static inspection and consistency searches, as required.
 

@@ -145,6 +145,9 @@ void StatisticsConfiguration::validateMetadata() const {
     if (integrationStepInSeconds() <= 0) {
         throw eckit::UserError{"integrationStepInSeconds must be positive", Here()};
     }
+    if (distanceFromPreviousStepInSeconds() <= 0) {
+        throw eckit::UserError{"distanceFromPreviousStepInSeconds must be positive", Here()};
+    }
     if (md_.stattype.isSet() && !md_.timespan.isSet()) {
         throw eckit::UserError{"stattype requires timespan", Here()};
     }
@@ -159,6 +162,9 @@ void StatisticsConfiguration::validateMetadata() const {
     }
     if (md_.timeIncrementInSeconds.isSet() && md_.timeIncrementInSeconds.get() <= 0) {
         throw eckit::UserError{"timeIncrementInSeconds must be positive", Here()};
+    }
+    if (isStatistical() && opt_.windowType() == WindowType::BackwardOffset) {
+        throw eckit::UserError{"Backward-offset windows only support instantaneous input", Here()};
     }
 }
 
@@ -178,6 +184,9 @@ std::int64_t StatisticsConfiguration::outputStepInSeconds() const {
 }
 std::int64_t StatisticsConfiguration::integrationStepInSeconds() const {
     return md_.integrationStepInSeconds.get();
+}
+std::int64_t StatisticsConfiguration::distanceFromPreviousStepInSeconds() const {
+    return md_.distanceFromPreviousStepInSeconds.get();
 }
 std::optional<std::int64_t> StatisticsConfiguration::timeIncrementInSeconds() const {
     if (md_.timeIncrementInSeconds.isSet()) {

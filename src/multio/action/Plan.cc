@@ -104,7 +104,7 @@ Plan::Plan(const ComponentConfiguration& compConf) :
     name_{compConf.parsedConfig().getString("name")},
     root_{ActionFactory::instance().build(
         rootConfig(compConf.parsedConfig(), name_).getString("type"),
-        ComponentConfiguration(rootConfig(compConf.parsedConfig(), name_), compConf.multioConfig()))} {}
+        ComponentConfiguration(rootConfig(compConf.parsedConfig(), name_), compConf.multioConfig(), name_))} {}
 
 Plan::~Plan() = default;
 

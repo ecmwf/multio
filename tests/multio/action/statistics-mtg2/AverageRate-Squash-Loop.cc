@@ -69,6 +69,7 @@ CASE("Average rate + daily average + monthly average") {
                             {"timespan", 1},
                             {"misc-outputStepInSeconds", 3600},
                             {"misc-integrationStepInSeconds", 600},
+                            {"misc-distanceFromPreviousStepInSeconds", 3600},
                             {"misc-timeIncrementInSeconds", 600},
                             {"misc-precision", "double"}});
 
@@ -158,6 +159,7 @@ CASE("Average rate + daily average + monthly maximum") {
                             {"timespan", 1},
                             {"misc-outputStepInSeconds", 3600},
                             {"misc-integrationStepInSeconds", 600},
+                            {"misc-distanceFromPreviousStepInSeconds", 3600},
                             {"misc-timeIncrementInSeconds", 600},
                             {"misc-precision", "double"}});
 

@@ -98,7 +98,12 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     count_{0},
     counts_{},
-    windowType_{WindowType::ForwardOffset} {
+    windowType_{WindowType::ForwardOffset},
+    firstPoint_{},
+    declaredDistanceHistogram_{},
+    observedDistanceHistogram_{},
+    contiguous_{true},
+    lastDeclaredDistance_{0} {
     load(IOmanager, opt);
     return;
 }
@@ -115,7 +120,12 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     lastFlush_{epochPoint},
     count_{0},
     counts_{},
-    windowType_{windowType} {}
+    windowType_{windowType},
+    firstPoint_{},
+    declaredDistanceHistogram_{},
+    observedDistanceHistogram_{},
+    contiguous_{true},
+    lastDeclaredDistance_{0} {}
 
 
 long OperationWindow::count() const {
@@ -156,7 +166,8 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     return;
 }
 
-void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
+void OperationWindow::updateData(const eckit::DateTime& currentPoint,
+                                 std::int64_t distanceFromPreviousStepInSeconds) {
     if (windowType_ == WindowType::ForwardOffset) {
         gtLowerBound(currentPoint, true);
         leUpperBound(currentPoint, true);
@@ -165,10 +176,31 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
         geLowerBound(currentPoint, true);
         ltUpperBound(currentPoint, true);
     }
+    const auto previousPoint = firstPoint_.value_or(startPoint_);
+    const auto observedDistance = static_cast<std::int64_t>(currentPoint - previousPoint);
+    declaredDistanceHistogram_[distanceFromPreviousStepInSeconds]++;
+    lastDeclaredDistance_ = distanceFromPreviousStepInSeconds;
+
+    if (!firstPoint_) {
+        firstPoint_ = currentPoint;
+        if (windowType_ == WindowType::ForwardOffset) {
+            observedDistanceHistogram_[observedDistance]++;
+            contiguous_ = observedDistance == distanceFromPreviousStepInSeconds;
+        }
+        else {
+            contiguous_ = currentPoint == startPoint_;
+        }
+    }
+    else {
+        observedDistanceHistogram_[observedDistance]++;
+        if (observedDistance != distanceFromPreviousStepInSeconds) {
+            contiguous_ = false;
+        }
+    }
+
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
-    LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
     return;
 }
 
@@ -181,6 +213,11 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     endPoint_ = endPoint;
     count_ = 0;
     counts_.clear();
+    firstPoint_.reset();
+    declaredDistanceHistogram_.clear();
+    observedDistanceHistogram_.clear();
+    contiguous_ = true;
+    lastDeclaredDistance_ = 0;
     return;
 }
 
@@ -360,6 +397,70 @@ eckit::DateTime OperationWindow::currPoint() const {
     return currPoint_;
 }
 
+bool OperationWindow::isComplete() const {
+    if (!firstPoint_ || !contiguous_) {
+        return false;
+    }
+    if (windowType_ == WindowType::ForwardOffset) {
+        return currPoint_ == endPoint_;
+    }
+    if (!isUniform()) {
+        return false;
+    }
+    return currPoint_ + static_cast<eckit::Second>(declaredDistanceHistogram_.begin()->first) == endPoint_;
+}
+
+bool OperationWindow::isUniform() const {
+    return declaredDistanceHistogram_.size() <= 1;
+}
+
+WindowType OperationWindow::windowType() const {
+    return windowType_;
+}
+
+std::string OperationWindow::incompleteReason() const {
+    if (!firstPoint_) {
+        return "the window contains no samples";
+    }
+    if (!contiguous_) {
+        return "observed sample spacing does not match the declared distance/extent";
+    }
+    if (windowType_ == WindowType::ForwardOffset) {
+        std::ostringstream os;
+        os << "the last sample is at " << currPoint_ << " instead of the window end " << endPoint_;
+        return os.str();
+    }
+    if (!isUniform()) {
+        return "backward-offset completeness requires a uniform declared distance/extent";
+    }
+    if (declaredDistanceHistogram_.empty()) {
+        return "no declared sample distance/extent was recorded";
+    }
+    std::ostringstream os;
+    os << "the last sample at " << currPoint_ << " plus the declared distance/extent "
+       << declaredDistanceHistogram_.begin()->first << " seconds does not reach the window end " << endPoint_;
+    return os.str();
+}
+
+std::int64_t OperationWindow::lastDeclaredDistance() const {
+    return lastDeclaredDistance_;
+}
+
+const std::map<std::int64_t, std::size_t>& OperationWindow::declaredDistanceHistogram() const {
+    return declaredDistanceHistogram_;
+}
+
+std::map<std::int64_t, std::size_t> OperationWindow::observedDistanceHistogram() const {
+    auto histogram = observedDistanceHistogram_;
+    if (firstPoint_) {
+        const auto trailingDistance = static_cast<std::int64_t>(endPoint_ - currPoint_);
+        if (trailingDistance > 0) {
+            histogram[trailingDistance]++;
+        }
+    }
+    return histogram;
+}
+
 eckit::DateTime OperationWindow::prevPoint() const {
     return prevPoint_;
 }
@@ -410,6 +511,16 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
                 << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "firstPoint_ :: ";
+        if (firstPoint_) {
+            outFile << *firstPoint_;
+        }
+        else {
+            outFile << "unset";
+        }
+        outFile << std::endl;
+        outFile << "contiguous_ :: " << contiguous_ << std::endl;
+        outFile << "lastDeclaredDistance_ :: " << lastDeclaredDistance_ << std::endl;
         outFile.close();
     }
 
@@ -443,6 +554,23 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         currState[i + 17] = static_cast<std::uint64_t>(counts_[i]);
     }
 
+    size_t pos = 17 + countsSize;
+    currState[pos++] = firstPoint_ ? 1 : 0;
+    currState[pos++] = firstPoint_ ? static_cast<std::uint64_t>(firstPoint_->date().yyyymmdd()) : 0;
+    currState[pos++] = firstPoint_ ? static_cast<std::uint64_t>(firstPoint_->time().hhmmss()) : 0;
+    currState[pos++] = contiguous_ ? 1 : 0;
+    currState[pos++] = static_cast<std::uint64_t>(lastDeclaredDistance_);
+    currState[pos++] = static_cast<std::uint64_t>(declaredDistanceHistogram_.size());
+    for (const auto& [distance, count] : declaredDistanceHistogram_) {
+        currState[pos++] = static_cast<std::uint64_t>(distance);
+        currState[pos++] = static_cast<std::uint64_t>(count);
+    }
+    currState[pos++] = static_cast<std::uint64_t>(observedDistanceHistogram_.size());
+    for (const auto& [distance, count] : observedDistanceHistogram_) {
+        currState[pos++] = static_cast<std::uint64_t>(distance);
+        currState[pos++] = static_cast<std::uint64_t>(count);
+    }
+
     currState.computeChecksum();
 
     return;
@@ -467,6 +595,31 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         counts_[i] = static_cast<long>(currState[i + 17]);
     }
 
+    size_t pos = 17 + countsSize;
+    const bool hasFirstPoint = currState[pos++] != 0;
+    const auto firstDate = static_cast<long>(currState[pos++]);
+    const auto firstTime = static_cast<long>(currState[pos++]);
+    if (hasFirstPoint) {
+        firstPoint_ = yyyymmdd_hhmmss2DateTime(firstDate, firstTime);
+    }
+    else {
+        firstPoint_.reset();
+    }
+    contiguous_ = currState[pos++] != 0;
+    lastDeclaredDistance_ = static_cast<std::int64_t>(currState[pos++]);
+    const auto declaredSize = static_cast<size_t>(currState[pos++]);
+    declaredDistanceHistogram_.clear();
+    for (size_t i = 0; i < declaredSize; ++i) {
+        const auto distance = static_cast<std::int64_t>(currState[pos++]);
+        declaredDistanceHistogram_[distance] = static_cast<std::size_t>(currState[pos++]);
+    }
+    const auto observedSize = static_cast<size_t>(currState[pos++]);
+    observedDistanceHistogram_.clear();
+    for (size_t i = 0; i < observedSize; ++i) {
+        const auto distance = static_cast<std::int64_t>(currState[pos++]);
+        observedDistanceHistogram_[distance] = static_cast<std::size_t>(currState[pos++]);
+    }
+
     if (opt.debugRestart()) {
         std::ofstream outFile(fname);
         outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
@@ -480,6 +633,8 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
                 << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "contiguous_ :: " << contiguous_ << std::endl;
+        outFile << "lastDeclaredDistance_ :: " << lastDeclaredDistance_ << std::endl;
         outFile.close();
     }
 
@@ -487,7 +642,8 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return 17 + counts_.size() + 1;  // values + counts + checksum
+    return 25 + counts_.size() + 2 * declaredDistanceHistogram_.size()
+         + 2 * observedDistanceHistogram_.size();
 }
 
 void OperationWindow::print(std::ostream& os) const {

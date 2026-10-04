@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cinttypes>
+#include <map>
+#include <optional>
 #include <vector>
 
 #include "eckit/types/DateTime.h"
@@ -28,7 +30,7 @@ public:
     template <typename T>
     void updateCounts(const T* values, size_t size, double missingValue) const;
 
-    void updateData(const eckit::DateTime& currentPoint);
+    void updateData(const eckit::DateTime& currentPoint, std::int64_t distanceFromPreviousStepInSeconds);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
@@ -77,6 +79,14 @@ public:
     eckit::DateTime prevPoint() const;
     eckit::DateTime endPoint() const;
 
+    bool isComplete() const;
+    bool isUniform() const;
+    std::string incompleteReason() const;
+    WindowType windowType() const;
+    std::int64_t lastDeclaredDistance() const;
+    const std::map<std::int64_t, std::size_t>& declaredDistanceHistogram() const;
+    std::map<std::int64_t, std::size_t> observedDistanceHistogram() const;
+
     std::string stepRangeInHours() const;
 
     std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
@@ -97,6 +107,11 @@ private:
     long count_;
     mutable std::vector<long> counts_;
     WindowType windowType_;
+    std::optional<eckit::DateTime> firstPoint_;
+    std::map<std::int64_t, std::size_t> declaredDistanceHistogram_;
+    std::map<std::int64_t, std::size_t> observedDistanceHistogram_;
+    bool contiguous_;
+    std::int64_t lastDeclaredDistance_;
 
     void initCountsLazy(size_t sz) const;
 

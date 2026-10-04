@@ -56,6 +56,7 @@ public:
     std::int64_t time() const;
     std::int64_t outputStepInSeconds() const;
     std::int64_t integrationStepInSeconds() const;
+    std::int64_t distanceFromPreviousStepInSeconds() const;
     std::optional<std::int64_t> timeIncrementInSeconds() const;
     std::int64_t stepInSeconds() const;
     std::optional<std::int64_t> timespan() const;

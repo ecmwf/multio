@@ -73,6 +73,7 @@ struct FieldMetadataKeys {
     dm::EntryType_t<decltype(dm::TRUNCATION)> truncation;
     dm::EntryType_t<decltype(dm::OutputStepInSeconds)> outputStepInSeconds;
     dm::EntryType_t<decltype(dm::IntegrationStepInSeconds)> integrationStepInSeconds;
+    dm::EntryType_t<decltype(dm::DistanceFromPreviousStepInSeconds)> distanceFromPreviousStepInSeconds;
     dm::EntryType_t<decltype(TIME_INCREMENT_IN_SECONDS)> timeIncrementInSeconds;
     dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
@@ -81,7 +82,8 @@ struct FieldMetadataKeys {
     static constexpr auto record_entries_ = std::make_tuple(
         dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::STATTYPE, dm::PARAM, dm::STREAM.tagOptional(),
         dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION, dm::OutputStepInSeconds,
-        dm::IntegrationStepInSeconds, TIME_INCREMENT_IN_SECONDS, dm::BitmapPresent, dm::MissingValue);
+        dm::IntegrationStepInSeconds, dm::DistanceFromPreviousStepInSeconds, TIME_INCREMENT_IN_SECONDS,
+        dm::BitmapPresent, dm::MissingValue);
 };
 
 //------------------------ Flush Metadata Keys Record -----------------------//

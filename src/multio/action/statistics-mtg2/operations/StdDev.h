@@ -58,9 +58,8 @@ private:
         const auto t = cfg.options().valueCountThreshold().value();
         const auto m = cfg.missingValue();
         const auto& counts = win_.counts();
-        std::transform(values_.begin(), values_.end(), counts.begin(), buf, [t, m](T v, auto c) {
-            return static_cast<T>(c == 0 || c < t ? m : std::sqrt(v / c));
-        });
+        std::transform(values_.begin(), values_.end(), counts.begin(), buf,
+                       [t, m](T v, auto c) { return static_cast<T>(c == 0 || c < t ? m : std::sqrt(v / c)); });
     }
 
     void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {

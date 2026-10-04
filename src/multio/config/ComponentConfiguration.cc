@@ -20,12 +20,12 @@ ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::Local
 //-----------------------------------------------------------------------------
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
-                                                const MultioConfiguration& multioConf) :
+                                               const MultioConfiguration& multioConf) :
     ComponentConfiguration(componentConfig, multioConf, std::nullopt) {}
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
-                                                const MultioConfiguration& multioConf,
-                                                std::optional<std::string> planName) :
+                                               const MultioConfiguration& multioConf,
+                                               std::optional<std::string> planName) :
     componentConf_(componentConfig), multioConf_(multioConf), planName_(std::move(planName)) {}
 
 //-----------------------------------------------------------------------------

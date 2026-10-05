@@ -54,7 +54,12 @@ CASE("Average rate + daily average + monthly average") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    for (std::int64_t step = 1; step <= 24*(31+30+31); ++step) {
+    EXPECT_NO_THROW(env.process({{Message::Tag::Flush,
+                                  {},
+                                  {},
+                                  {{"flushKind", "first-step"}, {"date", 1996'10'01}, {"time", 0}, {"step", 0}}}}));
+
+    for (std::int64_t step = 1; step <= 24 * (31 + 30 + 31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
                             {"grid", "none"},
@@ -62,6 +67,10 @@ CASE("Average rate + daily average + monthly average") {
                             {"time", 00'00'00},
                             {"step", step},
                             {"timespan", 1},
+                            {"misc-outputStepInSeconds", 3600},
+                            {"misc-integrationStepInSeconds", 600},
+                            {"misc-distanceFromPreviousStepInSeconds", 3600},
+                            {"misc-timeIncrementInSeconds", 600},
                             {"misc-precision", "double"}});
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
@@ -76,8 +85,9 @@ CASE("Average rate + daily average + monthly average") {
     {
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));  // Average Precipitation Rate
-        EXPECT_EQUAL(24*31, md.get<std::int64_t>("step"));
-        EXPECT_EQUAL(24*31, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(24 * 31, md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24 * 31, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(600, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
         EXPECT(std::nullopt == md.getOpt<std::string>("stattype"));  // No stattype because of squashing
         env.debugSink().pop();
     }
@@ -85,8 +95,9 @@ CASE("Average rate + daily average + monthly average") {
     {
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));
-        EXPECT_EQUAL(24*(31+30), md.get<std::int64_t>("step"));
-        EXPECT_EQUAL(24*30, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(24 * (31 + 30), md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24 * 30, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(600, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
         EXPECT(std::nullopt == md.getOpt<std::string>("stattype"));
         env.debugSink().pop();
     }
@@ -94,8 +105,9 @@ CASE("Average rate + daily average + monthly average") {
     {
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));
-        EXPECT_EQUAL(24*(31+30+31), md.get<std::int64_t>("step"));
-        EXPECT_EQUAL(24*31, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(24 * (31 + 30 + 31), md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24 * 31, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(600, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
         EXPECT(std::nullopt == md.getOpt<std::string>("stattype"));
         env.debugSink().pop();
     }
@@ -132,7 +144,12 @@ CASE("Average rate + daily average + monthly maximum") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    for (std::int64_t step = 1; step <= 24*(31+30+31); ++step) {
+    EXPECT_NO_THROW(env.process({{Message::Tag::Flush,
+                                  {},
+                                  {},
+                                  {{"flushKind", "first-step"}, {"date", 1996'10'01}, {"time", 0}, {"step", 0}}}}));
+
+    for (std::int64_t step = 1; step <= 24 * (31 + 30 + 31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
                             {"grid", "none"},
@@ -140,6 +157,10 @@ CASE("Average rate + daily average + monthly maximum") {
                             {"time", 0000},
                             {"step", step},
                             {"timespan", 1},
+                            {"misc-outputStepInSeconds", 3600},
+                            {"misc-integrationStepInSeconds", 600},
+                            {"misc-distanceFromPreviousStepInSeconds", 3600},
+                            {"misc-timeIncrementInSeconds", 600},
                             {"misc-precision", "double"}});
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
@@ -154,17 +175,9 @@ CASE("Average rate + daily average + monthly maximum") {
     {
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));  // Average Precipitation Rate
-        EXPECT_EQUAL(24*31, md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24 * 31, md.get<std::int64_t>("step"));
         EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));  // Timespan from daily average
-        EXPECT_EQUAL("momx", md.get<std::string>("stattype"));
-        env.debugSink().pop();
-    }
-
-        {
-        auto md = env.debugSink().front().metadata();
-        EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));
-        EXPECT_EQUAL(24*(31+30), md.get<std::int64_t>("step"));
-        EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(86400, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
         EXPECT_EQUAL("momx", md.get<std::string>("stattype"));
         env.debugSink().pop();
     }
@@ -172,8 +185,19 @@ CASE("Average rate + daily average + monthly maximum") {
     {
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));
-        EXPECT_EQUAL(24*(31+30+31), md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24 * (31 + 30), md.get<std::int64_t>("step"));
         EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(86400, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
+        EXPECT_EQUAL("momx", md.get<std::string>("stattype"));
+        env.debugSink().pop();
+    }
+
+    {
+        auto md = env.debugSink().front().metadata();
+        EXPECT_EQUAL(235055, md.get<std::int64_t>("param"));
+        EXPECT_EQUAL(24 * (31 + 30 + 31), md.get<std::int64_t>("step"));
+        EXPECT_EQUAL(24, md.get<std::int64_t>("timespan"));
+        EXPECT_EQUAL(86400, md.get<std::int64_t>("misc-timeIncrementInSeconds"));
         EXPECT_EQUAL("momx", md.get<std::string>("stattype"));
         env.debugSink().pop();
     }

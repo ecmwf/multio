@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -110,7 +111,9 @@ StatisticsConfiguration::StatisticsConfiguration(const message::Metadata& md, co
     key_{generateKey(src)},
     epoch_{computeEpoch()},
     curr_{computeCurr()},
-    outputTimeReference_{readOutputTimeReference(md_, opt)} {}
+    outputTimeReference_{readOutputTimeReference(md_, opt)} {
+    validateMetadata();
+}
 
 StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     StatisticsConfiguration(msg.metadata(), msg.source(), opt) {};
@@ -132,7 +135,37 @@ eckit::DateTime StatisticsConfiguration::computeEpoch() const {
 
 
 eckit::DateTime StatisticsConfiguration::computeCurr() const {
-    return epoch() + static_cast<eckit::Second>(std::max(step(), static_cast<int64_t>(0)) * 3600);
+    return epoch() + static_cast<eckit::Second>(std::max(stepInSeconds(), static_cast<int64_t>(0)));
+}
+
+void StatisticsConfiguration::validateMetadata() const {
+    if (outputStepInSeconds() <= 0) {
+        throw eckit::UserError{"outputStepInSeconds must be positive", Here()};
+    }
+    if (integrationStepInSeconds() <= 0) {
+        throw eckit::UserError{"integrationStepInSeconds must be positive", Here()};
+    }
+    if (distanceFromPreviousStepInSeconds() <= 0) {
+        throw eckit::UserError{"distanceFromPreviousStepInSeconds must be positive", Here()};
+    }
+    if (md_.stattype.isSet() && !md_.timespan.isSet()) {
+        throw eckit::UserError{"stattype requires timespan", Here()};
+    }
+    if (md_.timespan.isSet() && !md_.timespan.get().isDuration()) {
+        throw eckit::UserError{"Statistical fields require a finite timespan duration", Here()};
+    }
+    if (isStatistical() && !md_.timeIncrementInSeconds.isSet()) {
+        throw eckit::UserError{"Statistical fields require timeIncrementInSeconds", Here()};
+    }
+    if (!isStatistical() && md_.timeIncrementInSeconds.isSet()) {
+        throw eckit::UserError{"Instantaneous fields must not contain timeIncrementInSeconds", Here()};
+    }
+    if (md_.timeIncrementInSeconds.isSet() && md_.timeIncrementInSeconds.get() <= 0) {
+        throw eckit::UserError{"timeIncrementInSeconds must be positive", Here()};
+    }
+    if (isStatistical() && opt_.windowType() == WindowType::BackwardOffset) {
+        throw eckit::UserError{"Backward-offset windows only support instantaneous input", Here()};
+    }
 }
 
 
@@ -146,17 +179,44 @@ std::int64_t StatisticsConfiguration::date() const {
 std::int64_t StatisticsConfiguration::time() const {
     return md_.time.get();
 }
-std::int64_t StatisticsConfiguration::timeIncrementInSeconds() const {
-    return md_.timeIncrementInSeconds.get();
+std::int64_t StatisticsConfiguration::outputStepInSeconds() const {
+    return md_.outputStepInSeconds.get();
 }
-std::int64_t StatisticsConfiguration::step() const {
-    return md_.step.get().toHours();
+std::int64_t StatisticsConfiguration::integrationStepInSeconds() const {
+    return md_.integrationStepInSeconds.get();
+}
+std::int64_t StatisticsConfiguration::distanceFromPreviousStepInSeconds() const {
+    return md_.distanceFromPreviousStepInSeconds.get();
+}
+std::optional<std::int64_t> StatisticsConfiguration::timeIncrementInSeconds() const {
+    if (md_.timeIncrementInSeconds.isSet()) {
+        return md_.timeIncrementInSeconds.get();
+    }
+    return std::nullopt;
+}
+std::int64_t StatisticsConfiguration::stepInSeconds() const {
+    return md_.step.get().toSeconds();
 }
 std::optional<std::int64_t> StatisticsConfiguration::timespan() const {
     if (md_.timespan.isSet()) {
         return md_.timespan.get().toHours();
     }
     return std::nullopt;
+}
+std::optional<std::int64_t> StatisticsConfiguration::timespanInSeconds() const {
+    if (md_.timespan.isSet()) {
+        return md_.timespan.get().toSeconds();
+    }
+    return std::nullopt;
+}
+std::optional<dm::StatType> StatisticsConfiguration::stattype() const {
+    if (md_.stattype.isSet()) {
+        return md_.stattype.get();
+    }
+    return std::nullopt;
+}
+bool StatisticsConfiguration::isStatistical() const {
+    return md_.timespan.isSet() || md_.stattype.isSet();
 }
 
 int64_t StatisticsConfiguration::param() const {

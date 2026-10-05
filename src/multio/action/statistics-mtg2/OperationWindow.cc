@@ -59,20 +59,22 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
-    // Note: A subtraction eckit::DateTime - eckit::Second yields eckit::Second instead of eckit::DateTime
-    //       We do our calculations based on a difference since an arbitrary epoch (1st of January in the year 0) as a
-    //       workarounds
-    eckit::DateTime epoch{eckit::Date{0000, 01, 01}, eckit::Time{00, 00, 00}};
-    eckit::Second deltaCurr = cfg.curr() - epoch;
-    eckit::Second deltaStart = deltaCurr - eckit::Second{cfg.timespan().value_or(0) * 3600.0};
-
+OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg,
+                            const eckit::DateTime& simulationStart) {
     eckit::DateTime epochPoint{cfg.epoch()};
-    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(epoch + deltaStart)};
-    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(epoch + deltaStart)};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(simulationStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    return OperationWindow{
-        epochPoint, startPoint, creationPoint, endPoint, cfg.timeIncrementInSeconds(), cfg.options().windowType()};
+
+    const auto isAfterWindow = [&](const eckit::DateTime& point) {
+        return cfg.options().windowType() == WindowType::ForwardOffset ? point > endPoint : point >= endPoint;
+    };
+    while (isAfterWindow(cfg.curr())) {
+        startPoint = endPoint;
+        endPoint = periodUpdater->computeWinEndTime(startPoint);
+    }
+
+    eckit::DateTime creationPoint{cfg.curr()};
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.options().windowType()};
 };
 
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
@@ -94,17 +96,21 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     prevPoint_{eckit::Date{0}, eckit::Time{0}},
     endPoint_{eckit::Date{0}, eckit::Time{0}},
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
-    timeIncrementInSeconds_{0},
     count_{0},
     counts_{},
-    windowType_{WindowType::ForwardOffset} {
+    windowType_{WindowType::ForwardOffset},
+    firstPoint_{},
+    declaredDistanceHistogram_{},
+    observedDistanceHistogram_{},
+    contiguous_{true},
+    lastDeclaredDistance_{0} {
     load(IOmanager, opt);
     return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeIncrementInSeconds, WindowType windowType) :
+                                 WindowType windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -112,10 +118,14 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     prevPoint_{creationPoint},
     endPoint_{endPoint},
     lastFlush_{epochPoint},
-    timeIncrementInSeconds_{timeIncrementInSeconds},
     count_{0},
     counts_{},
-    windowType_{windowType} {}
+    windowType_{windowType},
+    firstPoint_{},
+    declaredDistanceHistogram_{},
+    observedDistanceHistogram_{},
+    contiguous_{true},
+    lastDeclaredDistance_{0} {}
 
 
 long OperationWindow::count() const {
@@ -156,13 +166,40 @@ void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     return;
 }
 
-void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
-    gtLowerBound(currentPoint, true);
-    leUpperBound(currentPoint, true);
+void OperationWindow::updateData(const eckit::DateTime& currentPoint, std::int64_t distanceFromPreviousStepInSeconds) {
+    if (windowType_ == WindowType::ForwardOffset) {
+        gtLowerBound(currentPoint, true);
+        leUpperBound(currentPoint, true);
+    }
+    else {
+        geLowerBound(currentPoint, true);
+        ltUpperBound(currentPoint, true);
+    }
+    const auto previousPoint = firstPoint_.value_or(startPoint_);
+    const auto observedDistance = static_cast<std::int64_t>(currentPoint - previousPoint);
+    declaredDistanceHistogram_[distanceFromPreviousStepInSeconds]++;
+    lastDeclaredDistance_ = distanceFromPreviousStepInSeconds;
+
+    if (!firstPoint_) {
+        firstPoint_ = currentPoint;
+        if (windowType_ == WindowType::ForwardOffset) {
+            observedDistanceHistogram_[observedDistance]++;
+            contiguous_ = observedDistance == distanceFromPreviousStepInSeconds;
+        }
+        else {
+            contiguous_ = currentPoint == startPoint_;
+        }
+    }
+    else {
+        observedDistanceHistogram_[observedDistance]++;
+        if (observedDistance != distanceFromPreviousStepInSeconds) {
+            contiguous_ = false;
+        }
+    }
+
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
-    LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
     return;
 }
 
@@ -175,6 +212,11 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     endPoint_ = endPoint;
     count_ = 0;
     counts_.clear();
+    firstPoint_.reset();
+    declaredDistanceHistogram_.clear();
+    observedDistanceHistogram_.clear();
+    contiguous_ = true;
+    lastDeclaredDistance_ = 0;
     return;
 }
 
@@ -197,25 +239,24 @@ bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
 }
 
 bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ >= dt) {
+    if (throw_error && startPoint_ >= dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt > creationPoint_;
+    return dt > startPoint_;
 };
 
 bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ > dt) {
+    if (throw_error && startPoint_ > dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt >= creationPoint_;
+    return dt >= startPoint_;
 };
 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
-    // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint()) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
@@ -225,7 +266,6 @@ bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) 
 };
 
 bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) const {
-    // TODO: test without 1 second added. Now it should work
     if (throw_error && dt >= endPoint()) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
@@ -235,15 +275,11 @@ bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) 
 };
 
 long OperationWindow::timeSpanInHours() const {
-    return long(endPoint_ - creationPoint_) / 3600;
+    return long(endPoint_ - startPoint_) / 3600;
 }
 
 long OperationWindow::timeSpanInSeconds() const {
-    return long(endPoint_ - creationPoint_);
-}
-
-long OperationWindow::timeSpanInSteps() const {
-    return timeSpanInSeconds() / timeIncrementInSeconds_;
+    return long(endPoint_ - startPoint_);
 }
 
 long OperationWindow::lastPointsDiffInSeconds() const {
@@ -298,26 +334,6 @@ long OperationWindow::prevPointInHours() const {
 }
 
 
-long OperationWindow::startPointInSteps() const {
-    return startPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::creationPointInSteps() const {
-    return creationPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::endPointInSteps() const {
-    return endPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::currPointInSteps() const {
-    return currPointInSeconds() / timeIncrementInSeconds_;
-}
-
-long OperationWindow::prevPointInSteps() const {
-    return prevPointInSeconds() / timeIncrementInSeconds_;
-}
-
 long OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
     return startPoint_ - refPoint;
 }
@@ -360,26 +376,6 @@ long OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
 }
 
 
-long OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
-    return startPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
-    return creationPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
-    return endPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
-    return currPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
-long OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
-    return prevPointInSeconds(refPoint) / timeIncrementInSeconds_;
-}
-
 eckit::DateTime OperationWindow::epochPoint() const {
     return epochPoint_;
 }
@@ -400,41 +396,89 @@ eckit::DateTime OperationWindow::currPoint() const {
     return currPoint_;
 }
 
+bool OperationWindow::isComplete() const {
+    if (!firstPoint_ || !contiguous_) {
+        return false;
+    }
+    if (windowType_ == WindowType::ForwardOffset) {
+        return currPoint_ == endPoint_;
+    }
+    if (!isUniform()) {
+        return false;
+    }
+    return currPoint_ + static_cast<eckit::Second>(declaredDistanceHistogram_.begin()->first) == endPoint_;
+}
+
+bool OperationWindow::isUniform() const {
+    return declaredDistanceHistogram_.size() <= 1;
+}
+
+WindowType OperationWindow::windowType() const {
+    return windowType_;
+}
+
+std::string OperationWindow::incompleteReason() const {
+    if (!firstPoint_) {
+        return "the window contains no samples";
+    }
+    if (!contiguous_) {
+        return "observed sample spacing does not match the declared distance/extent";
+    }
+    if (windowType_ == WindowType::ForwardOffset) {
+        std::ostringstream os;
+        os << "the last sample is at " << currPoint_ << " instead of the window end " << endPoint_;
+        return os.str();
+    }
+    if (!isUniform()) {
+        return "backward-offset completeness requires a uniform declared distance/extent";
+    }
+    if (declaredDistanceHistogram_.empty()) {
+        return "no declared sample distance/extent was recorded";
+    }
+    std::ostringstream os;
+    os << "the last sample at " << currPoint_ << " plus the declared distance/extent "
+       << declaredDistanceHistogram_.begin()->first << " seconds does not reach the window end " << endPoint_;
+    return os.str();
+}
+
+std::int64_t OperationWindow::lastDeclaredDistance() const {
+    return lastDeclaredDistance_;
+}
+
+const std::map<std::int64_t, std::size_t>& OperationWindow::declaredDistanceHistogram() const {
+    return declaredDistanceHistogram_;
+}
+
+std::map<std::int64_t, std::size_t> OperationWindow::observedDistanceHistogram() const {
+    auto histogram = observedDistanceHistogram_;
+    if (firstPoint_) {
+        const auto trailingDistance = static_cast<std::int64_t>(endPoint_ - currPoint_);
+        if (trailingDistance > 0) {
+            histogram[trailingDistance]++;
+        }
+    }
+    return histogram;
+}
+
 eckit::DateTime OperationWindow::prevPoint() const {
     return prevPoint_;
 }
 
-std::string OperationWindow::stepRange() const {
-    std::ostringstream os;
-    os << std::to_string(creationPointInSteps()) << "-" << std::to_string(endPointInSteps());
-    return os.str();
-};
-
 std::string OperationWindow::stepRangeInHours() const {
     std::ostringstream os;
-    os << std::to_string(creationPointInHours()) << "-" << std::to_string(endPointInHours());
+    os << std::to_string(startPointInHours()) << "-" << std::to_string(endPointInHours());
     return os.str();
 }
 
-std::string OperationWindow::stepRange(const eckit::DateTime& refPoint) const {
-    std::ostringstream os;
-    os << std::to_string(creationPointInSteps(refPoint)) << "-" << std::to_string(endPointInSteps(refPoint));
-    return os.str();
-};
-
 std::string OperationWindow::stepRangeInHours(const eckit::DateTime& refPoint) const {
     std::ostringstream os;
-    os << std::to_string(creationPointInHours(refPoint)) << "-" << std::to_string(endPointInHours(refPoint));
+    os << std::to_string(startPointInHours(refPoint)) << "-" << std::to_string(endPointInHours(refPoint));
     return os.str();
 }
 
 void OperationWindow::updateFlush() {
     lastFlush_ = currPoint_;
     return;
-}
-
-long OperationWindow::lastFlushInSteps() const {
-    return (lastFlush_ - epochPoint_) / timeIncrementInSeconds_;
 }
 
 void OperationWindow::initCountsLazy(size_t size) const {
@@ -462,11 +506,20 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
                 << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "firstPoint_ :: ";
+        if (firstPoint_) {
+            outFile << *firstPoint_;
+        }
+        else {
+            outFile << "unset";
+        }
+        outFile << std::endl;
+        outFile << "contiguous_ :: " << contiguous_ << std::endl;
+        outFile << "lastDeclaredDistance_ :: " << lastDeclaredDistance_ << std::endl;
         outFile.close();
     }
 
@@ -491,14 +544,30 @@ void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, c
     currState[12] = static_cast<std::uint64_t>(lastFlush_.date().yyyymmdd());
     currState[13] = static_cast<std::uint64_t>(lastFlush_.time().hhmmss());
 
-    currState[14] = static_cast<std::uint64_t>(timeIncrementInSeconds_);
-    currState[15] = static_cast<std::uint64_t>(count_);
-    currState[16] = static_cast<std::uint64_t>(windowType_);
+    currState[14] = static_cast<std::uint64_t>(count_);
+    currState[15] = static_cast<std::uint64_t>(windowType_);
 
     const size_t countsSize = counts_.size();
-    currState[17] = static_cast<std::uint64_t>(countsSize);
+    currState[16] = static_cast<std::uint64_t>(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        currState[i + 18] = static_cast<std::uint64_t>(counts_[i]);
+        currState[i + 17] = static_cast<std::uint64_t>(counts_[i]);
+    }
+
+    size_t pos = 17 + countsSize;
+    currState[pos++] = firstPoint_ ? 1 : 0;
+    currState[pos++] = firstPoint_ ? static_cast<std::uint64_t>(firstPoint_->date().yyyymmdd()) : 0;
+    currState[pos++] = firstPoint_ ? static_cast<std::uint64_t>(firstPoint_->time().hhmmss()) : 0;
+    currState[pos++] = contiguous_ ? 1 : 0;
+    currState[pos++] = static_cast<std::uint64_t>(lastDeclaredDistance_);
+    currState[pos++] = static_cast<std::uint64_t>(declaredDistanceHistogram_.size());
+    for (const auto& [distance, count] : declaredDistanceHistogram_) {
+        currState[pos++] = static_cast<std::uint64_t>(distance);
+        currState[pos++] = static_cast<std::uint64_t>(count);
+    }
+    currState[pos++] = static_cast<std::uint64_t>(observedDistanceHistogram_.size());
+    for (const auto& [distance, count] : observedDistanceHistogram_) {
+        currState[pos++] = static_cast<std::uint64_t>(distance);
+        currState[pos++] = static_cast<std::uint64_t>(count);
     }
 
     currState.computeChecksum();
@@ -516,14 +585,38 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
     prevPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[8]), static_cast<long>(currState[9]));
     currPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[10]), static_cast<long>(currState[11]));
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
-    timeIncrementInSeconds_ = static_cast<long>(currState[14]);
-    count_ = static_cast<long>(currState[15]);
-    windowType_ = static_cast<WindowType>(currState[16]);
+    count_ = static_cast<long>(currState[14]);
+    windowType_ = static_cast<WindowType>(currState[15]);
 
-    const auto countsSize = static_cast<size_t>(currState[17]);
+    const auto countsSize = static_cast<size_t>(currState[16]);
     counts_.resize(countsSize);
     for (size_t i = 0; i < countsSize; ++i) {
-        counts_[i] = static_cast<long>(currState[i + 18]);
+        counts_[i] = static_cast<long>(currState[i + 17]);
+    }
+
+    size_t pos = 17 + countsSize;
+    const bool hasFirstPoint = currState[pos++] != 0;
+    const auto firstDate = static_cast<long>(currState[pos++]);
+    const auto firstTime = static_cast<long>(currState[pos++]);
+    if (hasFirstPoint) {
+        firstPoint_ = yyyymmdd_hhmmss2DateTime(firstDate, firstTime);
+    }
+    else {
+        firstPoint_.reset();
+    }
+    contiguous_ = currState[pos++] != 0;
+    lastDeclaredDistance_ = static_cast<std::int64_t>(currState[pos++]);
+    const auto declaredSize = static_cast<size_t>(currState[pos++]);
+    declaredDistanceHistogram_.clear();
+    for (size_t i = 0; i < declaredSize; ++i) {
+        const auto distance = static_cast<std::int64_t>(currState[pos++]);
+        declaredDistanceHistogram_[distance] = static_cast<std::size_t>(currState[pos++]);
+    }
+    const auto observedSize = static_cast<size_t>(currState[pos++]);
+    observedDistanceHistogram_.clear();
+    for (size_t i = 0; i < observedSize; ++i) {
+        const auto distance = static_cast<std::int64_t>(currState[pos++]);
+        observedDistanceHistogram_[distance] = static_cast<std::size_t>(currState[pos++]);
     }
 
     if (opt.debugRestart()) {
@@ -535,11 +628,12 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
         outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
         outFile << "currPoint_ :: " << currPoint_ << std::endl;
         outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
-        outFile << "timeIncrementInSeconds_ :: " << timeIncrementInSeconds_ << std::endl;
         outFile << "count_ :: " << count_ << std::endl;
         outFile << "counts_.size() :: " << counts_.size() << std::endl;
         outFile << "windowType_ :: "
                 << (windowType_ == WindowType::ForwardOffset ? "forward-offset" : "backward-offset") << std::endl;
+        outFile << "contiguous_ :: " << contiguous_ << std::endl;
+        outFile << "lastDeclaredDistance_ :: " << lastDeclaredDistance_ << std::endl;
         outFile.close();
     }
 
@@ -547,7 +641,7 @@ void OperationWindow::deserialize(const IOBuffer& currState, const std::string& 
 }
 
 size_t OperationWindow::restartSize() const {
-    return 18 + counts_.size() + 1;  // values + counts + checksum
+    return 25 + counts_.size() + 2 * declaredDistanceHistogram_.size() + 2 * observedDistanceHistogram_.size();
 }
 
 void OperationWindow::print(std::ostream& os) const {

@@ -53,6 +53,10 @@ constexpr auto RESTART_DATE_TIME = dm::EntryDef<std::string>{"restartDateTime"}.
 constexpr auto SERVER_RANK
     = dm::EntryDef<std::int64_t>{"serverRank"}.tagOptional().withAccessor([](auto&& v) { return &v.serverRank; });
 
+constexpr auto TIME_INCREMENT_IN_SECONDS
+    = dm::EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}.tagOptional().withAccessor(
+        [](auto&& v) { return &v.timeIncrementInSeconds; });
+
 //----------------------- Field Metadata Keys Record ------------------------//
 
 struct FieldMetadataKeys {
@@ -60,21 +64,26 @@ struct FieldMetadataKeys {
     dm::EntryType_t<decltype(dm::TIME)> time;
     dm::EntryType_t<decltype(dm::STEP)> step;
     dm::EntryType_t<decltype(dm::TIMESPAN)> timespan;
+    dm::EntryType_t<decltype(dm::STATTYPE)> stattype;
     dm::EntryType_t<decltype(dm::PARAM)> param;
     dm::EntryType_t<decltype(dm::STREAM)> stream;
     dm::EntryType_t<decltype(dm::LEVTYPE)> levtype;
     dm::EntryType_t<decltype(dm::LEVELIST)> levelist;
     dm::EntryType_t<decltype(dm::GRID)> grid;
     dm::EntryType_t<decltype(dm::TRUNCATION)> truncation;
-    dm::EntryType_t<decltype(dm::TimeIncrementInSeconds)> timeIncrementInSeconds;
+    dm::EntryType_t<decltype(dm::OutputStepInSeconds)> outputStepInSeconds;
+    dm::EntryType_t<decltype(dm::IntegrationStepInSeconds)> integrationStepInSeconds;
+    dm::EntryType_t<decltype(dm::DistanceFromPreviousStepInSeconds)> distanceFromPreviousStepInSeconds;
+    dm::EntryType_t<decltype(TIME_INCREMENT_IN_SECONDS)> timeIncrementInSeconds;
     dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
 
     static constexpr std::string_view record_name_ = "statistics-mtg2-field";
     static constexpr auto record_entries_
-        = std::make_tuple(dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::PARAM, dm::STREAM.tagOptional(),
-                          dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION, dm::TimeIncrementInSeconds,
-                          dm::BitmapPresent, dm::MissingValue);
+        = std::make_tuple(dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::STATTYPE, dm::PARAM,
+                          dm::STREAM.tagOptional(), dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION,
+                          dm::OutputStepInSeconds, dm::IntegrationStepInSeconds, dm::DistanceFromPreviousStepInSeconds,
+                          TIME_INCREMENT_IN_SECONDS, dm::BitmapPresent, dm::MissingValue);
 };
 
 //------------------------ Flush Metadata Keys Record -----------------------//

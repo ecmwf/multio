@@ -20,6 +20,8 @@
 #include "multio/util/Substitution.h"
 
 #include <functional>
+#include <optional>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 
@@ -33,11 +35,14 @@ class ComponentConfiguration {
 public:
     ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
                            const MultioConfiguration& multioConfig);
+    ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
+                           const MultioConfiguration& multioConfig, std::optional<std::string> planName);
 
     eckit::LocalConfiguration& parsedConfig();
     const eckit::LocalConfiguration& parsedConfig() const;
 
     const MultioConfiguration& multioConfig() const;
+    const std::optional<std::string>& planName() const;
 
     using SubComponentConfigurations
         = util::MappedContainer<std::vector<eckit::LocalConfiguration>, SubComponentIteratorMapper>;
@@ -49,6 +54,7 @@ private:
     eckit::LocalConfiguration componentConf_;
     // Put in reference wrapper to enable default copy/move construction & assignment
     std::reference_wrapper<const MultioConfiguration> multioConf_;
+    std::optional<std::string> planName_;
 
     friend class SubComponentIteratorMapper;
 };

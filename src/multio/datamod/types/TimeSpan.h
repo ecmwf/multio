@@ -15,11 +15,12 @@
 namespace multio::datamod {
 
 namespace {
-    enum TimeSpanVariant {
-        None,
-        FromStart,
-        Duration,
-    };
+enum TimeSpanVariant
+{
+    None,
+    FromStart,
+    Duration,
+};
 }
 
 class TimeSpan {

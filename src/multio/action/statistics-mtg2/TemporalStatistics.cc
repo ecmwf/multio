@@ -16,9 +16,9 @@ namespace dm = multio::datamod;
 
 TemporalStatistics::TemporalStatistics(const std::string& output_freq, const std::vector<std::string>& operations,
                                        const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
-                                       const StatisticsConfiguration& cfg) :
+                                       const StatisticsConfiguration& cfg, const eckit::DateTime& simulationStart) :
     periodUpdater_{make_period_updater(output_freq, cfg)},
-    window_{make_window(periodUpdater_, cfg)},
+    window_{make_window(periodUpdater_, cfg, simulationStart)},
     statistics_{make_operations(operations, msg, IOmanager, window_, cfg)},
     metadata_{msg.metadata()} {}
 
@@ -72,7 +72,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(multio::LibMultio) << cfg.options().logPrefix() << " *** Update Data" << std::endl;
-    window_.updateData(currentDateTime(msg, cfg));
+    window_.updateData(currentDateTime(msg, cfg), cfg.distanceFromPreviousStepInSeconds());
     for (auto& stat : statistics_) {
         // Truncation is always present when we are dealing with Spherical Harmonics
         if (dm::parseEntry(dm::TRUNCATION, msg.metadata()).isSet() && !stat->supportsSH()) {

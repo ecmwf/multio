@@ -22,9 +22,9 @@
 
 namespace multio::test::statistics_mtg2 {
 
-using multio::test::MultioTestEnvironment;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::test::MultioTestEnvironment;
 
 
 void testSingleFlush(std::string flushKind) {
@@ -44,10 +44,7 @@ void testSingleFlush(std::string flushKind) {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    Metadata md{{
-        {"flushKind", flushKind},
-        {"step", 0}
-    }};
+    Metadata md{{{"flushKind", flushKind}, {"step", 0}}};
     eckit::Buffer pl{};
     Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, std::move(pl)};
     EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -55,15 +52,27 @@ void testSingleFlush(std::string flushKind) {
     EXPECT(env.debugSink().front().tag() == Message::Tag::Flush);
 }
 
-CASE("single flush default") { testSingleFlush("default"); }
-CASE("single flush first-step") { testSingleFlush("first-step"); }
-CASE("single flush last-step") { testSingleFlush("last-step"); }
-CASE("single flush step-and-restart") { testSingleFlush("step-and-restart"); }
-CASE("single flush end-of-simulation") { testSingleFlush("end-of-simulation"); }
-CASE("single flush close-connection") { testSingleFlush("close-connection"); }
+CASE("single flush default") {
+    testSingleFlush("default");
+}
+CASE("single flush first-step") {
+    testSingleFlush("first-step");
+}
+CASE("single flush last-step") {
+    testSingleFlush("last-step");
+}
+CASE("single flush step-and-restart") {
+    testSingleFlush("step-and-restart");
+}
+CASE("single flush end-of-simulation") {
+    testSingleFlush("end-of-simulation");
+}
+CASE("single flush close-connection") {
+    testSingleFlush("close-connection");
+}
 
 
-}  // multio::test::statistics_mtg2
+}  // namespace multio::test::statistics_mtg2
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

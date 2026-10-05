@@ -12,16 +12,24 @@
 
 #include <unistd.h>  //currently needed because ECKIT PathName only has hardlinks for for the directories we need a symlink
 #include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
 
 
 #include "TemporalStatistics.h"
+#include "TimeUtils.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/mpi/Comm.h"
+#include "eckit/runtime/Main.h"
 #include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
 #include "multio/action/statistics-mtg2/cfg/StatisticsOptions.h"
 #include "multio/datamod/ContainerInterop.h"
 #include "multio/datamod/MarsKeys.h"
 #include "multio/datamod/MarsMiscGeo.h"
+#include "multio/datamod/core/EntryDumper.h"
 #include "multio/datamod/core/EntryParser.h"
 #include "multio/datamod/types/StatType.h"
 #include "multio/message/Message.h"
@@ -35,16 +43,103 @@ namespace multio::action::statistics_mtg2 {
 
 namespace dm = multio::datamod;
 
+namespace {
+
+void printHistogram(std::ostream& os, const std::map<std::int64_t, std::size_t>& histogram) {
+    os << "{";
+    bool first = true;
+    for (const auto& [distance, count] : histogram) {
+        os << (first ? "" : ", ") << distance << ": " << count;
+        first = false;
+    }
+    os << "}";
+}
+
+void printLogPreamble(std::ostream& os, const std::optional<std::string>& planName, const std::string& actionName) {
+    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm localTime;
+    localtime_r(&now, &localTime);
+
+    os << "[MultIO::statistics][" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "][" << eckit::Main::hostname();
+    const auto& world = eckit::mpi::comm("world");
+    if (world.size() > 1) {
+        os << ":r" << world.rank();
+    }
+    os << "][";
+    if (planName) {
+        os << *planName << "/";
+    }
+    os << actionName << "] ";
+}
+
+void printWindowDetails(std::ostream& os, const OperationWindow& window) {
+    os << "type=" << (window.windowType() == WindowType::ForwardOffset ? "forward-offset" : "backward-offset")
+       << " epoch=" << window.epochPoint() << " start=" << window.startPoint() << " creation=" << window.creationPoint()
+       << " previous=" << window.prevPoint() << " current=" << window.currPoint() << " end=" << window.endPoint()
+       << " span-seconds=" << window.timeSpanInSeconds() << " samples=" << window.count();
+}
+
+std::int64_t inputStatisticalExtentInSeconds(const StatisticsConfiguration& cfg) {
+    if (auto stattype = cfg.stattype()) {
+        switch (stattype->firstLevel().duration) {
+            case dm::StatTypeDuration::Day:
+                return 24 * 60 * 60;
+            case dm::StatTypeDuration::Month:
+                throw eckit::UserError{"Monthly statistical input cannot feed another supported statistics window",
+                                       Here()};
+        }
+    }
+    return *cfg.timespanInSeconds();
+}
+
+void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const OperationWindow& window) {
+    if (!cfg.isStatistical()) {
+        return;
+    }
+
+    const auto inputExtent = inputStatisticalExtentInSeconds(cfg);
+    if (inputExtent >= window.timeSpanInSeconds()) {
+        std::ostringstream os;
+        os << "Input statistical extent (" << inputExtent << " seconds) must be smaller than output window ("
+           << window.timeSpanInSeconds() << " seconds)";
+        throw eckit::UserError{os.str(), Here()};
+    }
+}
+
+std::int64_t inputIncrementForNestedStatistic(const StatisticsConfiguration& cfg) {
+    return inputStatisticalExtentInSeconds(cfg);
+}
+}  // namespace
+
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     needRestart_{false},
     lastDateTime_{""},
+    simulationStart_{},
     opt_{compConf.parsedConfig().getSubConfiguration("options")},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
+
+void Statistics::handleSimulationStart(const FlushMetadataKeys& flush) {
+    if (!flush.date.isSet() || !flush.time.isSet() || !flush.step.isSet()) {
+        throw eckit::SeriousBug("Simulation-start flush requires date, time and step metadata", Here());
+    }
+
+    SimulationStart next{flush.date.get(), flush.time.get(), flush.step.get().toSeconds(),
+                         dateTime(flush.date.get(), flush.time.get(), flush.step.get().toSeconds())};
+    if (simulationStart_) {
+        if (simulationStart_->date != next.date || simulationStart_->time != next.time
+            || simulationStart_->stepInSeconds != next.stepInSeconds) {
+            throw eckit::SeriousBug("Conflicting simulation-start flush received", Here());
+        }
+        return;
+    }
+    simulationStart_ = next;
+    return;
+}
 
 std::string Statistics::generateRestartNameFromFlush(const message::Message& msg,
                                                      const FlushMetadataKeys& flush) const {
@@ -139,7 +234,7 @@ void Statistics::CreateMainRestartDirectory(const std::string& restartFolderName
 void Statistics::DumpTemporalStatistics() {
     for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
         LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
-                                 << it->second->cwin().currPointInSteps() << std::endl;
+                                 << it->second->cwin().currPointInSeconds() << "s" << std::endl;
         IOmanager_->pushDir(it->first);
         if (IOmanager_->currentDirExists()) {
             std::ostringstream os;
@@ -260,6 +355,9 @@ void Statistics::executeImpl(message::Message msg) {
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush) {
         const auto flush = dm::readRecord<FlushMetadataKeys>(msg.metadata());
+        if (flush.flushKind.get() == FlushKind::FirstStep) {
+            handleSimulationStart(flush);
+        }
         TryDumpRestart(msg, flush);
 
         if (flush.flushKind.get() == FlushKind::LastStep) {
@@ -282,6 +380,17 @@ void Statistics::executeImpl(message::Message msg) {
     // Initialize local variables
     StatisticsConfiguration cfg{msg, opt_};
     std::string key = cfg.key();
+
+    // TODO:
+    if (!simulationStart_) {
+        throw eckit::SeriousBug("Field received before simulation-start flush", Here());
+    }
+    if (cfg.curr() < simulationStart_->dateTime) {
+        std::ostringstream os;
+        os << "Field current date/time " << cfg.curr() << " is before simulation start " << simulationStart_->dateTime;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
     updateLatestDateTime(cfg);
 
     // Check if the main restart directory exists
@@ -295,30 +404,36 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Access or create the temporal statistics object
     auto stat = fieldStats_.find(key);
+    bool createdFromField = false;
     if (stat == fieldStats_.end()) {
         if (opt_.readRestart() && HasRestartKey(key)) {
             fieldStats_[key] = LoadTemporalStatisticsFromKey(key);
         }
         else {
-            fieldStats_[key]
-                = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
+            fieldStats_[key] = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg,
+                                                                    simulationStart_->dateTime);
+            createdFromField = true;
         }
         // TODO: Reorganize the code to avoid this second search
         // which is not efficient
         stat = fieldStats_.find(key);
     }
 
-    // Exit if the current time is the same as the current point in the
-    // window and the solver does not send the initial condition.
-    // This can happen when the solver is sending the initial condition
-    // and and the same point is already present in the restart
     auto& ts = *(stat->second);
-    if (cfg.curr() == ts.cwin().currPoint() && opt_.initialConditionPresent()) {
+    validateInputStatisticalExtent(cfg, ts.cwin());
+    if (createdFromField && opt_.debug()) {
+        logWindowEvent("WIN_CREATE", ts);
+    }
+    if (createdFromField && opt_.windowType() == WindowType::ForwardOffset && cfg.curr() == ts.cwin().startPoint()) {
+        return;
+    }
+    // A restart may already contain the initial condition sent by the solver.
+    if (!createdFromField && cfg.curr() == ts.cwin().currPoint() && opt_.initialConditionPresent()) {
         return;
     }
 
     // The incomming message must occur AFTER the current point in the window!
-    if (cfg.curr() <= ts.cwin().currPoint()) {
+    if (!createdFromField && cfg.curr() <= ts.cwin().currPoint()) {
         std::ostringstream os;
         os << "Current time is before or equal to the current point in the window :: " << cfg.curr() << " > "
            << ts.cwin().currPoint() << std::endl;
@@ -326,9 +441,12 @@ void Statistics::executeImpl(message::Message msg) {
     }
 
     // Decide to emit statistics
-    if (ts.isOutsideWindow(msg, cfg)) {
-        emitStatistics(ts, msg.source(), msg.destination());
+    while (ts.isOutsideWindow(msg, cfg)) {
+        emitStatistics(ts, msg.source(), msg.destination(), true);
         ts.updateWindow(msg, cfg);
+        if (opt_.debug()) {
+            logWindowEvent("WIN_ADVANCE", ts);
+        }
     }
 
     // Update data
@@ -341,6 +459,13 @@ void Statistics::emitAllStatistics(message::Peer source, message::Peer destinati
     for (auto& [key, ts] : fieldStats_) {
         emitStatistics(*ts, source, destination);
     }
+}
+
+void Statistics::logWindowEvent(const char* event, const TemporalStatistics& ts) const {
+    printLogPreamble(std::cerr, compConf_.planName(), opt_.logPrefix());
+    std::cerr << event << " period=" << ts.periodName() << " ";
+    printWindowDetails(std::cerr, ts.cwin());
+    std::cerr << std::endl;
 }
 
 namespace {
@@ -381,13 +506,48 @@ dm::StatTypeOperation operationNameToStatTypeOperation(std::string_view opName) 
 
 }  // namespace
 
-void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination) {
-    for (auto it = ts.begin(); it != ts.end(); ++it) {
-        // Skip if there was no input to base this message on in the first place
-        if (ts.win().count() == 0) {
-            continue;
-        }
+void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination,
+                                bool finalizeSuppressed) {
+    if (ts.win().count() == 0) {
+        return;
+    }
 
+    if (!ts.cwin().isUniform() && !opt_.allowNonUniformStatistics()) {
+        std::ostringstream os;
+        os << "Non-uniform input distances in " << ts.periodName() << " window " << ts.cwin();
+        throw eckit::UserError{os.str(), Here()};
+    }
+
+    const bool suppress = !ts.cwin().isComplete() && !opt_.emitIncompleteStatistics();
+    if (suppress) {
+        printLogPreamble(std::cerr, compConf_.planName(), opt_.logPrefix());
+        std::cerr << "WIN_SKIP period=" << ts.periodName() << " reason=\"" << ts.cwin().incompleteReason() << "\" ";
+        printWindowDetails(std::cerr, ts.cwin());
+        std::cerr << " complete=false uniform=" << (ts.cwin().isUniform() ? "true" : "false")
+                  << " declared-distance-histogram=";
+        printHistogram(std::cerr, ts.cwin().declaredDistanceHistogram());
+        std::cerr << " observed-distance-histogram=";
+        printHistogram(std::cerr, ts.cwin().observedDistanceHistogram());
+        const auto marsRecord = dm::readRecord<dm::FullMarsRecord>(ts.metadata());
+        std::cerr << " mars=" << dm::dumpRecord<message::Metadata>(marsRecord) << std::endl;
+        if (finalizeSuppressed) {
+            auto md = ts.metadata();
+            auto cfg = StatisticsConfiguration(md, source, opt_);
+            for (auto it = ts.begin(); it != ts.end(); ++it) {
+                eckit::Buffer payload;
+                payload.resize((*it)->byte_size());
+                payload.zero();
+                (*it)->compute(payload, cfg);
+            }
+        }
+        return;
+    }
+
+    if (opt_.debug()) {
+        logWindowEvent("WIN_EMIT", ts);
+    }
+
+    for (auto it = ts.begin(); it != ts.end(); ++it) {
         eckit::Buffer payload;
         payload.resize((*it)->byte_size());
         payload.zero();
@@ -412,21 +572,11 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto opname = (*it)->operation();
         if (opname != "instant") {
             if (currentLoop == 1) {
-                const std::int64_t timespan = ts.cwin().currPointInHours() - ts.cwin().creationPointInHours();
+                const std::int64_t timespan = ts.cwin().timeSpanInHours();
                 dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                dm::dumpEntry(dm::TimeIncrementInSeconds,
+                              dm::TimeIncrementInSeconds.makeEntry(cfg.outputStepInSeconds()), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
-                std::int64_t ldm = util::lastDayOfTheMonth(ts.cwin().creationPoint().date().year(),
-                                                           ts.cwin().creationPoint().date().month());
-                if (ts.periodName() == "month" && ts.cwin().creationPoint().date().day() != 1) {
-                    std::cout << "Skipping first month because it is not a full month :: " << ts.cwin().creationPoint()
-                              << std::endl;
-                    return;  // Skip the first month if it is not a full month, as discussed with DGOV and scientists
-                }
-                if (ts.periodName() == "day" && ts.cwin().creationPoint().time().hours() != 1) {
-                    std::cout << "Skipping first day because it is not a full day :: " << ts.cwin().creationPoint()
-                              << std::endl;
-                    return;  // Skip the first day if it is not a full day, as discussed with DGOV and scientists
-                }
             }
             else {
                 if (!opt_.disableSquashing()
@@ -442,13 +592,15 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                             Here());
                     }
                     // Squash means we don't map (already done in previous loop), but extend the timespan
-                    timespan.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
+                    timespan.set(ts.win().timeSpanInHours());
                     dm::dumpEntry(dm::TIMESPAN, timespan, md);
                 }
                 else {
-
                     auto currentStatType = dm::SingleStatType{outputFreqencyToStatTypeDuration(outputFrequency_),
                                                               operationNameToStatTypeOperation(opname)};
+
+                    dm::dumpEntry(dm::TimeIncrementInSeconds,
+                                  dm::TimeIncrementInSeconds.makeEntry(inputIncrementForNestedStatistic(cfg)), md);
 
                     if (currentLoop == 2) {
                         stattype.set(dm::StatType{currentStatType});
@@ -462,24 +614,21 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
             }
         }
 
+        const auto outputDistance
+            = opname == "instant" ? ts.cwin().lastDeclaredDistance() : ts.cwin().timeSpanInSeconds();
+        dm::dumpEntry(dm::DistanceFromPreviousStepInSeconds,
+                      dm::DistanceFromPreviousStepInSeconds.makeEntry(outputDistance), md);
+
         switch (cfg.outputTimeReference()) {
             case OutputTimeReference::StartOfForecast: {
-                const std::int64_t step = ts.win().currPointInHours();
+                const auto step = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds()}};
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
-                auto lengthOfWindow = timespan;
-
-                // For instant fields or on flushes, timespan is not set yet
-                if (!lengthOfWindow.isSet()) {
-                    // The window spaws between creationPoint to endPoint
-                    // Prev & Current point describe the last updated data points.
-                    // In this case we are explicitly interested in creation to current point
-                    lengthOfWindow.set(ts.win().currPointInHours() - ts.win().creationPointInHours());
-                }
-
-                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(lengthOfWindow.get().toHours()), md);
+                const auto step
+                    = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds(ts.win().creationPoint())}};
+                dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 // We explicitly take the creation point - alternative would be the start point.
                 // The start point may be different for the first window, i.e. if the simulation starts in the mid of a
                 // month. To not confuse the output, we explicitly just output the window for which data has been

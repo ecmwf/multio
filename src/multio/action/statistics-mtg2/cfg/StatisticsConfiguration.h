@@ -43,6 +43,7 @@ private:
 
     eckit::DateTime computeEpoch() const;
     eckit::DateTime computeCurr() const;
+    void validateMetadata() const;
 
 
 public:
@@ -53,9 +54,15 @@ public:
 
     std::int64_t date() const;
     std::int64_t time() const;
-    std::int64_t timeIncrementInSeconds() const;
-    std::int64_t step() const;
+    std::int64_t outputStepInSeconds() const;
+    std::int64_t integrationStepInSeconds() const;
+    std::int64_t distanceFromPreviousStepInSeconds() const;
+    std::optional<std::int64_t> timeIncrementInSeconds() const;
+    std::int64_t stepInSeconds() const;
     std::optional<std::int64_t> timespan() const;
+    std::optional<std::int64_t> timespanInSeconds() const;
+    std::optional<dm::StatType> stattype() const;
+    bool isStatistical() const;
 
     std::int64_t param() const;
     const std::string& precision() const;

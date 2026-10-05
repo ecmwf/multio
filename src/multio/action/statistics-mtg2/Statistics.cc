@@ -60,8 +60,7 @@ void printLogPreamble(std::ostream& os, const std::optional<std::string>& planNa
     std::tm localTime;
     localtime_r(&now, &localTime);
 
-    os << "[MultIO::statistics][" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "]["
-       << eckit::Main::hostname();
+    os << "[MultIO::statistics][" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "][" << eckit::Main::hostname();
     const auto& world = eckit::mpi::comm("world");
     if (world.size() > 1) {
         os << ":r" << world.rank();

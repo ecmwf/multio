@@ -18,6 +18,7 @@
 #include "multio/message/Metadata.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 
 namespace multio::test::statistics_mtg2 {
@@ -53,6 +54,7 @@ CASE("simple checkpoint and restart") {
         })json";
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
+        sendSimulationStart(env, 20250430);
 
         for (int step = 0; step < 6; ++step) {
             const double val = 1.0;
@@ -63,6 +65,7 @@ CASE("simple checkpoint and restart") {
                          {"time", 0000},
                          {"step", step},
                          {"misc-precision", "double"}}};
+            setTimingMetadata(md, 3600);
             eckit::Buffer pl{&val, sizeof(double)};
             Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
             EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -105,6 +108,7 @@ CASE("simple checkpoint and restart") {
                         "restart-path": ".",
                         "read-restart": true,
                         "write-restart": false,
+                        "emit-incomplete-statistics": true,
                         restart-lib: "eckit_codec",
                         "restart-time": "latest"
                     }
@@ -116,6 +120,7 @@ CASE("simple checkpoint and restart") {
         })json";
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
+        sendSimulationStart(env, 20250430);
 
         for (int step = 6; step < 12; ++step) {
             const double val = 3.0;
@@ -126,6 +131,7 @@ CASE("simple checkpoint and restart") {
                          {"time", 0000},
                          {"step", step},
                          {"misc-precision", "double"}}};
+            setTimingMetadata(md, 3600);
             eckit::Buffer pl{&val, sizeof(double)};
             Message msg{{Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl)};
             EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -139,7 +145,9 @@ CASE("simple checkpoint and restart") {
             EXPECT_EQUAL(env.debugSink().size(), 2);
             EXPECT(env.debugSink().front().tag() == Message::Tag::Field);
             const double* payload = static_cast<const double*>(env.debugSink().front().payload().data());
-            const double diff = payload[0] - 2;
+            // Step 0 is on the lower window boundary and not a sample: 5 samples of 1.0 before the restart
+            // (steps 1-5) and 6 samples of 3.0 after it (steps 6-11)
+            const double diff = payload[0] - (5 * 1.0 + 6 * 3.0) / 11;
             const double err2 = diff * diff;
             std::cout << "diff=" << diff << std::endl;
             std::cout << "err2=" << err2 << std::endl;

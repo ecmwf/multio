@@ -45,6 +45,11 @@ void testSingleFlush(std::string flushKind) {
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
     Metadata md{{{"flushKind", flushKind}, {"step", 0}}};
+    // The simulation-start flush must provide the simulation date and time
+    if (flushKind == "first-step") {
+        md.set("date", std::int64_t{2025'04'25});
+        md.set("time", std::int64_t{0});
+    }
     eckit::Buffer pl{};
     Message msg{{Message::Tag::Flush, {}, {}, std::move(md)}, std::move(pl)};
     EXPECT_NO_THROW(env.process(std::move(msg)));

@@ -16,6 +16,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -54,10 +55,7 @@ CASE("Average rate + daily average + monthly average") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    EXPECT_NO_THROW(env.process({{Message::Tag::Flush,
-                                  {},
-                                  {},
-                                  {{"flushKind", "first-step"}, {"date", 1996'10'01}, {"time", 0}, {"step", 0}}}}));
+    sendSimulationStart(env, 1996'10'01);
 
     for (std::int64_t step = 1; step <= 24 * (31 + 30 + 31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
@@ -144,10 +142,7 @@ CASE("Average rate + daily average + monthly maximum") {
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
-    EXPECT_NO_THROW(env.process({{Message::Tag::Flush,
-                                  {},
-                                  {},
-                                  {{"flushKind", "first-step"}, {"date", 1996'10'01}, {"time", 0}, {"step", 0}}}}));
+    sendSimulationStart(env, 1996'10'01);
 
     for (std::int64_t step = 1; step <= 24 * (31 + 30 + 31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation

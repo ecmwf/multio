@@ -16,6 +16,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -46,6 +47,7 @@ CASE("hourly -> monthly accumulated") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 1996'10'01);
 
     for (std::int64_t step = 0; step <= 24 * (31 + 30 + 31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
@@ -56,6 +58,7 @@ CASE("hourly -> monthly accumulated") {
                             {"step", step},
                             {"timespan", (step == 0 ? 0 : 1)},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600, INTEGRATION_STEP_IN_SECONDS);
 
         auto data = static_cast<double>(step);
         auto pl = eckit::Buffer{&data, sizeof(double)};
@@ -109,7 +112,11 @@ CASE("hourly -> monthly accumulated") {
     }
 }
 
-CASE("monthly -> hourly accumulated") {
+// OBSOLETE: De-accumulates fields accumulated since the start of the month (timespan up to 744h) into hourly
+// fields. This violates the rule that the extent of a statistical input must be smaller than the output window.
+// It only passes because statistics-mtg2 exempts plans consisting solely of difference/inverse-difference
+// operations from that rule. Remove this test together with that exemption (see Statistics.cc).
+CASE("[obsolete] monthly -> hourly accumulated") {
     const auto plan = R"json({
         "name": "monthly to hourly",
         "actions": [
@@ -128,6 +135,7 @@ CASE("monthly -> hourly accumulated") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 1996'10'01);
 
     for (std::int64_t step = 0; step <= 24 * (31 + 30 + 31); ++step) {
         std::int64_t resetStep = (step > 1464 ? 1464 : (step > 744 ? 744 : 0));
@@ -139,6 +147,7 @@ CASE("monthly -> hourly accumulated") {
                             {"step", step},
                             {"timespan", step - resetStep},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600, INTEGRATION_STEP_IN_SECONDS);
 
         auto data = static_cast<double>(step - resetStep);
         auto pl = eckit::Buffer{&data, sizeof(double)};

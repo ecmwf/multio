@@ -258,14 +258,17 @@ constexpr auto InitialStep =                    //
 
 constexpr auto OutputStepInSeconds =                    //
     EntryDef<std::int64_t>{"misc-outputStepInSeconds"}  //
+        .tagOptional()
         .withAccessor([](auto&& v) { return &v.outputStepInSeconds; });
 
 constexpr auto IntegrationStepInSeconds =                    //
     EntryDef<std::int64_t>{"misc-integrationStepInSeconds"}  //
+        .tagOptional()
         .withAccessor([](auto&& v) { return &v.integrationStepInSeconds; });
 
 constexpr auto DistanceFromPreviousStepInSeconds =                    //
     EntryDef<std::int64_t>{"misc-distanceFromPreviousStepInSeconds"}  //
+        .tagOptional()
         .withAccessor([](auto&& v) { return &v.distanceFromPreviousStepInSeconds; });
 
 constexpr auto TimeIncrementInSeconds =                    //

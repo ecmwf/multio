@@ -92,8 +92,19 @@ std::int64_t inputStatisticalExtentInSeconds(const StatisticsConfiguration& cfg)
     return *cfg.timespanInSeconds();
 }
 
-void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const OperationWindow& window) {
-    if (!cfg.isStatistical()) {
+// De-accumulation (difference / inverse-difference) turns accumulated-since-start fields, whose extent grows with
+// the forecast step, into fields over the output window. Such inputs legitimately exceed the output window.
+// NOTE: This exemption only exists to keep the obsolete "monthly -> hourly accumulated" test working and should be
+// removed together with that test.
+bool onlyDeaccumulatingOperations(const std::vector<std::string>& operations) {
+    return !operations.empty() && std::all_of(operations.begin(), operations.end(), [](const std::string& op) {
+        return op == "difference" || op == "inverse-difference";
+    });
+}
+
+void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const OperationWindow& window,
+                                    const std::vector<std::string>& operations) {
+    if (!cfg.isStatistical() || onlyDeaccumulatingOperations(operations)) {
         return;
     }
 
@@ -108,6 +119,14 @@ void validateInputStatisticalExtent(const StatisticsConfiguration& cfg, const Op
 
 std::int64_t inputIncrementForNestedStatistic(const StatisticsConfiguration& cfg) {
     return inputStatisticalExtentInSeconds(cfg);
+}
+
+// Steps are emitted as MARS durations: whole hours as integer hours, seconds only when needed
+dm::TimeDuration absoluteStep(std::int64_t seconds) {
+    if (seconds % 3600 == 0) {
+        return dm::TimeDuration{std::chrono::hours{seconds / 3600}};
+    }
+    return dm::TimeDuration{std::chrono::seconds{seconds}};
 }
 }  // namespace
 
@@ -420,7 +439,7 @@ void Statistics::executeImpl(message::Message msg) {
     }
 
     auto& ts = *(stat->second);
-    validateInputStatisticalExtent(cfg, ts.cwin());
+    validateInputStatisticalExtent(cfg, ts.cwin(), operations_);
     if (createdFromField && opt_.debug()) {
         logWindowEvent("WIN_CREATE", ts);
     }
@@ -528,8 +547,9 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         printHistogram(std::cerr, ts.cwin().declaredDistanceHistogram());
         std::cerr << " observed-distance-histogram=";
         printHistogram(std::cerr, ts.cwin().observedDistanceHistogram());
-        const auto marsRecord = dm::readRecord<dm::FullMarsRecord>(ts.metadata());
-        std::cerr << " mars=" << dm::dumpRecord<message::Metadata>(marsRecord) << std::endl;
+        // Print the raw metadata: parsing a full MARS record here would throw for fields that are valid inputs
+        // to this action but lack MARS keys such as class or expver.
+        std::cerr << " metadata=" << ts.metadata() << std::endl;
         if (finalizeSuppressed) {
             auto md = ts.metadata();
             auto cfg = StatisticsConfiguration(md, source, opt_);
@@ -621,13 +641,12 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
 
         switch (cfg.outputTimeReference()) {
             case OutputTimeReference::StartOfForecast: {
-                const auto step = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds()}};
+                const auto step = absoluteStep(ts.win().currPointInSeconds());
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
-                const auto step
-                    = dm::TimeDuration{std::chrono::seconds{ts.win().currPointInSeconds(ts.win().creationPoint())}};
+                const auto step = absoluteStep(ts.win().currPointInSeconds(ts.win().creationPoint()));
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 // We explicitly take the creation point - alternative would be the start point.
                 // The start point may be different for the first window, i.e. if the simulation starts in the mid of a

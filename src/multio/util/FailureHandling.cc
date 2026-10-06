@@ -98,6 +98,32 @@ int printNestedException(std::ostream& out, const std::exception& e) {
     printExceptionHeader(out, e, level);
     return level + 1;
 }
+
+// Print the call stacks of all eckit exceptions in the nested chain, innermost first.
+//
+// NOTE: eckit::Exception::exceptionStack() must not be used here. It walks a thread-local list of live exceptions
+// that assumes LIFO construction/destruction. Exception copies (as made by std::throw_with_nested and
+// std::rethrow_exception) do not register in that list but still unlink on destruction, which leaves dangling
+// pointers and leads to crashes or endless loops on the next failure in the same process.
+void printCallStacks(std::ostream& out, const std::exception& e) {
+    try {
+        std::rethrow_if_nested(e);
+    }
+    catch (const std::exception& nestedException) {
+        printCallStacks(out, nestedException);
+    }
+    catch (...) {
+    }
+    if (const auto* eckitException = dynamic_cast<const eckit::Exception*>(&e)) {
+        out << eckitException->what() << std::endl << eckitException->callStack() << std::endl << std::endl;
+    }
+}
+
+void printExceptionStack(std::ostream& out, const std::exception& e) {
+    out << "Exception stack: " << std::endl;
+    printCallStacks(out, e);
+    out << "End stack" << std::endl;
+}
 }  // namespace
 
 void printException(std::ostream& out, const std::exception& e) {
@@ -111,7 +137,7 @@ void printException(std::ostream& out, const eckit::Exception& e) {
     out << "Nested eckit::Exception: " << std::endl;
     printNestedException(out, e);
     out << std::endl;
-    e.exceptionStack(out, true);
+    printExceptionStack(out, e);
     out << std::endl;
     out << std::endl;
 }
@@ -120,7 +146,7 @@ void printException(std::ostream& out, const FailureAwareException& e) {
     out << "Nested FailureAwareException: " << std::endl;
     printNestedException(out, e);
     out << std::endl;
-    e.exceptionStack(out, true);
+    printExceptionStack(out, e);
     out << std::endl;
     out << std::endl;
 }

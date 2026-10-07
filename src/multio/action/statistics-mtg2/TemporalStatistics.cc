@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/types/DateTime.h"
 
 #include "multio/LibMultio.h"
@@ -74,11 +75,8 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
     LOG_DEBUG_LIB(multio::LibMultio) << cfg.options().logPrefix() << " *** Update Data" << std::endl;
     window_.updateData(currentDateTime(msg, cfg));
     for (auto& stat : statistics_) {
-        // Truncation is always present when we are dealing with Spherical Harmonics
-        if (dm::parseEntry(dm::TRUNCATION, msg.metadata()).isSet() && !stat->supportsSH()) {
-            std::ostringstream os;
-            os << "Operation " << stat->operation() << " does not support spherical harmonics : " << msg.metadata();
-            throw eckit::SeriousBug{os.str(), Here()};
+        if (cfg.isGridSH() && !stat->supportsSH()) {
+            throw eckit::SeriousBug("Operation " + stat->operation() + " does not support spherical harmonics : " + msg.metadata().toString(), Here());
         }
         stat->updateData(msg.payload().data(), msg.size(), cfg);
     }

@@ -50,7 +50,7 @@ CASE("hourly -> monthly accumulated") {
     for (std::int64_t step = 0; step <= 24*(31+30+31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 1996'10'01},
                             {"time", 00'00'00},
                             {"step", step},
@@ -133,7 +133,7 @@ CASE("monthly -> hourly accumulated") {
         std::int64_t resetStep = (step > 1464 ? 1464 : (step > 744 ? 744 : 0));
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 1996'10'01},
                             {"time", 00'00'00},
                             {"step", step},

@@ -53,7 +53,7 @@ CASE("Squash daily + monthly average") {
     for (std::int64_t step = 0; step <= 2208; ++step) {
         auto md = Metadata({{"param", 167},
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 19961001},
                             {"time", 0000},
                             {"step", step},

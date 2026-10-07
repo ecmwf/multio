@@ -15,6 +15,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -49,6 +50,7 @@ CASE("Squash daily + monthly average") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 19961001);
 
     for (std::int64_t step = 0; step <= 2208; ++step) {
         auto md = Metadata({{"param", 167},
@@ -58,6 +60,7 @@ CASE("Squash daily + monthly average") {
                             {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600);
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
         EXPECT_NO_THROW(env.process(std::move(msg)));

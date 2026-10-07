@@ -175,7 +175,8 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint, std::int64
         geLowerBound(currentPoint, true);
         ltUpperBound(currentPoint, true);
     }
-    const auto previousPoint = firstPoint_.value_or(startPoint_);
+    // Distance to the previous sample; the first sample is measured from the window start
+    const auto previousPoint = firstPoint_ ? currPoint_ : startPoint_;
     const auto observedDistance = static_cast<std::int64_t>(currentPoint - previousPoint);
     declaredDistanceHistogram_[distanceFromPreviousStepInSeconds]++;
     lastDeclaredDistance_ = distanceFromPreviousStepInSeconds;

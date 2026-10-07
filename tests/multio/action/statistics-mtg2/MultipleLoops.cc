@@ -2,6 +2,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -38,6 +39,7 @@ CASE("Monthly average of daily high temperature") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 19961001);
 
     for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
@@ -47,6 +49,7 @@ CASE("Monthly average of daily high temperature") {
                             {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600);
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
         EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -103,6 +106,7 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 19961001);
 
     for (std::int64_t step = 0; step <= 744; ++step) {
         auto md = Metadata({{"param", 167},
@@ -112,6 +116,7 @@ CASE("Montly average of daily high of average 3 hourly temperature") {
                             {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600);
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
         EXPECT_NO_THROW(env.process(std::move(msg)));

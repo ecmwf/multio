@@ -72,9 +72,13 @@ AtlasInstance::AtlasInstance() {
     atlas::initialize();
 };
 
-AtlasInstance::~AtlasInstance() {
-    atlas::finalize();
-};
+// atlas::finalize() is intentionally not called. AtlasInstance is a function-local static, so this destructor runs
+// during static destruction at program exit, when eckit's log streams may already be destroyed. Atlas'
+// finalise() flushes eckit::Log and crashed multio-hammer on exit. Finalising here has no functional benefit:
+// atlas has no reference counting (so it must not be finalised while other libraries may still use it, see
+// GridDownloader.h), and by default finalise() only resets log channels (MPI is only finalised with
+// ATLAS_FINALISES_MPI, which multio does not rely on).
+AtlasInstance::~AtlasInstance() = default;
 
 AtlasInstance& AtlasInstance::instance() {
     static AtlasInstance singleton;

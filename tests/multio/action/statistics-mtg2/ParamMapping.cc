@@ -2,6 +2,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -92,6 +93,7 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
 
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 20200721);
 
     // Send step 0 and 1 message with the input parameter ID
     for (int64_t step = 0; step <= 1; ++step) {
@@ -102,6 +104,7 @@ std::int64_t testParameterMapping(std::int64_t param, std::string op) {
                             {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600);
         auto pl = eckit::Buffer();
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
         EXPECT_NO_THROW(env.process(std::move(msg)));

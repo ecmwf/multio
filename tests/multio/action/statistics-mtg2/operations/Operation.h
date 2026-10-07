@@ -4,10 +4,14 @@
 #include <random>
 
 #include "../../../MultioTestEnvironment.h"
+#include "../StatisticsTestHelpers.h"
 #include "eckit/testing/Test.h"
 
 
 inline constexpr std::size_t SIZE = 4096;
+
+// The inputs are daily samples
+inline constexpr std::int64_t SAMPLE_DISTANCE_IN_SECONDS = 24 * 3600;
 
 
 namespace multio::test::statistics_mtg2 {
@@ -32,8 +36,10 @@ public:
         const std::string plan = getPlan();
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
+        sendSimulationStart(env, 2020'07'21);
 
-        // Initial values + single field at 21st july
+        // Initial values + single field at 21st july. The simulation starts in the middle of the July window, so the
+        // step 0 field is a sample of that window (only fields on the window's lower boundary are skipped).
         auto pls = SpatialDataOverTime(2);
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 2; ++i) {
@@ -48,19 +54,19 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 2);
 
         // Check the values
-        auto ref = reference(pls);
+        auto ref = reference(pls, 0, 2);
         auto res = ArrayView<ElemType>(static_cast<ElemType const*>(env.debugSink().front().payload().data()),
                                        env.debugSink().front().payload().size() / sizeof(ElemType));
         EXPECT_EQUAL(res.size(), SIZE);
         EXPECT(res.isApproximatelyEqual(ref, tolerance_));
 
-        // Check the metadata
+        // Check the metadata. The incomplete window is emitted with the nominal extent of the calendar window.
         EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("step"));
         if (name_ == "instant") {
             EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
         }
         else {
-            EXPECT_EQUAL(24, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+            EXPECT_EQUAL(24 * 31, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
         }
     }
 
@@ -68,6 +74,7 @@ public:
         const std::string plan = getPlan();
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
+        sendSimulationStart(env, 2020'07'21);
 
         // Send 45 messages stating from 21st july
         auto pls = SpatialDataOverTime(45);
@@ -84,9 +91,9 @@ public:
         EXPECT_EQUAL(env.debugSink().size(), 4);
 
         // Check the results
-        {  // July (11 days)
+        {  // July (incomplete: the step 0 field on 21st july and 11 more days)
             // Check the values
-            auto ref = reference(pls, 1, 12);
+            auto ref = reference(pls, 0, 12);
             auto res = ArrayView<ElemType>(static_cast<ElemType const*>(env.debugSink().front().payload().data()),
                                            env.debugSink().front().payload().size() / sizeof(ElemType));
             EXPECT_EQUAL(res.size(), SIZE);
@@ -98,7 +105,7 @@ public:
                 EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
             }
             else {
-                EXPECT_EQUAL(264, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+                EXPECT_EQUAL(744, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
             }
 
             env.debugSink().pop();
@@ -122,7 +129,7 @@ public:
 
             env.debugSink().pop();
         }
-        {  // September (2 days)
+        {  // September (incomplete: 2 days)
             // Check the values
             auto ref = reference(pls, 43, 45);
             auto res = ArrayView<ElemType>(static_cast<ElemType const*>(env.debugSink().front().payload().data()),
@@ -136,7 +143,7 @@ public:
                 EXPECT(std::nullopt == env.debugSink().front().metadata().getOpt<std::int64_t>("timespan"));
             }
             else {
-                EXPECT_EQUAL(48, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
+                EXPECT_EQUAL(720, env.debugSink().front().metadata().get<std::int64_t>("timespan"));
             }
 
             env.debugSink().pop();
@@ -147,8 +154,10 @@ public:
         const std::string plan = getPlan();
         auto env = MultioTestEnvironment(plan);
         EXPECT_EQUAL(env.debugSink().size(), 0);
+        sendSimulationStart(env, 2025'10'01);
 
-        // Send 93 messages stating from 1st october
+        // Send 93 messages stating from 1st october. The step 0 field is on the lower boundary of the October window
+        // and is therefore not a sample.
         auto pls = SpatialDataOverTime(93);
         std::int64_t step = 0;
         for (std::size_t i = 0; i < 93; ++i) {
@@ -226,22 +235,22 @@ protected:
     // The output of the operation is checked against the implementation of
     // this reference method. The 'input' is a vector of values over time
     // in the same spatial point. The last value from the previous window
-    // is given as 'init'.
+    // is given as 'init'. For the first window that is the initial condition (step 0).
     virtual ElemType reference(const SinglePointOverTime& input, const ElemType init) = 0;
 
 private:
     const std::string name_;
     const ElemType tolerance_;
 
-    SpatialData reference(const SpatialDataOverTime& input) { return reference(input, 1, input.size()); }
-
+    // Reference over the samples [start, stop). If start is 0, the initial condition is also the first sample.
     SpatialData reference(const SpatialDataOverTime& input, std::size_t start, std::size_t stop) {
         const std::size_t steps = input.size();
-        EXPECT(start > 0 && start <= stop && stop <= steps && steps != 0);
+        EXPECT(start < stop && stop <= steps && steps != 0);
+        const std::size_t initIndex = start == 0 ? 0 : start - 1;
 
         const std::size_t size = input[start].size();
         EXPECT_NOT_EQUAL(size, 0);
-        for (std::size_t i = start - 1; i < stop; ++i) {
+        for (std::size_t i = initIndex; i < stop; ++i) {
             EXPECT_EQUAL(input[i].size(), size);
         }
 
@@ -251,7 +260,7 @@ private:
             for (std::size_t j = 0; j < (stop - start); ++j) {
                 column[j] = input[start + j][i];
             }
-            output[i] = reference(column, input[start - 1][i]);
+            output[i] = reference(column, input[initIndex][i]);
         }
 
         return output;
@@ -267,6 +276,7 @@ private:
              + name_
              + "\" ], "
                "\"options\": { \"initial-condition-present\": true,"
+               "               \"emit-incomplete-statistics\": true,"
                "               \"disable-strict-mapping\": true } },"
                "{ \"type\": \"debug-sink\" } ] }";
     }
@@ -282,6 +292,7 @@ private:
                             {"time", time},
                             {"step", step},
                             {"misc-precision", std::is_same_v<ElemType, float> ? "single" : "double"}});
+        setTimingMetadata(md, SAMPLE_DISTANCE_IN_SECONDS);
         auto pl = eckit::Buffer(payload.data(), payload.size() * sizeof(ElemType));
         return Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
     }

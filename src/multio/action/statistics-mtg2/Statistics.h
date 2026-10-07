@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <cstdint>
+#include <optional>
 
 #include "MetadataKeys.h"
 #include "PeriodUpdaters.h"
@@ -38,8 +40,17 @@ public:
     void executeImpl(message::Message msg) override;
 
 private:
+    struct SimulationStart {
+        std::int64_t date;
+        std::int64_t time;
+        std::int64_t stepInSeconds;
+        eckit::DateTime dateTime;
+    };
+
     bool needRestart_;
     std::string lastDateTime_;
+    std::optional<SimulationStart> simulationStart_;
+    void handleSimulationStart(const FlushMetadataKeys& flush);
     void TryDumpRestart(const message::Message& msg, const FlushMetadataKeys& flush);
     std::string generateRestartNameFromFlush(const message::Message& msg, const FlushMetadataKeys& flush) const;
     void DeleteLatestSymLink();

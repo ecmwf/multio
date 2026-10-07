@@ -17,11 +17,11 @@ public:
 
 
     Maximum(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
-        OperationWithData<T>{name, "maximum", sz, true, win, cfg, std::numeric_limits<T>::min()} {}
+        OperationWithData<T>{name, "maximum", sz, true, win, cfg, std::numeric_limits<T>::lowest()} {}
 
     Maximum(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsOptions& opt) :
-        OperationWithData<T>{name, "maximum", true, win, IOmanager, opt, std::numeric_limits<T>::min()} {};
+        OperationWithData<T>{name, "maximum", true, win, IOmanager, opt, std::numeric_limits<T>::lowest()} {};
 
     bool isComposable() const override { return true; }
 

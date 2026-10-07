@@ -20,8 +20,7 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeIncrementInSeconds,
-                    WindowType windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, WindowType windowType);
 
     long count() const;
     const std::vector<long>& counts() const;
@@ -43,7 +42,6 @@ public:
 
     long timeSpanInSeconds() const;
     long timeSpanInHours() const;
-    long timeSpanInSteps() const;
     long lastPointsDiffInSeconds() const;
 
     util::DateTimeDiff lastPointsDiff() const;
@@ -60,13 +58,6 @@ public:
     long prevPointInHours() const;
     long endPointInHours() const;
 
-    long startPointInSteps() const;
-    long creationPointInSteps() const;
-    long currPointInSteps() const;
-    long prevPointInSteps() const;
-    long endPointInSteps() const;
-
-
     long startPointInSeconds(const eckit::DateTime& refPoint) const;
     long creationPointInSeconds(const eckit::DateTime& refPoint) const;
     long currPointInSeconds(const eckit::DateTime& refPoint) const;
@@ -79,15 +70,6 @@ public:
     long prevPointInHours(const eckit::DateTime& refPoint) const;
     long endPointInHours(const eckit::DateTime& refPoint) const;
 
-    long startPointInSteps(const eckit::DateTime& refPoint) const;
-    long creationPointInSteps(const eckit::DateTime& refPoint) const;
-    long currPointInSteps(const eckit::DateTime& refPoint) const;
-    long prevPointInSteps(const eckit::DateTime& refPoint) const;
-    long endPointInSteps(const eckit::DateTime& refPoint) const;
-
-    long timeIncrementInSeconds() const;
-
-
     eckit::DateTime epochPoint() const;
     eckit::DateTime startPoint() const;
     eckit::DateTime creationPoint() const;
@@ -95,14 +77,11 @@ public:
     eckit::DateTime prevPoint() const;
     eckit::DateTime endPoint() const;
 
-    std::string stepRange() const;
     std::string stepRangeInHours() const;
 
-    std::string stepRange(const eckit::DateTime& refPoint) const;
     std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
 
     void updateFlush();
-    long lastFlushInSteps() const;
 
     size_t restartSize() const;
 
@@ -115,7 +94,6 @@ private:
     eckit::DateTime endPoint_;
     eckit::DateTime lastFlush_;
 
-    long timeIncrementInSeconds_;
     long count_;
     mutable std::vector<long> counts_;
     WindowType windowType_;
@@ -129,7 +107,8 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);
 };
 
-OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
+OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg,
+                            const eckit::DateTime& simulationStart);
 OperationWindow load_window(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
 }  // namespace multio::action::statistics_mtg2

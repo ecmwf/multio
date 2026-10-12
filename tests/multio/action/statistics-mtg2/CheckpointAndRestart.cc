@@ -58,7 +58,7 @@ CASE("simple checkpoint and restart") {
             const double val = 1.0;
             Metadata md{{{"param", 130},
                          {"levtype", "sfc"},
-                         {"grid", "custom"},
+                         {"grid", "N80"},
                          {"date", 20250430},
                          {"time", 0000},
                          {"step", step},
@@ -121,7 +121,7 @@ CASE("simple checkpoint and restart") {
             const double val = 3.0;
             Metadata md{{{"param", 130},
                          {"levtype", "sfc"},
-                         {"grid", "custom"},
+                         {"grid", "N80"},
                          {"date", 20250430},
                          {"time", 0000},
                          {"step", step},

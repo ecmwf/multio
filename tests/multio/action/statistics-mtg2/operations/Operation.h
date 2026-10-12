@@ -7,7 +7,7 @@
 #include "eckit/testing/Test.h"
 
 
-inline constexpr std::size_t SIZE = 4096;
+inline constexpr std::size_t SIZE = 40;
 
 
 namespace multio::test::statistics_mtg2 {
@@ -270,7 +270,7 @@ private:
         auto md = Metadata({
             {"param", 130},
             {"levtype", "sfc"},
-            {"grid", "custom"},
+            {"grid", "45/45"},
             {"date", date},
             {"time", time},
             {"step", step},

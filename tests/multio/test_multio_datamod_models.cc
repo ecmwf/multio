@@ -134,50 +134,23 @@ multio::message::Metadata makeMarsMetadata() {
         {"ident", 5},       {"instrument", 6},      {"channel", 7},         {"chem", 500},
         {"param", 3},       {"model", "model"},     {"levtype", "hl"},      {"levelist", 0},
         {"direction", 1},   {"frequency", 2},       {"date", 20220103},     {"time", 180000},
-        {"step", 4},        {"timespan", 1},        {"hdate", 20240101},    {"grid", "O320"},
-        {"truncation", 399}};
-}
-
-multio::message::Metadata makeValidMarsMetadata() {
-    auto md = makeMarsMetadata();
-    md.erase("truncation");
-    return md;
+        {"step", 4},        {"timespan", 1},        {"hdate", 20240101},    {"grid", "O320"}};
 }
 
 
 CASE("Test reading MARS keys from metadata") {
     using namespace dm;
 
-    {
-        // Expect error because of having grid & truncation defined at the same time
-        EXPECT_THROWS(readRecord<FullMarsRecord>(makeMarsMetadata()));
-    }
-
-    {
-        auto md = makeMarsMetadata();
-        md.erase("truncation");
-        EXPECT_NO_THROW(readRecord<FullMarsRecord>(md));
-    }
-
-    {
-        auto md = makeMarsMetadata();
-        md.erase("grid");
-        EXPECT_NO_THROW(readRecord<FullMarsRecord>(md));
-    }
-
-    {
-        auto md = makeMarsMetadata();
-        md.erase("truncation");
-        md.erase("grid");
-        EXPECT_THROWS(readRecord<FullMarsRecord>(md));
-    }
+    auto md = makeMarsMetadata();
+    md.erase("grid");
+    EXPECT_THROWS(readRecord<FullMarsRecord>(md));
 };
 
 
 CASE("Test encoder hashes") {
     using namespace dm;
 
-    auto marsKeys = readRecordByValue<FullMarsRecord>(makeValidMarsMetadata());
+    auto marsKeys = readRecordByValue<FullMarsRecord>(makeMarsMetadata());
 
     // Create copies
     auto mk1 = marsKeys;

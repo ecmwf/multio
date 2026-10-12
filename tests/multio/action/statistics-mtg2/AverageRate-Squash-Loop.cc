@@ -57,7 +57,7 @@ CASE("Average rate + daily average + monthly average") {
     for (std::int64_t step = 1; step <= 24*(31+30+31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 1996'10'01},
                             {"time", 00'00'00},
                             {"step", step},
@@ -135,7 +135,7 @@ CASE("Average rate + daily average + monthly maximum") {
     for (std::int64_t step = 1; step <= 24*(31+30+31); ++step) {
         auto md = Metadata({{"param", 228228},  // Total Precipitation
                             {"levtype", "sfc"},
-                            {"grid", "none"},
+                            {"grid", "N80"},
                             {"date", 19961001},
                             {"time", 0000},
                             {"step", step},

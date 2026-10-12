@@ -65,7 +65,6 @@ struct FieldMetadataKeys {
     dm::EntryType_t<decltype(dm::LEVTYPE)> levtype;
     dm::EntryType_t<decltype(dm::LEVELIST)> levelist;
     dm::EntryType_t<decltype(dm::GRID)> grid;
-    dm::EntryType_t<decltype(dm::TRUNCATION)> truncation;
     dm::EntryType_t<decltype(dm::TimeIncrementInSeconds)> timeIncrementInSeconds;
     dm::EntryType_t<decltype(dm::BitmapPresent)> bitmapPresent;
     dm::EntryType_t<decltype(dm::MissingValue)> missingValue;
@@ -73,7 +72,7 @@ struct FieldMetadataKeys {
     static constexpr std::string_view record_name_ = "statistics-mtg2-field";
     static constexpr auto record_entries_
         = std::make_tuple(dm::DATE, dm::TIME, dm::STEP.tagRequired(), dm::TIMESPAN, dm::PARAM, dm::STREAM.tagOptional(),
-                          dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TRUNCATION, dm::TimeIncrementInSeconds,
+                          dm::LEVTYPE.tagRequired(), dm::LEVELIST, dm::GRID, dm::TimeIncrementInSeconds,
                           dm::BitmapPresent, dm::MissingValue);
 };
 

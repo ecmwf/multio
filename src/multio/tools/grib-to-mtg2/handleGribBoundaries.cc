@@ -13,6 +13,7 @@
 
 #include "multio/tools/grib-to-mtg2/handleGribBoundaries.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <limits>
@@ -203,8 +204,13 @@ std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const st
     std::vector<unsigned char> window(64 * 1024);
     off_t windowStart = searchOffset;
 
+    // A unit owns every message that starts before endOffset, but the 4-byte magic of a message starting in the last
+    // 3 bytes of the range extends past endOffset. Read that far (bounded by the file end) so the magic can be
+    // matched, and only accept candidates that start before endOffset.
+    const off_t readEnd = std::min<off_t>(endOffset + static_cast<off_t>(sizeof(gribMagic) - 1), fileEndOffset);
+
     while (windowStart < endOffset) {
-        const off_t span = endOffset - windowStart;
+        const off_t span = readEnd - windowStart;
         const std::size_t toRead
             = span >= static_cast<off_t>(window.size()) ? window.size() : static_cast<std::size_t>(span);
 
@@ -221,7 +227,10 @@ std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const st
             break;
         }
 
-        for (std::size_t i = 0; i + 4 <= nread; ++i) {
+        // Only candidates that start before endOffset belong to this unit.
+        const auto nStarts
+            = static_cast<std::size_t>(std::min<off_t>(endOffset - windowStart, static_cast<off_t>(nread)));
+        for (std::size_t i = 0; i < nStarts && i + sizeof(gribMagic) <= nread; ++i) {
             if (std::memcmp(window.data() + i, gribMagic, sizeof(gribMagic)) != 0) {
                 continue;
             }
@@ -235,7 +244,7 @@ std::optional<CandidateMessage> searchCandidateMessage(std::FILE* file, const st
             }
         }
 
-        if (windowStart + static_cast<off_t>(nread) >= endOffset) {
+        if (windowStart + static_cast<off_t>(nread) >= readEnd) {
             break;
         }
 

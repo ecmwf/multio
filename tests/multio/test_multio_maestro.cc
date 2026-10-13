@@ -86,7 +86,7 @@ CASE("Set and get CDO attributes") {
     cdo.set_attribute<uint64_t*>(".maestro.ecmwf.time", &time, true);  // uint()
 
     std::string expver{"0001"};
-    const char *s = expver.c_str();
+    const char* s = expver.c_str();
     cdo.set_attribute<const char**>(".maestro.ecmwf.expver", &s, true);  // str()
 
     std::time_t now = std::time(NULL);

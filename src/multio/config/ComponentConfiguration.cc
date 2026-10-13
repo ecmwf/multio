@@ -13,7 +13,7 @@ SubComponentIteratorMapper::SubComponentIteratorMapper(ComponentConfiguration&& 
     compConf_(std::move(compConf)) {}
 
 ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::LocalConfiguration& config) const {
-    return ComponentConfiguration(config, compConf_.multioConfig());
+    return ComponentConfiguration(config, compConf_.multioConfig(), compConf_.planName());
 }
 
 
@@ -21,7 +21,12 @@ ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::Local
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
                                                const MultioConfiguration& multioConf) :
-    componentConf_(componentConfig), multioConf_(multioConf) {}
+    ComponentConfiguration(componentConfig, multioConf, std::nullopt) {}
+
+ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
+                                               const MultioConfiguration& multioConf,
+                                               std::optional<std::string> planName) :
+    componentConf_(componentConfig), multioConf_(multioConf), planName_(std::move(planName)) {}
 
 //-----------------------------------------------------------------------------
 
@@ -36,11 +41,15 @@ const MultioConfiguration& ComponentConfiguration::multioConfig() const {
     return multioConf_.get();
 };
 
+const std::optional<std::string>& ComponentConfiguration::planName() const {
+    return planName_;
+};
+
 
 //-----------------------------------------------------------------------------
 
 ComponentConfiguration ComponentConfiguration::subComponent(const std::string& subConfiguratinKey) const {
-    return ComponentConfiguration(componentConf_.getSubConfiguration(subConfiguratinKey), multioConfig());
+    return ComponentConfiguration(componentConf_.getSubConfiguration(subConfiguratinKey), multioConfig(), planName_);
 };
 
 ComponentConfiguration::SubComponentConfigurations ComponentConfiguration::subComponents(

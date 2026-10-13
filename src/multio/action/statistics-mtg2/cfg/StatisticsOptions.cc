@@ -121,6 +121,14 @@ bool parseDisableSquashing(const eckit::LocalConfiguration& cfg) {
     throw eckit::SeriousBug{"Unable to read boolean disable-squashing", Here()};
 }
 
+bool parseBoolOption(const eckit::LocalConfiguration& cfg, const std::string& key) {
+    const auto value = util::parseBool(cfg, key, false);
+    if (value) {
+        return *value;
+    }
+    throw eckit::SeriousBug{"Unable to read boolean " + key, Here()};
+}
+
 std::optional<OutputTimeReference> parseOutputTimeRef(const eckit::LocalConfiguration& cfg) {
     const auto outputTimeRef = cfg.getString("output-time-reference", "");
     if (outputTimeRef.empty()) {
@@ -162,11 +170,14 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     restartPath_{parseRestartPath(cfg)},
     restartPrefix_{parseRestartPrefix(cfg)},
     restartLib_{parseRestartLib(cfg)},
-    logPrefix_{parseRestartPrefix(cfg)},
+    logPrefix_{parseLogPrefix(cfg)},
     windowType_{parseWindowType(cfg)},
     valueCountThreshold_{parseValueCountThreshold(cfg)},
     disableStrictMapping_{parseDisableStrictMapping(cfg)},
     disableSquashing_{parseDisableSquashing(cfg)},
+    emitIncompleteStatistics_{parseBoolOption(cfg, "emit-incomplete-statistics")},
+    allowNonUniformStatistics_{parseBoolOption(cfg, "allow-non-uniform-statistics")},
+    debug_{parseBoolOption(cfg, "debug")},
     setMetadata_{parseSetMetadata(cfg)},
     outputTimeReference_{parseOutputTimeRef(cfg)} {}
 
@@ -213,6 +224,15 @@ bool StatisticsOptions::disableStrictMapping() const {
 }
 bool StatisticsOptions::disableSquashing() const {
     return disableSquashing_;
+}
+bool StatisticsOptions::emitIncompleteStatistics() const {
+    return emitIncompleteStatistics_;
+}
+bool StatisticsOptions::allowNonUniformStatistics() const {
+    return allowNonUniformStatistics_;
+}
+bool StatisticsOptions::debug() const {
+    return debug_;
 }
 const std::vector<std::pair<std::string, std::string>>& StatisticsOptions::setMetadata() const {
     return setMetadata_;

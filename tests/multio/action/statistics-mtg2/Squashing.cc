@@ -15,6 +15,7 @@
 #include "eckit/testing/Test.h"
 
 #include "../../MultioTestEnvironment.h"
+#include "StatisticsTestHelpers.h"
 
 namespace multio::test::statistics_mtg2 {
 
@@ -49,6 +50,7 @@ CASE("Squash daily + monthly average") {
     })json";
     auto env = MultioTestEnvironment(plan);
     EXPECT_EQUAL(env.debugSink().size(), 0);
+    sendSimulationStart(env, 19961001);
 
     for (std::int64_t step = 0; step <= 2208; ++step) {
         auto md = Metadata({{"param", 167},
@@ -58,6 +60,7 @@ CASE("Squash daily + monthly average") {
                             {"time", 0000},
                             {"step", step},
                             {"misc-precision", "double"}});
+        setTimingMetadata(md, 3600);
 
         auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)});
         EXPECT_NO_THROW(env.process(std::move(msg)));
@@ -68,21 +71,21 @@ CASE("Squash daily + monthly average") {
     EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
     EXPECT_EQUAL(env.debugSink().size(), 4);
 
-    {   // October (31 days)
+    {  // October (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(744, md.get<std::int64_t>("step"));
         EXPECT_EQUAL(744, md.get<std::int64_t>("timespan"));
         env.debugSink().pop();
     }
-    {   // November (31 days)
+    {  // November (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(1464, md.get<std::int64_t>("step"));
         EXPECT_EQUAL(720, md.get<std::int64_t>("timespan"));
         env.debugSink().pop();
     }
-    {   // December (31 days)
+    {  // December (31 days)
         auto md = env.debugSink().front().metadata();
         EXPECT_EQUAL(228004, md.get<std::int64_t>("param"));
         EXPECT_EQUAL(2208, md.get<std::int64_t>("step"));

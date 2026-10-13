@@ -72,9 +72,7 @@ AtlasInstance::AtlasInstance() {
     atlas::initialize();
 };
 
-AtlasInstance::~AtlasInstance() {
-    atlas::finalize();
-};
+AtlasInstance::~AtlasInstance() = default;
 
 AtlasInstance& AtlasInstance::instance() {
     static AtlasInstance singleton;

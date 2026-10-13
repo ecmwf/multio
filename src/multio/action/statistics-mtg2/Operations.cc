@@ -1,6 +1,7 @@
 
 #include "Operations.h"
 
+#include <algorithm>
 #include <regex>
 
 namespace multio::action::statistics_mtg2 {
@@ -22,6 +23,10 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
                                                         std::shared_ptr<StatisticsIO>& IOmanager,
                                                         const OperationWindow& win,
                                                         const StatisticsConfiguration& cfg) {
+
+    if (cfg.isStatistical() && std::find(opNames.begin(), opNames.end(), "instant") != opNames.end()) {
+        throw eckit::UserError{"The instant operation only accepts instantaneous fields", Here()};
+    }
 
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;

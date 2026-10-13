@@ -30,6 +30,7 @@ INTEGER(KIND=JPIB_K), PARAMETER :: FLUSH_STEP_RST_E=4
 INTEGER(KIND=JPIB_K), PARAMETER :: FLUSH_STEP_LAST_E=5
 
 INTEGER(KIND=JPIB_K), PARAMETER :: SIM_END_E=6
+INTEGER(KIND=JPIB_K), PARAMETER :: FLUSH_START_E=7
 
 
 TYPE :: TOC_ENTRY_BASE_T
@@ -78,6 +79,11 @@ TYPE, EXTENDS(TOC_ENTRY_BASE_T) :: TOC_FLUSH_STEP_T
   INTEGER(KIND=JPIB_K) :: CLOCK_COUNT_
 END TYPE
 
+TYPE, EXTENDS(TOC_ENTRY_BASE_T) :: TOC_FLUSH_START_T
+  INTEGER(KIND=JPIB_K) :: STEP_
+  INTEGER(KIND=JPIB_K) :: CLOCK_COUNT_
+END TYPE
+
 TYPE, EXTENDS(TOC_ENTRY_BASE_T) :: TOC_FLUSH_STEP_RST_T
   INTEGER(KIND=JPIB_K) :: STEP_
   INTEGER(KIND=JPIB_K) :: CLOCK_COUNT_
@@ -102,6 +108,7 @@ PUBLIC :: TOC_SIM_INIT_T
 PUBLIC :: TOC_ATM_FIELD_T
 PUBLIC :: TOC_WAM_FIELD_T
 PUBLIC :: TOC_FLUSH_STEP_T
+PUBLIC :: TOC_FLUSH_START_T
 PUBLIC :: TOC_FLUSH_STEP_RST_T
 PUBLIC :: TOC_FLUSH_LAST_STEP_T
 PUBLIC :: TOC_SIM_END_T
@@ -116,6 +123,7 @@ PUBLIC :: TOC_WRITE_FLUSH_BEGIN_OF_SIMULATION
 PUBLIC :: TOC_WRITE_ATM
 PUBLIC :: TOC_WRITE_WAM
 PUBLIC :: TOC_WRITE_FLUSH_STEP
+PUBLIC :: TOC_WRITE_FLUSH_START
 PUBLIC :: TOC_WRITE_FLUSH_STEP_AND_RESTART
 PUBLIC :: TOC_WRITE_FLUSH_LAST_STEP
 PUBLIC :: TOC_WRITE_FLUSH_END_OF_SIMULATION
@@ -960,7 +968,7 @@ IMPLICIT NONE
 
         SELECT CASE ( ENTRY_TYPE )
 
-        CASE ( SIM_INIT_E, FLUSH_STEP_E, FLUSH_STEP_RST_E, FLUSH_STEP_LAST_E )
+        CASE ( SIM_INIT_E, FLUSH_STEP_E, FLUSH_STEP_RST_E, FLUSH_STEP_LAST_E, FLUSH_START_E )
 
           IF ( PROCID .EQ. NPROCS ) THEN
             CNT = CNT + 1
@@ -1265,6 +1273,21 @@ IMPLICIT NONE
           ELSE
             CNT1 = CNT1 + 1
             ! WRITE(*,'(A,I8,A,I2,A)') 'SKIPPING(', PROCID, ', ', CNT1, ') FLUSH_LAST_STEP'
+            IF ( ASSOCIATED(TMP_ENTRY) ) THEN
+              DEALLOCATE(TMP_ENTRY)
+              NULLIFY(TMP_ENTRY)
+            ENDIF
+          ENDIF
+          EXIT InnerLoop
+
+        CASE ( FLUSH_START_E )
+
+          IF ( PROCID .EQ. SIZE(PROC_LIST) ) THEN
+            CNT = CNT + 1
+            TMPTOC(CNT)%ENTRY_ => TMP_ENTRY
+            NULLIFY(TMP_ENTRY)
+          ELSE
+            CNT1 = CNT1 + 1
             IF ( ASSOCIATED(TMP_ENTRY) ) THEN
               DEALLOCATE(TMP_ENTRY)
               NULLIFY(TMP_ENTRY)
@@ -2543,6 +2566,252 @@ END FUNCTION TOC_WRITE_FLUSH_STEP
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'TOC_READ_FLUSH_START'
+PP_THREAD_SAFE FUNCTION TOC_READ_FLUSH_START( TOCUNIT, TOC_ENTRY, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),     INTENT(IN)    :: TOCUNIT
+  CLASS(TOC_FLUSH_START_T), INTENT(OUT)   :: TOC_ENTRY
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: TOCOPENED
+  INTEGER(KIND=INT64) :: ITMP
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TOC_NOT_OPENED = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ = 2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Check if the file is opened
+  INQUIRE( UNIT=TOCUNIT, OPENED=TOCOPENED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.TOCOPENED, ERRFLAG_TOC_NOT_OPENED)
+
+  ! Read the last step
+  READ( TOCUNIT, IOSTAT=STAT ) ITMP
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_READ)
+  TOC_ENTRY%STEP_ = INT( ITMP, KIND=KIND(TOC_ENTRY%STEP_) )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_TOC_NOT_OPENED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Toc file not opened or not exists' )
+    CASE (ERRFLAG_UNABLE_TO_READ)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read step' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION TOC_READ_FLUSH_START
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'TOC_WRITE_FLUSH_START'
+PP_THREAD_SAFE FUNCTION TOC_WRITE_FLUSH_START( TOCUNIT, ISTEP, WRITE_POS, TOC_COUNTER, HOOKS ) RESULT(RET)
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: TOCUNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ISTEP
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: WRITE_POS
+  INTEGER(KIND=JPIB_K), INTENT(INOUT) :: TOC_COUNTER
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: TOCOPENED
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TOC_NOT_OPENED = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE_TOC_ENTRY = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INQUIRE_TOC_POSITION = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE_TOC_COUNTER = 4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Check if the file is opened
+  INQUIRE( UNIT=TOCUNIT, OPENED=TOCOPENED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.TOCOPENED, ERRFLAG_TOC_NOT_OPENED)
+
+  ! Write the start step of the simulation
+  WRITE( TOCUNIT, POS=WRITE_POS, IOSTAT=STAT ) INT(FLUSH_START_E,KIND=INT64)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_WRITE_TOC_ENTRY)
+
+  ! Write the current step
+  WRITE( TOCUNIT, IOSTAT=STAT ) INT(ISTEP,KIND=INT64)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_WRITE_TOC_ENTRY)
+
+  ! Get the position in the file
+  INQUIRE( TOCUNIT, POS=WRITE_POS, IOSTAT=STAT )
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_INQUIRE_TOC_POSITION)
+
+  ! Update the number of tocs in the toc file header
+  TOC_COUNTER = TOC_COUNTER + 1
+  WRITE(TOCUNIT, POS=1, IOSTAT=STAT ) INT(TOC_COUNTER, KIND=INT64)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_WRITE_TOC_COUNTER)
+
+  ! Perform a flush just to be sure
+  FLUSH( TOCUNIT )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_TOC_NOT_OPENED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Toc file not opened or not exists' )
+    CASE (ERRFLAG_UNABLE_TO_WRITE_TOC_ENTRY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to write the toc entry in the file' )
+    CASE (ERRFLAG_UNABLE_TO_INQUIRE_TOC_POSITION)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inquire the current position in the toc file' )
+    CASE (ERRFLAG_UNABLE_TO_WRITE_TOC_COUNTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to inquire the current position n the toc' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION TOC_WRITE_FLUSH_START
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'TOC_READ_FLUSH_STEP_AND_RESTART'
 PP_THREAD_SAFE FUNCTION TOC_READ_FLUSH_STEP_AND_RESTART( TOCUNIT, TOC_ENTRY, HOOKS ) RESULT(RET)
 
@@ -3320,6 +3589,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FLUSH_STEP_AND_RESTART = 11_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FLUSH_LAST_STEP = 12_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FLUSH_END_OF_SIMULATION = 13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FLUSH_START = 14_JPIB_K
 
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -3397,6 +3667,17 @@ IMPLICIT NONE
     SELECT TYPE ( A => NEXT_ENTRY )
     CLASS IS ( TOC_FLUSH_STEP_T )
       PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_FLUSH_STEP) TOC_READ_FLUSH_STEP( TOCUNIT, A, HOOKS )
+    CLASS DEFAULT
+      PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNABLE_TO_ALLOCATE)
+    END SELECT
+
+  CASE (FLUSH_START_E) ! 7
+    ALLOCATE( TOC_FLUSH_START_T::NEXT_ENTRY, STAT=STAT, ERRMSG=ERRMSG  )
+    PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE)
+    NEXT_ENTRY%TYPE_ = FLUSH_START_E
+    SELECT TYPE ( A => NEXT_ENTRY )
+    CLASS IS ( TOC_FLUSH_START_T )
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_FLUSH_START) TOC_READ_FLUSH_START( TOCUNIT, A, HOOKS )
     CLASS DEFAULT
       PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNABLE_TO_ALLOCATE)
     END SELECT
@@ -3503,6 +3784,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the next entry of type FLUSH_LAST_STEP' )
     CASE (ERRFLAG_UNABLE_TO_READ_FLUSH_END_OF_SIMULATION)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the next entry of type FLUSH_END_OF_SIMULATION' )
+    CASE (ERRFLAG_UNABLE_TO_READ_FLUSH_START)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the next entry of type FLUSH_START' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

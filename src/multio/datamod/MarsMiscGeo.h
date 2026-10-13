@@ -233,6 +233,21 @@ constexpr auto InitialStep =                    //
         .withDefault(0)
         .withAccessor([](auto&& v) { return &v.initialStep; });
 
+constexpr auto OutputStepInSeconds =                    //
+    EntryDef<std::int64_t>{"misc-outputStepInSeconds"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.outputStepInSeconds; });
+
+constexpr auto IntegrationStepInSeconds =                    //
+    EntryDef<std::int64_t>{"misc-integrationStepInSeconds"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.integrationStepInSeconds; });
+
+constexpr auto DistanceFromPreviousStepInSeconds =                    //
+    EntryDef<std::int64_t>{"misc-distanceFromPreviousStepInSeconds"}  //
+        .tagOptional()
+        .withAccessor([](auto&& v) { return &v.distanceFromPreviousStepInSeconds; });
+
 constexpr auto TimeIncrementInSeconds =                    //
     EntryDef<std::int64_t>{"misc-timeIncrementInSeconds"}  //
         .withDefault(3600)
@@ -293,6 +308,9 @@ struct MiscRecord {
     EntryType_t<decltype(GeneratingProcessIdentifier)> generatingProcessIdentifier;
     EntryType_t<decltype(TypeOfProcessedDataEntry)> typeOfProcessedData;
     EntryType_t<decltype(InitialStep)> initialStep;
+    EntryType_t<decltype(OutputStepInSeconds)> outputStepInSeconds;
+    EntryType_t<decltype(IntegrationStepInSeconds)> integrationStepInSeconds;
+    EntryType_t<decltype(DistanceFromPreviousStepInSeconds)> distanceFromPreviousStepInSeconds;
     EntryType_t<decltype(TimeIncrementInSeconds)> timeIncrementInSeconds;
     EntryType_t<decltype(LengthOfTimeWindow)> lengthOfTimeWindow;
     EntryType_t<decltype(LengthOfTimeWindowInSeconds)> lengthOfTimeWindowInSeconds;
@@ -322,12 +340,13 @@ struct MiscRecord {
     static constexpr std::string_view record_name_ = "misc";
 
     static constexpr auto record_entries_ = std::make_tuple(
-        TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, TimeIncrementInSeconds,
-        LengthOfTimeWindow, LengthOfTimeWindowInSeconds, BitmapPresent, ShapeOfTheEarth, MissingValue,
-        TypeOfEnsembleForecast, NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies,
-        ScaleFactorOfCentralWaveNumber, ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections,
-        ScaleFactorOfWaveFrequencies, WaveDirections, WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre,
-        NumberOfComponents, ModelErrorType, TotalNumberOfIterations, PVPresent);
+        TablesVersion, GeneratingProcessIdentifier, TypeOfProcessedDataEntry, InitialStep, OutputStepInSeconds,
+        IntegrationStepInSeconds, DistanceFromPreviousStepInSeconds, TimeIncrementInSeconds, LengthOfTimeWindow,
+        LengthOfTimeWindowInSeconds, BitmapPresent, ShapeOfTheEarth, MissingValue, TypeOfEnsembleForecast,
+        NumberOfForecastsInEnsemble, SatelliteSeries, NumberOfFrequencies, ScaleFactorOfCentralWaveNumber,
+        ScaledValueOfCentralWaveNumber, Pv, ScaleFactorOfWaveDirections, ScaleFactorOfWaveFrequencies, WaveDirections,
+        WaveFrequencies, BitsPerValue, LaplacianOperator, SubCentre, NumberOfComponents, ModelErrorType,
+        TotalNumberOfIterations, PVPresent);
 };
 
 

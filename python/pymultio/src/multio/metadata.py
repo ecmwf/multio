@@ -15,12 +15,13 @@ class Metadata:
                 self.__setitem__(key, value)
 
     def __setitem__(self, key, value):
-        if isinstance(value, int):
+        # bool is a subclass of int, so it must be tested first
+        if isinstance(value, bool):
+            self._set_bool(key, value)
+        elif isinstance(value, int):
             self._set_int(key, value)
         elif isinstance(value, str):
             self._set_string(key, value)
-        elif isinstance(value, bool):
-            self._set_bool(key, value)
         elif isinstance(value, float):
             self._set_float(key, value)
         else:
@@ -28,7 +29,7 @@ class Metadata:
 
     def _set_int(self, key, value):
         key = ffi.new("char[]", key.encode("ascii"))
-        value = ffi.cast("int", value)
+        value = ffi.cast("long long", value)
         lib.multio_metadata_set_int(self._handle, key, value)
 
     def _set_string(self, key, value):

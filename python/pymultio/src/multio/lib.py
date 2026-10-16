@@ -19,13 +19,11 @@ import cffi
 import findlibs
 from packaging.version import Version
 
+from .exceptions import MultioException
+
 __multio_version__ = "1.9.0"
 
 ffi = cffi.FFI()
-
-
-class MultioException(RuntimeError):
-    pass
 
 
 class CFFIModuleLoadFailed(MultioException):

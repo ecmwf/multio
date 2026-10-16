@@ -19,13 +19,11 @@ import cffi
 import findlibs
 from packaging.version import Version
 
+from .exceptions import MultioException
+
 __multio_version__ = "1.9.0"
 
 ffi = cffi.FFI()
-
-
-class MultioException(RuntimeError):
-    pass
 
 
 class CFFIModuleLoadFailed(MultioException):
@@ -52,7 +50,9 @@ class PatchedLib:
         try:
             self.__lib = ffi.dlopen(libname)
         except Exception as e:
-            raise RuntimeError("Error loading the following library: {}".format(libname)) from e
+            raise RuntimeError(
+                "Error loading the following library: {}".format(libname)
+            ) from e
 
         # All of the executable members of the CFFI-loaded library are functions in the multio
         # C API. These should be wrapped with the correct error handling. Otherwise forward
@@ -61,7 +61,9 @@ class PatchedLib:
         for f in dir(self.__lib):
             try:
                 attr = getattr(self.__lib, f)
-                setattr(self, f, self.__check_error(attr, f) if callable(attr) else attr)
+                setattr(
+                    self, f, self.__check_error(attr, f) if callable(attr) else attr
+                )
             except Exception as e:
                 print(e)
                 print("Error retrieving attribute", f, "from library")
@@ -77,10 +79,16 @@ class PatchedLib:
         versionstr = ffi.string(tmp_str[0]).decode("utf-8")
 
         if Version(versionstr) < Version(__multio_version__):
-            raise RuntimeError("Version of libmultio found is too old. {} < {}".format(versionstr, __multio_version__))
+            raise RuntimeError(
+                "Version of libmultio found is too old. {} < {}".format(
+                    versionstr, __multio_version__
+                )
+            )
 
     def __read_header(self):
-        with open(os.path.join(os.path.dirname(__file__), "processed_multio.h"), "r") as f:
+        with open(
+            os.path.join(os.path.dirname(__file__), "processed_multio.h"), "r"
+        ) as f:
             return f.read()
 
     def __check_error(self, fn, name):

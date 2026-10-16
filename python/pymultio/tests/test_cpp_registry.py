@@ -1,4 +1,4 @@
-# (C) Copyright 2024 European Centre for Medium-Range Weather Forecasts.
+# (C) Copyright 2026 European Centre for Medium-Range Weather Forecasts.
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
@@ -8,15 +8,14 @@
 """Check that the Python plan models mirror the actions and sinks registered in C++."""
 
 import re
-import typing
 from pathlib import Path
 
 import pytest
 
 from multio.plans import actions, sinks
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CPP_SOURCE = REPO_ROOT / "src" / "multio"
+from cpp_scan import strip_comments
+from multio_testing import models_of_module, union_models
 
 # `static ActionBuilder<Foo> FooBuilder("foo");`, optionally namespace qualified (`sink::DataSinkBuilder<...>`)
 ACTION_REGISTRATION = re.compile(r"\bActionBuilder\s*<[^<>;]*>\s*\w+\s*\(\s*\"([^\"]+)\"\s*\)")
@@ -27,21 +26,16 @@ MIN_ACTIONS = 15
 MIN_SINKS = 3
 
 
-def _strip_comments(text: str) -> str:
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    return re.sub(r"//[^\n]*", "", text)
-
-
-def cpp_sources() -> dict[Path, str]:
-    return {path: path.read_text() for path in sorted(CPP_SOURCE.rglob("*.cc"))}
+def cpp_sources(root: Path) -> dict[Path, str]:
+    return {path: path.read_text() for path in sorted(root.rglob("*.cc"))}
 
 
 def registered_names(sources: dict[Path, str], pattern: re.Pattern) -> set[str]:
-    return {name for text in sources.values() for name in pattern.findall(_strip_comments(text))}
+    return {name for text in sources.values() for name in pattern.findall(strip_comments(text))}
 
 
 def python_types(union) -> set[str]:
-    return {model.model_fields["type"].default for model in typing.get_args(union)}
+    return {model.model_fields["type"].default for model in union_models(union)}
 
 
 def diff_message(kind: str, python: set[str], cpp: set[str]) -> str:
@@ -56,10 +50,8 @@ def diff_message(kind: str, python: set[str], cpp: set[str]) -> str:
 
 
 @pytest.fixture(scope="module")
-def sources():
-    if not CPP_SOURCE.is_dir():
-        pytest.skip(f"C++ source tree not found at {CPP_SOURCE} (e.g. installed sdist)")
-    return cpp_sources()
+def sources(cpp_source_dir):
+    return cpp_sources(cpp_source_dir)
 
 
 def test_actions_match_cpp(sources):
@@ -100,25 +92,13 @@ def test_registration_regexes():
     assert registered_names({Path("x.cc"): text}, SINK_REGISTRATION) == {"bar"}
 
 
-def _models(module, base) -> set[type]:
-    """Concrete models of `module` deriving from `base`, i.e. those with a literal `type`."""
-    return {
-        obj
-        for obj in vars(module).values()
-        if isinstance(obj, type)
-        and issubclass(obj, base)
-        and obj.__module__ == module.__name__
-        and typing.get_origin(obj.model_fields["type"].annotation) is typing.Literal
-    }
-
-
 def test_actions_union_and_all_are_complete():
-    models = _models(actions, actions.Action)
-    assert models == set(typing.get_args(actions.ACTIONS))
+    models = models_of_module(actions, base=actions.Action, literal_type=True)
+    assert models == set(union_models(actions.ACTIONS))
     assert {model.__name__ for model in models} <= set(actions.__all__)
 
 
 def test_sinks_union_and_all_are_complete():
-    models = _models(sinks, sinks.Sinks)
-    assert models == set(typing.get_args(sinks.SINKS))
+    models = models_of_module(sinks, base=sinks.Sinks, literal_type=True)
+    assert models == set(union_models(sinks.SINKS))
     assert {model.__name__ for model in models} <= set(sinks.__all__)

@@ -44,22 +44,11 @@ dissemination_plan = {
 print_action = {"type": "print"}
 
 
-def _multio_lib_available():
-    try:
-        import multio.multio  # noqa: F401
-    except ImportError:
-        return False
-    return True
-
-
-requires_lib = pytest.mark.skipif(not _multio_lib_available(), reason="libmultio could not be loaded")
-
-
 def test_sample_config():
     Client(**sample_plan)
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_with_multio_server_sample(tmp_path):
     sample = {"plans": [{**sample_plan["plans"][0]}]}
     sample["plans"][0]["actions"] = [
@@ -71,14 +60,14 @@ def test_with_multio_server_sample(tmp_path):
         multioclient = multio.Multio(**default_dict)
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_with_multio_server_empty():
     config = Client()
     with multio.MultioPlan(config):
         multioclient = multio.Multio(**default_dict)
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_with_multio_enable_failonerror_and_anonymous_plan(tmp_path):
     """C++ reads a plan without name, `enable` on plans and sinks, and `failOnError`."""
     sink = {

@@ -16,6 +16,9 @@ Every model mirrors the configuration read by the C++ action of the same name. T
 - `cpp_ignore`: `{key: reason}` for keys that are read in those files but are not config keys of the model, or that
   cannot be checked statically.
 
+Both are merged with those of the parents of the model (see `MultioBaseModel`): `Action` lists the files and keys that
+every action has, `FailureAwareAction` adds `on-error`, and an action lists only what it adds.
+
 Nested option models carry their own class variables. The keys of nested models belong to the key set of the model
 that contains them, because the C++ reader files are shared.
 """
@@ -41,40 +44,20 @@ from .base import (
     ConfigInt,
     ConfigStr,
     MultioBaseModel,
+    OnErrorOptions,
+    OnErrorTag,
     ParsedBool,
     StrictParserBool,
     StrictParserFloat,
     StrictParserInt,
-    config_str,
 )
 from .sinks import SinksType, TriggersType
 
-# Files read by every action (framework keys `type` and `next`), relative to src/multio
-_COMMON_SOURCES = ("action/Action.cc", "action/ChainedAction.cc", "util/FailureHandling.h")
-
-_COMMON_IGNORE = {"next": "internal key, generated from the order of the actions in a plan; users must not set it"}
-
-_ON_ERROR_IGNORE = {
-    "on-error": "the key name comes from FailureAware::configKey() in action/Action.h, not from a literal accessor",
-}
-
 # FailureHandling.h is shared by all actions, but the strict parser rejects `on-error` and with it its `maxRetries`
 _STRICT_PARSER_IGNORE = {
-    **_COMMON_IGNORE,
     "next": "removed by parseActionConfig before the strict parser runs",
     "maxRetries": "option of `on-error`, which the strict parser rejects as an unknown key",
 }
-
-
-def _sources(*paths: str) -> tuple[str, ...]:
-    """Repo-relative C++ reader files: the common action files plus `paths` (relative to src/multio)."""
-    return tuple(f"src/multio/{path}" for path in (*_COMMON_SOURCES, *paths))
-
-
-def _lower(value: Any) -> str:
-    """C++ reads an `on-error` tag with `getString` (a number or a list of one element converts) and compares it
-    case-insensitively. A value that does not convert, such as a map, raises, so that the union moves on."""
-    return config_str(value).lower()
 
 
 def _not_bool(value: Any) -> Any:
@@ -94,21 +77,6 @@ def _float_only(value: Any) -> Any:
 NonBoolFloat = Annotated[float, BeforeValidator(_not_bool)]
 FloatOnly = Annotated[float, BeforeValidator(_float_only)]
 
-OnErrorTag = Annotated[Literal["propagate", "recover"], BeforeValidator(_lower)]
-
-
-class OnErrorOptions(MultioBaseModel):
-    """Map form of `on-error`: a tag with options (util/FailureHandling.h)."""
-
-    cpp_sources = ("src/multio/util/FailureHandling.h",)
-    cpp_open_enums = frozenset({"type"})
-
-    # C++ reads `type` of the map form with `getString` and falls back to `propagate` when it is none of the tags
-    # (FailureHandling.h, `parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : defaultOnErrorTag()`), unlike the string
-    # form, which throws "Unsupported value". The known tags are `propagate` and `recover`.
-    type: OnErrorTag | ConfigStr
-    max_retries: ConfigInt | None = Field(None, alias="maxRetries")
-
 
 class Action(MultioBaseModel):
     """Base Action class.
@@ -118,8 +86,14 @@ class Action(MultioBaseModel):
     Should not be instantiated directly, use one of the subclasses instead.
     """
 
-    cpp_sources = _sources()
-    cpp_ignore = {**_COMMON_IGNORE}
+    cpp_merge_parents = True
+    # Files read by every action (framework keys `type` and `next`)
+    cpp_sources = (
+        "src/multio/action/Action.cc",
+        "src/multio/action/ChainedAction.cc",
+        "src/multio/util/FailureHandling.h",
+    )
+    cpp_ignore = {"next": "internal key, generated from the order of the actions in a plan; users must not set it"}
 
     type: Any = Field(..., description="Action type")
 
@@ -131,7 +105,9 @@ class FailureAwareAction(Action):
     reject `on-error` as an unknown key.
     """
 
-    cpp_ignore = {**_COMMON_IGNORE, **_ON_ERROR_IGNORE}
+    cpp_ignore = {
+        "on-error": "the key name comes from FailureAware::configKey() in action/Action.h, not from a literal accessor",
+    }
 
     on_error: OnErrorTag | OnErrorOptions | None = Field(
         None, description="Failure handling: `propagate` (default) or `recover`, optionally with `maxRetries`"
@@ -144,7 +120,7 @@ class Null(FailureAwareAction):
     Does nothing.
     """
 
-    cpp_sources = _sources("action/null/Null.cc")
+    cpp_sources = ("src/multio/action/null/Null.cc",)
 
     type: Literal["null"] = Field("null", init=False)
 
@@ -196,8 +172,7 @@ class Select(FailureAwareAction, SelectMatcher):
     Select on some metadata within the data.
     """
 
-    cpp_sources = _sources("action/select/Select.cc", "message/MetadataMatcher.cc")
-    cpp_ignore = {**_COMMON_IGNORE, **_ON_ERROR_IGNORE}
+    cpp_sources = ("src/multio/action/select/Select.cc",)  # and MetadataMatcher.cc, of `SelectMatcher`
 
     type: Literal["select"] = Field("select", init=False)
 
@@ -298,15 +273,13 @@ class Statistics(FailureAwareAction):
     `DailyHours::average`, with "Invalid opname".
     """
 
-    cpp_sources = _sources(
-        "action/statistics/Statistics.cc",
-        "action/statistics/cfg/StatisticsOptions.cc",
-        "action/statistics/RemapParamID.cc",
-        "action/statistics/Operations.h",  # the `operations` values are dispatched in make_operation
+    cpp_sources = (
+        "src/multio/action/statistics/Statistics.cc",
+        "src/multio/action/statistics/cfg/StatisticsOptions.cc",
+        "src/multio/action/statistics/RemapParamID.cc",
+        "src/multio/action/statistics/Operations.h",  # the `operations` values are dispatched in make_operation
     )
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         "help": "its presence makes C++ throw 'Usage requested', deliberately not a model field",
         "restartDateTime": "message metadata key, not config",
         "flushKind": "message metadata key, not config",
@@ -362,12 +335,11 @@ class StatisticsMTG(FailureAwareAction):
     Calculate statistics on the data based on MARS keys. `mapping-param` is not read by C++ and is not accepted.
     """
 
-    cpp_sources = _sources(
-        "action/statistics-mtg2/Statistics.cc",
-        "action/statistics-mtg2/cfg/StatisticsOptions.cc",
-        "action/statistics-mtg2/Operations.h",  # the `operations` values are dispatched in make_operation
+    cpp_sources = (
+        "src/multio/action/statistics-mtg2/Statistics.cc",
+        "src/multio/action/statistics-mtg2/cfg/StatisticsOptions.cc",
+        "src/multio/action/statistics-mtg2/Operations.h",  # the `operations` values are dispatched in make_operation
     )
-    cpp_ignore = {**_COMMON_IGNORE, **_ON_ERROR_IGNORE}
 
     type: Literal["statistics-mtg2"] = Field("statistics-mtg2", init=False)
     operations: list[StatisticsMTGOperation]
@@ -391,13 +363,13 @@ class Scale(Action):
     Read with the strict parser: unknown keys, including `on-error`, are rejected by C++.
     """
 
-    cpp_sources = _sources(
-        "action/scale/Scale.h",
-        "action/scale/Scale.cc",
-        "util/config/detail/Parser.h",
-        "util/config/detail/Parser.cc",
+    cpp_sources = (
+        "src/multio/action/scale/Scale.h",
+        "src/multio/action/scale/Scale.cc",
+        "src/multio/util/config/detail/Parser.h",
+        "src/multio/util/config/detail/Parser.cc",
     )
-    cpp_ignore = {**_STRICT_PARSER_IGNORE}
+    cpp_ignore = _STRICT_PARSER_IGNORE
 
     type: Literal["scale"] = Field("scale", init=False)
     preset_mappings: Literal["local-to-wmo", "wmo-to-local"] | None = Field(None)
@@ -416,10 +388,8 @@ class Transport(FailureAwareAction):
     `target` names a top-level key of the whole multio config, which must hold a `transport` block.
     """
 
-    cpp_sources = _sources("action/transport/Transport.cc", "transport/TransportRegistry.cc")
+    cpp_sources = ("src/multio/action/transport/Transport.cc", "src/multio/transport/TransportRegistry.cc")
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         "transport": "key of the block named by `target` (a top-level config key), not of the action",
     }
 
@@ -431,7 +401,7 @@ class Transport(FailureAwareAction):
 class Aggregation(FailureAwareAction):
     """Aggregation Action"""
 
-    cpp_sources = _sources("action/aggregate/Aggregate.cc")
+    cpp_sources = ("src/multio/action/aggregate/Aggregate.cc",)
 
     type: Literal["aggregate"] = Field("aggregate", init=False)
 
@@ -448,10 +418,8 @@ class Interpolate(FailureAwareAction):
 
     model_config = ConfigDict(extra="allow")  # metkit `_postproc` keys are forwarded to MIR
 
-    cpp_sources = _sources("action/interpolate/Interpolate.cc")
+    cpp_sources = ("src/multio/action/interpolate/Interpolate.cc",)
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         "missing_value": "key inside `options` (read through getSubConfiguration), not an action key",
     }
     cpp_strict_strings = {
@@ -513,11 +481,11 @@ class InterpolateMTG(Action):
     Read with the strict parser: unknown keys, including `on-error`, are rejected by C++.
     """
 
-    cpp_sources = _sources(
-        "action/interpolate-mtg2/InterpolateMtg2.h",
-        "action/interpolate-mtg2/InterpolateMtg2.cc",
-        "util/config/detail/Parser.h",
-        "util/config/detail/Parser.cc",
+    cpp_sources = (
+        "src/multio/action/interpolate-mtg2/InterpolateMtg2.h",
+        "src/multio/action/interpolate-mtg2/InterpolateMtg2.cc",
+        "src/multio/util/config/detail/Parser.h",
+        "src/multio/util/config/detail/Parser.cc",
     )
     cpp_ignore = {
         **_STRICT_PARSER_IGNORE,
@@ -531,7 +499,7 @@ class InterpolateMTG(Action):
 class RenumberHealpix(FailureAwareAction):
     """Renumber-healpix Action"""
 
-    cpp_sources = _sources("action/renumber-healpix/HEALPix_ring2nest.cc")
+    cpp_sources = ("src/multio/action/renumber-healpix/HEALPix_ring2nest.cc",)
 
     type: Literal["renumber-healpix"] = Field("renumber-healpix", init=False)
     cache_file_name: ConfigStr = Field(description="Path to the cache file, which must exist")
@@ -540,10 +508,8 @@ class RenumberHealpix(FailureAwareAction):
 class AverageRate(FailureAwareAction):
     """Average-rate Action"""
 
-    cpp_sources = _sources("action/average-rate/AverageRate.cc")
+    cpp_sources = ("src/multio/action/average-rate/AverageRate.cc",)
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         "paramIn": "key of the resource file average_rate_param_mappings.yaml, not action config",
         "paramOut": "key of the resource file average_rate_param_mappings.yaml, not action config",
     }
@@ -557,7 +523,7 @@ class DebugSink(FailureAwareAction):
     Terminal action which keeps the messages in a queue, intended for testing.
     """
 
-    cpp_sources = _sources("action/debug-sink/DebugSink.cc")
+    cpp_sources = ("src/multio/action/debug-sink/DebugSink.cc",)
 
     type: Literal["debug-sink"] = Field("debug-sink", init=False)
 
@@ -565,10 +531,8 @@ class DebugSink(FailureAwareAction):
 class MetadataMapping(FailureAwareAction):
     """Metadata-mapping Action"""
 
-    cpp_sources = _sources("action/metadata-mapping/MetadataMapping.cc", "config/MetadataMappings.cc")
+    cpp_sources = ("src/multio/action/metadata-mapping/MetadataMapping.cc", "src/multio/config/MetadataMappings.cc")
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         **{
             key: "key of the mapping file that `mapping` points to, not action config"
             for key in ("data", "mappings", "match", "map", "optional-map", "target-path")
@@ -587,7 +551,7 @@ class Print(FailureAwareAction):
     `stream` is one of `info`, `error`, `cout`, `mars` and `mars-misc`; C++ prints to the debug log for any other value.
     """
 
-    cpp_sources = _sources("action/print/Print.cc")
+    cpp_sources = ("src/multio/action/print/Print.cc",)
     cpp_open_enums = frozenset({"stream"})
 
     type: Literal["print"] = Field("print", init=False)
@@ -604,12 +568,8 @@ class Print(FailureAwareAction):
 class Mask(FailureAwareAction):
     """Mask Action"""
 
-    cpp_sources = _sources("action/mask/Mask.cc")
-    cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
-        "missing-value": "the C++ default is std::numeric_limits<float>::max(), not a literal",
-    }
+    cpp_sources = ("src/multio/action/mask/Mask.cc",)
+    cpp_ignore = {"missing-value": "the C++ default is std::numeric_limits<float>::max(), not a literal"}
 
     type: Literal["mask"] = Field("mask", init=False)
     offset_fields: list[ConfigStr] = Field(default_factory=list, description="Fields to offset by `offset-value`")
@@ -673,12 +633,8 @@ class Encode(FailureAwareAction, EncodeKeys):
     read from the action itself by the grid downloader, whatever `encoding` holds.
     """
 
-    cpp_sources = _sources("action/encode/Encode.cc", "action/encode/GribEncoder.cc", "action/encode/GridDownloader.cc")
-    cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
-        "uid": "key of an atlas grid spec (`gridSpec.getString`) in GridDownloader.cc, not action config",
-    }
+    cpp_sources = ("src/multio/action/encode/GridDownloader.cc",)  # and the files of `EncodeKeys`
+    cpp_ignore = {"uid": "key of an atlas grid spec (`gridSpec.getString`) in GridDownloader.cc, not action config"}
 
     type: Literal["encode"] = Field("encode", init=False)
     encoding: EncodeEncoding | None = Field(None, description="Nested encoding keys, instead of flat ones")
@@ -703,11 +659,11 @@ class EncodeMTG(Action):
     here as well. When C++ is fixed, add the option (a map of booleans with camel case names) to this model.
     """
 
-    cpp_sources = _sources(
-        "action/encode-mtg2/EncodeMtg2.h",
-        "action/encode-mtg2/EncodeMtg2.cc",
-        "util/config/detail/Parser.h",
-        "util/config/detail/Parser.cc",
+    cpp_sources = (
+        "src/multio/action/encode-mtg2/EncodeMtg2.h",
+        "src/multio/action/encode-mtg2/EncodeMtg2.cc",
+        "src/multio/util/config/detail/Parser.h",
+        "src/multio/util/config/detail/Parser.cc",
     )
     cpp_ignore = {
         **_STRICT_PARSER_IGNORE,
@@ -724,12 +680,13 @@ class Sink(FailureAwareAction):
     Contains a list of sinks to write to.
     """
 
-    cpp_sources = _sources("action/sink/Sink.cc", "sink/MultIO.cc", "sink/DataSink.cc", "sink/Trigger.cc")
-    cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
-        "enable": "read from each entry of `sinks`, not from the action",
-    }
+    cpp_sources = (
+        "src/multio/action/sink/Sink.cc",
+        "src/multio/sink/MultIO.cc",
+        "src/multio/sink/DataSink.cc",
+        "src/multio/sink/Trigger.cc",
+    )
+    cpp_ignore = {"enable": "read from each entry of `sinks`, not from the action"}
 
     type: Literal["sink"] = Field("sink", init=False)
     sinks: list[SinksType] = Field(default_factory=lambda: [])
@@ -748,10 +705,8 @@ class Sink(FailureAwareAction):
 class SingleField(FailureAwareAction):
     """Single Field Sink"""
 
-    cpp_sources = _sources("action/single-field-sink/SingleFieldSink.cc")
+    cpp_sources = ("src/multio/action/single-field-sink/SingleFieldSink.cc",)
     cpp_ignore = {
-        **_COMMON_IGNORE,
-        **_ON_ERROR_IGNORE,
         "path": "set (not read) on the file sink that the action builds internally",
         "append": "set (not read) on the file sink that the action builds internally",
     }

@@ -21,9 +21,12 @@ from .base import ConfigBool, ConfigInt, ConfigStr, MultioBaseModel
 # `enable` of a plan or sink: a boolean, or a string that C++ converts with eckit's Translator<string, bool>
 # ("yes", "on", "true" and "1" are true, "no", "off", "false" and "0" false, any other string is read as an integer
 # and is false when it is not a number). Any other type is an error in C++.
+#
+# The value is kept as written and converted where it is used (`base.parsed_bool`), unlike the other `parseBool`
+# fields (`ParsedBool`, converted when validated): a string is often the substitution of a `{PLACEHOLDER}` that C++
+# reads when it builds the plan, and a dump must give that string back, not the boolean that it converts to.
 Enable = Union[StrictBool, StrictStr]
 
-_SINK_SOURCES = ("src/multio/sink/DataSink.cc", "src/multio/sink/MultIO.cc")
 _MULTIO_ONLY_IGNORE = {
     "sinks": "key of the `multio` sink, read by the parent MultIO in the same file",
     "triggers": "key of the `multio` sink, read by the parent MultIO in the same file",
@@ -48,8 +51,9 @@ class Sinks(MultioBaseModel):
     `failOnError` is read by every sink (`DataSink`), `enable` by the parent `MultIO` that builds the sinks.
     """
 
-    cpp_sources = _SINK_SOURCES
-    cpp_ignore = {**_MULTIO_ONLY_IGNORE}
+    cpp_merge_parents = True
+    cpp_sources = ("src/multio/sink/DataSink.cc", "src/multio/sink/MultIO.cc")
+    cpp_ignore = _MULTIO_ONLY_IGNORE
 
     type: str
     enable: Enable = Field(True, description="A disabled sink is not built")
@@ -104,11 +108,8 @@ class FDB(Sinks):
     YAML file is also accepted here and is replaced by the content of the file.
     """
 
-    cpp_sources = (*_SINK_SOURCES, "src/multio/fdb5/FDB5Sink.cc")
-    cpp_ignore = {
-        **_MULTIO_ONLY_IGNORE,
-        "userConfig": "key inside the `config` map, which is passed verbatim to FDB (a dict here)",
-    }
+    cpp_sources = ("src/multio/fdb5/FDB5Sink.cc",)
+    cpp_ignore = {"userConfig": "key inside the `config` map, which is passed verbatim to FDB (a dict here)"}
 
     type: Literal["fdb5"] = Field("fdb5", init=False)
     config: Union[FilePath, dict] = Field(
@@ -124,7 +125,7 @@ class FDB(Sinks):
 class File(Sinks):
     """File Sink"""
 
-    cpp_sources = (*_SINK_SOURCES, "src/multio/sink/FileSink.cc")
+    cpp_sources = ("src/multio/sink/FileSink.cc",)
 
     type: Literal["file"] = Field("file", init=False)
     append: ConfigBool = Field(False)
@@ -135,7 +136,7 @@ class File(Sinks):
 class Maestro(Sinks):
     """Maestro Sink"""
 
-    cpp_sources = (*_SINK_SOURCES, "src/multio/maestro/MaestroSink.cc")
+    cpp_sources = ("src/multio/maestro/MaestroSink.cc",)
 
     type: Literal["maestro"] = Field("maestro", init=False)
     ready_cdo: ConfigBool = Field(True)
@@ -148,8 +149,8 @@ class MultIO(Sinks):
     Contains a list of sinks to write to, can be nested.
     """
 
-    cpp_sources = _SINK_SOURCES + ("src/multio/sink/Trigger.cc",)
-    cpp_ignore = {}
+    cpp_sources = ("src/multio/sink/Trigger.cc",)
+    cpp_ignore = dict.fromkeys(_MULTIO_ONLY_IGNORE)  # it reads `sinks` and `triggers` itself: not ignored here
 
     type: Literal["multio"] = Field("multio", init=False)
     sinks: list[SinksType] = Field(default_factory=list)

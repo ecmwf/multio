@@ -1,4 +1,4 @@
-# (C) Copyright 2024 European Centre for Medium-Range Weather Forecasts.
+# (C) Copyright 2026 European Centre for Medium-Range Weather Forecasts.
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
 # In applying this licence, ECMWF does not waive the privileges and immunities
@@ -34,6 +34,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
+import multio
 from multio.plans import (
     Aggregation,
     AverageRate,
@@ -63,20 +64,11 @@ from multio.plans.actions import ACTIONS
 from multio.plans.sinks import FDB, SINKS, File, Maestro, MetadataChange, MultIO, NotifyMetadata
 from multio.plans.plans import TERMINAL_ACTIONS
 
-try:
-    import multio
+from cpp_corpus import TOP_LEVEL_SHARED, VALIDATED_FILES, NoRecognisedShape, check_file
+from multio_testing import REPO_ROOT, SEARCH_ROOTS, union_models
 
-    multio.Multio  # the library is loaded on first access
-except ImportError as error:
-    pytest.skip(f"the multio C library cannot be loaded: {error}", allow_module_level=True)
-
-from test_cpp_plan_files import (  # noqa: E402  the corpus loader, shared with the corpus test
-    REPO_ROOT,
-    TOP_LEVEL_SHARED,
-    VALIDATED_FILES,
-    NoRecognisedShape,
-    check_file,
-)
+# Every test needs libmultio, which is loaded on first access of `multio.Multio`: `requires_lib` skips without it
+pytestmark = pytest.mark.requires_lib
 
 # C++ reports a missing builder as `No ActionFactory called <name>` or `No DataSinkFactory called <name>`
 MISSING_BUILDER = re.compile(r"No (?:ActionFactory|DataSinkFactory) called (?P<name>[\w-]+)")
@@ -185,7 +177,7 @@ GRIB_SAMPLES = REPO_ROOT / "tests/multio/config/grib-samples/samples.ecom"
 def _repo_files() -> dict[str, Path]:
     """The existing files of the C++ tests and share by name, to copy the ones that a config names"""
     index: dict[str, Path] = {}
-    for root in ("tests", "share"):
+    for root in SEARCH_ROOTS:
         for path in sorted((REPO_ROOT / root).rglob("*")):
             if path.is_file() and path.suffix not in (".so", ".o"):  # is_file follows symlinks, dangling ones are not
                 index.setdefault(path.name, path)
@@ -334,10 +326,6 @@ def sink_examples(root: Path) -> dict[type, typing.Callable[[], object]]:
     }
 
 
-def models_of(union) -> list[type]:
-    return list(typing.get_args(union))
-
-
 def plan_with(*actions) -> Plan:
     """A plan of the actions, ended with a sink when the last one is not terminal (C++ needs a terminal action)"""
     actions = list(actions)
@@ -347,16 +335,16 @@ def plan_with(*actions) -> Plan:
 
 
 def test_every_action_model_has_an_example(tmp_path):
-    missing = [model.__name__ for model in models_of(ACTIONS) if model not in action_examples(tmp_path)]
+    missing = [model.__name__ for model in union_models(ACTIONS) if model not in action_examples(tmp_path)]
     assert not missing, f"add a minimal example to action_examples for {missing}"
 
 
 def test_every_sink_model_has_an_example(tmp_path):
-    missing = [model.__name__ for model in models_of(SINKS) if model not in sink_examples(tmp_path)]
+    missing = [model.__name__ for model in union_models(SINKS) if model not in sink_examples(tmp_path)]
     assert not missing, f"add a minimal example to sink_examples for {missing}"
 
 
-@pytest.mark.parametrize("model", [m for m in models_of(ACTIONS) if m is not Transport], ids=lambda m: m.__name__)
+@pytest.mark.parametrize("model", [m for m in union_models(ACTIONS) if m is not Transport], ids=lambda m: m.__name__)
 def test_action_is_built_by_cpp(model, tmp_path):
     action = action_examples(tmp_path)[model]()
     assert isinstance(action, model)
@@ -368,7 +356,7 @@ def test_action_is_built_by_cpp(model, tmp_path):
         skip_if_unavailable(error)
 
 
-@pytest.mark.parametrize("model", models_of(SINKS), ids=lambda m: m.__name__)
+@pytest.mark.parametrize("model", union_models(SINKS), ids=lambda m: m.__name__)
 def test_sink_is_built_by_cpp(model, tmp_path):
     sink = sink_examples(tmp_path)[model]()
     assert isinstance(sink, model)
@@ -450,11 +438,36 @@ def test_converted_values_are_accepted_by_models_and_cpp(name, tmp_path):
 # the elements of a list for `getStringVector`; a map, a null and a list of any other size are errors. The models do
 # the same (`ConfigStr`), and the text that they keep is the text that C++ makes of the raw value.
 
-# How C++ prints a message, by version of the library: `<prefix>: Message(...)` or `[MultIO::print][...][<plan>/<prefix>]`
+# How C++ prints a message, by version of the library: `[MultIO::print][<time>][<host>][<plan>/<prefix>] Message(...)`
+# (2.12 and later) or `<prefix>: Message(...)` (earlier). The recent form is tried first: the earlier pattern also
+# matches a recent line and would take its whole header as the prefix.
 PRINTED_PREFIX = (
-    re.compile(r"^(?P<prefix>.*?)(?:: )?Message\(version", re.MULTILINE),
     re.compile(r"\[MultIO::print\]\[[^\]]*\]\[[^\]]*\]\[p/?(?P<prefix>[^\]]*)\] "),
+    re.compile(r"^(?P<prefix>.*?)(?:: )?Message\(version", re.MULTILINE),
 )
+
+
+def parse_printed_prefix(printed: str) -> str:
+    """The prefix in the output of a `print` action of C++, in the format of any version of the library"""
+    for pattern in PRINTED_PREFIX:
+        found = pattern.search(printed)
+        if found:
+            return found["prefix"]
+    raise AssertionError(f"C++ printed no message:\n{printed!r}")
+
+
+@pytest.mark.parametrize(
+    "printed, prefix",
+    [
+        ("[MultIO::print][2026-10-16 13:14:10][host-000][p/130] Message(version: 1, ...)\n", "130"),
+        ("[MultIO::print][2026-10-16 13:14:10][host-000][p/1.23457e+06] Message(version: 1, ...)\n", "1.23457e+06"),
+        ("[MultIO::print][2026-10-16 13:14:11][host-000][p] Message(version: 1, ...)\n", ""),
+        ("130: Message(version: 1, ...)\n", "130"),
+        ("Message(version: 1, ...)\n", ""),
+    ],
+)
+def test_printed_prefix_is_parsed_for_every_library_version(printed, prefix):
+    assert parse_printed_prefix(printed) == prefix
 
 
 def printed_prefix(config: dict, tmp_path: Path, capfd) -> str:
@@ -465,12 +478,7 @@ def printed_prefix(config: dict, tmp_path: Path, capfd) -> str:
     handle = multio.Multio(config_path=str(path))
     handle.flush({"step": 1, "flushKind": 1})
     del handle
-    printed = capfd.readouterr().out
-    for pattern in PRINTED_PREFIX:
-        found = pattern.search(printed)
-        if found:
-            return found["prefix"]
-    raise AssertionError(f"C++ printed no message:\n{printed!r}")
+    return parse_printed_prefix(capfd.readouterr().out)
 
 
 def print_config(prefix) -> dict:
@@ -530,10 +538,7 @@ def test_print_prefix_made_by_the_model_is_converted_like_cpp(name, tmp_path, ca
         handle = multio.Multio()
         handle.flush({"step": 1, "flushKind": 1})
         del handle
-    printed = capfd.readouterr().out
-    assert any(
-        pattern.search(printed) and pattern.search(printed)["prefix"] == text for pattern in PRINTED_PREFIX
-    ), printed
+    assert parse_printed_prefix(capfd.readouterr().out) == text
 
 
 # values that C++ and the models both reject for a string, with the message of C++
@@ -903,6 +908,7 @@ def parts_of(models: list) -> dict[str, dict]:
     raise NoRecognisedShape(f"unknown shapes {kinds}")
 
 
+@pytest.mark.requires_corpus
 @pytest.mark.parametrize("name", VALIDATED_FILES)
 def test_corpus_file_is_built_by_cpp(name, tmp_path):
     models = check_file(REPO_ROOT / name)

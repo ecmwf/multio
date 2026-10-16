@@ -42,7 +42,7 @@ WRITE_FILE_PLAN = json.dumps(
 
 def test_initialisation():
     multio.Multio(**default_dict)
-    
+
 
 def test_initialisation_no_config():
     multio.Multio()
@@ -175,8 +175,8 @@ def test_field_accepted():
     )  # Unsure if this should be true or false on return need to look at definition in c api
     assert os.path.isfile(TEST_WRITE_FILE) is True
     os.remove(TEST_WRITE_FILE)
-    
-    
+
+
 def test_write_parametrization_array():
     os.environ["MULTIO_PLANS"] = WRITE_FILE_PLAN
     multio_object = multio.Multio(**default_dict)
@@ -186,22 +186,25 @@ def test_write_parametrization_array():
     multio_object.write_parametrization_array("key_int64", np.array([1, 2, 3, 4], dtype=np.int64))
     multio_object.write_parametrization_array("key_ubyte", np.array([1, 2, 3, 4], dtype=np.ubyte))
     multio_object.write_parametrization_array("key_byte", np.array([1, 2, 3, 4], dtype=np.byte))
-    multio_object.write_parametrization_array("key_raw_byte", bytearray(b'\x01\x03\x02\x05\x04'))
-    multio_object.write_parametrization_array("key_list", [1,2,3,4])
+    multio_object.write_parametrization_array("key_raw_byte", bytearray(b"\x01\x03\x02\x05\x04"))
+    multio_object.write_parametrization_array("key_list", [1, 2, 3, 4])
 
     # TODO extend test to check if it has arrived
-    
+
+
 def test_write_parametrization():
     os.environ["MULTIO_PLANS"] = WRITE_FILE_PLAN
-    metadata = {"static_key": "key1", 
-                "key_float32": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32),
-                "key_float64": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
-                "key_int32": np.array([1, 2, 3, 4], dtype=np.int32),
-                "key_int64": np.array([1, 2, 3, 4], dtype=np.int64),
-                "key_ubyte": np.array([1, 2, 3, 4], dtype=np.ubyte),
-                "key_byte": np.array([1, 2, 3, 4], dtype=np.byte),
-                "key_raw_byte": bytearray(b'\x01\x03\x02\x05\x04'),
-                "key_list": [1,2,3,4]}
+    metadata = {
+        "static_key": "key1",
+        "key_float32": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32),
+        "key_float64": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        "key_int32": np.array([1, 2, 3, 4], dtype=np.int32),
+        "key_int64": np.array([1, 2, 3, 4], dtype=np.int64),
+        "key_ubyte": np.array([1, 2, 3, 4], dtype=np.ubyte),
+        "key_byte": np.array([1, 2, 3, 4], dtype=np.byte),
+        "key_raw_byte": bytearray(b"\x01\x03\x02\x05\x04"),
+        "key_list": [1, 2, 3, 4],
+    }
     multio_object = multio.Multio(**default_dict)
     multio_object.write_parametrization(metadata)
     # TODO extend test to check if it has arrived
@@ -244,17 +247,6 @@ def test_combined():
 # ---------------------------------------------------------------------------
 
 
-def _multio_lib_available():
-    try:
-        import multio.multio  # noqa: F401
-    except ImportError:
-        return False
-    return True
-
-
-requires_lib = pytest.mark.skipif(not _multio_lib_available(), reason="libmultio could not be loaded")
-
-
 class _RecordingLib:
     """Stand-in for the cffi lib: records the name and arguments of every call."""
 
@@ -281,7 +273,7 @@ def fake_lib(monkeypatch):
     return fake
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_mpi_return_server_comm_calls_server_function(fake_lib):
     import multio.multio as multio_module
 
@@ -293,7 +285,7 @@ def test_mpi_return_server_comm_calls_server_function(fake_lib):
     assert fake_lib.calls[0][1][0] == "CONFIG"
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_mpi_return_client_comm_calls_client_function(fake_lib):
     import multio.multio as multio_module
 
@@ -304,7 +296,7 @@ def test_mpi_return_client_comm_calls_client_function(fake_lib):
     assert [name for name, _ in fake_lib.calls] == ["multio_mpi_return_client_comm"]
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_start_server_passes_c_config_pointer(fake_lib):
     import multio.multio as multio_module
 
@@ -317,7 +309,7 @@ def test_start_server_passes_c_config_pointer(fake_lib):
     assert fake_lib.calls == [("multio_start_server", ("CONFIG_POINTER",))]
 
 
-@requires_lib
+@pytest.mark.requires_lib
 @pytest.mark.parametrize("dtype", [np.int32, np.int64, np.float32, np.float64, np.uint8])
 def test_write_grib_numpy_size_uses_array_itemsize(fake_lib, dtype):
     import multio.multio as multio_module
@@ -333,7 +325,7 @@ def test_write_grib_numpy_size_uses_array_itemsize(fake_lib, dtype):
     assert int(args[2]) == 5 * np.dtype(dtype).itemsize
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_config_from_file_does_not_print(fake_lib, capfd, tmp_path):
     import multio.multio as multio_module
 
@@ -375,7 +367,7 @@ def _printed_metadata(multio_metadata, capfd):
     return json.loads(line[start:end])
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_metadata_bool_reaches_set_bool(capfd):
     received = _printed_metadata({"flag_true": True, "flag_false": False}, capfd)
 
@@ -383,7 +375,7 @@ def test_metadata_bool_reaches_set_bool(capfd):
     assert received["flag_false"] is False
 
 
-@requires_lib
+@pytest.mark.requires_lib
 def test_metadata_bool_dispatches_to_set_bool_not_set_int(monkeypatch):
     multio_object = multio.Multio(**default_dict)
     metadata = multio.Metadata(multio_object, None)
@@ -395,7 +387,7 @@ def test_metadata_bool_dispatches_to_set_bool_not_set_int(monkeypatch):
     assert calls == [("bool", "a", True), ("int", "b", 3)]
 
 
-@requires_lib
+@pytest.mark.requires_lib
 @pytest.mark.parametrize("value", [2**31, 2**40, -(2**40), 2**63 - 1])
 def test_metadata_int_not_truncated_to_32_bits(capfd, value):
     received = _printed_metadata({"big": value}, capfd)

@@ -18,7 +18,6 @@ from typing import Any, Literal, TypeVar, Union
 
 from pydantic import (
     BaseModel,
-    BeforeValidator,
     Discriminator,
     Field,
     NonNegativeInt,
@@ -29,32 +28,34 @@ from pydantic import (
 )
 from typing_extensions import Annotated
 
-from .actions import (
-    ACTIONS,
-    DebugSink,
-    Null,
+from .actions import ACTIONS, DebugSink, Null, SingleField, Sink, Transport
+from .base import (
+    CONFIG_STR,
+    ConfigBool,
+    ConfigInt,
+    ConfigStr,
+    FailureTag,
+    MultioBaseModel,
     OnErrorOptions,
     OnErrorTag,
-    SingleField,
-    Sink,
-    Transport,
-    _lower,
+    OnServerErrorOptions,
+    PropagateOnErrorOptions,
+    PropagateTag,
+    parsed_bool,
 )
-from .base import CONFIG_STR, ConfigBool, ConfigInt, ConfigStr, translate_bool
-from .base import MultioBaseModel as _ConfigModel
 from .sinks import Enable
 
 Name = ConfigStr  # C++ reads it with getString
 Actions = Annotated[ACTIONS, Field(discriminator="type", title="Actions")]
 
-T = TypeVar("T", bound="MultioBaseModel")
+T = TypeVar("T", bound="PlanModel")
 
 # Actions that end a chain of actions in C++: they derive from Action, not from ChainedAction, so they need no `next`
 TERMINAL_ACTIONS = (Transport, Sink, SingleField, Null, DebugSink)
 
 
-class MultioBaseModel(_ConfigModel):
-    """Multio Base Model
+class PlanModel(MultioBaseModel):
+    """Multio Plan Model
 
     Adds reading and writing to the common model of the plan models (`base.MultioBaseModel`).
     Should not be instantiated directly, use one of the subclasses instead.
@@ -72,7 +73,7 @@ class MultioBaseModel(_ConfigModel):
 
         Returns
         -------
-        MultioBaseModel
+        PlanModel
             Loaded BaseModel
         """
         return cls.from_yaml(open(file))
@@ -89,7 +90,7 @@ class MultioBaseModel(_ConfigModel):
 
         Returns
         -------
-        MultioBaseModel
+        PlanModel
             Loaded BaseModel
         """
         import yaml
@@ -112,7 +113,7 @@ class MultioBaseModel(_ConfigModel):
 
         Returns
         -------
-        MultioBaseModel
+        PlanModel
             Loaded BaseModel
         """
         return cls.model_validate(data, strict=True)
@@ -164,13 +165,6 @@ class MultioBaseModel(_ConfigModel):
         return yaml.safe_dump(self.dump(), sort_keys=False)
 
 
-def is_enabled(value: bool | str) -> bool:
-    """Whether C++ builds a plan or sink with this `enable` value (eckit `Translator<string, bool>` for strings)."""
-    if isinstance(value, bool):
-        return value
-    return translate_bool(value)
-
-
 # Keys that PlanConfiguration.cc reads for the plans that a client or server holds, and that no field of the client or
 # server is: the include of a plan file, and the keywords of the requests of a dissemination plan
 _PLAN_FILE_IGNORE = {
@@ -183,7 +177,7 @@ _REQUEST_KEYWORD_IGNORE = {
 }
 
 
-class Plan(MultioBaseModel):
+class Plan(PlanModel):
     """
     Multio Plan
 
@@ -241,7 +235,7 @@ class Plan(MultioBaseModel):
         Plan
             This plan
         """
-        if not self.actions and is_enabled(self.enable):
+        if not self.actions and parsed_bool(self.enable):  # whether C++ builds the plan, see `Enable`
             raise ValueError(
                 f"plan {self.name or 'anonymous'!r} has no actions: C++ rejects a plan without actions "
                 "(only a dissemination plan, see `DisseminationPlan`, has none)"
@@ -336,7 +330,7 @@ class Plan(MultioBaseModel):
         return Client(plans=[self, other])
 
 
-class DisseminationPlan(MultioBaseModel):
+class DisseminationPlan(PlanModel):
     """
     Multio dissemination plan: C++ generates one plan per request of a MARS request file.
 
@@ -404,37 +398,7 @@ def discriminate_config(v: Any) -> Literal["Client", "Server"]:
     return "Client"
 
 
-# `on-error` of the client and the server accept the tags below (OnClientError, OnServerError)
-FailureTag = Annotated[Literal["propagate", "recover", "abort-transport"], BeforeValidator(_lower)]
-# `on-receive-error` and `on-dispatch-error` only accept `propagate`
-PropagateTag = Annotated[Literal["propagate"], BeforeValidator(_lower)]
-
-
-class OnServerErrorOptions(MultioBaseModel):
-    """Map form of `on-error` of the client and the server: a tag with options (util/FailureHandling.h)."""
-
-    cpp_sources = ("src/multio/util/FailureHandling.h",)
-    cpp_open_enums = frozenset({"type"})
-
-    type: (
-        FailureTag | ConfigStr
-    )  # C++ falls back to `propagate` for an unknown tag of the map form, see `OnErrorOptions`
-    max_retries: ConfigInt | None = Field(None, alias="maxRetries")
-
-
-class PropagateOnErrorOptions(MultioBaseModel):
-    """Map form of `on-receive-error` and `on-dispatch-error` (util/FailureHandling.h)."""
-
-    cpp_sources = ("src/multio/util/FailureHandling.h",)
-    cpp_open_enums = frozenset({"type"})
-
-    type: (
-        PropagateTag | ConfigStr
-    )  # C++ falls back to `propagate` for an unknown tag of the map form, see `OnErrorOptions`
-    max_retries: ConfigInt | None = Field(None, alias="maxRetries")
-
-
-class MpiCommunicator(MultioBaseModel):
+class MpiCommunicator(PlanModel):
     """A communicator of the MPI transport, under the `mpi-communicators` key (transport/MpiCommSetup.cc).
 
     `passed` takes the communicator named by `default` (`world` when absent), `split` splits `parent` by `color`.
@@ -457,7 +421,7 @@ class MpiCommunicator(MultioBaseModel):
         return self
 
 
-class TcpPeer(MultioBaseModel):
+class TcpPeer(PlanModel):
     """Host and ports of the servers or clients of the TCP transport (transport/TcpTransport.cc)."""
 
     cpp_sources = ("src/multio/transport/TcpTransport.cc",)
@@ -466,7 +430,7 @@ class TcpPeer(MultioBaseModel):
     ports: list[NonNegativeInt] = Field(description="A list, also for a single port")
 
 
-class BaseConfig(MultioBaseModel):
+class BaseConfig(PlanModel):
     """
     Multio BaseConfig.
 
@@ -479,6 +443,15 @@ class BaseConfig(MultioBaseModel):
         config.add_plan(plan)
     ```
     """
+
+    cpp_merge_parents = True
+    # Read by the client and the server alike
+    cpp_sources = (
+        "src/multio/config/PlanConfiguration.cc",
+        "src/multio/util/FailureHandling.h",
+        "src/multio/transport/MpiCommSetup.cc",
+    )
+    cpp_ignore = {**_PLAN_FILE_IGNORE, **_REQUEST_KEYWORD_IGNORE}
 
     plans: list[PlanType] = Field(title="Plans", description="List of plans to be executed", default_factory=list)
     mpi_communicators: dict[str, MpiCommunicator] | None = Field(
@@ -527,16 +500,8 @@ class Client(BaseConfig):
     A client rejects two enabled plans with the same name, an unnamed plan is called `anonymous`.
     """
 
-    cpp_sources = (
-        "src/multio/server/MultioClient.cc",
-        "src/multio/server/MultioClient.h",
-        "src/multio/util/FailureHandling.h",
-        "src/multio/config/PlanConfiguration.cc",
-        "src/multio/transport/MpiCommSetup.cc",
-    )
+    cpp_sources = ("src/multio/server/MultioClient.cc", "src/multio/server/MultioClient.h")
     cpp_ignore = {
-        **_PLAN_FILE_IGNORE,
-        **_REQUEST_KEYWORD_IGNORE,
         "client": "name of the block that holds the client config, not a key of it",
         "on-error": "the key name comes from FailureAware::configKey() in server/MultioClient.h, not from a literal "
         "accessor",
@@ -555,7 +520,7 @@ class Client(BaseConfig):
     @model_validator(mode="after")
     def check_plan_names_unique(self) -> Client:
         names = [
-            (plan.name or "anonymous") for plan in self.plans if isinstance(plan, Plan) and is_enabled(plan.enable)
+            (plan.name or "anonymous") for plan in self.plans if isinstance(plan, Plan) and parsed_bool(plan.enable)
         ]
         duplicated = sorted({name for name in names if names.count(name) > 1})
         if duplicated:
@@ -616,16 +581,11 @@ class Server(BaseConfig):
         "src/multio/server/Dispatcher.cc",
         "src/multio/server/Dispatcher.h",
         "src/multio/server/Listener.h",
-        "src/multio/util/FailureHandling.h",
-        "src/multio/config/PlanConfiguration.cc",
         "src/multio/transport/MpiTransport.cc",
-        "src/multio/transport/MpiCommSetup.cc",
         "src/multio/transport/TcpTransport.cc",
         "src/multio/transport/ThreadTransport.cc",
     )
     cpp_ignore = {
-        **_PLAN_FILE_IGNORE,
-        **_REQUEST_KEYWORD_IGNORE,
         "server": "name of the block that holds the server config, not a key of it",
         "transport": "the allowed values are the names of the transport registrations, "
         "checked by test_transport_names_match_cpp",
@@ -700,7 +660,7 @@ CONFIGS = Annotated[
 ]
 
 
-class Collection(MultioBaseModel):
+class Collection(PlanModel):
     """
     Multio Collection of Configs
 

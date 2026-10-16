@@ -9,9 +9,9 @@
 
 import math
 import re
-from typing import Annotated, Any, ClassVar
+from typing import Annotated, Any, ClassVar, Literal
 
-from pydantic import AliasGenerator, BaseModel, BeforeValidator, ConfigDict
+from pydantic import AliasGenerator, BaseModel, BeforeValidator, ConfigDict, Field
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Value conversions of C++
@@ -248,12 +248,39 @@ class MultioBaseModel(BaseModel):
       documented in its description or as a `Literal | str` union.
     - `cpp_strict_strings`: `{key: reason}` for keys that C++ reads with `getString` only after an `isString` check, so
       that a value that is not a string is never converted (every other field read with `getString` is a `ConfigStr`).
+
+    A family of models that share C++ readers (the actions, the sinks, the client and server configs) sets
+    `cpp_merge_parents = True` on its base. Every model below it then lists only what it adds to `cpp_sources` and
+    `cpp_ignore`: the declaration is merged with those of its parents (the parents first, the sources without
+    duplicates, the ignore reason of the model winning over the one of a parent). A `cpp_ignore` entry whose value is
+    `None` removes the entry that the parents give for that key, for a model that reads a key that its parents ignore.
+    Without the flag a model that declares `cpp_sources` or `cpp_ignore` replaces what it inherits.
     """
 
     cpp_sources: ClassVar[tuple[str, ...]] = ()
-    cpp_ignore: ClassVar[dict[str, str]] = {}
+    cpp_ignore: ClassVar[dict[str, str | None]] = {}
     cpp_open_enums: ClassVar[frozenset[str]] = frozenset()
     cpp_strict_strings: ClassVar[dict[str, str]] = {}
+    cpp_merge_parents: ClassVar[bool] = False
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
+        super().__pydantic_init_subclass__(**kwargs)
+        if cls.cpp_merge_parents:
+            cls._merge_cpp_declarations()
+
+    @classmethod
+    def _merge_cpp_declarations(cls) -> None:
+        """Add the `cpp_sources` and `cpp_ignore` of the model to those of its parents, see the class docstring."""
+        parents = [parent for parent in cls.__bases__ if issubclass(parent, MultioBaseModel)]
+        sources = dict.fromkeys(path for parent in parents for path in parent.cpp_sources)
+        sources.update(dict.fromkeys(vars(cls).get("cpp_sources", ())))
+        ignore: dict[str, str | None] = {}
+        for parent in reversed(parents):  # the first parent wins
+            ignore.update(parent.cpp_ignore)
+        ignore.update(vars(cls).get("cpp_ignore", {}))
+        cls.cpp_sources = tuple(sources)
+        cls.cpp_ignore = {key: reason for key, reason in ignore.items() if reason is not None}
 
     model_config = ConfigDict(
         extra="forbid",
@@ -264,3 +291,63 @@ class MultioBaseModel(BaseModel):
             alias=lambda field_name: field_name.replace("_", "-"),
         ),
     )
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# `on-error` and its relatives (util/FailureHandling.h)
+#
+# Every failure-aware component of C++ (`FailureAware<ComponentFailureTraits>`) reads its key the same way: a string is
+# a tag that throws "Unsupported value" when it is not one of the tags of the component, a map has a `type` and
+# `maxRetries`. Only the tags differ (the `TagSequence` of the traits of the component, a test compares them):
+#
+# - `OnErrorTag`: `propagate` and `recover`, for the `on-error` of an action (action/Action.h) and of a plan
+#   (action/Plan.h);
+# - `FailureTag`: `propagate`, `recover` and `abort-transport`, for the `on-error` of a client (server/MultioClient.h)
+#   and of a server (server/MultioServer.h);
+# - `PropagateTag`: `propagate` only, for `on-receive-error` (server/Listener.h) and `on-dispatch-error`
+#   (server/Dispatcher.h).
+
+
+def _lower(value: Any) -> str:
+    """C++ reads an `on-error` tag with `getString` (a number or a list of one element converts) and compares it
+    case-insensitively. A value that does not convert, such as a map, raises, so that the union moves on."""
+    return config_str(value).lower()
+
+
+OnErrorTag = Annotated[Literal["propagate", "recover"], BeforeValidator(_lower)]
+FailureTag = Annotated[Literal["propagate", "recover", "abort-transport"], BeforeValidator(_lower)]
+PropagateTag = Annotated[Literal["propagate"], BeforeValidator(_lower)]
+
+
+class _OnErrorMap(MultioBaseModel):
+    """Map form of the failure handling keys: a tag with options (util/FailureHandling.h).
+
+    A model per set of tags derives from it and only narrows `type`, which keeps its place among the fields.
+    """
+
+    cpp_sources = ("src/multio/util/FailureHandling.h",)
+    # C++ reads `type` of the map form with `getString` and falls back to `propagate` when it is none of the tags
+    # (FailureHandling.h, `parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : defaultOnErrorTag()`), unlike the string
+    # form, which throws "Unsupported value". The known tags are those of the subclass.
+    cpp_open_enums = frozenset({"type"})
+
+    type: ConfigStr
+    max_retries: ConfigInt | None = Field(None, alias="maxRetries")
+
+
+class OnErrorOptions(_OnErrorMap):
+    """Map form of `on-error`: a tag with options (util/FailureHandling.h)."""
+
+    type: OnErrorTag | ConfigStr
+
+
+class OnServerErrorOptions(_OnErrorMap):
+    """Map form of `on-error` of the client and the server: a tag with options (util/FailureHandling.h)."""
+
+    type: FailureTag | ConfigStr
+
+
+class PropagateOnErrorOptions(_OnErrorMap):
+    """Map form of `on-receive-error` and `on-dispatch-error` (util/FailureHandling.h)."""
+
+    type: PropagateTag | ConfigStr

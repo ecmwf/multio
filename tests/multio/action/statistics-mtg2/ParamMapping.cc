@@ -77,33 +77,71 @@ std::vector<StatisticsParamMapping> mappings = {
     // Ocean (levtype o3d) --- original param not verified
 };
 
-std::int64_t testParameterMapping(std::int64_t param, std::string op) {
-    const auto plan =
-        "{ \"name\": \"statistics_param_mapping_" + std::to_string(param) + "_" + op + "_test\", "
-        "\"actions\": [ { "
-        "\"type\": \"statistics-mtg2\", "
-        "\"output-frequency\": \"1h\", "
-        "\"operations\": [ \"" + op + "\" ], "
-        "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \"true\" } },"
-        "{ \"type\": \"debug-sink\" } ] }";
+// Accumulated parameters, accumulated under their own paramId (levtype sfc); input and output paramId are identical
+std::vector<StatisticsParamMapping> accumulationMappings = {
+    // Water, kg m**-2
+    {228228, "accumulate", 228228},
+    {228143, "accumulate", 228143},
+    {3062, "accumulate", 3062},
+    {228144, "accumulate", 228144},
+    {260259, "accumulate", 260259},
+    {231002, "accumulate", 231002},
+    {231010, "accumulate", 231010},
+    {231012, "accumulate", 231012},
 
-    auto env = MultioTestEnvironment(plan);
+    // Energy, J m**-2
+    {146, "accumulate", 146},
+    {147, "accumulate", 147},
+    {176, "accumulate", 176},
+    {177, "accumulate", 177},
+    {169, "accumulate", 169},
+    {175, "accumulate", 175},
+    {178, "accumulate", 178},
+    {179, "accumulate", 179},
+    {212, "accumulate", 212},
+
+    // Stress, N m**-2 s
+    {180, "accumulate", 180},
+    {181, "accumulate", 181},
+};
+
+std::string makePlan(std::int64_t param, const std::string& op, bool strict,
+                     const std::string& outputFrequency = "1h") {
+    return "{ \"name\": \"statistics_param_mapping_" + std::to_string(param) + "_" + op
+         + "_test\", "
+           "\"actions\": [ { "
+           "\"type\": \"statistics-mtg2\", "
+           "\"output-frequency\": \""
+         + outputFrequency
+         + "\", "
+           "\"operations\": [ \""
+         + op
+         + "\" ], "
+           "\"options\": { \"initial-condition-present\": \"true\", \"disable-strict-mapping\": \""
+         + std::string(strict ? "false" : "true")
+         + "\" } },"
+           "{ \"type\": \"debug-sink\" } ] }";
+}
+
+Metadata makeFieldMetadata(std::int64_t param, std::int64_t step) {
+    return Metadata({{"param", param},
+                     {"levtype", "sfc"},
+                     {"grid", "O80"},
+                     {"date", 20200721},
+                     {"time", 0000},
+                     {"step", step},
+                     {"misc-precision", "double"}});
+}
+
+std::int64_t testParameterMapping(std::int64_t param, std::string op, bool strict = false) {
+    auto env = MultioTestEnvironment(makePlan(param, op, strict));
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
     // Send step 0 and 1 message with the input parameter ID
     for (int64_t step = 0; step <= 1; ++step) {
-        auto md = Metadata({
-            {"param", param},
-            {"levtype", "sfc"},
-            {"grid", "O80"},
-            {"date", 20200721},
-            {"time", 0000},
-            {"step", step},
-            {"misc-precision", "double"}
-        });
         auto pl = eckit::Buffer();
-        auto msg = Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl));
-        EXPECT_NO_THROW(env.process(std::move(msg)));
+        EXPECT_NO_THROW(
+            env.process(Message({Message::Tag::Field, {}, {}, makeFieldMetadata(param, step)}, std::move(pl))));
     }
     EXPECT_EQUAL(env.debugSink().size(), 0);
 
@@ -126,6 +164,47 @@ CASE("statistics parameter mappings") {
 
         SECTION(os.str()) {
             EXPECT_EQUAL(testParameterMapping(inParam, inOp), outParam);
+        }
+    }
+}
+
+// The mappings above are applied with strict mapping on, i.e. without `disable-strict-mapping`
+CASE("statistics parameter mappings of the IFS accumulated parameters, strict mapping") {
+    for (StatisticsParamMapping mapping : accumulationMappings) {
+        std::int64_t inParam = std::get<0>(mapping);
+        std::string inOp = std::get<1>(mapping);
+        std::int64_t outParam = std::get<2>(mapping);
+
+        std::ostringstream os;
+        os << "strict param=" << inParam << ", operation=" << inOp << " -> param=" << outParam;
+
+        SECTION(os.str()) {
+            EXPECT_EQUAL(testParameterMapping(inParam, inOp, true), outParam);
+        }
+    }
+}
+
+// The accumulation is the plain sum of the increments, in the units of the input: nothing is converted.
+CASE("statistics accumulation of the accumulated parameters keeps the units of the increments") {
+    for (std::int64_t param : {228143, 3062, 146, 180}) {
+        SECTION("strict param=" + std::to_string(param)) {
+            auto env = MultioTestEnvironment(makePlan(param, "accumulate", true, "3h"));
+
+            // Step 0 is the anchor of the window (initial condition); steps 1..3 carry the increments 1, 2 and 3
+            for (std::int64_t step = 0; step <= 3; ++step) {
+                auto md = makeFieldMetadata(param, step);
+                auto data = static_cast<double>(step);
+                auto pl = eckit::Buffer{&data, sizeof(double)};
+                EXPECT_NO_THROW(env.process(Message({Message::Tag::Field, {}, {}, std::move(md)}, std::move(pl))));
+            }
+
+            EXPECT_NO_THROW(env.process({{Message::Tag::Flush, {}, {}, {{"flushKind", "last-step"}}}}));
+            EXPECT_EQUAL(env.debugSink().size(), 2);
+
+            EXPECT_EQUAL(sizeof(double), env.debugSink().front().size());
+            auto sum = static_cast<const double*>(env.debugSink().front().payload().data());
+            EXPECT_EQUAL(1.0 + 2.0 + 3.0, *sum);
+            EXPECT_EQUAL(param, env.debugSink().front().metadata().get<std::int64_t>("param"));
         }
     }
 }

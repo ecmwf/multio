@@ -15,6 +15,9 @@
 
 namespace multio::action::statistics_mtg2 {
 
+/// Split an output frequency such as "3h" into its span (3) and its period kind ("h")
+void parsePeriodGrammar(std::string const& output_freq, long& span, std::string& periodKind);
+
 std::unique_ptr<PeriodUpdater> make_period_updater(std::string const& output_freq, const StatisticsConfiguration& cfg);
 std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>& IOmanager,
                                                    const StatisticsOptions& opt);

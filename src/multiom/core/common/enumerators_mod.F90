@@ -597,6 +597,7 @@ IMPLICIT NONE
 
   ! Undefined parameters
   INTEGER(KIND=JPIB_K), PARAMETER :: UNDEF_PARAM_E=-999999999_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: FROM_START_TIMESPAN_E=-1_JPIB_K
 
   ! Enumerators for the type of the interfaces
   INTEGER(KIND=JPIB_K), PARAMETER :: ATM_MSG_E=1_JPIB_K
@@ -1230,6 +1231,9 @@ END INTERFACE
 
   ! Undefined parameters
   PUBLIC :: UNDEF_PARAM_E
+
+  ! Timespan indicators
+  PUBLIC :: FROM_START_TIMESPAN_E
 
   ! Interfaces with ifs
   PUBLIC :: ATM_MSG_E

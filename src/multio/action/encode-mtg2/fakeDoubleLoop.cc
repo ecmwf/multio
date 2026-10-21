@@ -148,8 +148,6 @@ private:
         for (const auto& mapping : mappingConf.getSubConfigurations()) {
             const auto param = mapping.getInt64("param");
             const auto typeOfStatisticalProcessing = mapping.getInt64("typeOfStatisticalProcessing");
-            //            std::cout << "MIVAL: Mapping param: " << param << " to typeOfStatisticalProcessing: "
-            //                      << typeOfStatisticalProcessing << std::endl;
             operationMappings.emplace(param, typeOfStatisticalProcessingFromInt(typeOfStatisticalProcessing));
         }
 
@@ -159,6 +157,13 @@ private:
     Mapping operationMappings_;
 };
 
+
+bool isAccumulation(const dm::FullMarsRecord& marsRec) {
+    const std::optional<TypeOfStatisticalProcessing> operation
+        = LocalStatisticsOperationMapping::instance().getOperation(marsRec.param.get().id());
+
+    return operation && *operation == TypeOfStatisticalProcessing::Accumulation;
+}
 
 bool isSingleLoopStatistics(const dm::FullMarsRecord& marsRec) {
     // A single loop statistics record is defined as having a timespan but no statType
@@ -299,6 +304,15 @@ long computeFcmonth(const dm::FullMarsRecord& marsRec) {
     return fcmonth;
 }
 
+void overrideAccumulationTimespan(dm::FullMarsRecord& marsRec) {
+    // Accumulations without stattype are always encoded as accumulated from the start of the forecast
+    // TODO: Must be changed when IFS is moved to hourly resets and all accumulations are computed in the
+    //       statistics(-mtg2) action
+    if (!marsRec.stattype.isSet() && isAccumulation(marsRec)) {
+        marsRec.timespan.set(dm::TimeSpan::fromStart());
+    }
+}
+
 }  // namespace detail
 
 void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
@@ -315,6 +329,7 @@ void fakeDoubleLoop(dm::FullMarsRecord& marsRec) {
         marsRec.fcmonth.set(fcmonth);
         marsRec.step.unset();
     }
+    detail::overrideAccumulationTimespan(marsRec);
 }
 
 }  // namespace multio::action::encode_mtg2::fake_double_loop

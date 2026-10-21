@@ -71,6 +71,7 @@ private:
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 
+    void updateForecastStartWindow(TemporalStatistics& ts, message::Message& msg, const StatisticsConfiguration& cfg);
     void emitAllStatistics(message::Peer source, message::Peer destination);
     void emitStatistics(TemporalStatistics& ts, message::Peer source, message::Peer destination,
                         bool finalizeSuppressed = false);

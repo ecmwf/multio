@@ -71,4 +71,18 @@ ecbuild_add_test(
     LIBS multio-action-debug-sink multio-action-statistics-mtg2
 )
 
+ecbuild_add_test(
+    TARGET ${PREFIX}_forecast_start_window_delete_dir
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/ForecastStartDump
+)
+
+ecbuild_add_test(
+    TARGET ${PREFIX}_forecast_start_window
+    TEST_REQUIRES ${PREFIX}_forecast_start_window_delete_dir
+    SOURCES ForecastStartWindow.cc
+    NO_AS_NEEDED
+    LIBS multio-action-debug-sink multio-action-statistics-mtg2
+)
+
 add_subdirectory(operations)

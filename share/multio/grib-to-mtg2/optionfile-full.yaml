@@ -156,7 +156,6 @@ stages:
     selectors:
       enforce-same-key-types: true
       match:
-        - param: [133093, 133094, 133095, 133096, 133097, 133098]
         - param: [152]
           levtype: [pl]
 

@@ -84,14 +84,15 @@ void applyGeneratingProcessIdentifierOverride(eckit::LocalConfiguration& misc, c
     }
 }
 
-/// @brief Apply the optional time increment (model time step) of the statistical processing.
+/// @brief Apply the optional default time increment (model time step) of the statistical processing.
 ///
-/// It is not part of the input GRIB, so it is only set when given explicitly. metkit then encodes it as the time
-/// increment of the statistical processing; without it, the time increment stays missing.
+/// A default, not an override: the time increment read from the input header (GRIB2, by grib2mars) is always kept.
+/// The default only fills the gap when the input has none, e.g. GRIB1. metkit encodes it as the time increment of
+/// the statistical processing; without either, the time increment stays missing.
 /// @param misc Misc dictionary being mutated.
 /// @param options Parsed override options.
 void applyTimeIncrementInSecondsOverride(eckit::LocalConfiguration& misc, const OverridesContext& context) {
-    if (context.timeIncrementInSecondsOverride) {
+    if (context.timeIncrementInSecondsOverride && !misc.has("timeIncrementInSeconds")) {
         misc.set("timeIncrementInSeconds", *context.timeIncrementInSecondsOverride);
     }
 }

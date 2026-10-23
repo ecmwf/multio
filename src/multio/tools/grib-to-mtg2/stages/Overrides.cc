@@ -84,6 +84,18 @@ void applyGeneratingProcessIdentifierOverride(eckit::LocalConfiguration& misc, c
     }
 }
 
+/// @brief Apply the optional time increment (model time step) of the statistical processing.
+///
+/// It is not part of the input GRIB, so it is only set when given explicitly. metkit then encodes it as the time
+/// increment of the statistical processing; without it, the time increment stays missing.
+/// @param misc Misc dictionary being mutated.
+/// @param options Parsed override options.
+void applyTimeIncrementInSecondsOverride(eckit::LocalConfiguration& misc, const OverridesContext& context) {
+    if (context.timeIncrementInSecondsOverride) {
+        misc.set("timeIncrementInSeconds", *context.timeIncrementInSecondsOverride);
+    }
+}
+
 /// @brief Apply the optional ensemble-size override to the misc dictionary.
 ///
 /// Not applied to `type=efic`: the EFI of the control forecast is computed from one forecast, and keeps the
@@ -165,6 +177,12 @@ void validateOverridesContext(const eckit::LocalConfiguration& config) {
     if (config.has("ncycle")) {
         (void)config.getLong("ncycle");
     }
+    if (config.has("time-increment-in-seconds")) {
+        const auto timeIncrementInSeconds = config.getLong("time-increment-in-seconds");
+        if (timeIncrementInSeconds <= 0) {
+            throw eckit::BadValue("time-increment-in-seconds must be > 0", Here());
+        }
+    }
     if (config.has("ensemble-size")) {
         const auto ensembleSize = config.getLong("ensemble-size");
         if (ensembleSize <= 0) {
@@ -216,6 +234,15 @@ OverridesContext parseOverridesContext(const eckit::LocalConfiguration& config) 
             throw eckit::BadValue("ncycle must be > 0", Here());
         }
     }
+    if (config.has("time-increment-in-seconds")) {
+        const auto timeIncrementInSeconds = config.getLong("time-increment-in-seconds");
+        if (timeIncrementInSeconds > 0) {
+            parsed.timeIncrementInSecondsOverride = timeIncrementInSeconds;
+        }
+        else {
+            throw eckit::BadValue("time-increment-in-seconds must be > 0", Here());
+        }
+    }
     if (config.has("ensemble-size")) {
         parsed.ensembleSizeOverride = config.getLong("ensemble-size");
     }
@@ -264,6 +291,7 @@ OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const ec
         implementation::applyPackingPolicyOverride(result.mars, context);
         implementation::applyModelOverride(result.mars, context);
         implementation::applyGeneratingProcessIdentifierOverride(result.misc, context);
+        implementation::applyTimeIncrementInSecondsOverride(result.misc, context);
         implementation::applyEnsembleSizeOverride(result.mars, result.misc, context);
         implementation::applyAnalysisWindowLengthInHoursOverride(result.misc, context);
         implementation::applyControlForecastOverride(result.mars, result.misc, context);

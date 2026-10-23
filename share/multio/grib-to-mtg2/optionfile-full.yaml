@@ -136,6 +136,9 @@ stages:
     model: ""
     # Positive integer overrides.
     ncycle: 162
+    # Optional model time step in seconds, encoded as the time increment of the statistical processing
+    # (e.g. the inner accumulation of tp in EFI/SOT). It is not in the input GRIB: omit it to leave it missing.
+    # time-increment-in-seconds: 450
     ensemble-size: 51
     analysis-window-length-in-hours: 6
     # For stream=oper,type=fc, control also sets ensemble metadata.

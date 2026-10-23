@@ -136,8 +136,9 @@ stages:
     model: ""
     # Positive integer overrides.
     ncycle: 162
-    # Optional model time step in seconds, encoded as the time increment of the statistical processing
-    # (e.g. the inner accumulation of tp in EFI/SOT). It is not in the input GRIB: omit it to leave it missing.
+    # Optional default model time step in seconds, encoded as the time increment of the statistical processing
+    # (e.g. the inner accumulation of tp in EFI/SOT) when the input has none (e.g. GRIB1). A time increment in the
+    # input header is always kept. Omit it to leave the time increment missing when the input has none.
     # time-increment-in-seconds: 450
     ensemble-size: 51
     analysis-window-length-in-hours: 6

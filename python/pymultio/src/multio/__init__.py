@@ -4,11 +4,47 @@
 Multiopython
 """
 
+import importlib
+
 from . import plans
-from .lib import MultioException
-from .metadata import Metadata
-from .multio import Multio
+from .exceptions import MultioException
 from .utils import MultioPlan
+
+# Names that need the multio C library. They are loaded on first access (PEP 562) so that
+# the pure-python parts of the package (e.g. `multio.plans`) can be used without it.
+_LAZY_ATTRIBUTES = {
+    "Multio": "multio",
+    "Metadata": "metadata",
+}
+_LAZY_SUBMODULES = ("constants", "lib", "metadata", "multio")
+
+
+def __getattr__(name):
+    if name in _LAZY_ATTRIBUTES:
+        module_name = _LAZY_ATTRIBUTES[name]
+    elif name in _LAZY_SUBMODULES:
+        module_name = None
+    else:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    try:
+        if module_name is None:
+            return importlib.import_module(f".{name}", __name__)
+        value = getattr(importlib.import_module(f".{module_name}", __name__), name)
+    except (ImportError, RuntimeError) as e:
+        raise ImportError(
+            f"Cannot access 'multio.{name}': the multio C library could not be loaded ({e}). "
+            "Install the 'multiolib' package or make libmultio findable. "
+            "Only 'multio.plans' and 'multio.MultioPlan' are available without it."
+        ) from e
+
+    globals()[name] = value
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_ATTRIBUTES) | set(_LAZY_SUBMODULES))
+
 
 try:
     # NOTE: the `version.py` file must not be present in the git repository

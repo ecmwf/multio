@@ -74,6 +74,11 @@ class MultioPlan(ContextDecorator):
             - a Config instance
             - a YAML string
             - a JSON string
+
+        Raises
+        ------
+        ValueError
+            If a plan has no actions, which C++ rejects
         """
         self._environ_var = "MULTIO_PLANS"
 
@@ -88,6 +93,7 @@ class MultioPlan(ContextDecorator):
             else:
                 plan = Collection(**plan)
 
+        plan.validate_for_cpp()  # C++ rejects, for example, a plan without actions: fail here, not inside the library
         self._config = plan
 
     def set_plan(self):

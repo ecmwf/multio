@@ -23,13 +23,17 @@
 ///   grib2-messages-policy: ignore
 ///   invalid-messages-policy: try-to-handle
 ///   discipline192-messages-policy:
-///     try-to-handle: [me, 4v]
+///     try-to-handle: [me, 4i]
+///     # paramIds handled despite discipline 192, e.g. atmospheric composition params that mars2mars maps to the
+///     # param/chem split (GRIB1: legacy discipline-192 list, GRIB2: discipline=192)
+///     try-to-handle-params: [210001, 210002]
 ///   verbosity: 0
 /// @endcode
 
 #pragma once
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "eckit/config/LocalConfiguration.h"
@@ -53,6 +57,9 @@ struct GribBasedFilterContext {
 
     /// Named callbacks that may allow selected discipline-192 messages.
     std::vector<std::string> discipline192AllowRules;
+
+    /// paramIds of discipline-192 messages that are handled anyway (e.g. mapped composition params).
+    std::unordered_set<long> discipline192AllowParams;
 
     /// Policy controlling whether GRIB1 messages are allowed to proceed.
     OptionPolicy grib1Policy = OptionPolicy::TryToHandle;

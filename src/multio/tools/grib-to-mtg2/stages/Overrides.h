@@ -46,6 +46,8 @@ struct OverridesContext {
 
     /// Optional override for `misc.generatingProcessIdentifier`.
     std::optional<long> generatingProcessIdentifierOverride;
+    /// Optional default for `misc.timeIncrementInSeconds` (model time step), used only when the input has none.
+    std::optional<long> timeIncrementInSecondsOverride;
 
     /// Optional override for `misc.numberOfForecastsInEnsemble`.
     std::optional<long> ensembleSizeOverride;

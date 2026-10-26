@@ -84,10 +84,31 @@ void applyGeneratingProcessIdentifierOverride(eckit::LocalConfiguration& misc, c
     }
 }
 
-/// @brief Apply the optional ensemble-size override to the misc dictionary.
+/// @brief Apply the optional default time increment (model time step) of the statistical processing.
+///
+/// A default, not an override: the time increment read from the input header (GRIB2, by grib2mars) is always kept.
+/// The default only fills the gap when the input has none, e.g. GRIB1. metkit encodes it as the time increment of
+/// the statistical processing; without either, the time increment stays missing.
 /// @param misc Misc dictionary being mutated.
 /// @param options Parsed override options.
-void applyEnsembleSizeOverride(eckit::LocalConfiguration& misc, const OverridesContext& context) {
+void applyTimeIncrementInSecondsOverride(eckit::LocalConfiguration& misc, const OverridesContext& context) {
+    if (context.timeIncrementInSecondsOverride && !misc.has("timeIncrementInSeconds")) {
+        misc.set("timeIncrementInSeconds", *context.timeIncrementInSecondsOverride);
+    }
+}
+
+/// @brief Apply the optional ensemble-size override to the misc dictionary.
+///
+/// Not applied to `type=efic`: the EFI of the control forecast is computed from one forecast, and keeps the
+/// ensemble size of its input.
+/// @param mars MARS dictionary.
+/// @param misc Misc dictionary being mutated.
+/// @param options Parsed override options.
+void applyEnsembleSizeOverride(const eckit::LocalConfiguration& mars, eckit::LocalConfiguration& misc,
+                               const OverridesContext& context) {
+    if (mars.has("type") && mars.getString("type") == "efic") {
+        return;
+    }
     if (context.ensembleSizeOverride) {
         misc.set("numberOfForecastsInEnsemble", *context.ensembleSizeOverride);
     }
@@ -157,6 +178,12 @@ void validateOverridesContext(const eckit::LocalConfiguration& config) {
     if (config.has("ncycle")) {
         (void)config.getLong("ncycle");
     }
+    if (config.has("time-increment-in-seconds")) {
+        const auto timeIncrementInSeconds = config.getLong("time-increment-in-seconds");
+        if (timeIncrementInSeconds <= 0) {
+            throw eckit::BadValue("time-increment-in-seconds must be > 0", Here());
+        }
+    }
     if (config.has("ensemble-size")) {
         const auto ensembleSize = config.getLong("ensemble-size");
         if (ensembleSize <= 0) {
@@ -208,6 +235,15 @@ OverridesContext parseOverridesContext(const eckit::LocalConfiguration& config) 
             throw eckit::BadValue("ncycle must be > 0", Here());
         }
     }
+    if (config.has("time-increment-in-seconds")) {
+        const auto timeIncrementInSeconds = config.getLong("time-increment-in-seconds");
+        if (timeIncrementInSeconds > 0) {
+            parsed.timeIncrementInSecondsOverride = timeIncrementInSeconds;
+        }
+        else {
+            throw eckit::BadValue("time-increment-in-seconds must be > 0", Here());
+        }
+    }
     if (config.has("ensemble-size")) {
         parsed.ensembleSizeOverride = config.getLong("ensemble-size");
     }
@@ -256,7 +292,8 @@ OverrideResult runOverridesStage(const eckit::LocalConfiguration& mars, const ec
         implementation::applyPackingPolicyOverride(result.mars, context);
         implementation::applyModelOverride(result.mars, context);
         implementation::applyGeneratingProcessIdentifierOverride(result.misc, context);
-        implementation::applyEnsembleSizeOverride(result.misc, context);
+        implementation::applyTimeIncrementInSecondsOverride(result.misc, context);
+        implementation::applyEnsembleSizeOverride(result.mars, result.misc, context);
         implementation::applyAnalysisWindowLengthInHoursOverride(result.misc, context);
         implementation::applyControlForecastOverride(result.mars, result.misc, context);
         implementation::applyExpverOverride(result.mars, context);

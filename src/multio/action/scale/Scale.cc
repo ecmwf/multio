@@ -36,9 +36,11 @@ const Mappings getMappings(const ScalePreset preset) {
         switch (preset) {
             case ScalePreset::LocalToWmo: {
                 mappings[mapping.paramIn] = {mapping.paramOut, mapping.scaling};
+                break;
             }
             case ScalePreset::WmoToLocal: {
                 mappings[mapping.paramOut] = {mapping.paramIn, 1.0 / mapping.scaling};
+                break;
             }
         }
     }

@@ -138,6 +138,8 @@ The current working changes implement the agreed model:
 - Removed the forward-window one-second alignment adjustment.
 - Made `OperationWindow::updateData()` honor forward/backward boundary semantics.
 - Added the explicit newly-created forward lower-bound skip.
+- Set the creation point of a new window to the later of its start and the simulation start, so a (re)started run
+  without initial condition reports the window from the simulation start rather than from its first field.
 - Restricted `instant` to instantaneous input.
 - Added strict statistical-input extent validation.
 - Added output `timeIncrementInSeconds` injection according to the rules above.

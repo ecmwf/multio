@@ -73,7 +73,9 @@ OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater,
         endPoint = periodUpdater->computeWinEndTime(startPoint);
     }
 
-    eckit::DateTime creationPoint{cfg.curr()};
+    // The window is observed from the simulation start (e.g. a restart) at the earliest, even if the first
+    // message only arrives one output step later because no initial condition is sent
+    eckit::DateTime creationPoint{std::max(startPoint, simulationStart)};
     return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.options().windowType()};
 };
 

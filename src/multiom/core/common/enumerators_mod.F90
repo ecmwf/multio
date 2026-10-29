@@ -1440,6 +1440,10 @@ FUNCTION IPREFIX2ILEVTYPE( IPREFIX, PARAM_ID, LEVEL, REPRES, ILEVTYPE, HOOKS ) R
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCLBT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCSBT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCDRFL
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCRRFL
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1463,6 +1467,9 @@ IMPLICIT NONE
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  ! Local variables
+  LOGICAL :: IS_SATELLITE
+
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_LEVTYPE = 1_JPIB_K
 
@@ -1481,14 +1488,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! NGRBRSN  - 33     - Snow density
-  ! NGRBTSN  - 238    - Temperature of snow layer
-  ! NGRBWSN  - 228038 - Snow liquid water (multi-layer)
-  ! NGRBSD   - 228141 - Snow depth (multi-layer)
-  ! NGRBSOT  - 260360 - Soil temperature (multi-layer)
-  ! NGRBSIT  - 262024 - Sea ice temperature (multi-layer)
-  ! NGRBVSW  - 260199 - Volumetric soil moisture (multi-layer)
-
   SELECT CASE ( IPREFIX )
 
   CASE ( PREFIX_MODEL_LEVEL_E )
@@ -1502,18 +1501,16 @@ IMPLICIT NONE
   CASE ( PREFIX_THETA_LEVEL_E )
     ILEVTYPE = LEVTYPE_PT_E
   CASE ( PREFIX_SURFACE_E )
-    ! SELECT CASE (PARAM_ID)
-    ! TODO: This logic is very weak and should be improved
-    ! CASE ( NGRBSD, NGRBTSN, NGRBRSN, NGRBWSN, NGRBSOT, NGRBVSW, NGRBSIT )
-    ! IF ( LEVEL .NE. 0 ) THEN
-      ! Multilevel surfaces at level 0 are considered as surface
-    !  ILEVTYPE = LEVTYPE_SOL_E
-    ! ELSE
+    ! Multi-layer surface fields (soil, snow, sea ice) carry their layer in the level and are
+    ! mapped to levtype=sol. Satellite fields (cloudy/clear-sky brightness temperature and
+    ! reflectance) also carry a non-zero level, but it indexes the channel, so they stay sfc.
+    IS_SATELLITE = ( PARAM_ID .EQ. NGRBCLBT  ) .OR. ( PARAM_ID .EQ. NGRBCSBT  ) .OR. &
+&                  ( PARAM_ID .EQ. NGRBCDRFL ) .OR. ( PARAM_ID .EQ. NGRBCRRFL )
+    IF ( LEVEL .NE. 0 .AND. .NOT. IS_SATELLITE ) THEN
+      ILEVTYPE = LEVTYPE_SOL_E
+    ELSE
       ILEVTYPE = LEVTYPE_SFC_E
-    ! END IF
-    ! CASE DEFAULT
-    !   ILEVTYPE = LEVTYPE_SFC_E
-    ! END SELECT
+    END IF
   CASE (PREFIX_AL_E)
     ILEVTYPE = LEVTYPE_AL_E
   CASE ( PREFIX_WAVE_INT_E )

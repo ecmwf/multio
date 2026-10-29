@@ -282,8 +282,6 @@ add_subdirectory(action)
 # add_subdirectory(api)
 add_subdirectory(tools)
 
-add_subdirectory(mars2mars)
-
 if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
     install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
              DESTINATION module/${PROJECT_NAME}

@@ -4237,6 +4237,10 @@ IMPLICIT NONE
   IF( KGRIBID .EQ. NGRBCC ) THEN
     IBITS_PER_VALUE = 8
 
+  ! 140251: Wave spectra
+  ELSEIF ( KGRIBID .EQ. 140251 ) THEN
+    IBITS_PER_VALUE = 9
+
   ! NGRBSD   - 228141 Snow depth
   ! NGRBFSR  - 244 Forecast surface roughness
   ELSEIF ( KGRIBID .EQ. 141 .OR. & ! Backward compatibilty

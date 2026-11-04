@@ -305,10 +305,10 @@ long computeFcmonth(const dm::FullMarsRecord& marsRec) {
 }
 
 void overrideAccumulationTimespan(dm::FullMarsRecord& marsRec) {
-    // Accumulations without stattype are always encoded as accumulated from the start of the forecast
-    // TODO: Must be changed when IFS is moved to hourly resets and all accumulations are computed in the
-    //       statistics(-mtg2) action
-    if (!marsRec.stattype.isSet() && isAccumulation(marsRec)) {
+    // Hack to convert accumulations with step=0,timespan=0 messages to timespan=fs
+    if (!marsRec.stattype.isSet() && isAccumulation(marsRec) && marsRec.step.isSet() && marsRec.timespan.isSet()
+        && marsRec.timespan.get().isDuration()
+        && marsRec.timespan.get().duration().toHours() == marsRec.step.get().toHours()) {
         marsRec.timespan.set(dm::TimeSpan::fromStart());
     }
 }

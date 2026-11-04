@@ -309,7 +309,7 @@ void overrideAccumulationTimespan(dm::FullMarsRecord& marsRec) {
     // TODO: Must be changed when IFS is moved to hourly resets and all accumulations are computed in the
     //       statistics(-mtg2) action
     if (!marsRec.stattype.isSet() && isAccumulation(marsRec)) {
-        if ( marsRec.step.isSet() && marsRec.timespan.isSet()  ) {
+        if ( marsRec.step.isSet() && marsRec.timespan.isSet() && marsRec.timespan.get().isDuration() ) {
         	std::int64_t timespan = marsRec.timespan.get().toHours();
         	std::int64_t step = marsRec.step.get().toHours();
         	if ( step == timespan  ) {

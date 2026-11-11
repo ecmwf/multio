@@ -13,9 +13,12 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "eckit/types/Types.h"
@@ -27,6 +30,75 @@ class LocalConfiguration;
 }
 
 namespace multio::message::match {
+
+//--------------------------------------------------------------------------------------------------
+
+/// Numeric value used by conditions. Integers are compared exactly, mixed or floating point values as doubles.
+using Number = std::variant<std::int64_t, double>;
+
+/// Extracts a number from a metadata value (int64, double or float). Returns nullopt for any other type.
+std::optional<Number> toNumber(const MetadataValue& v);
+
+
+/// Arithmetic progression (or plain interval if `by` is not given): from <= v [<= to] [and (v - from) % by == 0]
+struct Range {
+    Number from;
+    std::optional<Number> to;
+    std::optional<Number> by;
+
+    bool matches(const Number& v) const;
+};
+
+enum class Comparison : unsigned
+{
+    GreaterThan,
+    GreaterEqualTo,
+    LowerThan,
+    LowerEqualTo,
+};
+
+struct Bound {
+    Comparison op;
+    Number value;
+
+    bool matches(const Number& v) const;
+};
+
+/// Condition on a single numeric key, configured with a map instead of a list of values:
+///
+///   step:
+///     from: [0, 24, 144]          # scalars or lists; lists must have equal length, scalars are broadcast
+///     to: [24, 144, 360]          # optional, inclusive
+///     by: [1, 3, 6]               # optional
+///     greater-than: 0             # optional bounds, all of them must hold
+///     greater-equal-to: 0
+///     lower-than: 360
+///     lower-equal-to: 360
+///
+/// A value matches if it matches any of the from/to/by segments (if given) and all bounds.
+class NumericCondition {
+public:
+    NumericCondition(const eckit::LocalConfiguration& cfg, const std::string& key);
+
+    bool matches(const Number& v) const;
+
+private:
+    friend std::ostream& operator<<(std::ostream& os, const NumericCondition& c) {
+        c.print(os);
+        return os;
+    }
+
+    void print(std::ostream& os) const;
+
+    std::vector<Range> ranges_;  // OR
+    std::vector<Bound> bounds_;  // AND
+};
+
+/// What a single key is matched against: a set of exact values and/or numeric conditions (OR of all of them)
+struct KeyMatcher {
+    std::unordered_set<MetadataValue> values;
+    std::vector<NumericCondition> conditions;
+};
 
 //--------------------------------------------------------------------------------------------------
 
@@ -68,7 +140,7 @@ private:  // members
     Predicate predicate_;
     bool enforceSameKeyTypes_;
     // Use vectorbecause we only iterate over key-pair values
-    std::vector<std::pair<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>>> matcher_;
+    std::vector<std::pair<typename MetadataTypes::KeyType, KeyMatcher>> matcher_;
 };
 
 //--------------------------------------------------------------------------------------------------

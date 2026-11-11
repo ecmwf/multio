@@ -76,7 +76,9 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
     window_.updateData(currentDateTime(msg, cfg), cfg.distanceFromPreviousStepInSeconds());
     for (auto& stat : statistics_) {
         if (cfg.isGridSH() && !stat->supportsSH()) {
-            throw eckit::SeriousBug("Operation " + stat->operation() + " does not support spherical harmonics : " + msg.metadata().toString(), Here());
+            throw eckit::SeriousBug("Operation " + stat->operation()
+                                        + " does not support spherical harmonics : " + msg.metadata().toString(),
+                                    Here());
         }
         stat->updateData(msg.payload().data(), msg.size(), cfg);
     }

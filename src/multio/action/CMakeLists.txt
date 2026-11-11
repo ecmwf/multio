@@ -1,4 +1,5 @@
 add_subdirectory(metadata-mapping)
+add_subdirectory(mars2mars)
 add_subdirectory(debug-sink)
 add_subdirectory(renumber-healpix)
 add_subdirectory(statistics)

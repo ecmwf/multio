@@ -9,3 +9,5 @@ add_subdirectory(interpolate-healpix-nested)
 add_subdirectory(average-rate)
 add_subdirectory(scale)
 add_subdirectory(encode-mtg2)
+
+add_subdirectory(mars2mars)

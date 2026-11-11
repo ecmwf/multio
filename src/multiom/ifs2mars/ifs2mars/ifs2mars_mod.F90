@@ -219,6 +219,143 @@ END FUNCTION ATM2MARS_IS_SATELLITE
 #undef PP_PROCEDURE_TYPE
 
 
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFS2MARS_IS_SEASONAL'
+PP_THREAD_SAFE FUNCTION IFS2MARS_IS_SEASONAL( IFS_MSG, IFS_PAR, IS_SEASONAL, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,       ONLY: OM_BASE_MSG_A
+  USE :: IFS_MSG_MOD,       ONLY: OM_ATM_MSG_T
+  USE :: IFS_MSG_MOD,       ONLY: OM_WAM_MSG_T
+  USE :: IFS_PAR_MOD,       ONLY: MODEL_PAR_T
+
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSF_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MSMM_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_MMSA_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_WASF_E
+  USE :: ENUMERATORS_MOD,     ONLY: STREAM_SFDD_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(OM_BASE_MSG_A), INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),    INTENT(IN)    :: IFS_PAR
+  LOGICAL,              INTENT(OUT)   :: IS_SEASONAL
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: ISTREAM
+  LOGICAL, DIMENSION(5) :: CONDITIONS
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_MSG = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialisaton of output variable
+  IS_SEASONAL = .FALSE.
+  ISTREAM = -1_JPIB_K
+
+  ! Compute stream
+  SELECT TYPE(MSG => IFS_MSG)
+  CLASS IS (OM_ATM_MSG_T)
+    ISTREAM = IFS_PAR%SIM_%NSTREAM
+  CLASS IS (OM_WAM_MSG_T)
+    ISTREAM = IFS_PAR%WAM_%ISTREAM
+  CLASS DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_MSG )
+  END SELECT
+
+  ! Conditions to match the satellite message
+  CONDITIONS(1) = ISTREAM .EQ. STREAM_MMSF_E
+  CONDITIONS(2) = ISTREAM .EQ. STREAM_MSMM_E
+  CONDITIONS(3) = ISTREAM .EQ. STREAM_MMSA_E
+  CONDITIONS(4) = ISTREAM .EQ. STREAM_WASF_E
+  CONDITIONS(5) = ISTREAM .EQ. STREAM_SFDD_E
+
+  ! If any of the conditions match the it is a satellite message
+  IF ( ANY(CONDITIONS) ) THEN
+    IS_SEASONAL = .TRUE.
+  ELSE
+    IS_SEASONAL = .FALSE.
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNKNOWN_MSG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown messagee type in IFS2MARS_IS_LONGRANGE' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IFS2MARS_IS_SEASONAL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IFS2MARS_IS_ANALYSIS'
 PP_THREAD_SAFE FUNCTION IFS2MARS_IS_ANALYSIS( IFS_MSG, IFS_PAR, IS_ANALYSIS, HOOKS ) RESULT(RET)
@@ -1856,7 +1993,6 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
   ! Local variables
-  LOGICAL :: IS_ENSEMBLE
   LOGICAL, DIMENSION(5) :: CONDITIONS
 
   ! Error flags
@@ -1879,9 +2015,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! TODO: this check is very naive, it should be replaced with a more complex one
-  PP_TRYCALL(ERRFLAG_IS_ENSEMBLE) IFS2MARS_IS_ENSEMBLE( IFS_MSG, IFS_PAR, IS_ENSEMBLE, HOOKS )
-
   ! Conditions for setting system and method
   CONDITIONS(1) = MSG%STREAM .EQ. STREAM_MMSF_E
   CONDITIONS(2) = MSG%STREAM .EQ. STREAM_MSMM_E
@@ -1889,14 +2022,8 @@ IMPLICIT NONE
   CONDITIONS(4) = MSG%STREAM .EQ. STREAM_WASF_E
   CONDITIONS(5) = MSG%STREAM .EQ. STREAM_SFDD_E
 
-  ! If it is analysis configure mars and context
-  IF ( IS_ENSEMBLE  ) THEN
-
-    ! For Seasonal forecast data we need to set the system number and method number
-    MSG%SYSTEM = IFS_PAR%SIM_%NSYSTEM
-    MSG%METHOD = IFS_PAR%SIM_%NMETHOD
-
-  ELSEIF ( ANY(CONDITIONS) ) THEN
+  ! TODO review function IFS2MARS_IS_SEASONAL and use it
+  IF ( ANY(CONDITIONS) ) THEN
 
     ! For Seasonal forecast data we need to set the system number and method number
     MSG%SYSTEM = IFS_PAR%SIM_%NSYSTEM

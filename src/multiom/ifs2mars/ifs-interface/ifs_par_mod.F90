@@ -558,6 +558,8 @@ PUBLIC :: SAT_PAR_T
 
 ! Whitelist of public symbols (procedures)
 PUBLIC :: PAR_CREATE_NAME
+PUBLIC :: GEO_IS_OCTAHEDRAL
+PUBLIC :: GEO_GAUSSIAN_GRID_NAME
 PUBLIC :: PAR_GET_ENDIANNES
 PUBLIC :: PAR_WOPEN
 PUBLIC :: PAR_ROPEN
@@ -677,6 +679,257 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION PAR_CREATE_NAME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GEO_IS_OCTAHEDRAL'
+PP_THREAD_SAFE FUNCTION GEO_IS_OCTAHEDRAL( GEO, IS_OCTAHEDRAL, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(GEO_PAR_T), INTENT(IN)    :: GEO
+  LOGICAL,         INTENT(OUT)   :: IS_OCTAHEDRAL
+  TYPE(HOOKS_T),   INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: N
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_LATITUDES = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ILOENG_NOT_AVAILABLE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ASYMMETRIC_GRID = 3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> The octahedral reduced Gaussian grid has 20 points on the polar row and
+  !> 4 more points on each subsequent row towards the equator (ILOENG(J)=20+4*(J-1)).
+  !> Any other row-length distribution is a classic (linear/quadratic/cubic
+  !> non-octahedral) reduced Gaussian grid. The decision is taken on the actual
+  !> row lengths handed over by the model, never on the truncation or on assumptions.
+  N = GEO%IDGNH
+  PP_DEBUG_CRITICAL_COND_THROW( N.LE.0_JPIB_K .OR. GEO%ILATS.NE.2_JPIB_K*N, ERRFLAG_INVALID_LATITUDES )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(GEO%ILOENG), ERRFLAG_ILOENG_NOT_AVAILABLE )
+  PP_DEBUG_CRITICAL_COND_THROW( SIZE(GEO%ILOENG).LT.GEO%ILATS, ERRFLAG_ILOENG_NOT_AVAILABLE )
+
+  IS_OCTAHEDRAL = .TRUE.
+  DO J = 1_JPIB_K, N
+    PP_DEBUG_CRITICAL_COND_THROW( GEO%ILOENG(J).NE.GEO%ILOENG(GEO%ILATS+1_JPIB_K-J), ERRFLAG_ASYMMETRIC_GRID )
+    IF ( GEO%ILOENG(J) .NE. 20_JPIB_K + 4_JPIB_K*(J-1_JPIB_K) ) THEN
+      IS_OCTAHEDRAL = .FALSE.
+    ENDIF
+  ENDDO
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_LATITUDES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid number of Gaussian latitudes (IDGNH/ILATS)' )
+    CASE (ERRFLAG_ILOENG_NOT_AVAILABLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Row lengths (ILOENG) not available for the reduced Gaussian grid' )
+    CASE (ERRFLAG_ASYMMETRIC_GRID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Reduced Gaussian grid row lengths are not symmetric about the equator' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION GEO_IS_OCTAHEDRAL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GEO_GAUSSIAN_GRID_NAME'
+PP_THREAD_SAFE FUNCTION GEO_GAUSSIAN_GRID_NAME( GEO, GG_NAME, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(GEO_PAR_T),  INTENT(IN)    :: GEO
+  CHARACTER(LEN=*), INTENT(OUT)   :: GG_NAME
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL :: IS_OCTAHEDRAL
+  CHARACTER(LEN=1)  :: PREFIX
+  CHARACTER(LEN=16) :: CTMP
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NAME_TOO_SHORT = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_LATITUDES = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OCTAHEDRAL_CHECK = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE = 4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> MARS grid name of the model Gaussian grid, as understood by eckit::geo /
+  !> metkit mars2grib: "F<N>" regular, "N<N>" classic reduced, "O<N>" octahedral,
+  !> with N the number of parallels between a pole and the equator.
+  PP_DEBUG_CRITICAL_COND_THROW( LEN(GG_NAME).LT.8, ERRFLAG_NAME_TOO_SHORT )
+  PP_DEBUG_CRITICAL_COND_THROW( GEO%IDGNH.LE.0_JPIB_K, ERRFLAG_INVALID_LATITUDES )
+
+  IF ( GEO%NHTYP .EQ. 0_JPIB_K ) THEN
+    PREFIX = 'F'
+  ELSE
+    PP_TRYCALL(ERRFLAG_OCTAHEDRAL_CHECK) GEO_IS_OCTAHEDRAL( GEO, IS_OCTAHEDRAL, HOOKS )
+    IF ( IS_OCTAHEDRAL ) THEN
+      PREFIX = 'O'
+    ELSE
+      PREFIX = 'N'
+    ENDIF
+  ENDIF
+
+  CTMP = REPEAT(' ',16)
+  WRITE(CTMP,'(I6)',IOSTAT=STAT) GEO%IDGNH
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_WRITE )
+  GG_NAME = REPEAT(' ',LEN(GG_NAME))
+  WRITE(GG_NAME,'(A,A)',IOSTAT=STAT) PREFIX, TRIM(ADJUSTL(CTMP))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_NAME_TOO_SHORT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Grid name variable too short' )
+    CASE (ERRFLAG_INVALID_LATITUDES)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid number of Gaussian latitudes (IDGNH)' )
+    CASE (ERRFLAG_OCTAHEDRAL_CHECK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to classify the reduced Gaussian grid' )
+    CASE (ERRFLAG_UNABLE_TO_WRITE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to write the grid name' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION GEO_GAUSSIAN_GRID_NAME
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

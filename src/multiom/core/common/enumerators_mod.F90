@@ -1441,6 +1441,22 @@ FUNCTION IPREFIX2ILEVTYPE( IPREFIX, PARAM_ID, LEVEL, REPRES, ILEVTYPE, HOOKS ) R
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
 
+  ! Multilayer surface parameters
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBRSN
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBTSN
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBWSN
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBSD
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBSOT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBSIT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBVSW
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBSITHICK
+
+  ! Satellite parameters
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCLBT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCSBT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCDRFL
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCRRFL
+
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
 
@@ -1481,6 +1497,25 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Multilayer surface parameters
+  ! --------------------------------------------------------------------
+  ! NGRBRSN     - 33     - Snow density
+  ! NGRBTSN     - 238    - Temperature of snow layer
+  ! NGRBWSN     - 228038 - Snow liquid water (multi-layer)
+  ! NGRBSD      - 228141 - Snow depth (multi-layer)
+  ! NGRBSOT     - 260360 - Soil temperature (multi-layer)
+  ! NGRBSIT     - 262024 - Sea ice temperature (multi-layer)
+  ! NGRBVSW     - 260199 - Volumetric soil moisture (multi-layer)
+  ! NGRBSITHICK - 262000 - Ice thickness
+
+  ! Satellite parameters
+  ! --------------------------------------------------------------------
+  ! NGRBCLBT    - 260510 - Cloudy brightness temperature
+  ! NGRBCSBT    - 260511 - Clear-sky brightness temperature
+  ! NGRBCDRFL   - 260512 - Cloudy reflectance
+  ! NGRBCRRFL   - 260513 - Clear-sky reflectance
+
+
   SELECT CASE ( IPREFIX )
 
   CASE ( PREFIX_MODEL_LEVEL_E )
@@ -1494,11 +1529,34 @@ IMPLICIT NONE
   CASE ( PREFIX_THETA_LEVEL_E )
     ILEVTYPE = LEVTYPE_PT_E
   CASE ( PREFIX_SURFACE_E )
-    IF ( LEVEL .NE. 0 ) THEN
-      ILEVTYPE = LEVTYPE_SOL_E
-    ELSE
+
+    ! The following logic is a bit hacky. The reason is that inside ifs there is no distinction between
+    ! sfc and sol, and for satellites the level variable is (ab)used to pass additional information
+    ! about the satellite itself
+    SELECT CASE (PARAM_ID)
+
+    ! The folllowing parameters are considered sol parameters (multilayer surfaces)
+    CASE ( NGRBSD, NGRBTSN, NGRBRSN, NGRBWSN, NGRBSOT, NGRBVSW, NGRBSIT, NGRBSITHICK )
+      IF ( LEVEL .EQ. 0 ) THEN
+        ! Multilevel surfaces at level == 0 are considered as surface
+        ILEVTYPE = LEVTYPE_SFC_E
+      ELSE
+        ! Multilevel surfaces at level != 0 are considered as soil
+        ILEVTYPE = LEVTYPE_SOL_E
+      END IF
+
+    ! The following parameters are satellite parameters where level is hacked to pass additional info about satellite
+    CASE ( NGRBCLBT, NGRBCSBT, NGRBCDRFL, NGRBCRRFL )
+      ! Satellite fields are usually on surface
       ILEVTYPE = LEVTYPE_SFC_E
-    END IF
+
+    ! The remaining cases are supposed to be default surface parameters
+    CASE DEFAULT
+      ! Reest of the on surface should be effectively considered as surface parameters
+      ! This is a catch-all for any surface parameters not explicitly listed above
+      ILEVTYPE = LEVTYPE_SFC_E
+
+    END SELECT
   CASE (PREFIX_AL_E)
     ILEVTYPE = LEVTYPE_AL_E
   CASE ( PREFIX_WAVE_INT_E )

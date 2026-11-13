@@ -138,12 +138,6 @@ void EncodeMtg2::executeImpl(Message msg) {
     auto marsRec = dm::readRecord<dm::FullMarsRecord>(md);
     auto miscRec = dm::readRecord<dm::MiscRecord>(md);
 
-    // Hack to convert step=0,timespan=0 messages to timespan=fs
-    if (marsRec.step.get().toHours() == 0 && marsRec.timespan.isSet() && marsRec.timespan.get().isDuration()
-        && marsRec.timespan.get().duration().toHours() == 0) {
-        marsRec.timespan.set(datamod::TimeSpan::fromStart());
-    }
-
     // Apply mappings
     fake_double_loop::fakeDoubleLoop(marsRec);
 

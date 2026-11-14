@@ -15,7 +15,7 @@ stages:
     verbosity: 0
     api-options:
       tryFixBadInput_ZeroAccumulation: true
-      tryFixBadInput_RemoveStepRangeForStrikeProbability: true
+      tryFixBadInput_RemoveStepRangeForStrikeProbability: false
       tryFixBadInput_StandardisedAnomalyAsInstant: true
       saveErrorStack: false
       errorStackPath: "./"

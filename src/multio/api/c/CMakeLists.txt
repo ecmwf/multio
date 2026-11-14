@@ -33,6 +33,12 @@ if( HAVE_MIR )
     )
 endif()
 
+if( metkit_HAVE_MARS2MARS )
+    list( APPEND multio_action_plugins
+        multio-action-mars2mars
+    )
+endif()
+
 # Source files
 list( APPEND multio_capi_srcs
     multio_capi_types.h

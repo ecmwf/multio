@@ -30,7 +30,8 @@ std::string getPlan(bool cache, const std::string& path) {
         "actions": [
             {
                 "type": "encode-mtg2",
-                "cached": )json" + std::string(cache ? "true" : "false") + R"json(
+                "cached": )json"
+         + std::string(cache ? "true" : "false") + R"json(
             },
             {
                 "type": "sink",
@@ -39,7 +40,8 @@ std::string getPlan(bool cache, const std::string& path) {
                         "type": "file",
                         "append": false,
                         "per-server": false,
-                        "path": ")json" + path + R"json("
+                        "path": ")json"
+         + path + R"json("
                     }
                 ]
             }
@@ -48,21 +50,19 @@ std::string getPlan(bool cache, const std::string& path) {
 }
 
 Message getMessage(int step, std::variant<std::string, int> timespan) {
-    const Metadata md{{
-        {"misc-precision", "double"},
-        {"class", "od"},
-        {"stream", "oper"},
-        {"type", "fc"},
-        {"expver", "test"},
-        {"grid", "45/45"},
-        {"packing", "ccsds"},
-        {"param", 228},
-        {"levtype", "sfc"},
-        {"date", 2026'10'02},
-        {"time", 00'00},
-        {"step", step},
-        {"timespan", std::visit([](const auto& v) -> MetadataValue { return v; }, timespan)}
-    }};
+    const Metadata md{{{"misc-precision", "double"},
+                       {"class", "od"},
+                       {"stream", "oper"},
+                       {"type", "fc"},
+                       {"expver", "test"},
+                       {"grid", "45/45"},
+                       {"packing", "ccsds"},
+                       {"param", 228},
+                       {"levtype", "sfc"},
+                       {"date", 2026'10'02},
+                       {"time", 00'00},
+                       {"step", step},
+                       {"timespan", std::visit([](const auto& v) -> MetadataValue { return v; }, timespan)}}};
 
     const std::vector<double> values(40, 0.010);
     const eckit::Buffer pl{values.data(), sizeof(double) * values.size()};

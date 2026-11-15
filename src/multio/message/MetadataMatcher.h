@@ -76,6 +76,11 @@ struct Bound {
 ///     lower-equal-to: 360
 ///
 /// A value matches if it matches any of the from/to/by segments (if given) and all bounds.
+///
+/// The condition applies to any key whose metadata value is a number (int64, double or float), e.g. `step`,
+/// `levelist`, `number`, `date`. NaN never matches. A value that is not a number (e.g. a step given as the
+/// string "90m") is not supported: matching throws with `enforce-same-key-types` (the default), and the value
+/// does not match without it.
 class NumericCondition {
 public:
     NumericCondition(const eckit::LocalConfiguration& cfg, const std::string& key);

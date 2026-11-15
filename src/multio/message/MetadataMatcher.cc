@@ -229,6 +229,10 @@ NumericCondition::NumericCondition(const LocalConfiguration& cfg, const std::str
 }
 
 bool NumericCondition::matches(const Number& v) const {
+    // NaN compares neither lower nor greater than anything: it must not pass as "within" a range or bound
+    if (!isInt(v) && std::isnan(std::get<double>(v))) {
+        return false;
+    }
     if (!ranges_.empty()
         && std::none_of(ranges_.begin(), ranges_.end(), [&](const Range& r) { return r.matches(v); })) {
         return false;
@@ -357,7 +361,8 @@ bool MatchKeys::matches(const Metadata& md) const {
             else if (enforceSameKeyTypes_) {
                 std::ostringstream oss;
                 oss << "[enforce-same-key-type] Matcher for key \"" << kv.first
-                    << "\" has a numeric condition but the metadata value is not a number." << std::endl;
+                    << "\" has a numeric condition but the metadata value is not a number (integer or floating "
+                    << "point). Values given as strings are not supported." << std::endl;
                 oss << "metadata: " << md;
                 throw MetadataException(oss.str());
             }

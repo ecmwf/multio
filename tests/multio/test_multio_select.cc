@@ -9,6 +9,7 @@
  */
 
 #include <fstream>
+#include <limits>
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/log/JSON.h"
@@ -698,8 +699,53 @@ CASE("Numeric condition - non numeric metadata") {
     auto strict = makeSelector("match:\n  step:\n    from: 0\n");
     EXPECT_THROWS_AS(strict.matches(message::Metadata{{{"step", "0"}}}), message::MetadataException);
 
+    EXPECT_THROWS_AS(strict.matches(message::Metadata{{{"step", "90m"}}}), message::MetadataException);
+
+    // Without the type enforcement, a string-valued step does not match
     auto lax = makeSelector("enforce-same-key-types: false\nmatch:\n  step:\n    from: 0\n");
     EXPECT_EQUAL(lax.matches(message::Metadata{{{"step", "0"}}}), false);
+    EXPECT_EQUAL(lax.matches(message::Metadata{{{"step", "90m"}}}), false);
+}
+
+CASE("Numeric condition - NaN never matches") {
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+
+    EXPECT_EQUAL(makeSelector("match:\n  time:\n    from: 0.0\n    to: 10.0\n").matches(md("time", nan)), false);
+    EXPECT_EQUAL(makeSelector("match:\n  time:\n    from: 0.0\n").matches(md("time", nan)), false);
+    EXPECT_EQUAL(makeSelector("match:\n  time:\n    lower-equal-to: 10.0\n").matches(md("time", nan)), false);
+    EXPECT_EQUAL(makeSelector("match:\n  time:\n    greater-equal-to: 0.0\n").matches(md("time", nan)), false);
+}
+
+CASE("Numeric condition - other numeric keys: levelist") {
+    // An integer range: the pressure levels 100, 200, ..., 1000
+    auto range = makeSelector(R"yaml(
+match:
+  levtype: [pl]
+  levelist:
+    from: 100
+    to: 1000
+    by: 100
+)yaml");
+
+    auto pl = [](std::int64_t levelist) { return message::Metadata{{{"levtype", "pl"}, {"levelist", levelist}}}; };
+    EXPECT_EQUAL(range.matches(pl(100)), true);
+    EXPECT_EQUAL(range.matches(pl(500)), true);
+    EXPECT_EQUAL(range.matches(pl(1000)), true);
+    EXPECT_EQUAL(range.matches(pl(50)), false);
+    EXPECT_EQUAL(range.matches(pl(850)), false);
+    EXPECT_EQUAL(range.matches(message::Metadata{{{"levtype", "ml"}, {"levelist", std::int64_t{500}}}}), false);
+    // A field without levelist does not match
+    EXPECT_EQUAL(range.matches(message::Metadata{{{"levtype", "pl"}}}), false);
+
+    // A bound: the model levels from 90 downwards
+    auto bound = makeSelector(R"yaml(
+match:
+  levelist:
+    greater-equal-to: 90
+)yaml");
+    EXPECT_EQUAL(bound.matches(md("levelist", std::int64_t{89})), false);
+    EXPECT_EQUAL(bound.matches(md("levelist", std::int64_t{90})), true);
+    EXPECT_EQUAL(bound.matches(md("levelist", std::int64_t{137})), true);
 }
 
 CASE("Numeric condition - configuration errors") {

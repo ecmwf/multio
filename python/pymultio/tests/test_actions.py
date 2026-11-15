@@ -31,14 +31,7 @@ def test_allow_dash():
         (Encode, "encode", {"format": "grib", "template": "template", "grid-type": "grid_type"}),
         (EncodeMTG, "encode-mtg2", {"cached": True}),
         (Mars2Mars, "mars2mars", {}),
-        (
-            Mars2Mars,
-            "mars2mars",
-            {
-                "selector": {"match": [{"param": [139, 228246], "levtype": ["sfc"]}]},
-                "mars2mars-options": {"printErrorStackToStdErr": False},
-            },
-        ),
+        (Mars2Mars, "mars2mars", {"mars2mars-options": {"printErrorStackToStdErr": False}}),
         (Transport, "transport", {"target": "target"}),
         (Aggregation, "aggregation", {}),
         (Sink, "sink", {"sinks": [{"append": True, "path": "debug.grib", "per-server": False, "type": "file"}]}),

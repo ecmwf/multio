@@ -35,16 +35,15 @@ const std::string plan = R"json({
     "name": "mars2mars_encode_aifs_test",
     "actions": [
         {
-            "type": "mars2mars",
-            "selector": {
-                "match": [
-                    {
-                        "param": [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247],
-                        "levtype": ["sfc"]
-                    }
-                ]
-            }
+            "type": "select",
+            "match": [
+                {
+                    "param": [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247],
+                    "levtype": ["sfc"]
+                }
+            ]
         },
+        { "type": "mars2mars" },
         { "type": "encode-mtg2" },
         { "type": "debug-sink" }
     ]

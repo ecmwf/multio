@@ -6,7 +6,7 @@ ecbuild_add_test(
     CONDITION metkit_HAVE_MARS2MARS
     SOURCES Mars2Mars.cc
     NO_AS_NEEDED
-    LIBS multio-action-debug-sink multio-action-mars2mars
+    LIBS multio-action-debug-sink multio-action-select multio-action-mars2mars
 )
 
 ecbuild_add_test(
@@ -14,5 +14,5 @@ ecbuild_add_test(
     CONDITION metkit_HAVE_MARS2MARS
     SOURCES Mars2MarsEncode.cc
     NO_AS_NEEDED
-    LIBS multio-action-debug-sink multio-action-mars2mars multio-action-encode-mtg2 eccodes
+    LIBS multio-action-debug-sink multio-action-select multio-action-mars2mars multio-action-encode-mtg2 eccodes
 )

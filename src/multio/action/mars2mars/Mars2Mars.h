@@ -18,31 +18,30 @@
 /// Configuration:
 ///
 /// @code{.yaml}
+/// - type: select
+///   match:
+///     - param: [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247]
+///       levtype: [sfc]
 /// - type: mars2mars
-///   # Optional. Same syntax as the `select` action. When absent every field is converted.
-///   selector:
-///     match:
-///       - param: [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247]
-///         levtype: [sfc]
 ///   # Optional. Forwarded to the metkit API.
 ///   mars2mars-options:
 ///     printErrorStackToStdErr: false
 /// @endcode
 ///
-/// metkit applies *all* of its rules to a converted field. Some rules (local-to-WMO
-/// parameter renames) also require the field values to be scaled. This action does
-/// not transform values and fails loudly when such a rule fires; use the `selector`
-/// to restrict the action to the fields that only need their keys renamed.
+/// The action converts every field it receives: metkit applies *all* of its rules, there is
+/// no switch for individual rules. Some rules (local-to-WMO parameter renames) also require
+/// the field values to be scaled. This action does not transform values and fails loudly
+/// when such a rule fires. Selecting the fields is not its job: put a `select` action in
+/// front of it, in a plan of its own, so that only the fields whose keys need renaming
+/// reach it.
 
 #pragma once
 
 #include <memory>
-#include <optional>
 
 #include "metkit/mars2mars/api/Mars2Mars.h"
 
 #include "multio/action/ChainedAction.h"
-#include "multio/message/MetadataMatcher.h"
 
 namespace multio::action::mars2mars {
 
@@ -57,10 +56,8 @@ public:
 private:
     void print(std::ostream& os) const override;
 
-    bool matches(const message::Message& msg) const;
     void applyInplace(message::Metadata& md);
 
-    std::optional<message::match::MatchReduce> selector_;
     std::unique_ptr<metkit::mars2mars::Mars2Mars> converter_;
 };
 

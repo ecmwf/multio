@@ -21,28 +21,28 @@ using multio::test::MultioTestEnvironment;
 namespace {
 
 /// A plan that only converts the AIFS v3.0 special cases: soil temperature and soil moisture
-/// layers passed on levtype=sfc, and the 100 m wind components.
+/// layers passed on levtype=sfc, and the 100 m wind components. The fields are chosen by a
+/// `select` action in front of `mars2mars`, which converts whatever it receives.
 const std::string aifsPlan = R"json({
     "name": "mars2mars_aifs_test",
     "actions": [
         {
-            "type": "mars2mars",
-            "selector": {
-                "match": [
-                    {
-                        "param": [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247],
-                        "levtype": ["sfc"]
-                    }
-                ]
-            }
+            "type": "select",
+            "match": [
+                {
+                    "param": [139, 170, 183, 236, 39, 40, 41, 42, 228246, 228247],
+                    "levtype": ["sfc"]
+                }
+            ]
         },
+        { "type": "mars2mars" },
         {
             "type": "debug-sink"
         }
     ]
 })json";
 
-/// A plan without selector: every field goes through all metkit rules.
+/// A plan without a `select` action: every field goes through all metkit rules.
 const std::string unrestrictedPlan = R"json({
     "name": "mars2mars_unrestricted_test",
     "actions": [
@@ -150,20 +150,16 @@ CASE("100 m wind 100v on sfc becomes v on hl level 100") {
     EXPECT_EQUAL(md.get<std::int64_t>("levelist"), 100);
 }
 
-CASE("Fields outside the selector pass through unchanged") {
+CASE("Fields the select action leaves out never reach the conversion") {
     auto env = MultioTestEnvironment(aifsPlan);
 
-    // Total precipitation has a local-to-WMO rule in metkit; the selector must keep it out.
+    // Total precipitation has a local-to-WMO rule in metkit that needs value scaling; the select
+    // action in front keeps it out of this plan, so nothing is converted and nothing fails.
     EXPECT_NO_THROW(env.process(fieldMessage(aifsField(228, "sfc"))));
-    EXPECT_EQUAL(env.debugSink().size(), 1);
-
-    const auto& md = env.debugSink().front().metadata();
-    EXPECT_EQUAL(md.get<std::int64_t>("param"), 228);
-    EXPECT_EQUAL(md.get<std::string>("levtype"), "sfc");
-    EXPECT(md.find("levelist") == md.end());
+    EXPECT_EQUAL(env.debugSink().size(), 0);
 }
 
-CASE("Without a selector a rule that needs value scaling is an error") {
+CASE("Without a select action a rule that needs value scaling is an error") {
     auto env = MultioTestEnvironment(unrestrictedPlan);
 
     // 228 -> 228228 requires scaleValuesBy=1000 which this action cannot honour

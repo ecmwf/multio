@@ -75,20 +75,6 @@ std::unique_ptr<metkit::mars2mars::Mars2Mars> makeConverter(const ComponentConfi
     return std::make_unique<metkit::mars2mars::Mars2Mars>(validatedConf);
 }
 
-std::optional<message::match::MatchReduce> makeSelector(const ComponentConfiguration& compConf) {
-    const auto& actionConf = compConf.parsedConfig();
-
-    if (!actionConf.has("selector")) {
-        return std::nullopt;
-    }
-
-    if (!actionConf.isSubConfiguration("selector")) {
-        throw eckit::UserError("mars2mars option 'selector' must be a configuration section", Here());
-    }
-
-    return message::match::MatchReduce::construct(actionConf.getSubConfiguration("selector"));
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 // Writing the converted dictionaries back into the metadata
 //----------------------------------------------------------------------------------------------------------------------
@@ -155,16 +141,11 @@ std::string describe(const eckit::LocalConfiguration& mars) {
 //----------------------------------------------------------------------------------------------------------------------
 
 Mars2Mars::Mars2Mars(const ComponentConfiguration& compConf) :
-    ChainedAction{compConf}, selector_{makeSelector(compConf)}, converter_{makeConverter(compConf)} {}
+    ChainedAction{compConf}, converter_{makeConverter(compConf)} {}
 
 void Mars2Mars::executeImpl(Message msg) {
     // Pass through everything that is not a field (flush, notification, ...)
     if (msg.tag() != Message::Tag::Field) {
-        executeNext(std::move(msg));
-        return;
-    }
-
-    if (!matches(msg)) {
         executeNext(std::move(msg));
         return;
     }
@@ -174,10 +155,6 @@ void Mars2Mars::executeImpl(Message msg) {
     applyInplace(msg.modifyMetadata());
 
     executeNext(std::move(msg));
-}
-
-bool Mars2Mars::matches(const Message& msg) const {
-    return !selector_ || selector_->matches(msg.metadata());
 }
 
 void Mars2Mars::applyInplace(message::Metadata& md) {
@@ -196,7 +173,7 @@ void Mars2Mars::applyInplace(message::Metadata& md) {
             std::ostringstream oss;
             oss << "mars2mars: rule for field {" << describe(marsIn) << "} -> {" << describe(result.mars)
                 << "} requires a transformation of the values ('" << key << "'). This action only renames keys; "
-                << "narrow its 'selector' to exclude this field or apply the 'scale' action instead.";
+                << "exclude this field with a 'select' action in front of it or apply the 'scale' action instead.";
             throw eckit::UserError(oss.str(), Here());
         }
         setFromConfiguration(md, result.misc, key, "misc-" + key);
@@ -219,14 +196,7 @@ void Mars2Mars::applyInplace(message::Metadata& md) {
 }
 
 void Mars2Mars::print(std::ostream& os) const {
-    os << "Mars2Mars(";
-    if (selector_) {
-        os << "selector=" << *selector_;
-    }
-    else {
-        os << "selector=all";
-    }
-    os << ")";
+    os << "Mars2Mars()";
 }
 
 //----------------------------------------------------------------------------------------------------------------------

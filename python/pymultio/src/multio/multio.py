@@ -20,8 +20,7 @@ class _Config:
         config = ffi.new("multio_configuration_t**")
         if self.__config_path is not None:
             configuration_file_name = ffi.new("char[]", os.fsencode(self.__config_path))
-            error = lib.multio_new_configuration_from_filename(config, configuration_file_name)
-            print(error)
+            lib.multio_new_configuration_from_filename(config, configuration_file_name)
         else:
             lib.multio_new_configuration(config)
 
@@ -54,7 +53,7 @@ class _Config:
 
     def mpi_return_server_comm(self, return_server_comm):
         multio_rsc = ffi.new("int[]", return_server_comm)
-        lib.multio_mpi_return_client_comm(self.config_pointer, multio_rsc)
+        lib.multio_mpi_return_server_comm(self.config_pointer, multio_rsc)
 
 
 class Multio:
@@ -121,7 +120,7 @@ class Multio:
             raise TypeError(f"Can not handle type {type(metadata)} as metadata")
 
     def start_server(self):
-        lib.multio_start_server(self.__conf)
+        lib.multio_start_server(self.__conf.config_pointer)
 
     def flush(self, metadata=None):
         """
@@ -285,7 +284,7 @@ class Multio:
             lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)
 
         elif haveNumpy and (type(data) is np.ndarray):
-            size = len(data) * np.dtype.itemsize
+            size = data.nbytes
             sizeInt = ffi.cast("int", size)
             voidArr = ffi.from_buffer("void*", data)
             lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)

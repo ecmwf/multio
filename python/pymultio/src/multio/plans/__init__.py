@@ -14,19 +14,28 @@ Allows for Multio plans to be defined with Pydantic.
 Examples
 --------
 ```python
-from multiopython.plans import actions, Client, Plan
+from multio.plans import Client, Plan
 
-plan = Plan(name="Plan1", plans = [{"type": "print"}])
-plan.add_action({"type": "select", "match": [{"key": "value"}]})
+plan = Plan(name="Plan1", actions=[{"type": "print"}])
+plan.add_action({"type": "select", "match": {"key": "value"}})
 plan.add_action({"type": "sink", "sinks": [{"type": "file", "path": "output.txt", "append": False}]})
 
-client = Client(
-    plans = [plan],
-)
+client = Client(plans=[plan])
+print(client.dump_yaml())
 ```
 """
 
 from . import actions, sinks
 from .actions import *
-from .plans import Client, Collection, Plan, Server
-from .sinks import FDB, File
+from .plans import (
+    Client,
+    Collection,
+    DisseminationPlan,
+    MpiCommunicator,
+    OnServerErrorOptions,
+    Plan,
+    PropagateOnErrorOptions,
+    Server,
+    TcpPeer,
+)
+from .sinks import FDB, File, Maestro, MetadataChange, MultIO, NotifyMetadata, Trigger

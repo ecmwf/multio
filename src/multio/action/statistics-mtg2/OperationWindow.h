@@ -22,7 +22,8 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, WindowType windowType);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, WindowType windowType,
+                    WindowOrigin windowOrigin = WindowOrigin::WindowStart);
 
     long count() const;
     const std::vector<long>& counts() const;
@@ -32,6 +33,9 @@ public:
 
     void updateData(const eckit::DateTime& currentPoint, std::int64_t distanceFromPreviousStepInSeconds);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
+
+    /// Forecast-start windows only: move the end to the next emission point without touching the accumulated state
+    void extendEnd(const eckit::DateTime& endPoint);
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
@@ -44,6 +48,9 @@ public:
 
     long timeSpanInSeconds() const;
     long timeSpanInHours() const;
+    /// Length reported with an emission: the nominal window length, or for a forecast-start window the elapsed
+    /// length from the window start to the current point
+    long emissionSpanInSeconds() const;
     long lastPointsDiffInSeconds() const;
 
     util::DateTimeDiff lastPointsDiff() const;
@@ -83,6 +90,9 @@ public:
     bool isUniform() const;
     std::string incompleteReason() const;
     WindowType windowType() const;
+    WindowOrigin windowOrigin() const;
+    /// Forecast-start windows only: samples have been received since the last emission
+    bool hasUnemittedSamples() const;
     std::int64_t lastDeclaredDistance() const;
     const std::map<std::int64_t, std::size_t>& declaredDistanceHistogram() const;
     std::map<std::int64_t, std::size_t> observedDistanceHistogram() const;
@@ -91,6 +101,7 @@ public:
 
     std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
 
+    /// Records the current point as the last emitted point
     void updateFlush();
 
     size_t restartSize() const;
@@ -107,6 +118,8 @@ private:
     long count_;
     mutable std::vector<long> counts_;
     WindowType windowType_;
+    // Not part of the restart state: taken from the options when a window is created or loaded
+    WindowOrigin windowOrigin_;
     std::optional<eckit::DateTime> firstPoint_;
     std::map<std::int64_t, std::size_t> declaredDistanceHistogram_;
     std::map<std::int64_t, std::size_t> observedDistanceHistogram_;

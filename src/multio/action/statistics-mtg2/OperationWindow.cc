@@ -62,6 +62,24 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 OperationWindow make_window(const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg,
                             const eckit::DateTime& simulationStart) {
     eckit::DateTime epochPoint{cfg.epoch()};
+
+    if (cfg.options().windowOrigin() == WindowOrigin::ForecastStart) {
+        // The window opens exactly at the simulation start and ends at the first emission point. It is never advanced
+        // by a field: later emission points are reached by OperationWindow::extendEnd.
+        if (simulationStart.time().minutes() != 0 || simulationStart.time().seconds() != 0) {
+            std::ostringstream os;
+            os << "window-origin forecast-start requires a simulation start on a whole hour, got " << simulationStart;
+            throw eckit::UserError{os.str(), Here()};
+        }
+        eckit::DateTime endPoint{periodUpdater->computeWinEndTime(simulationStart)};
+        return OperationWindow{epochPoint,
+                               simulationStart,
+                               eckit::DateTime{cfg.curr()},
+                               endPoint,
+                               cfg.options().windowType(),
+                               WindowOrigin::ForecastStart};
+    }
+
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(simulationStart)};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
 
@@ -99,6 +117,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     count_{0},
     counts_{},
     windowType_{WindowType::ForwardOffset},
+    windowOrigin_{opt.windowOrigin()},
     firstPoint_{},
     declaredDistanceHistogram_{},
     observedDistanceHistogram_{},
@@ -110,7 +129,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 WindowType windowType) :
+                                 WindowType windowType, WindowOrigin windowOrigin) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -121,6 +140,7 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     count_{0},
     counts_{},
     windowType_{windowType},
+    windowOrigin_{windowOrigin},
     firstPoint_{},
     declaredDistanceHistogram_{},
     observedDistanceHistogram_{},
@@ -221,6 +241,15 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     return;
 }
 
+void OperationWindow::extendEnd(const eckit::DateTime& endPoint) {
+    if (endPoint <= endPoint_) {
+        std::ostringstream os;
+        os << *this << " : new end " << endPoint << " does not extend the window end " << endPoint_ << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    endPoint_ = endPoint;
+}
+
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret;
     if (windowType_ == WindowType::ForwardOffset) {
@@ -281,6 +310,18 @@ long OperationWindow::timeSpanInHours() const {
 
 long OperationWindow::timeSpanInSeconds() const {
     return long(endPoint_ - startPoint_);
+}
+
+long OperationWindow::emissionSpanInSeconds() const {
+    return windowOrigin_ == WindowOrigin::ForecastStart ? long(currPoint_ - startPoint_) : timeSpanInSeconds();
+}
+
+bool OperationWindow::hasUnemittedSamples() const {
+    return count_ > 0 && currPoint_ > lastFlush_;
+}
+
+WindowOrigin OperationWindow::windowOrigin() const {
+    return windowOrigin_;
 }
 
 long OperationWindow::lastPointsDiffInSeconds() const {
@@ -401,6 +442,10 @@ bool OperationWindow::isComplete() const {
     if (!firstPoint_ || !contiguous_) {
         return false;
     }
+    if (windowOrigin_ == WindowOrigin::ForecastStart) {
+        // Judged against the elapsed span (start .. current point), not against the next emission point
+        return true;
+    }
     if (windowType_ == WindowType::ForwardOffset) {
         return currPoint_ == endPoint_;
     }
@@ -452,7 +497,7 @@ const std::map<std::int64_t, std::size_t>& OperationWindow::declaredDistanceHist
 
 std::map<std::int64_t, std::size_t> OperationWindow::observedDistanceHistogram() const {
     auto histogram = observedDistanceHistogram_;
-    if (firstPoint_) {
+    if (firstPoint_ && windowOrigin_ != WindowOrigin::ForecastStart) {
         const auto trailingDistance = static_cast<std::int64_t>(endPoint_ - currPoint_);
         if (trailingDistance > 0) {
             histogram[trailingDistance]++;

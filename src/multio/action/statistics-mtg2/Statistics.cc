@@ -128,6 +128,52 @@ dm::TimeDuration absoluteStep(std::int64_t seconds) {
     }
     return dm::TimeDuration{std::chrono::seconds{seconds}};
 }
+
+// Length of the emitted statistic as a MARS timespan. A forecast-start window that opened at the forecast epoch is
+// reported as 'fs' (from start, step = elapsed length); a forecast-start window opened later (a run restarted without
+// restored state) is reported with its elapsed duration, so it never claims data from before its start.
+dm::TimeSpan emittedTimespan(const OperationWindow& window) {
+    if (window.windowOrigin() == WindowOrigin::WindowStart) {
+        return dm::TimeSpan{dm::TimeDuration{std::chrono::hours{window.timeSpanInHours()}}};
+    }
+    if (window.startPoint() == window.epochPoint()) {
+        return dm::TimeSpan::fromStart();
+    }
+    return dm::TimeSpan{absoluteStep(window.emissionSpanInSeconds())};
+}
+
+// A forecast-start window is never reset, so only operations whose compute() leaves the accumulated state untouched and
+// whose result over the elapsed span is well defined are accepted.
+void validateForecastStartConfiguration(const StatisticsOptions& opt, const std::vector<std::string>& operations,
+                                        const std::string& outputFrequency) {
+    if (opt.windowOrigin() != WindowOrigin::ForecastStart) {
+        return;
+    }
+
+    long span;
+    std::string periodKind;
+    parsePeriodGrammar(outputFrequency, span, periodKind);
+    if (periodKind != "h" && periodKind != "hour") {
+        throw eckit::UserError{
+            "window-origin forecast-start requires an output-frequency in hours, got " + outputFrequency, Here()};
+    }
+    if (opt.windowType() != WindowType::ForwardOffset) {
+        throw eckit::UserError{"window-origin forecast-start requires window-type forward-offset", Here()};
+    }
+    for (const auto& op : operations) {
+        if (op != "accumulate" && op != "average" && op != "maximum" && op != "minimum") {
+            throw eckit::UserError{
+                "window-origin forecast-start supports the operations accumulate, average, maximum "
+                "and minimum, got "
+                    + op,
+                Here()};
+        }
+    }
+    if (opt.outputTimeReference() == OutputTimeReference::StartOfWindow) {
+        throw eckit::UserError{"window-origin forecast-start does not support output-time-reference start-of-window",
+                               Here()};
+    }
+}
 }  // namespace
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
@@ -140,7 +186,9 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     paramMapping_{StatisticsParamMapping::makeStatisticsParamMapping()},
     operationMapping_{StatisticsOperationMapping::makeStatisticsOperationMapping()},
-    IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
+    IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {
+    validateForecastStartConfiguration(opt_, operations_, outputFrequency_);
+}
 
 void Statistics::handleSimulationStart(const FlushMetadataKeys& flush) {
     if (!flush.date.isSet() || !flush.time.isSet() || !flush.step.isSet()) {
@@ -400,6 +448,14 @@ void Statistics::executeImpl(message::Message msg) {
     StatisticsConfiguration cfg{msg, opt_};
     std::string key = cfg.key();
 
+    if (opt_.windowOrigin() == WindowOrigin::ForecastStart && cfg.isStatistical()) {
+        throw eckit::UserError{
+            "window-origin forecast-start only accepts instantaneous fields, got a field with "
+            "timespan or stattype: "
+                + msg.metadata().toString(),
+            Here()};
+    }
+
     // TODO:
     if (!simulationStart_) {
         throw eckit::SeriousBug("Field received before simulation-start flush", Here());
@@ -459,6 +515,11 @@ void Statistics::executeImpl(message::Message msg) {
         throw eckit::SeriousBug(os.str(), Here());
     }
 
+    if (opt_.windowOrigin() == WindowOrigin::ForecastStart) {
+        updateForecastStartWindow(ts, msg, cfg);
+        return;
+    }
+
     // Decide to emit statistics
     while (ts.isOutsideWindow(msg, cfg)) {
         emitStatistics(ts, msg.source(), msg.destination(), true);
@@ -474,8 +535,39 @@ void Statistics::executeImpl(message::Message msg) {
     return;
 }
 
+// A forecast-start window is emitted as soon as a sample reaches the next emission point and keeps accumulating
+void Statistics::updateForecastStartWindow(TemporalStatistics& ts, message::Message& msg,
+                                           const StatisticsConfiguration& cfg) {
+    if (ts.isOutsideWindow(msg, cfg)) {
+        std::ostringstream os;
+        os << "Field at " << cfg.curr() << " is after the next emission point " << ts.cwin().endPoint()
+           << " of the forecast-start window: input is required at every emission point";
+        throw eckit::UserError{os.str(), Here()};
+    }
+
+    ts.updateData(msg, cfg);
+
+    if (ts.cwin().currPoint() != ts.cwin().endPoint()) {
+        return;
+    }
+    emitStatistics(ts, msg.source(), msg.destination());
+    ts.win().updateFlush();
+    ts.advanceEnd();
+    if (opt_.debug()) {
+        logWindowEvent("WIN_ADVANCE", ts);
+    }
+}
+
 void Statistics::emitAllStatistics(message::Peer source, message::Peer destination) {
     for (auto& [key, ts] : fieldStats_) {
+        if (opt_.windowOrigin() == WindowOrigin::ForecastStart) {
+            // Only the tail after the last emission point is still open
+            if (ts->cwin().hasUnemittedSamples()) {
+                emitStatistics(*ts, source, destination);
+                ts->win().updateFlush();
+            }
+            continue;
+        }
         emitStatistics(*ts, source, destination);
     }
 }
@@ -590,8 +682,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         auto opname = (*it)->operation();
         if (opname != "instant") {
             if (currentLoop == 1) {
-                const std::int64_t timespan = ts.cwin().timeSpanInHours();
-                dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(timespan), md);
+                dm::dumpEntry(dm::TIMESPAN, dm::TIMESPAN.makeEntry(emittedTimespan(ts.cwin())), md);
                 dm::dumpEntry(dm::TimeIncrementInSeconds,
                               dm::TimeIncrementInSeconds.makeEntry(cfg.outputStepInSeconds()), md);
                 paramMapping_.applyMapping(md, opname, !opt_.disableStrictMapping());
@@ -633,7 +724,7 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
         }
 
         const auto outputDistance
-            = opname == "instant" ? ts.cwin().lastDeclaredDistance() : ts.cwin().timeSpanInSeconds();
+            = opname == "instant" ? ts.cwin().lastDeclaredDistance() : ts.cwin().emissionSpanInSeconds();
         dm::dumpEntry(dm::DistanceFromPreviousStepInSeconds,
                       dm::DistanceFromPreviousStepInSeconds.makeEntry(outputDistance), md);
 
@@ -644,6 +735,10 @@ void Statistics::emitStatistics(TemporalStatistics& ts, message::Peer source, me
                 break;
             }
             case OutputTimeReference::StartOfWindow: {
+                if (ts.cwin().windowOrigin() == WindowOrigin::ForecastStart) {
+                    throw eckit::UserError{
+                        "window-origin forecast-start does not support output-time-reference start-of-window", Here()};
+                }
                 const auto step = absoluteStep(ts.win().currPointInSeconds(ts.win().creationPoint()));
                 dm::dumpEntry(dm::STEP, dm::STEP.makeEntry(step), md);
                 // We explicitly take the creation point - alternative would be the start point.

@@ -90,6 +90,20 @@ WindowType parseWindowType(const eckit::LocalConfiguration& cfg) {
     throw eckit::UserError(os.str(), Here());
 }
 
+WindowOrigin parseWindowOrigin(const eckit::LocalConfiguration& cfg) {
+    const auto windowOrigin = cfg.getString("window-origin", "window-start");
+    if (windowOrigin == "window-start") {
+        return WindowOrigin::WindowStart;
+    }
+    if (windowOrigin == "forecast-start") {
+        return WindowOrigin::ForecastStart;
+    }
+
+    std::ostringstream os;
+    os << "Invalid window origin :: " << windowOrigin << " (expected window-start or forecast-start)" << std::endl;
+    throw eckit::UserError(os.str(), Here());
+}
+
 std::optional<std::int64_t> parseValueCountThreshold(const eckit::LocalConfiguration& cfg) {
     const auto threshold = cfg.getLong("value-count-threshold", -1);
 
@@ -172,6 +186,7 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& cfg) :
     restartLib_{parseRestartLib(cfg)},
     logPrefix_{parseLogPrefix(cfg)},
     windowType_{parseWindowType(cfg)},
+    windowOrigin_{parseWindowOrigin(cfg)},
     valueCountThreshold_{parseValueCountThreshold(cfg)},
     disableStrictMapping_{parseDisableStrictMapping(cfg)},
     disableSquashing_{parseDisableSquashing(cfg)},
@@ -213,6 +228,10 @@ const std::string& StatisticsOptions::logPrefix() const {
 }
 WindowType StatisticsOptions::windowType() const {
     return windowType_;
+}
+
+WindowOrigin StatisticsOptions::windowOrigin() const {
+    return windowOrigin_;
 }
 
 std::optional<std::int64_t> StatisticsOptions::valueCountThreshold() const {

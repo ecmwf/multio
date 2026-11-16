@@ -31,6 +31,8 @@ public:
 
     void updateData(message::Message& msg, const StatisticsConfiguration& cfg);
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg);
+    /// Forecast-start windows: move the window end to the next emission point, keeping the accumulated state
+    void advanceEnd();
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
 

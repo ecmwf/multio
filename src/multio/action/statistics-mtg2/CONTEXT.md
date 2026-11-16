@@ -110,6 +110,26 @@ For a newly created forward-offset window, a message exactly on the nominal lowe
 
 This lower-bound behavior is structural and must not depend on `initial-condition-present`.
 
+## Forecast-Start Window Origin
+
+```yaml
+output-frequency: "3h"
+options:
+  window-origin: forecast-start   # default: window-start
+```
+
+The default `window-start` is the behaviour described above: a calendar window of `output-frequency` that is emitted when a field outside it arrives and then reset.
+
+With `forecast-start` the statistic accumulates from the simulation start (the first-step flush) and is never reset; `output-frequency` is only the emission cadence:
+
+- the window is `(simulation start, next emission point]`; a sample on the emission point is emitted immediately (no later field or flush needed), and the end then moves to the next emission point;
+- the emitted `step` is the absolute current step, `timespan` is `fs` when the window starts at the forecast epoch (otherwise the elapsed duration), and `misc-distanceFromPreviousStepInSeconds` is the elapsed length;
+- completeness is judged against the elapsed span (first sample seen, every sample at its declared distance from the previous one); a missing sample makes all later emissions of the field incomplete (suppressed unless `emit-incomplete-statistics`);
+- a field after the next emission point is an error: the input must contain every emission point;
+- a `last-step` flush emits the open tail (samples after the last emission) once, a run ending on an emission point has no tail;
+- `lastFlush_` of the window is the last emitted point; the restart format is unchanged, the origin comes from the options when a window is loaded, and a restored window keeps the original forecast start (a run without restored state accumulates from its own start);
+- accepted: operations `accumulate`, `average`, `maximum`, `minimum` (their `compute` leaves the state untouched), `output-frequency` in hours, `window-type: forward-offset`, instantaneous input only, simulation start on a whole hour.
+
 ## Initial Condition Option
 
 The active option is:

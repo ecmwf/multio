@@ -148,6 +148,22 @@ class EncodeMTG(Action):
     type: Literal["encode-mtg2"] = Field("encode-mtg2", init=False)
     cached: bool = Field(False)
 
+
+class Mars2Mars(Action):
+    """Mars2Mars Action.
+
+    Normalise the MARS keys of a field through metkit's mars2mars rules. Only the keys change, never the values.
+
+    Every field that reaches the action is converted: metkit applies all of its rules, there is no switch for
+    individual rules. Put a `Select` action in front of it to choose the fields whose keys should be converted.
+    """
+
+    type: Literal["mars2mars"] = Field("mars2mars", init=False)
+    mars2mars_options: dict[str, bool | str] | None = Field(
+        None, description="Options forwarded to the metkit mars2mars API"
+    )
+
+
 class Sink(Action):
     """Sink Action.
 
@@ -172,6 +188,6 @@ class SingleField(Action):
     type: Literal["single-field-sink"] = Field("single-field-sink", init=False)
 
 
-ACTIONS = Union[Select, Scale, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Sink, SingleField]
+ACTIONS = Union[Select, Scale, Statistics, StatisticsMTG, Transport, Aggregation, Interpolate, Null, Print, Mask, Encode, EncodeMTG, Mars2Mars, Sink, SingleField]
 
-__all__ = ["ACTIONS", "Action", "Select", "Scale", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Sink"]
+__all__ = ["ACTIONS", "Action", "Select", "Scale", "Statistics", "StatisticsMTG", "Transport", "Aggregation", "Null", "Print", "Mask", "Encode", "EncodeMTG", "Mars2Mars", "Sink"]

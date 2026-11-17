@@ -8,7 +8,7 @@
 import pytest
 
 from multio.plans import sinks
-from multio.plans.actions import Aggregation, Encode, EncodeMTG, Mask, Print, Select, Sink, Transport
+from multio.plans.actions import Aggregation, Encode, EncodeMTG, Mars2Mars, Mask, Print, Select, Sink, Transport
 
 
 def test_allow_underscore():
@@ -30,6 +30,8 @@ def test_allow_dash():
         (Mask, "mask", {}),
         (Encode, "encode", {"format": "grib", "template": "template", "grid-type": "grid_type"}),
         (EncodeMTG, "encode-mtg2", {"cached": True}),
+        (Mars2Mars, "mars2mars", {}),
+        (Mars2Mars, "mars2mars", {"mars2mars-options": {"printErrorStackToStdErr": False}}),
         (Transport, "transport", {"target": "target"}),
         (Aggregation, "aggregation", {}),
         (Sink, "sink", {"sinks": [{"append": True, "path": "debug.grib", "per-server": False, "type": "file"}]}),

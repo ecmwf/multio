@@ -136,6 +136,7 @@ list( APPEND multio_message_srcs
     message/MetadataException.h
     message/MetadataMatcher.cc
     message/MetadataMatcher.h
+    message/MissingValue.h
     message/SharedMetadata.cc
     message/SharedMetadata.h
     message/SharedPayload.cc

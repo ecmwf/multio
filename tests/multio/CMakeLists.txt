@@ -53,6 +53,11 @@ ecbuild_add_test( TARGET    test_multio_metadata
                   SOURCES   test_multio_metadata.cc
                   LIBS      multio )
 
+ecbuild_add_test( TARGET    test_multio_missing_value
+                  TEST_REQUIRES test_multio_metadata
+                  SOURCES   test_multio_missing_value.cc
+                  LIBS      multio )
+
 
 ecbuild_add_test( TARGET    test_multio_metadata_parametrization
                   TEST_REQUIRES test_multio_metadata

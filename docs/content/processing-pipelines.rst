@@ -104,6 +104,36 @@ decide whether the incoming message is meant for being processed here. It can ma
 In either case, a list of field names or a list categories need be provided for which the message is
 passed to the next action.
 
+More generally, any metadata key can be matched against a list of values. All keys of a block have to
+match, and a message is selected if any of the blocks under ``match`` matches.
+
+A key whose value is a number (an integer or a floating point number, e.g. ``step``, ``levelist``,
+``number`` or ``date``) can also be matched against a numeric condition, given as a map instead of a
+list of values:
+
+.. code-block:: yaml
+
+   - type : select
+     match :
+      - param : [228]
+        step :
+          from : [0, 90, 144]     # scalars, or lists of equal length (scalars are repeated)
+          to : [90, 144, 360]     # optional, inclusive
+          by : [1, 3, 6]          # optional
+      - levtype : [pl]
+        levelist :
+          greater-equal-to : 500  # also greater-than, lower-than, lower-equal-to
+
+A value matches if it lies in any of the ``from``/``to``/``by`` segments and satisfies all the bounds.
+The first block above selects the hourly steps up to 90, the 3-hourly steps up to 144 and the 6-hourly
+steps up to 360; the second one the pressure levels from 500 hPa. A key can also be given a list of
+such maps, of which any has to match.
+
+The value has to be a number in the metadata. A value given as a string (e.g. a step of ``"90m"``) is
+not supported: it is an error, unless ``enforce-same-key-types`` is switched off, in which case it
+does not match. ``time`` (``HHMM``) and ``date`` (``YYYYMMDD``) are compared as plain
+integers, so ``by`` does not step through them in units of time.
+
 
 Statistics
 ~~~~~~~~~~

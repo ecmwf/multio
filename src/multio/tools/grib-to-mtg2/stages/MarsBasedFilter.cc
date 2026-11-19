@@ -250,6 +250,13 @@ bool rejectUnsupportedStatisticalProcessingAtStepZero(const eckit::LocalConfigur
     return true;
 }
 
+/// @brief True if metkit mars2mars flagged the field as absent from the converted archive (misc.dropField),
+/// e.g. a "since previous post-processing" statistic (10fg, mx2t, mn2t, mxtpr, mntpr) at step 0, which has
+/// no window. Without this check such a field keeps timespan=none and fails in the encoder.
+bool rejectDroppedByMarsToMars(const eckit::LocalConfiguration& misc) {
+    return misc.has("dropField") && misc.getBool("dropField");
+}
+
 std::optional<multio::message::match::MatchReduce> parseSelectors(const eckit::LocalConfiguration& config) {
     if (!config.has("selectors")) {
         return std::nullopt;
@@ -313,6 +320,10 @@ MarsBasedFilterCode runMarsBasedFilterStage(const eckit::LocalConfiguration& mar
                                             const eckit::LocalConfiguration& misc,
                                             const MarsBasedFilterContext& context) noexcept {
     try {
+        if (rejectDroppedByMarsToMars(misc)) {
+            return MarsBasedFilterCode::Rejected;
+        }
+
         if (rejectFromStartStatisticsForAnalysis(mars, context)) {
             return MarsBasedFilterCode::Rejected;
         }

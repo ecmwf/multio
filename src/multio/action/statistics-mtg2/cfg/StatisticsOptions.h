@@ -16,6 +16,16 @@ enum class WindowType : std::int64_t
     BackwardOffset = 1,
 };
 
+/// Where the statistics window starts.
+///   WindowStart:   the window is a calendar period of `output-frequency` that is closed and reset after each emission
+///   ForecastStart: the window opens at the simulation start and is never reset; `output-frequency` is the cadence at
+///                  which the running statistic over the whole forecast so far is emitted
+enum class WindowOrigin : std::int64_t
+{
+    WindowStart = 0,
+    ForecastStart = 1,
+};
+
 enum class OutputTimeReference : std::int64_t
 {
     StartOfForecast = 0,
@@ -40,6 +50,7 @@ private:
 
     const std::string logPrefix_;
     const WindowType windowType_;
+    const WindowOrigin windowOrigin_;
 
     const std::optional<std::int64_t> valueCountThreshold_;
 
@@ -67,6 +78,7 @@ public:
 
     const std::string& logPrefix() const;
     WindowType windowType() const;
+    WindowOrigin windowOrigin() const;
 
     std::optional<std::int64_t> valueCountThreshold() const;
 

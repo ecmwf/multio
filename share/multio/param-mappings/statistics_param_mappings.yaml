@@ -4866,3 +4866,87 @@
     paramOut: 266909
   - typeOfStatisticalProcessing: 6
     paramOut: 267909
+
+# Manually added mappings: accumulation of the IFS accumulated parameters.
+# The input is the per-step increment of an accumulated parameter, sent under the paramId of the
+# accumulation itself, so the accumulation keeps its paramId (paramIn == paramOut). The values are
+# not converted and must already be in the units of the paramId: kg m**-2 (water: 228228, 228143,
+# 3062, 228144, 260259, 231002, 231010, 231012), J m**-2 (146, 147, 176, 177, 169, 175, 178, 179,
+# 212) or N m**-2 s (180, 181). The generator above does not produce these entries: keep them when
+# this file is regenerated.
+- paramIn: 228228
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228228
+- paramIn: 228143
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228143
+- paramIn: 3062
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 3062
+- paramIn: 228144
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 228144
+- paramIn: 260259
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 260259
+- paramIn: 231002
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231002
+- paramIn: 231010
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231010
+- paramIn: 231012
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 231012
+- paramIn: 146
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 146
+- paramIn: 147
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 147
+- paramIn: 176
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 176
+- paramIn: 177
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 177
+- paramIn: 169
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 169
+- paramIn: 175
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 175
+- paramIn: 178
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 178
+- paramIn: 179
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 179
+- paramIn: 212
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 212
+- paramIn: 180
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 180
+- paramIn: 181
+  mappings:
+  - typeOfStatisticalProcessing: 1
+    paramOut: 181

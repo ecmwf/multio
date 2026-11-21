@@ -93,6 +93,10 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
     return;
 }
 
+void TemporalStatistics::advanceEnd() {
+    window_.extendEnd(periodUpdater_->updateWinEndTime(window_.endPoint()));
+}
+
 bool TemporalStatistics::isOutsideWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(::multio::LibMultio) << cfg.options().logPrefix() << " *** Check outside Window " << std::endl;
     return !window_.isWithin(currentDateTime(msg, cfg));

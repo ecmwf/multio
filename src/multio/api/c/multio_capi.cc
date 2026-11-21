@@ -10,6 +10,7 @@
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
+#include "multio/message/MissingValue.h"
 #include "multio/message/Parametrization.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
@@ -775,7 +776,8 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
                                                          size * sizeof(float)};
 
-            mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
+            mio->dispatch(multio::message::normaliseMissingValue<float>(md->md), std::move(field_vals),
+                          Message::Tag::Field);
         },
         mio);
 #else
@@ -831,7 +833,10 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
 
             eckit::Buffer* tmp = reinterpret_cast<eckit::Buffer*>(d);
 
-            mio->dispatch(md->md, std::move(*tmp), Message::Tag::Field);
+            // Missing values are carried as double, i.e. only single precision fields need to be normalised
+            auto fieldMd = byte_size == 4 ? multio::message::normaliseMissingValue<float>(md->md) : md->md;
+
+            mio->dispatch(std::move(fieldMd), std::move(*tmp), Message::Tag::Field);
         },
         mio);
 #else

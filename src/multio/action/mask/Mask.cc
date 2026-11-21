@@ -69,7 +69,8 @@ message::Message Mask::createMasked(message::Message msg) const {
     }
 
     message::Metadata& md = msg.modifyMetadata();
-    md.set("missingValue", missingValue_);
+    // Announce the missing value as it is stored in the field: rounded to the precision of the values
+    md.set("missingValue", static_cast<double>(static_cast<Precision>(missingValue_)));
     md.set("bitmapPresent", true);
 
     return msg;

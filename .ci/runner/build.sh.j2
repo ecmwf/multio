@@ -1,0 +1,20 @@
+{# SPDX-FileCopyrightText: 2011- European Centre for Medium-Range Weather Forecasts (ECMWF)
+   SPDX-License-Identifier: Apache-2.0 #}
+{% extends "ci-infrastructure/cmake-runner.sh.j2" %}
+{% block set_environment %}
+# The atlas-orca plugin is found by its manifest in <prefix>/share/plugins. The tests run
+# mir-compare from the deps' bin, appended so a dep's tools cannot shadow the system's.
+IFS=';:' read -ra dep_prefixes <<<"${CMAKE_PREFIX_PATH:-}"
+for prefix in ${dep_prefixes[@]+"${dep_prefixes[@]}"}; do
+  if [ -d "$prefix/share/plugins" ]; then
+    PLUGINS_MANIFEST_PATH="${PLUGINS_MANIFEST_PATH:+${PLUGINS_MANIFEST_PATH}:}$prefix/share/plugins"
+  fi
+  if [ -d "$prefix/bin" ]; then PATH="$PATH:$prefix/bin"; fi
+done
+export PLUGINS_MANIFEST_PATH="${PLUGINS_MANIFEST_PATH:-}" PATH
+{% endblock %}
+{% block cmake_args %}
+{% if not fortran_compiler_binary %}
+  -DENABLE_FORTRAN=OFF \
+{% endif %}
+{% endblock %}

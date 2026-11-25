@@ -1,0 +1,20 @@
+{
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "description": "No output manager: it needs eccodes' Fortran interface, which the eckit-geo eccodes lacks; no PGEN, which is internal",
+      "cacheVariables": {
+        "ECBUILD_DOWNLOAD_RETRIES": "5",
+        "ENABLE_MULTIO_OUTPUT_MANAGER": "OFF",
+        "ENABLE_PGEN": "OFF",
+        "ENABLE_TESTS": "ON"
+      },
+      "name": "ci"
+    }
+  ],
+  "version": 3
+}

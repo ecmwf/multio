@@ -1,0 +1,107 @@
+[package]
+name = "multio"
+repo = "ecmwf/multio"
+visibility = "public"
+fork-pull-requests = false
+compiler-inputs = ["cxx-compiler"]
+allow-stale-deps = true
+ci-pre-commit = false
+
+# eckit-geo, as metkit, fdb, and mir take eccodes.
+[[deps]]
+repo = "ecmwf/eccodes"
+package = "eccodes"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+options = "eckit-geo"
+
+[[deps]]
+repo = "ecmwf/metkit"
+package = "metkit"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+
+[[deps]]
+repo = "ecmwf/fdb"
+package = "fdb"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+
+[[deps]]
+repo = "ecmwf/mir"
+package = "mir"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+
+[[deps]]
+repo = "ecmwf/atlas"
+package = "atlas"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+
+# Not linked: an atlas plugin for the ORCA grids, loaded at run time.
+[[deps]]
+repo = "ecmwf/atlas-orca"
+package = "atlas-orca"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+
+[[deps]]
+repo = "ecmwf/fckit"
+package = "fckit"
+ref = "develop"
+compiler-inputs = ["cxx-compiler"]
+when = { fortran-compiler = ["gfortran-13"] }
+
+[packages.pymultio]
+compiler-inputs = ["cxx-compiler"]
+allow-stale-deps = true
+
+[[packages.pymultio.deps]]
+package = "multio"
+
+[matrix.build]
+packages = ["multio"]
+triggers = ["upstream-change", "rebuild-request"]
+
+[matrix.build.defaults]
+job-script = "./.ci/runner/build.sh.j2"
+build-type = "RelWithDebInfo"
+# ARC runners off: GitHub-hosted until they are back.
+runs-on = "ubuntu-latest"
+
+[[matrix.build.include]]
+cxx-compiler = "clang++-18"
+c-compiler = "clang-18"
+container = "eccr.ecmwf.int/public-ci-images/ubuntu24.04-clang18:latest"
+platform = "ubuntu-24.04"
+
+[[matrix.build.include]]
+cxx-compiler = "g++-13"
+c-compiler = "gcc-13"
+fortran-compiler = "gfortran-13"
+container = "eccr.ecmwf.int/public-ci-images/ubuntu24.04-gcc13-gfortran13:latest"
+platform = "ubuntu-24.04"
+
+[matrix.python]
+packages = ["pymultio"]
+triggers = ["upstream-change", "rebuild-request"]
+
+[matrix.python.defaults]
+job-script = "./.ci/runner/pymultio.sh.j2"
+build-type = "RelWithDebInfo"
+runs-on = "ubuntu-latest"
+cxx-compiler = "g++-13"
+c-compiler = "gcc-13"
+container = "eccr.ecmwf.int/public-ci-images/ubuntu24.04-gcc13-gfortran13:latest"
+platform = "ubuntu-24.04"
+extras = "tests"
+
+[[matrix.python.include]]
+python-version = "3.11"
+
+[[matrix.python.include]]
+python-version = "3.12"
+
+[[matrix.python.include]]
+python-version = "3.13"

@@ -1,0 +1,7 @@
+{# SPDX-FileCopyrightText: 2011- European Centre for Medium-Range Weather Forecasts (ECMWF)
+   SPDX-License-Identifier: Apache-2.0 #}
+{% extends "ci-infrastructure/python-runner.sh.j2" %}
+{% block set_environment %}
+# findlibs finds the multio artifact's libmultio-api on LD_LIBRARY_PATH, not a multiolib wheel.
+export FINDLIBS_DISABLE_PACKAGE=yes
+{% endblock %}

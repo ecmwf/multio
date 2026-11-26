@@ -2,7 +2,6 @@
 name = "multio"
 repo = "ecmwf/multio"
 visibility = "public"
-fork-pull-requests = false
 compiler-inputs = ["cxx-compiler"]
 allow-stale-deps = true
 ci-pre-commit = false
